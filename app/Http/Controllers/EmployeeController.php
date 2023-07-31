@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Gallery;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use App\Warehouse;
@@ -14,7 +15,7 @@ use Illuminate\Validation\Rule;
 
 class EmployeeController extends Controller
 {
-    
+
     public function index()
     {
         $role = Role::find(Auth::user()->role_id);
@@ -37,11 +38,9 @@ class EmployeeController extends Controller
         $role = Role::find(Auth::user()->role_id);
         if($role->hasPermissionTo('employees-add')){
             $lims_role_list = Role::where('is_active', true)->get();
-            $lims_warehouse_list = Warehouse::where('is_active', true)->get();
-            $lims_biller_list = Biller::where('is_active', true)->get();
             $lims_department_list = Department::where('is_active', true)->get();
 
-            return view('employee.create', compact('lims_role_list', 'lims_warehouse_list', 'lims_biller_list', 'lims_department_list'));
+            return view('employee.create', compact('lims_role_list', 'lims_department_list'));
         }
         else
             return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
@@ -71,7 +70,7 @@ class EmployeeController extends Controller
             $data['is_active'] = true;
             $data['is_deleted'] = false;
             $data['password'] = bcrypt($data['password']);
-            $data['phone'] = $data['phone_number']; 
+            $data['phone'] = $data['phone_number'];
             User::create($data);
             $user = User::latest()->first();
             $data['user_id'] = $user->id;
@@ -87,7 +86,7 @@ class EmployeeController extends Controller
             ],
             'image' => 'image|mimes:jpg,jpeg,png,gif|max:100000',
         ]);
-        
+
         $image = $request->image;
         if ($image) {
             $ext = pathinfo($image->getClientOriginalName(), PATHINFO_EXTENSION);
@@ -101,9 +100,9 @@ class EmployeeController extends Controller
         $data['is_active'] = true;
         Employee::create($data);
 
-        return redirect('employees')->with('message', $message);
+        return redirect('musician')->with('message', $message);
     }
-    
+
     public function update(Request $request, $id)
     {
         $lims_employee_data = Employee::find($request['employee_id']);
@@ -135,7 +134,7 @@ class EmployeeController extends Controller
             ],
             'image' => 'image|mimes:jpg,jpeg,png,gif|max:100000',
         ]);
-        
+
         $data = $request->except('image');
         $image = $request->image;
         if ($image) {
@@ -147,7 +146,7 @@ class EmployeeController extends Controller
         }
 
         $lims_employee_data->update($data);
-        return redirect('employees')->with('message', 'Employee updated successfully');
+        return redirect('musician')->with('message', 'Employee updated successfully');
     }
 
     public function deleteBySelection(Request $request)
@@ -176,5 +175,58 @@ class EmployeeController extends Controller
         $lims_employee_data->is_active = false;
         $lims_employee_data->save();
         return redirect('employees')->with('not_permitted', 'Employee deleted successfully');
+    }
+
+    public function gallery($id)
+    {
+        $role = Role::find(Auth::user()->role_id);
+        if ($role->hasPermissionTo('employees-index')) {
+            $permissions = Role::findByName($role->name)->permissions;
+            foreach ($permissions as $permission)
+                $all_permission[] = $permission->name;
+        } else {
+            $all_permission = [];
+        }
+        $lims_employee_data = Employee::find($id);
+        $lims_employee_gallery = Gallery::where('employee_id', $id)->paginate(9);
+        return view('employee.gallery', compact('lims_employee_data', 'lims_employee_gallery', 'all_permission'));
+    }
+
+    public function upload($id)
+    {
+        $role = Role::find(Auth::user()->role_id);
+        if ($role->hasPermissionTo('employees-index')) {
+            $permissions = Role::findByName($role->name)->permissions;
+            foreach ($permissions as $permission)
+                $all_permission[] = $permission->name;
+        } else {
+            $all_permission = [];
+        }
+
+        $lims_employee_data = Employee::find($id);
+        return view('employee.upload', compact('lims_employee_data', 'all_permission'));
+    }
+
+    public function uploadStore(Request $request)
+    {
+        $data['employee_id'] = $request['employee_id'];
+
+        $file = $request->file;
+        $data['type'] = $request['type'];
+        if($data['type'] == 'link' || $data['type'] == 'short'){
+            $data['file'] = $request['file_path'];
+        } else {
+            if ($file) {
+                $ext = pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION);
+                $imageName = preg_replace('/[^a-zA-Z0-9]/', '', $request['file']);
+                $imageName = $imageName . '.' . $ext;
+                $file->move('public/employee/data', $imageName);
+
+                $data['file'] = $imageName;
+            }
+        }
+
+        Gallery::create($data);
+        return back()->with('message', 'File uploaded successfully');
     }
 }

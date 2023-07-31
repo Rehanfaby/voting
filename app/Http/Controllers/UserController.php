@@ -40,10 +40,7 @@ class UserController extends Controller
         $role = Role::find(Auth::user()->role_id);
         if($role->hasPermissionTo('users-add')){
             $lims_role_list = Roles::where('is_active', true)->get();
-            $lims_biller_list = Biller::where('is_active', true)->get();
-            $lims_warehouse_list = Warehouse::where('is_active', true)->get();
-            $lims_customer_group_list = CustomerGroup::where('is_active', true)->get();
-            return view('user.create', compact('lims_role_list', 'lims_biller_list', 'lims_warehouse_list', 'lims_customer_group_list'));
+            return view('user.create', compact('lims_role_list'));
         }
         else
             return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
@@ -91,25 +88,8 @@ class UserController extends Controller
             'stemp' => 'image|mimes:jpg,jpeg,png,gif,svg|max:10000',
         ]);
 
-        $data = $request->except('sign', 'stemp');
-        $sign = $request->sign;
-        $stemp = $request->stemp;
-        if ($sign) {
-            $ext = pathinfo($sign->getClientOriginalName(), PATHINFO_EXTENSION);
-            $imageName = preg_replace('/[^a-zA-Z0-9]/', '', $request['sign']);
-            $imageName = $imageName . '.' . $ext;
-            $sign->move('public/images/user', $imageName);
+        $data = $request->all();
 
-            $data['sign'] = $imageName;
-        }
-        if ($stemp) {
-            $ext = pathinfo($stemp->getClientOriginalName(), PATHINFO_EXTENSION);
-            $imageName = preg_replace('/[^a-zA-Z0-9]/', '', $request['stemp']);
-            $imageName = $imageName . '.' . $ext;
-            $stemp->move('public/images/user', $imageName);
-
-            $data['stemp'] = $imageName;
-        }
         $message = 'User created successfully';
         try {
             Mail::send( 'mail.user_details', $data, function( $message ) use ($data)
@@ -126,12 +106,12 @@ class UserController extends Controller
         $data['password'] = bcrypt($data['password']);
         $data['phone'] = $data['phone_number'];
         User::create($data);
-        if($data['role_id'] == 5) {
-            $data['name'] = $data['customer_name'];
-            $data['phone_number'] = $data['phone'];
-            $data['is_active'] = true;
-            Customer::create($data);
-        }
+//        if($data['role_id'] == 5) {
+//            $data['name'] = $data['customer_name'];
+//            $data['phone_number'] = $data['phone'];
+//            $data['is_active'] = true;
+//            Customer::create($data);
+//        }
         return redirect('user')->with('message1', $message);
     }
 
@@ -141,9 +121,7 @@ class UserController extends Controller
         if($role->hasPermissionTo('users-edit')){
             $lims_user_data = User::find($id);
             $lims_role_list = Roles::where('is_active', true)->get();
-            $lims_biller_list = Biller::where('is_active', true)->get();
-            $lims_warehouse_list = Warehouse::where('is_active', true)->get();
-            return view('user.edit', compact('lims_user_data', 'lims_role_list', 'lims_biller_list', 'lims_warehouse_list'));
+            return view('user.edit', compact('lims_user_data', 'lims_role_list'));
         }
         else
             return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');

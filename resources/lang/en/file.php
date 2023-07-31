@@ -1,6 +1,10 @@
 <?php
 return [
 	'dashboard' => 'Dashboard',
+	'File' => 'File',
+	'File Type' => 'File Type',
+	'Add Musician' => 'Add Musician',
+	'Add Musician Gallery' => 'Add Musician Gallery',
 	'language' => 'Language',
 	'revenue' => 'Revenue',
 	'product' => 'Product',

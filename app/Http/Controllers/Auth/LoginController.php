@@ -78,11 +78,6 @@ class LoginController extends Controller
         if(auth()->attempt(array($fieldType => $input['name'], 'password' => $input['password'])))
 
         {
-            $role = Role::find(Auth::user()->role_id);
-            if($role->hasPermissionTo('one_time_otp')){
-                Auth::user()->update(['otp_verify' => 0]);
-                return redirect()->route('check.otp');
-            }
 
             return redirect('/');
 

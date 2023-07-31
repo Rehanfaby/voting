@@ -73,42 +73,7 @@
                                           @endforeach
                                         </select>
                                     </div>
-                                    <div class="form-group" id="biller-id">
-                                        <label><strong>{{trans('file.Biller')}} *</strong></label>
-                                        <input type="hidden" name="biller_id_hidden" value="{{$lims_user_data->biller_id}}">
-                                        <select name="biller_id" class="selectpicker form-control" data-live-search="true"   title="Select Biller...">
-                                          @foreach($lims_biller_list as $biller)
-                                              <option value="{{$biller->id}}">{{$biller->name}}</option>
-                                          @endforeach
-                                        </select>
-                                    </div>
-                                    <div class="form-group" id="warehouseId">
-                                        <label><strong>{{trans('file.Warehouse')}} *</strong></label>
-                                        <input type="hidden" name="warehouse_id_hidden" value="{{$lims_user_data->warehouse_id}}">
-                                        <select name="warehouse_id" class="selectpicker form-control" data-live-search="true"   title="Select Warehouse...">
-                                          @foreach($lims_warehouse_list as $warehouse)
-                                              <option value="{{$warehouse->id}}">{{$warehouse->name}}</option>
-                                          @endforeach
-                                        </select>
-                                    </div>
-                                    <div class="form-group" id="sign">
-                                        <label><strong>{{trans('file.Sign')}} </strong></label>
-                                        <input type="file" class="form-control" name="sign">
-                                        @if($lims_user_data->sign)
-                                        <img src="{{url('public/images/user',$lims_user_data->sign)}}" height="50vw">
-                                        @else
-                                            <span>No sign found</span>
-                                        @endif
-                                    </div>
-                                    <div class="form-group" id="stemp">
-                                        <label><strong>{{trans('file.Stemp')}} </strong></label>
-                                        <input type="file" class="form-control" name="stemp">
-                                        @if($lims_user_data->stemp)
-                                            <img src="{{url('public/images/user',$lims_user_data->stemp)}}" height="50vw">
-                                        @else
-                                            <span>No Comment found</span>
-                                        @endif
-                                    </div>
+
                                 </div>
                             </div>
                         {!! Form::close() !!}

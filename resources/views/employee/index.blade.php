@@ -10,17 +10,17 @@
 @if($errors->has('email'))
 <div class="alert alert-danger alert-dismissible text-center">
     <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>{{ $errors->first('email') }}</div>
-@endif 
+@endif
 @if(session()->has('message'))
-  <div class="alert alert-success alert-dismissible text-center"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>{!! session()->get('message') !!}</div> 
+  <div class="alert alert-success alert-dismissible text-center"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>{!! session()->get('message') !!}</div>
 @endif
 @if(session()->has('not_permitted'))
-  <div class="alert alert-danger alert-dismissible text-center"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>{{ session()->get('not_permitted') }}</div> 
+  <div class="alert alert-danger alert-dismissible text-center"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>{{ session()->get('not_permitted') }}</div>
 @endif
 <section>
-    @if(in_array("employees-add", $all_permission))
+    @if(in_array("musician-add", $all_permission))
     <div class="container-fluid">
-        <a href="{{route('employees.create')}}" class="btn btn-info"><i class="dripicons-plus"></i> {{trans('file.Add Employee')}}</a>
+        <a href="{{route('musician.create')}}" class="btn btn-info"><i class="dripicons-plus"></i> {{trans('file.Add Musician')}}</a>
     </div>
     @endif
     <div class="table-responsive">
@@ -66,12 +66,18 @@
                             <ul class="dropdown-menu edit-options dropdown-menu-right dropdown-default" user="menu">
                                 @if(in_array("employees-edit", $all_permission))
                                 <li>
-                                    <button type="button" data-id="{{$employee->id}}" data-name="{{$employee->name}}" data-email="{{$employee->email}}" data-phone_number="{{$employee->phone_number}}" data-department_id="{{$employee->department_id}}" data-address="{{$employee->address}}" data-city="{{$employee->city}}" data-country="{{$employee->country}}" class="edit-btn btn btn-link" data-toggle="modal" data-target="#editModal"><i class="dripicons-document-edit"></i> {{trans('file.edit')}}</button> 
+                                    <button type="button" data-id="{{$employee->id}}" data-name="{{$employee->name}}" data-email="{{$employee->email}}" data-phone_number="{{$employee->phone_number}}" data-department_id="{{$employee->department_id}}" data-address="{{$employee->address}}" data-city="{{$employee->city}}" data-country="{{$employee->country}}" class="edit-btn btn btn-link" data-toggle="modal" data-target="#editModal"><i class="dripicons-document-edit"></i> {{trans('file.edit')}}</button>
+                                </li>
+                                <li>
+                                    <a href="{{ route('musician.upload', $employee->id) }}" class="edit-btn btn btn-link"><i class="fa fa-image"></i> Upload</a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('musician.gallery', $employee->id) }}" class="edit-btn btn btn-link"><i class="fa fa-image"></i> Gallery</a>
                                 </li>
                                 @endif
                                 <li class="divider"></li>
                                 @if(in_array("employees-delete", $all_permission))
-                                {{ Form::open(['route' => ['employees.destroy', $employee->id], 'method' => 'DELETE'] ) }}
+                                {{ Form::open(['route' => ['musician.destroy', $employee->id], 'method' => 'DELETE'] ) }}
                                 <li>
                                     <button type="submit" class="btn btn-link" onclick="return confirmDelete()"><i class="dripicons-trash"></i> {{trans('file.delete')}}</button>
                                 </li>
@@ -96,7 +102,7 @@
             </div>
             <div class="modal-body">
               <p class="italic"><small>{{trans('file.The field labels marked with * are required input fields')}}.</small></p>
-                {!! Form::open(['route' => ['employees.update', 1], 'method' => 'put', 'files' => true]) !!}
+                {!! Form::open(['route' => ['musician.update', 1], 'method' => 'put', 'files' => true]) !!}
                 <div class="row">
                     <div class="col-md-6 form-group">
                         <input type="hidden" name="employee_id" />
@@ -147,13 +153,13 @@
 
 <script type="text/javascript">
 
-    $("ul#hrm").siblings('a').attr('aria-expanded','true');
-    $("ul#hrm").addClass("show");
-    $("ul#hrm #employee-menu").addClass("active");
+    $("ul#people").siblings('a').attr('aria-expanded','true');
+    $("ul#people").addClass("show");
+    $("ul#people #employee-menu").addClass("active");
 
     var employee_id = [];
     var user_verified = <?php echo json_encode(env('USER_VERIFIED')) ?>;
-    
+
     $.ajaxSetup({
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -253,7 +259,7 @@
                         body: function ( data, row, column, node ) {
                             if (column === 0 && (data.indexOf('<img src=') != -1)) {
                                 var regex = /<img.*?src=['"](.*?)['"]/;
-                                data = regex.exec(data)[1];                 
+                                data = regex.exec(data)[1];
                             }
                             return data;
                         }
@@ -283,7 +289,7 @@
                         if(employee_id.length && confirm("Are you sure want to delete?")) {
                             $.ajax({
                                 type:'POST',
-                                url:'employees/deletebyselection',
+                                url:'musician/deletebyselection',
                                 data:{
                                     employeeIdArray: employee_id
                                 },

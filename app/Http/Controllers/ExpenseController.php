@@ -50,64 +50,11 @@ class ExpenseController extends Controller
         return Role::find(Auth::user()->role_id);
     }
 
-    public function asset()
-    {
-        $permissions = Role::findByName($this->role()->name)->permissions;
-        foreach ($permissions as $permission)
-            $all_permission[] = $permission->name;
-
-        $lims_expense_all = AssetExpense::orderBy('id', 'desc')->where('type', 'expense')->get();
-
-        return view('expense.asset', compact('lims_expense_all', 'all_permission'));
-    }
-
-    public function assetActivity()
-    {
-            $permissions = Role::findByName($this->role()->name)->permissions;
-            foreach ($permissions as $permission)
-                $all_permission[] = $permission->name;
-
-        $lims_expense_all = AssetExpense::orderBy('id', 'desc')->where('type', 'activity')->get();
-
-        return view('fixed_asset.asset.activity', compact('lims_expense_all', 'all_permission'));
-    }
-    public function assetActivityRepair()
-    {
-        $role = Role::find(Auth::user()->role_id);
-        if($role->hasPermissionTo('fixed_assets')) {
-            $permissions = Role::findByName($role->name)->permissions;
-            foreach ($permissions as $permission)
-                $all_permission[] = $permission->name;
-        }
-        $lims_expense_all = AssetExpense::orderBy('id', 'desc')->where('type', 'activity')->where('activity_type', 'Repair')->get();
-
-        return view('fixed_asset.asset.activity_repair', compact('lims_expense_all', 'all_permission'));
-    }
-
-    public function assetStore(Request $request)
-    {
-        $data = $request->all();
-        $data['reference_no'] = 'er-' . date("Ymd") . '-'. date("his");
-        $data['user_id'] = Auth::id();
-        if($data['type'] == 'activity' && $data['activity_type'] == 'milage' && $data['total_km'] == null) {
-            $data['total_km'] = $data['end_km'] - $data['start_km'];
-        }
-        AssetExpense::create($data);
-        return back()->with('message', 'Data inserted successfully');
-    }
-
     public function store(Request $request)
     {
         $data = $request->all();
         $data['reference_no'] = 'er-' . date("Ymd") . '-'. date("his");
         $data['user_id'] = Auth::id();
-        $cash_register_data = CashRegister::where([
-            ['user_id', $data['user_id']],
-            ['warehouse_id', $data['warehouse_id']],
-            ['status', true]
-        ])->first();
-        if($cash_register_data)
-            $data['cash_register_id'] = $cash_register_data->id;
         Expense::create($data);
         return redirect('expenses')->with('message', 'Data inserted successfully');
     }
