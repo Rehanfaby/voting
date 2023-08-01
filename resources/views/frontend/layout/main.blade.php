@@ -117,7 +117,7 @@
                         <div class="header__main ms-border2 d-flex align-items-center justify-content-between">
                             <div class="header__logo pt-25 pb-25">
                                 <a href="{{ route('home') }}">
-                                    <img src="{{url('public/logo', $general_setting->site_logo)}}" alt="logo not found">
+                                    <img src="{{url('public/logo', $general_setting->site_logo)}}" alt="logo not found" style="height: 100px">
                                 </a>
                             </div>
                             <div class="header__right">
