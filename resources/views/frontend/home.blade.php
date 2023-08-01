@@ -44,13 +44,13 @@
         <section class="ms-banner-area p-relative">
             <a class="ms-scroll-down" href="#">SCROLL DOWN</a>
             <div class="container-fluid ms-maw-1710">
-                <div class="ms-br-30 mx-auto include__bg z-index-1 ms-overlay-1 p-relative" data-background="assets/img/banner/banner-thumb-01.jpg">
+                <div class="ms-br-30 mx-auto include__bg z-index-1 ms-overlay-1 p-relative" data-background="">
                     <div class="container">
                         <div class="row justify-content-center">
                             <div class="col-xl-11">
                                 <div class="ms-banner__main-wrapper">
                                     <div class="ms-banner__content text-center">
-                                        <h1 class="ms-banner__bg-title" data-background="assets/img/banner/title-bg.jpg">
+                                        <h1 class="ms-banner__bg-title" data-background="">
                                             Musicly
                                         </h1>
                                         <h2 class="ms-banner__title msg_title bd-title-anim">Vote your favourite Musician</h2>
@@ -80,7 +80,7 @@
         <!-- Banner Area End Here  -->
 
         <!-- Text scroll area start -->
-        <section class="text__scroll-area include__bg ms-ts-space p-relative fix" data-background="assets/img/bg/text-scroll-bg.png">
+        <section class="text__scroll-area include__bg ms-ts-space p-relative fix" data-background="">
             <div class="text__scroll-wrapper">
                 <div class="ms-text-line-1">
                     <div class="swiper-container ms-st-active scroll__text pt-20 pb-20">
@@ -593,7 +593,7 @@
                 </div>
                 <div class="row bdFadeUp">
                     <div class="col-xl-8">
-                        <div class="ms-event-bg p-relative mb-60" data-background="assets/img/event/event-testimonial-bg.png">
+                        <div class="ms-event-bg p-relative mb-60" data-background="">
                             <div class="ms-event-overlay p-absolute"></div>
                             <div class="ms-event-wrap">
                                 <div class="ms-event-inner-box">
@@ -802,7 +802,7 @@
         <!-- CTA Area Start Here  -->
         <section class="ms-cta-area ms-cta--120 p-relative zindex-10">
             <div class="container">
-                <div class="ms-cta-bg include__bg ms-cta-overlay zindex-1 fix" data-background="assets/img/cta/cta-bg.png">
+                <div class="ms-cta-bg include__bg ms-cta-overlay zindex-1 fix" data-background="">
                     <div class="ms-cta-wrap">
                         <div class="ms-cta-item">
                             <div class="ms-cta-content">

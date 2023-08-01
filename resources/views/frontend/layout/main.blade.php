@@ -227,7 +227,7 @@
           @yield('content')
             <!-- Footer Area Start Here  -->
             <footer>
-                <div class="ms-footer-bg ms-footer-overlay zindex-1 include__bg pt-120" data-background="assets/img/bg/sound-bg.png">
+                <div class="ms-footer-bg ms-footer-overlay zindex-1 include__bg pt-120" data-background="">
 {{--                    <div class="ms-footer-top pt-130">--}}
 {{--                        <div class="container">--}}
 {{--                            <div class="ms-footer-border pb-10">--}}
@@ -339,26 +339,26 @@
             <!-- Back to top end -->
 
             <!-- JS here -->
-            <script data-cfasync="false" src="{{ asset('frontend/js/cloudflare-static-email-decode.min.js') }}"></script>
-            <script src="{{ asset('frontend/js/js-jquery-3.6.0.min.js') }}"></script>
-            <script src="{{ asset('frontend/js/js-waypoints.min.js') }}"></script>
-            <script src="{{ asset('frontend/js/js-bootstrap.bundle.min.js') }}"></script>
-            <script src="{{ asset('frontend/js/js-nice-select.min.js') }}"></script>
-            <script src="{{ asset('frontend/js/js-meanmenu.min.js') }}"></script>
-            <script src="{{ asset('frontend/js/js-swiper-bundle.min.js') }}"></script>
-            <script src="{{ asset('frontend/js/js-slick.min.js') }}"></script>
-            <script src="{{ asset('frontend/js/js-magnific-popup.min.js') }}"></script>
-            <script src="{{ asset('frontend/js/js-backtotop.js') }}"></script>
-            <script src="{{ asset('frontend/js/js-ajax-form.js') }}"></script>
-            <script src="{{ asset('frontend/js/js-jquery-ui.min.js') }}"></script>
-            <script src="{{ asset('frontend/js/js-gsap.min.js') }}"></script>
-            <script src="{{ asset('frontend/js/js-ScrollToPlugin.min.js') }}"></script>
-            <script src="{{ asset('frontend/js/js-SplitText.min.js') }}"></script>
-            <script src="{{ asset('frontend/js/js-ScrollTrigger.min.js') }}"></script>
-            <script src="{{ asset('frontend/js/js-jquery.jplayer.min.js') }}"></script>
-            <script src="{{ asset('frontend/js/js-jplayer.playlist.js') }}"></script>
-            <script src="{{ asset('frontend/js/js-settings.js') }}"></script>
-            <script src="{{ asset('frontend/js/js-main.js') }}"></script>
+            <script data-cfasync="false" src="{{ asset('public/frontend/js/cloudflare-static-email-decode.min.js') }}"></script>
+            <script src="{{ asset('public/frontend/js/js-jquery-3.6.0.min.js') }}"></script>
+            <script src="{{ asset('public/frontend/js/js-waypoints.min.js') }}"></script>
+            <script src="{{ asset('public/frontend/js/js-bootstrap.bundle.min.js') }}"></script>
+            <script src="{{ asset('public/frontend/js/js-nice-select.min.js') }}"></script>
+            <script src="{{ asset('public/frontend/js/js-meanmenu.min.js') }}"></script>
+            <script src="{{ asset('public/frontend/js/js-swiper-bundle.min.js') }}"></script>
+            <script src="{{ asset('public/frontend/js/js-slick.min.js') }}"></script>
+            <script src="{{ asset('public/frontend/js/js-magnific-popup.min.js') }}"></script>
+            <script src="{{ asset('public/frontend/js/js-backtotop.js') }}"></script>
+            <script src="{{ asset('public/frontend/js/js-ajax-form.js') }}"></script>
+            <script src="{{ asset('public/frontend/js/js-jquery-ui.min.js') }}"></script>
+            <script src="{{ asset('public/frontend/js/js-gsap.min.js') }}"></script>
+            <script src="{{ asset('public/frontend/js/js-ScrollToPlugin.min.js') }}"></script>
+            <script src="{{ asset('public/frontend/js/js-SplitText.min.js') }}"></script>
+            <script src="{{ asset('public/frontend/js/js-ScrollTrigger.min.js') }}"></script>
+            <script src="{{ asset('public/frontend/js/js-jquery.jplayer.min.js') }}"></script>
+            <script src="{{ asset('public/frontend/js/js-jplayer.playlist.js') }}"></script>
+            <script src="{{ asset('public/frontend/js/js-settings.js') }}"></script>
+            <script src="{{ asset('public/frontend/js/js-main.js') }}"></script>
       </body>
 
 </html>
