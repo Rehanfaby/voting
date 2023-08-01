@@ -70,16 +70,15 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
-        $data['is_active'] = false;
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'phone' => $data['phone_number'],
-            'company_name' => $data['company_name'],
+            'company_name' => $data['company_name'] ?? null,
             'role_id' => $data['role_id'],
-            'biller_id' => $data['biller_id'],
-            'warehouse_id' => $data['warehouse_id'],
-            'is_active' => $data['is_active'],
+            'biller_id' => $data['biller_id'] ?? null,
+            'warehouse_id' => $data['warehouse_id'] ?? null,
+            'is_active' => true,
             'is_deleted' => false,
             'password' => bcrypt($data['password']),
         ]);

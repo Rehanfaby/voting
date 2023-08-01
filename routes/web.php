@@ -21,6 +21,16 @@ Route::group(['middleware' => 'auth'], function() {
 
 Route::get('/', 'HomeController@index')->name('home');
 Route::get('user/signup', 'HomeController@signup')->name('user.signup');
+Route::get('user/login', 'HomeController@login')->name('user.login');
+Route::get('musician/data/{id}', 'HomeController@employee')->name('musician.data');
+Route::post('musician/find', 'HomeController@employeeFind')->name('musician.find');
+Route::post('musician/vote', 'HomeController@employeeVote')->name('musician.vote');
+Route::get('musician/team', 'HomeController@team')->name('team');
+Route::get('musician/vote/payment', 'HomeController@musicianVotePayment')->name('musician.vote.payment');
+
+
+
+//end frontend
 
 Route::group(['middleware' => ['auth', 'active']], function() {
 

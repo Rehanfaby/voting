@@ -15,5 +15,10 @@ class Employee extends Model
     {
     	return $this->hasMany('App\Payroll');
     }
-    
+
+    public function departments()
+    {
+        return $this->belongsTo('App\Department', 'department_id', 'id');
+    }
+
 }

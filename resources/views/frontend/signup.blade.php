@@ -31,21 +31,38 @@
             <div class="ms-maxw-510 mx-auto">
                 <div class="ms-login-wrap text-center ms-login-space ms-bg-2">
                     <h3 class="ms-title4 mb-50">Create Your account</h3>
-                    <form>
+                    <form action="{{ route('register') }}" method="post">
+                        @csrf
                         <div class="ms-input2-box mb-25">
-                            <input type="text" placeholder="Name">
+                            <input type="text" placeholder="Name" name="name" required>
+                            @if ($errors->has('name'))
+                                <p>
+                                    <strong>{{ $errors->first('name') }}</strong>
+                                </p>
+                            @endif
                         </div>
                         <div class="ms-input2-box mb-25">
-                            <input type="email" placeholder="Email">
+                            <input type="email" placeholder="Email" name="email" required>
+                            <input type="hidden" name="role_id" value="3">
+                            @if ($errors->has('email'))
+                                <p>
+                                    <strong>{{ $errors->first('email') }}</strong>
+                                </p>
+                            @endif
                         </div>
                         <div class="ms-input2-box mb-25">
-                            <input type="text" placeholder="Phone no">
+                            <input type="text" placeholder="Phone no" name="phone_number" value="+237" required>
                         </div>
                         <div class="ms-input2-box mb-50">
-                            <input type="password" placeholder="Password">
+                            <input type="password" placeholder="Password" name="password" required>
+                            @if ($errors->has('password'))
+                                <p>
+                                    <strong>{{ $errors->first('password') }}</strong>
+                                </p>
+                            @endif
                         </div>
                         <div class="ms-input2-box mb-50">
-                            <input type="password" placeholder="Confirm Password">
+                            <input type="password" placeholder="Confirm Password" name="password_confirmation" required>
                         </div>
                         <div class="ms-submit-btn mb-40">
                             <button class="unfill__btn d-block w-100" type="submit">Create
@@ -54,12 +71,8 @@
                         <div class="ms-divided-btn mb-45">
                             <span>or</span>
                         </div>
-                        <div class="ms-fb mb-40">
-                            <button class="ms-fb-btn" type="submit"><i class="fa-brands fa-facebook"></i>
-                                Log in with facebook</button>
-                        </div>
                         <div class="ms-not-account mb-35">
-                            <p>Already have an account? <a href="login.html">Log
+                            <p>Already have an account? <a href="{{ route('user.login') }}">Log
                                     in</a></p>
                         </div>
 
@@ -76,40 +89,40 @@
             <div class="swiper-container ms-partner-active">
                 <div class="swiper-wrapper">
                     <div class="swiper-slide">
-                        <img src="{{ asset('frontend/images/partner-partner-01.png') }}" alt="partner image">
+                        <img src="{{ asset('public/frontend/images/partner-partner-01.png') }}" alt="partner image">
                     </div>
                     <div class="swiper-slide">
-                        <img src="{{ asset('frontend/images/partner-partner-02.png') }}" alt="partner image">
+                        <img src="{{ asset('public/frontend/images/partner-partner-02.png') }}" alt="partner image">
                     </div>
                     <div class="swiper-slide">
-                        <img src="{{ asset('frontend/images/partner-partner-03.png') }}" alt="partner image">
+                        <img src="{{ asset('public/frontend/images/partner-partner-03.png') }}" alt="partner image">
                     </div>
                     <div class="swiper-slide">
-                        <img src="{{ asset('frontend/images/partner-partner-04.png') }}" alt="partner image">
+                        <img src="{{ asset('public/frontend/images/partner-partner-04.png') }}" alt="partner image">
                     </div>
                     <div class="swiper-slide">
-                        <img src="{{ asset('frontend/images/partner-partner-05.png') }}" alt="partner image">
+                        <img src="{{ asset('public/frontend/images/partner-partner-05.png') }}" alt="partner image">
                     </div>
                     <div class="swiper-slide">
-                        <img src="{{ asset('frontend/images/partner-partner-04.png') }}" alt="partner image">
+                        <img src="{{ asset('public/frontend/images/partner-partner-04.png') }}" alt="partner image">
                     </div>
                     <div class="swiper-slide">
-                        <img src="{{ asset('frontend/images/partner-partner-01.png') }}" alt="partner image">
+                        <img src="{{ asset('public/frontend/images/partner-partner-01.png') }}" alt="partner image">
                     </div>
                     <div class="swiper-slide">
-                        <img src="{{ asset('frontend/images/partner-partner-02.png') }}" alt="partner image">
+                        <img src="{{ asset('public/frontend/images/partner-partner-02.png') }}" alt="partner image">
                     </div>
                     <div class="swiper-slide">
-                        <img src="{{ asset('frontend/images/partner-partner-03.png') }}" alt="partner image">
+                        <img src="{{ asset('public/frontend/images/partner-partner-03.png') }}" alt="partner image">
                     </div>
                     <div class="swiper-slide">
-                        <img src="{{ asset('frontend/images/partner-partner-04.png') }}" alt="partner image">
+                        <img src="{{ asset('public/frontend/images/partner-partner-04.png') }}" alt="partner image">
                     </div>
                     <div class="swiper-slide">
-                        <img src="{{ asset('frontend/images/partner-partner-05.png') }}" alt="partner image">
+                        <img src="{{ asset('public/frontend/images/partner-partner-05.png') }}" alt="partner image">
                     </div>
                     <div class="swiper-slide">
-                        <img src="{{ asset('frontend/images/partner-partner-04.png') }}" alt="partner image">
+                        <img src="{{ asset('public/frontend/images/partner-partner-04.png') }}" alt="partner image">
                     </div>
                 </div>
             </div>

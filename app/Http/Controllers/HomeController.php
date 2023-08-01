@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Employee;
+use App\User;
+use App\vote;
 use Illuminate\Http\Request;
 use App\Sale;
 use App\Returns;
@@ -17,9 +20,11 @@ use App\Product_Sale;
 use App\Customer;
 use DB;
 use Auth;
+use Illuminate\Support\Facades\Hash;
 use Printing;
 use Rawilk\Printing\Contracts\Printer;
 use Spatie\Permission\Models\Role;
+use Stripe\EphemeralKey;
 use Twilio\Rest\Client;
 
 /*use vendor\autoload;
@@ -39,7 +44,15 @@ class HomeController extends Controller
 
     public function index()
     {
-        return view('frontend.home');
+        if(Auth::user()) {
+            $role = Auth::user()->role_id;
+            if($role == 1) {
+                return $this->admin();
+            }
+        }
+        $this->checkVotePayment();
+        $musicians = Employee::where('is_active', true)->get();
+        return view('frontend.home', compact('musicians'));
     }
 
     public function signup()
@@ -47,9 +60,82 @@ class HomeController extends Controller
         return view('frontend.signup');
     }
 
+    public function login()
+    {
+        return view('frontend.login');
+    }
+
+    public function team(){
+        $musicians = Employee::where('is_active', true)->get();
+        return view('frontend.team', compact('musicians'));
+    }
+
+    public function employee($id) {
+        $musician = Employee::find($id);
+        return view('frontend.employee', compact('musician'));
+    }
+
+    public function employeeFind(Request $request) {
+        $musicians = Employee::where('name', 'LIKE', '%' . $request->search . '%')->where('is_active', true)->get();
+        return view('frontend.team', compact('musicians'));
+    }
+
+    public function employeeVote(Request $request) {
+        $data = $request->all();
+        $musician = Employee::find($data['musician_id']);
+        return view('frontend.payment', compact('data', 'musician'));
+    }
+
+    public function musicianVotePayment(Request $request) {
+
+        $user = Auth::user() ?? null;
+        $data['is_active'] = true;
+        $data['is_deleted'] = false;
+        $data['password'] = bcrypt($request->password);
+        $data['name'] = $request->name;
+        $data['phone'] = $request->phone;
+        $data['email'] = 'user@gmail.com';
+        $data['role_id'] = 3;
+
+        if($user == null) {
+            if($data['name'] == null) {
+                return 'Name cannot be null';
+            }
+            if ($user_check = User::where('name', $request->name)->first()) {
+                $pass = Hash::check($request->password, $user_check->password);
+                if ($pass) {
+                    $user = $user_check;
+                } else {
+                    return 'you have an account but password is incorrect';
+                }
+            }
+        }
+
+        if($user == null) {
+            $user = User::create($data);
+            $this->sendWhatsappMsg($user, $request->password);
+        }
+
+        $token = $this->mobileMoneyToken();
+        if($token) {
+            $refernece = $this->mobileMoneyRequest($token, $request->phone, $request->amount);
+            if($refernece) {
+                vote::create([
+                    'user_id' => $user->id,
+                    'musician_id' => $request->musician_id,
+                    'vote' => $request->vote,
+                    'status' => false,
+                    'reference' => $refernece
+                ]);
+                return 'Thank you for your vote, Vote status is pending, please pay your payment in 30 minutes';
+            }
+        }
+        return 'Some thing went wrong, please check your phone number';
+    }
+
     public function logout() {
         Auth::logout();
-        return redirect()->route('login');
+        return redirect()->route('home');
     }
 
     public function otpCheck(){
@@ -124,12 +210,17 @@ class HomeController extends Controller
         ));
 
         $response = curl_exec($curl);
+        $response_decode = json_decode($response, true);
 
         curl_close($curl);
-        echo $response;
+
+        if($response_decode && $response_decode['token']) {
+            return $response_decode['token'];
+        }
+        return false;
     }
 
-    public function mobileMoneyRequest(){
+    public function mobileMoneyRequest($token, $number, $amount){
 
         $curl = curl_init();
 
@@ -142,27 +233,32 @@ class HomeController extends Controller
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS =>'{"amount":"2","from":"237675321739","description":"Test","external_reference": ""}',
+            CURLOPT_POSTFIELDS =>'{"amount":"'.$amount.'","from":"'.$number.'","description":"Test","external_reference": ""}',
             CURLOPT_HTTPHEADER => array(
-                'Authorization: Token eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsInVpZCI6MjIxN30.eyJpYXQiOjE2OTA2MjM2ODgsIm5iZiI6MTY5MDYyMzY4OCwiZXhwIjoxNjkwNjI3Mjg4fQ.buVJrXG2oI-UKUfmrTDro4Q7HguqKWAsyKe6T481nNM',
+                'Authorization: Token ' . $token,
                 'Content-Type: application/json'
             ),
         ));
 
         $response = curl_exec($curl);
+        $response_decode = json_decode($response, true);
 
         curl_close($curl);
-echo $response;
 
+        if($response_decode && isset($response_decode['reference'])) {
+            return $response_decode['reference'];
+        }
+
+        return false;
     }
 
-    public function mobileMoneyStatus(){
+    public function mobileMoneyStatus($token, $reference){
 
 
         $curl = curl_init();
 
         curl_setopt_array($curl, array(
-            CURLOPT_URL => 'https://demo.campay.net/api/transaction/cfaa7eef-393f-493e-ac07-c47a7e0c034d/',
+            CURLOPT_URL => 'https://demo.campay.net/api/transaction/'.$reference.'/',
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => '',
             CURLOPT_MAXREDIRS => 10,
@@ -171,16 +267,59 @@ echo $response;
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_CUSTOMREQUEST => 'GET',
             CURLOPT_HTTPHEADER => array(
-                'Authorization: Token eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsInVpZCI6MjIxN30.eyJpYXQiOjE2ODY4MzM0MzEsIm5iZiI6MTY4NjgzMzQzMSwiZXhwIjoxNjg2ODM3MDMxfQ.0XBGJhHUgUFuIaNbBVIZhSMmzDx7OZIpt88Hh84ciC4',
+                'Authorization: Token ' . $token,
                 'Content-Type: application/json'
             ),
         ));
 
         $response = curl_exec($curl);
+        $response_decode = json_decode($response, true);
 
         curl_close($curl);
-        echo $response;
 
+        if($response_decode && $response_decode['status']) {
+            if($response_decode['status'] == 'SUCCESS') {
+                return true;
+            }
+        }
+
+        return false;
+
+    }
+
+    private function checkVotePayment(){
+        $votes = vote::where('created_at', '>' , date('Y-m-d H:i:s', strtotime('-120 minutes')))->where('status', false)->get();
+
+        if($votes->isEmpty()) {
+            return true;
+        }
+
+        $token = $this->mobileMoneyToken();
+        foreach ($votes as $vote) {
+            $status = $this->mobileMoneyStatus($token, $vote->reference);
+            if($status == true) {
+                $vote->update(['status' => 1]);
+            }
+        }
+    }
+
+    public function sendWhatsappMsg($user, $password){
+
+        $msg = '*Congrats:* Your account has been created' . '\n\n';
+        $msg .= '*User name:* '. $user->name . '\n\n';
+        $msg .= '*Phone number:* '. $user->phone . '\n\n';
+        $msg .= '*Password:* '. $password . '\n\n';
+
+
+        $message = 'Quotation created successfully';
+        try{
+            $this->wpMessage($user->phone, $msg);
+        }
+        catch(\Exception $e){
+            $message = 'Quotation created successfully. Please setup your whatsapp setting.';
+        }
+
+        return $message;
     }
 
 }

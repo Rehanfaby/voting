@@ -9,18 +9,19 @@
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- CSS here -->
-    <link rel="stylesheet" href="{{ asset('frontend/css/css-bootstrap.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('frontend/css/css-meanmenu.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('frontend/css/css-nice-select.css') }}">
-    <link rel="stylesheet" href="{{ asset('frontend/css/css-swiper-bundle.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('frontend/css/css-slick.css') }}">
-    <link rel="stylesheet" href="{{ asset('frontend/css/css-jquery-ui.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('frontend/css/css-backtotop.css') }}">
-    <link rel="stylesheet" href="{{ asset('frontend/css/css-magnific-popup.css') }}">
-    <link rel="stylesheet" href="{{ asset('frontend/css/css-flaticon_musicly.css') }}">
-    <link rel="stylesheet" href="{{ asset('frontend/css/css-fontawesome-pro.css') }}">
-    <link rel="stylesheet" href="{{ asset('frontend/css/css-spacing.css') }}">
-    <link rel="stylesheet" href="{{ asset('frontend/css/css-main.css') }}">
+    <link rel="stylesheet" href="{{ asset('public/frontend/css/css-bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('public/frontend/css/css-meanmenu.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('public/frontend/css/css-nice-select.css') }}">
+    <link rel="stylesheet" href="{{ asset('public/frontend/css/css-swiper-bundle.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('public/frontend/css/css-slick.css') }}">
+    <link rel="stylesheet" href="{{ asset('public/frontend/css/css-jquery-ui.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('public/frontend/css/css-backtotop.css') }}">
+    <link rel="stylesheet" href="{{ asset('public/frontend/css/css-magnific-popup.css') }}">
+    <link rel="stylesheet" href="{{ asset('public/frontend/css/css-flaticon_musicly.css') }}">
+    <link rel="stylesheet" href="{{ asset('public/frontend/css/css-fontawesome-pro.css') }}">
+    <link rel="stylesheet" href="{{ asset('public/frontend/css/css-spacing.css') }}">
+    <link rel="stylesheet" href="{{ asset('public/frontend/css/css-main.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 
 <body>
@@ -89,8 +90,7 @@
                 <div class="mobile-menu fix mb-30  d-xl-none"></div>
                 <div class="hr-1 mt-30 mb-30 d-xl-none"></div>
                 <div class="offcanvas__btn mb-30">
-                    <a class="ms-border-btn" href="services.html"><i class="fa-solid fa-plus"></i> List Your
-                        Service</a>
+                    <a class="ms-border-btn" href="services.html"><i class="fa-solid fa-plus"></i> Vote your favourite candidate</a>
                 </div>
                 <div class="offcanvas__social">
                     <div class="ms-footer-social mb-0">
@@ -120,68 +120,6 @@
                                     <img src="{{url('public/logo', $general_setting->site_logo)}}" alt="logo not found">
                                 </a>
                             </div>
-                            <div class="d-none d-xxl-block">
-                                <div class="browse-filter p-relative ms-browse-act-wrap">
-                                    <div class="ms-browse-icon ms-cp">
-                                        <a class="browse-filter__text" href="javascript:void(0)"><i class="flaticon-options-lines"></i>
-                                            Browse Acts</a>
-                                    </div>
-                                    <div class="ms-browse-act-item-wrap p-absolute">
-                                        <div class="ms-song-item">
-                                            <div class="ms-song-img p-relative">
-                                                <a href="genres.html"><img src="{{ asset('frontend/images/genres-genres-01.jpg') }}" alt="brand-song"></a>
-                                            </div>
-                                            <div class="ms-song-content">
-                                                <h3 class="ms-song-title"><a href="genres.html">The Different
-                                                        Lights</a>
-                                                </h3>
-                                            </div>
-                                        </div>
-                                        <div class="ms-song-item">
-                                            <div class="ms-song-img p-relative">
-                                                <a href="genres.html"><img src="{{ asset('frontend/images/genres-genres-02.jpg') }}" alt="brand-song"></a>
-                                            </div>
-                                            <div class="ms-song-content">
-                                                <h3 class="ms-song-title"><a href="genres.html">The Sweet
-                                                        lockdown</a>
-                                                </h3>
-                                            </div>
-                                        </div>
-                                        <div class="ms-song-item">
-                                            <div class="ms-song-img p-relative">
-                                                <a href="genres.html"><img src="{{ asset('frontend/images/genres-genres-03.jpg') }}" alt="brand-song"></a>
-                                            </div>
-                                            <div class="ms-song-content">
-                                                <h3 class="ms-song-title"><a href="genres.html">The Sonics
-                                                        Corporate
-                                                        Band</a>
-                                                </h3>
-                                            </div>
-                                        </div>
-                                        <div class="ms-song-item">
-                                            <div class="ms-song-img p-relative">
-                                                <a href="genres.html"><img src="{{ asset('frontend/images/genres-genres-04.jpg') }}" alt="brand-song"></a>
-                                            </div>
-                                            <div class="ms-song-content">
-                                                <h3 class="ms-song-title"><a href="genres.html">The
-                                                        Northern
-                                                        Lights</a>
-                                                </h3>
-                                            </div>
-                                        </div>
-                                        <div class="ms-song-item">
-                                            <div class="ms-song-img p-relative">
-                                                <a href="genres.html"><img src="{{ asset('frontend/images/genres-genres-05.jpg') }}" alt="brand-song"></a>
-                                            </div>
-                                            <div class="ms-song-content">
-                                                <h3 class="ms-song-title"><a href="genres.html">The Sweet The
-                                                        Jets</a>
-                                                </h3>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                             <div class="header__right">
                                 <div class="mean__menu-wrapper">
                                     <div class="main-menu main-menu-ff-space">
@@ -202,59 +140,69 @@
                                         </div>
                                     </div>
                                 </div>
+                                @php
+                                    $user = Auth::user() ?? null;
+                                    if($user) {
+                                        $contestents = \App\vote::select('musician_id')->where('user_id', $user->id)->where('status', true)->groupBy('musician_id')->get()->toArray();
+                                    }
+                                @endphp
                                 <div class="header__action-inner d-flex align-items-center">
-                                    <div class="enquiry__list ml-10 mr-10 ms-browse-act-wrap p-relative">
-                                        <div class="ms-enquiry-box p-relative d-none d-xl-inline-flex">
-                                            <a href="#"><i class="flaticon-star icon"></i>
-                                                <span class="text">My contenstents</span> <span class="number">03</span></a>
-                                        </div>
-                                        <div class="ms-browse-act-item-wrap p-absolute">
-                                            <div class="ms-song-item">
-                                                <div class="ms-song-img p-relative">
-                                                    <a href="genres.html"><img src="{{ asset('frontend/images/genres-genres-03.jpg') }}" alt="brand-song"></a>
-                                                </div>
-                                                <div class="ms-song-content">
-                                                    <h3 class="ms-song-title"><a href="genres.html">The
-                                                            Sonics
-                                                            Corporate
-                                                            Band</a>
-                                                    </h3>
-                                                </div>
+                                    @if($user)
+                                        <div class="enquiry__list ml-10 mr-10 ms-browse-act-wrap p-relative">
+                                            <div class="ms-enquiry-box p-relative d-none d-xl-inline-flex">
+                                                <a href="#"><i class="flaticon-star icon"></i>
+                                                    <span class="text">My contenstents</span> <span class="number">{{ count($contestents) }}</span></a>
                                             </div>
-                                            <div class="ms-song-item">
-                                                <div class="ms-song-img p-relative">
-                                                    <a href="genres.html"><img src="{{ asset('frontend/images/genres-genres-04.jpg') }}" alt="brand-song"></a>
+                                            <div class="ms-browse-act-item-wrap p-absolute">
+                                                @foreach($contestents as $contestent)
+                                                    @php $musician = \App\Employee::find($contestent['musician_id']); @endphp
+                                                <div class="ms-song-item">
+                                                    <div class="ms-song-img p-relative">
+                                                        <a href="{{ route('musician.data', $musician->id) }}"><img src="{{url('public/images/employee',$musician->image)}}" alt="brand-song"></a>
+                                                    </div>
+                                                    <div class="ms-song-content">
+                                                        <h3 class="ms-song-title">
+                                                            <a href="{{ route('musician.data', $musician->id) }}">{{ $musician->name }}</a>
+                                                        </h3>
+                                                    </div>
                                                 </div>
-                                                <div class="ms-song-content">
-                                                    <h3 class="ms-song-title"><a href="genres.html">The
-                                                            Northern
-                                                            Lights</a>
-                                                    </h3>
-                                                </div>
-                                            </div>
-                                            <div class="ms-song-item">
-                                                <div class="ms-song-img p-relative">
-                                                    <a href="genres.html"><img src="{{ asset('frontend/images/genres-genres-05.jpg') }}" alt="brand-song"></a>
-                                                </div>
-                                                <div class="ms-song-content">
-                                                    <h3 class="ms-song-title"><a href="genres.html">The
-                                                            Sweet
-                                                            The
-                                                            Jets</a>
-                                                    </h3>
-                                                </div>
+                                                @endforeach
                                             </div>
                                         </div>
-                                    </div>
+                                    @endif
                                     <div class="header__btn">
-                                        <a href="join.html" class="ms-border-btn"><i class="fa-regular fa-plus"></i>List
-                                            Your Service</a>
+                                        <a href="{{ route('team') }}" class="ms-border-btn"><i class="fa-regular fa-plus"></i>Vote your favourite candidate</a>
                                     </div>
+                                    @if(!$user)
                                     <div class="user__acount d-none d-xxl-inline-flex">
                                             <span>
-                                                <a href="{{ route('user.signup') }}"><i class="flaticon-user"></i></a>
+                                                <a href="{{ route('user.login') }}"><i class="flaticon-user"></i></a>
                                             </span>
                                     </div>
+                                    @else
+                                        <div class="enquiry__list ml-10 mr-10 ms-browse-act-wrap p-relative">
+                                            <div class="ms-enquiry-box p-relative d-none d-xl-inline-flex">
+                                                <a href="#"><i class="flaticon-star icon"></i>
+                                                    <span class="text">{{ $user->name }}</span></a>
+                                            </div>
+                                            <div class="ms-browse-act-item-wrap p-absolute">
+                                                <div class="ms-song-item">
+                                                    <div class="ms-song-content">
+                                                        <h3 class="ms-song-title">
+                                                            <a href="{{ route('logout') }}"
+                                                               onclick="event.preventDefault();
+                                                                 document.getElementById('logout-form').submit();"><i class="dripicons-power"></i>
+                                                                {{trans('file.logout')}}
+                                                            </a>
+                                                            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                                                                @csrf
+                                                            </form>
+                                                        </h3>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
                                 </div>
                                 <div class="header__hamburger">
                                     <div class="sidebar__toggle">
@@ -280,96 +228,98 @@
             <!-- Footer Area Start Here  -->
             <footer>
                 <div class="ms-footer-bg ms-footer-overlay zindex-1 include__bg pt-120" data-background="assets/img/bg/sound-bg.png">
-                    <div class="ms-footer-top pt-130">
-                        <div class="container">
-                            <div class="ms-footer-border pb-10">
-                                <div class="row">
-                                    <div class="col-xxl-2 col-lg-3 col-md-6">
-                                        <div class="ms-footer-widget mb-50">
-                                            <h3 class="ms-footer-title">Local Band Group</h3>
-                                            <ul>
-                                                <li><a href="#">The Tricks</a></li>
-                                                <li><a href="#">Sound City</a></li>
-                                                <li><a href="#">Big Teaser</a></li>
-                                                <li><a href="#">The New Tones</a></li>
-                                                <li><a href="#">Halos Music</a></li>
-                                                <li><a href="#">Soho Soul</a></li>
-                                                <li><a href="#">Atlantic</a></li>
-                                                <li><a href="#">The Fiction</a></li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                    <div class="col-xxl-2 col-lg-3 col-md-6">
-                                        <div class="ms-footer-widget mb-50">
-                                            <h3 class="ms-footer-title">Trending Genres</h3>
-                                            <ul>
-                                                <li><a href="#">Wedding Bands</a></li>
-                                                <li><a href="#">Jazz &amp; Swing</a></li>
-                                                <li><a href="#">Musician</a></li>
-                                                <li><a href="#">Classical Musician</a></li>
-                                                <li><a href="#">Corporate Party</a></li>
-                                                <li><a href="#">Premiere Party Band</a></li>
-                                                <li><a href="#">DJ Songs</a></li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                    <div class="col-xxl-2 col-lg-3 col-md-6">
-                                        <div class="ms-footer-widget mb-50">
-                                            <h3 class="ms-footer-title">Country We Serve</h3>
-                                            <ul>
-                                                <li><a href="#">United State</a></li>
-                                                <li><a href="#">Canada</a></li>
-                                                <li><a href="#">Australia</a></li>
-                                                <li><a href="#">China</a></li>
-                                                <li><a href="#">South Korea</a></li>
-                                                <li><a href="#">Japan</a></li>
-                                                <li><a href="#">Singapore</a></li>
-                                                <li><a href="#">Hong Kong</a></li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                    <div class="col-xxl-2 col-lg-3 col-md-6">
-                                        <div class="ms-footer-widget mb-50">
-                                            <h3 class="ms-footer-title">Company</h3>
-                                            <ul>
-                                                <li><a href="#">About us</a></li>
-                                                <li><a href="#">Contact us</a></li>
-                                                <li><a href="#">Terms &amp; Policy</a></li>
-                                                <li><a href="#">Help &amp; Support</a></li>
-                                                <li><a href="#">Press</a></li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                    <div class="col-xxl-4 col-lg-5 col-md-6">
-                                        <div class="ms-footer-widget mb-50">
-                                            <h3 class="ms-footer-title">Subscribe Now</h3>
-                                            <div class="ms-subscribe-form mb-20 pt-5">
-                                                <i class="flaticon-mail"></i>
-                                                <input type="text" placeholder="Enter your mail">
-                                                <button type="submit" class="ms-subscribe-btn"><i class="fa-sharp fa-solid fa-paper-plane"></i></button>
-                                            </div>
-                                            <div class="ms-footer-warning mb-25">
-                                                <p>You Don&rsquo;t Get Any Spam Message !</p>
-                                            </div>
-                                            <div class="ms-footer-social">
-                                                <a href="https://www.linkedin.com/" title="Instagram" target="_blank">IN</a>
-                                                <a href="https://twitter.com/" title="Twitter" target="_blank">TW</a>
-                                                <a href="https://www.facebook.com/" title="Facebook" target="_blank">FB</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+{{--                    <div class="ms-footer-top pt-130">--}}
+{{--                        <div class="container">--}}
+{{--                            <div class="ms-footer-border pb-10">--}}
+{{--                                <div class="row">--}}
+{{--                                    <div class="col-xxl-2 col-lg-3 col-md-6">--}}
+{{--                                        <div class="ms-footer-widget mb-50">--}}
+{{--                                            <h3 class="ms-footer-title">Local Band Group</h3>--}}
+{{--                                            <ul>--}}
+{{--                                                <li><a href="#">The Tricks</a></li>--}}
+{{--                                                <li><a href="#">Sound City</a></li>--}}
+{{--                                                <li><a href="#">Big Teaser</a></li>--}}
+{{--                                                <li><a href="#">The New Tones</a></li>--}}
+{{--                                                <li><a href="#">Halos Music</a></li>--}}
+{{--                                                <li><a href="#">Soho Soul</a></li>--}}
+{{--                                                <li><a href="#">Atlantic</a></li>--}}
+{{--                                                <li><a href="#">The Fiction</a></li>--}}
+{{--                                            </ul>--}}
+{{--                                        </div>--}}
+{{--                                    </div>--}}
+{{--                                    <div class="col-xxl-2 col-lg-3 col-md-6">--}}
+{{--                                        <div class="ms-footer-widget mb-50">--}}
+{{--                                            <h3 class="ms-footer-title">Trending Genres</h3>--}}
+{{--                                            <ul>--}}
+{{--                                                <li><a href="#">Wedding Bands</a></li>--}}
+{{--                                                <li><a href="#">Jazz &amp; Swing</a></li>--}}
+{{--                                                <li><a href="#">Musician</a></li>--}}
+{{--                                                <li><a href="#">Classical Musician</a></li>--}}
+{{--                                                <li><a href="#">Corporate Party</a></li>--}}
+{{--                                                <li><a href="#">Premiere Party Band</a></li>--}}
+{{--                                                <li><a href="#">DJ Songs</a></li>--}}
+{{--                                            </ul>--}}
+{{--                                        </div>--}}
+{{--                                    </div>--}}
+{{--                                    <div class="col-xxl-2 col-lg-3 col-md-6">--}}
+{{--                                        <div class="ms-footer-widget mb-50">--}}
+{{--                                            <h3 class="ms-footer-title">Country We Serve</h3>--}}
+{{--                                            <ul>--}}
+{{--                                                <li><a href="#">United State</a></li>--}}
+{{--                                                <li><a href="#">Canada</a></li>--}}
+{{--                                                <li><a href="#">Australia</a></li>--}}
+{{--                                                <li><a href="#">China</a></li>--}}
+{{--                                                <li><a href="#">South Korea</a></li>--}}
+{{--                                                <li><a href="#">Japan</a></li>--}}
+{{--                                                <li><a href="#">Singapore</a></li>--}}
+{{--                                                <li><a href="#">Hong Kong</a></li>--}}
+{{--                                            </ul>--}}
+{{--                                        </div>--}}
+{{--                                    </div>--}}
+{{--                                    <div class="col-xxl-2 col-lg-3 col-md-6">--}}
+{{--                                        <div class="ms-footer-widget mb-50">--}}
+{{--                                            <h3 class="ms-footer-title">Company</h3>--}}
+{{--                                            <ul>--}}
+{{--                                                <li><a href="#">About us</a></li>--}}
+{{--                                                <li><a href="#">Contact us</a></li>--}}
+{{--                                                <li><a href="#">Terms &amp; Policy</a></li>--}}
+{{--                                                <li><a href="#">Help &amp; Support</a></li>--}}
+{{--                                                <li><a href="#">Press</a></li>--}}
+{{--                                            </ul>--}}
+{{--                                        </div>--}}
+{{--                                    </div>--}}
+{{--                                    <div class="col-xxl-4 col-lg-5 col-md-6">--}}
+{{--                                        <div class="ms-footer-widget mb-50">--}}
+{{--                                            <h3 class="ms-footer-title">Subscribe Now</h3>--}}
+{{--                                            <div class="ms-subscribe-form mb-20 pt-5">--}}
+{{--                                                <i class="flaticon-mail"></i>--}}
+{{--                                                <input type="text" placeholder="Enter your mail">--}}
+{{--                                                <button type="submit" class="ms-subscribe-btn"><i class="fa-sharp fa-solid fa-paper-plane"></i></button>--}}
+{{--                                            </div>--}}
+{{--                                            <div class="ms-footer-warning mb-25">--}}
+{{--                                                <p>You Don&rsquo;t Get Any Spam Message !</p>--}}
+{{--                                            </div>--}}
+{{--                                            <div class="ms-footer-social">--}}
+{{--                                                <a href="https://www.linkedin.com/" title="Instagram" target="_blank">IN</a>--}}
+{{--                                                <a href="https://twitter.com/" title="Twitter" target="_blank">TW</a>--}}
+{{--                                                <a href="https://www.facebook.com/" title="Facebook" target="_blank">FB</a>--}}
+{{--                                            </div>--}}
+{{--                                        </div>--}}
+{{--                                    </div>--}}
+{{--                                </div>--}}
+{{--                            </div>--}}
+{{--                        </div>--}}
+{{--                    </div>--}}
                     <div class="ms-footer-bottom">
                         <div class="container">
                             <div class="ms-footer-bottom-wrap align-items-center d-flex flex-wrap justify-content-between pt-35 pb-20">
                                 <div class="ms-footer-logo mb-15">
-                                    <a href="index.html"><img src="{{ asset('frontend/images/logo-footer-logo.png') }}" alt="logo"></a>
+                                    <a href="{{ route('home') }}">
+                                        <img src="{{url('public/logo', $general_setting->site_logo)}}" alt="logo">
+                                    </a>
                                 </div>
                                 <div class="ms-footer-copy">
-                                    <p>&copy; Musicly 2023, All Rights Reserved</p>
+                                    <p>{{ $general_setting->developed_by }}</p>
                                 </div>
                             </div>
                         </div>

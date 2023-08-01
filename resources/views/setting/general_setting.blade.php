@@ -190,8 +190,8 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label>{{trans('file.Letter Serial No.')}}</label>
-                                        <input type="text" name="letter_serial_no" class="form-control" value="{{$lims_general_setting_data->letter_serial_no}}">
+                                        <label>1 vote Price</label>
+                                        <input type="text" name="vote_price" class="form-control" value="{{$lims_general_setting_data->vote_price}}">
                                     </div>
                                 </div>
                             </div>

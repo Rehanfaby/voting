@@ -80,7 +80,7 @@ class SettingController extends Controller
         $general_setting->developed_by = $data['developed_by'];
         $general_setting->invoice_format = $data['invoice_format'];
         $general_setting->state = $data['state'];
-        $general_setting->letter_serial_no = $data['letter_serial_no'];
+        $general_setting->vote_price = $data['vote_price'];
         $logo = $request->site_logo;
         $email_header = $request->email_header;
         $email_footer = $request->email_footer;
