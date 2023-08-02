@@ -60,7 +60,7 @@
                 <div class="offcanvas__top mb-40 d-flex justify-content-between align-items-center">
                     <div class="offcanvas__logo">
                         <a href="{{ route('home') }}">
-                            <img src="{{url('public/logo', $general_setting->site_logo)}}" alt="logo">
+                            <img src="{{url('public/logo', $general_setting->site_logo)}}" alt="logo" style="height: 100px">
                         </a>
                     </div>
                     <div class="offcanvas__close">
@@ -76,7 +76,7 @@
                             </span>
                         <div class="user__name-mail">
                             <h4 class="user__name"><a href="javascript:void(0)">Johnson</a></h4>
-                            <p class="user__mail"><a href="email-protection.html" class="__cf_email__" data-cfemail="63090c0b0d100c0d231406010e020a0f4d000c0e">[email&nbsp;protected]</a></p>
+                            <p class="user__mail"><a href="" class="__cf_email__" data-cfemail="63090c0b0d100c0d231406010e020a0f4d000c0e">[email&nbsp;protected]</a></p>
                         </div>
                     </div>
                 </div>
@@ -143,15 +143,21 @@
                                 @php
                                     $user = Auth::user() ?? null;
                                     if($user) {
-                                        $contestents = \App\vote::select('musician_id')->where('user_id', $user->id)->where('status', true)->groupBy('musician_id')->get()->toArray();
+                                        $contestents = \App\vote::select('musician_id')->where('user_id', $user->id)->groupBy('musician_id')->get()->toArray();
                                     }
                                 @endphp
                                 <div class="header__action-inner d-flex align-items-center">
                                     @if($user)
                                         <div class="enquiry__list ml-10 mr-10 ms-browse-act-wrap p-relative">
                                             <div class="ms-enquiry-box p-relative d-none d-xl-inline-flex">
-                                                <a href="#"><i class="flaticon-star icon"></i>
-                                                    <span class="text">My contenstents</span> <span class="number">{{ count($contestents) }}</span></a>
+                                                <a href="{{ route('user.contentant') }}">
+                                                    <span class="text">My Votes</span></a>
+                                            </div>
+                                        </div>
+                                        <div class="enquiry__list ml-10 mr-10 ms-browse-act-wrap p-relative">
+                                            <div class="ms-enquiry-box p-relative d-none d-xl-inline-flex">
+                                                <a href="{{ route('user.contentant') }}"><i class="flaticon-star icon"></i>
+                                                    <span class="text">My contenstants</span> <span class="number">{{ count($contestents) }}</span></a>
                                             </div>
                                             <div class="ms-browse-act-item-wrap p-absolute">
                                                 @foreach($contestents as $contestent)
@@ -357,7 +363,7 @@
             <script src="{{ asset('public/frontend/js/js-ScrollTrigger.min.js') }}"></script>
             <script src="{{ asset('public/frontend/js/js-jquery.jplayer.min.js') }}"></script>
             <script src="{{ asset('public/frontend/js/js-jplayer.playlist.js') }}"></script>
-            <script src="{{ asset('public/frontend/js/js-settings.js') }}"></script>
+{{--            <script src="{{ asset('public/frontend/js/js-settings.js') }}"></script>--}}
             <script src="{{ asset('public/frontend/js/js-main.js') }}"></script>
       </body>
 

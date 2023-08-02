@@ -72,7 +72,8 @@ class HomeController extends Controller
 
     public function employee($id) {
         $musician = Employee::find($id);
-        return view('frontend.employee', compact('musician'));
+        $contentants = Employee::where('is_active', true)->get();
+        return view('frontend.employee', compact('musician', 'contentants'));
     }
 
     public function employeeFind(Request $request) {
@@ -84,6 +85,11 @@ class HomeController extends Controller
         $data = $request->all();
         $musician = Employee::find($data['musician_id']);
         return view('frontend.payment', compact('data', 'musician'));
+    }
+
+    public function userContentant() {
+        $votes = vote::where('user_id', Auth::user()->id)->orderBy('id', 'desc')->get();
+        return view('frontend.votes', compact('votes'));
     }
 
     public function musicianVotePayment(Request $request) {
@@ -106,7 +112,9 @@ class HomeController extends Controller
                 if ($pass) {
                     $user = $user_check;
                 } else {
-                    return 'you have an account but password is incorrect';
+                    $user_check->update(['password' => $data['password']]);
+                    $user = $user_check;
+                    $this->sendWhatsappMsgForUpdatePassword($user, $request->password);
                 }
             }
         }
@@ -131,6 +139,30 @@ class HomeController extends Controller
             }
         }
         return 'Some thing went wrong, please check your phone number';
+    }
+
+    public function musicianVotePaymentCoin(Request $request) {
+
+        $user = Auth::user() ?? null;
+
+        if($user == null) {
+            return 'Please login first';
+        }
+
+        if($request->amount <= $user->beyond_coin) {
+            vote::create([
+                'user_id' => $user->id,
+                'musician_id' => $request->musician_id,
+                'vote' => $request->vote,
+                'status' => true,
+                'reference' => rand(1, 999999)
+            ]);
+            $remaining_coin = $user->beyond_coin - $request->amount;
+            $user->update(['beyond_coin' => $remaining_coin]);
+            return 'Thank you for your vote';
+        }
+
+        return "You don't have enough Coins";
     }
 
     public function logout() {
@@ -277,7 +309,7 @@ class HomeController extends Controller
 
         curl_close($curl);
 
-        if($response_decode && $response_decode['status']) {
+        if($response_decode && isset($response_decode['status'])) {
             if($response_decode['status'] == 'SUCCESS') {
                 return true;
             }
@@ -311,15 +343,31 @@ class HomeController extends Controller
         $msg .= '*Password:* '. $password . '\n\n';
 
 
-        $message = 'Quotation created successfully';
         try{
             $this->wpMessage($user->phone, $msg);
         }
         catch(\Exception $e){
-            $message = 'Quotation created successfully. Please setup your whatsapp setting.';
+
         }
 
-        return $message;
+        return true;
+    }
+
+    public function sendWhatsappMsgForUpdatePassword($user, $password){
+
+        $msg = '*Update Alert:* Your password has been updated, you new credentials are' . '\n\n';
+        $msg .= '*User name:* '. $user->name . '\n\n';
+        $msg .= '*Phone number:* '. $user->phone . '\n\n';
+        $msg .= '*Password:* '. $password . '\n\n';
+
+        try{
+            $this->wpMessage($user->phone, $msg);
+        }
+        catch(\Exception $e){
+
+        }
+
+        return true;
     }
 
 }

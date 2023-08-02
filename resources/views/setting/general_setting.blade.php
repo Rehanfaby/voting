@@ -35,39 +35,39 @@
                                     </span>
                                     @endif
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Email Header </label>
-                                        <input type="file" name="email_header" class="form-control" value=""/>
-                                    </div>
-                                    @if($errors->has('email_header'))
-                                        <span>
-                                       <strong>{{ $errors->first('email_header') }}</strong>
-                                    </span>
-                                    @endif
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Email Footer</label>
-                                        <input type="file" name="email_footer" class="form-control" value=""/>
-                                    </div>
-                                    @if($errors->has('email_footer'))
-                                        <span>
-                                       <strong>{{ $errors->first('email_footer') }}</strong>
-                                    </span>
-                                    @endif
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Email Water Mark</label>
-                                        <input type="file" name="email_water_mark" class="form-control" value=""/>
-                                    </div>
-                                    @if($errors->has('email_water_mark'))
-                                        <span>
-                                       <strong>{{ $errors->first('email_water_mark') }}</strong>
-                                    </span>
-                                    @endif
-                                </div>
+{{--                                <div class="col-md-6">--}}
+{{--                                    <div class="form-group">--}}
+{{--                                        <label>Email Header </label>--}}
+{{--                                        <input type="file" name="email_header" class="form-control" value=""/>--}}
+{{--                                    </div>--}}
+{{--                                    @if($errors->has('email_header'))--}}
+{{--                                        <span>--}}
+{{--                                       <strong>{{ $errors->first('email_header') }}</strong>--}}
+{{--                                    </span>--}}
+{{--                                    @endif--}}
+{{--                                </div>--}}
+{{--                                <div class="col-md-6">--}}
+{{--                                    <div class="form-group">--}}
+{{--                                        <label>Email Footer</label>--}}
+{{--                                        <input type="file" name="email_footer" class="form-control" value=""/>--}}
+{{--                                    </div>--}}
+{{--                                    @if($errors->has('email_footer'))--}}
+{{--                                        <span>--}}
+{{--                                       <strong>{{ $errors->first('email_footer') }}</strong>--}}
+{{--                                    </span>--}}
+{{--                                    @endif--}}
+{{--                                </div>--}}
+{{--                                <div class="col-md-6">--}}
+{{--                                    <div class="form-group">--}}
+{{--                                        <label>Email Water Mark</label>--}}
+{{--                                        <input type="file" name="email_water_mark" class="form-control" value=""/>--}}
+{{--                                    </div>--}}
+{{--                                    @if($errors->has('email_water_mark'))--}}
+{{--                                        <span>--}}
+{{--                                       <strong>{{ $errors->first('email_water_mark') }}</strong>--}}
+{{--                                    </span>--}}
+{{--                                    @endif--}}
+{{--                                </div>--}}
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>{{trans('file.Currency')}} *</label>
@@ -82,7 +82,7 @@
                                         </select>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-6 d-none">
                                     <div class="form-group">
                                         <label>{{trans('file.Currency Position')}} *</label><br>
                                         @if($lims_general_setting_data->currency_position == 'prefix')
@@ -102,7 +102,7 @@
                                         @endif
                                     </div>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-6 d-none">
                                     <div class="form-group">
                                         <label>{{trans('file.Time Zone')}}</label>
                                         @if($lims_general_setting_data)
@@ -126,7 +126,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-6 d-none">
                                     <div class="form-group">
                                         <label>{{trans('file.Staff Access')}} *</label>
                                         @if($lims_general_setting_data)
@@ -138,7 +138,7 @@
                                         </select>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-6 d-none">
                                     <div class="form-group">
                                         <label>{{trans('file.Invoice Format')}} *</label>
                                         @if($lims_general_setting_data)
@@ -163,7 +163,7 @@
                                         </select>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-6 d-none">
                                     <div class="form-group">
                                         <label>{{trans('file.Date Format')}} *</label>
                                         @if($lims_general_setting_data)
@@ -192,6 +192,12 @@
                                     <div class="form-group">
                                         <label>1 vote Price</label>
                                         <input type="text" name="vote_price" class="form-control" value="{{$lims_general_setting_data->vote_price}}">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>1 vote Beyond Coin</label>
+                                        <input type="text" name="vote_coin" class="form-control" value="{{$lims_general_setting_data->vote_coin}}">
                                     </div>
                                 </div>
                             </div>

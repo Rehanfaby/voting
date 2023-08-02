@@ -35,6 +35,34 @@ class UserController extends Controller
             return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
     }
 
+    public function admin()
+    {
+        $role = Role::find(Auth::user()->role_id);
+        if($role->hasPermissionTo('users-index')){
+            $permissions = Role::findByName($role->name)->permissions;
+            foreach ($permissions as $permission)
+                $all_permission[] = $permission->name;
+            $lims_user_list = User::where('is_deleted', false)->where('role_id', 1)->get();
+            return view('user.admin', compact('lims_user_list', 'all_permission'));
+        }
+        else
+            return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
+    }
+
+    public function voter()
+    {
+        $role = Role::find(Auth::user()->role_id);
+        if($role->hasPermissionTo('users-index')){
+            $permissions = Role::findByName($role->name)->permissions;
+            foreach ($permissions as $permission)
+                $all_permission[] = $permission->name;
+            $lims_user_list = User::where('is_deleted', false)->where('role_id', 3)->get();
+            return view('user.voter', compact('lims_user_list', 'all_permission'));
+        }
+        else
+            return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
+    }
+
     public function create()
     {
         $role = Role::find(Auth::user()->role_id);
@@ -148,33 +176,7 @@ class UserController extends Controller
             ],
         ]);
 
-        $this->validate($request, [
-            'sign' => 'image|mimes:jpg,jpeg,png,gif,svg|max:10000',
-        ]);
-
-        $this->validate($request, [
-            'stemp' => 'image|mimes:jpg,jpeg,png,gif,svg|max:10000',
-        ]);
-
         $input = $request->except('sign', 'stemp', 'password');
-        $sign = $request->sign;
-        $stemp = $request->stemp;
-        if ($sign) {
-            $ext = pathinfo($sign->getClientOriginalName(), PATHINFO_EXTENSION);
-            $imageName = preg_replace('/[^a-zA-Z0-9]/', '', $request['sign']);
-            $imageName = $imageName . '.' . $ext;
-            $sign->move('public/images/user', $imageName);
-
-            $input['sign'] = $imageName;
-        }
-        if ($stemp) {
-            $ext = pathinfo($stemp->getClientOriginalName(), PATHINFO_EXTENSION);
-            $imageName = preg_replace('/[^a-zA-Z0-9]/', '', $request['stemp']);
-            $imageName = $imageName . '.' . $ext;
-            $stemp->move('public/images/user', $imageName);
-
-            $input['stemp'] = $imageName;
-        }
 
         if(!isset($input['is_active']))
             $input['is_active'] = false;

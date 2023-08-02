@@ -38,7 +38,59 @@
 						        </thead>
 						        <tbody>
 
-						        <tr>
+                                <tr>
+                                    <td>Votes</td>
+                                    <td class="text-center">
+                                        <div class="icheckbox_square-blue checked" aria-checked="false" aria-disabled="false">
+                                            <div class="checkbox">
+                                                @if(in_array("votes-index", $all_permission))
+                                                    <input type="checkbox" value="1" id="votes-index" name="votes-index" checked />
+                                                @else
+                                                    <input type="checkbox" value="1" id="votes-index" name="votes-index">
+                                                @endif
+                                                <label for="votes-index"></label>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="icheckbox_square-blue checked" aria-checked="false" aria-disabled="false">
+                                            <div class="checkbox">
+                                                @if(in_array("votes-add", $all_permission))
+                                                    <input type="checkbox" value="1" id="votes-add" name="votes-add" checked />
+                                                @else
+                                                    <input type="checkbox" value="1" id="votes-add" name="votes-add">
+                                                @endif
+                                                <label for="votes-add"></label>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="icheckbox_square-blue" aria-checked="false" aria-disabled="false">
+                                            <div class="checkbox">
+                                                @if(in_array("votes-edit", $all_permission))
+                                                    <input type="checkbox" value="1" id="votes-edit" name="votes-edit" checked>
+                                                @else
+                                                    <input type="checkbox" value="1" id="votes-edit" name="votes-edit">
+                                                @endif
+                                                <label for="votes-edit"></label>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="icheckbox_square-blue" aria-checked="false" aria-disabled="false">
+                                            <div class="checkbox">
+                                                @if(in_array("votes-delete", $all_permission))
+                                                    <input type="checkbox" value="1" id="votes-delete" name="votes-delete" checked>
+                                                @else
+                                                    <input type="checkbox" value="1" id="votes-delete" name="votes-delete">
+                                                @endif
+                                                <label for="votes-delete"></label>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
 						            <td>{{trans('file.Expense')}}</td>
 						            <td class="text-center">
 						                <div class="icheckbox_square-blue checked" aria-checked="false" aria-disabled="false">

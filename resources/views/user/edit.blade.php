@@ -73,7 +73,10 @@
                                           @endforeach
                                         </select>
                                     </div>
-
+                                    <div class="form-group mt-3">
+                                        <label><strong>Beyond Coin *</strong></label>
+                                        <input type="text" name="beyond_coin" required class="form-control" value="{{$lims_user_data->beyond_coin}}">
+                                    </div>
                                 </div>
                             </div>
                         {!! Form::close() !!}

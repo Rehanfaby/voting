@@ -72,12 +72,327 @@
                                     </div>
                                 </div>
                             </form>
+                            <div class="ms-is-product-stock mb-25 ms-product-title2">Your payable amount is : <span id="payable-amount" style="font-size: 30px">{{ $general_setting->vote_price }}</span> {{ $currency->code }}</div>
+                            OR
+                            <div class="ms-is-product-stock mt-25 ms-product-title2">Your payable coin is : <span id="payable-coin" style="font-size: 30px">{{ $general_setting->vote_coin }}</span> Beyond Coin</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <!-- Products Area End  -->
+
+
+
+        <!-- Popular  area start -->
+        <section class="ms-popular__area pb-100 fix">
+            <div class="container">
+                <div class="row align-items-end mb-25 bdFadeUp">
+                    <div class="col-xl-6 col-lg-6">
+                        <div class="section__title-wrapper mb-40 bd-title-anim">
+                            <span class="section__subtitle">Our Popular Contestants</span>
+                            <h2 class="section__title msg_title">
+                                <span class="animated-underline active">Vote</span> <br>
+                                Your favourite Contestant
+                            </h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="row bdFadeUp">
+                    <div class="col-xxl-12">
+                        <div class="tab-content" id="nav-tabContent">
+                            <div class="tab-pane fade show active" id="nav-popular-1" role="tabpanel" aria-labelledby="nav-popular-1-tab" tabindex="0">
+                                <div class="swiper-container ms-popular-active fix">
+                                    <div class="swiper-wrapper">
+                                        @foreach($contentants as $contentant)
+                                        <div class="swiper-slide">
+                                            <div class="ms-popular__item p-relative mb-30">
+                                                <div class="ms-popular__thumb">
+                                                    <div class="ms-popular-overlay"></div>
+                                                    <a href="{{ route('musician.data', $contentant->id) }}"><img src="{{url('public/images/employee',$contentant->image)}}" alt="popular band"></a>
+                                                    <a href="{{ route('musician.data', $contentant->id) }}" class="ms-popular__link">
+                                                        <span class="ms-popular-icon"><i class="fa-regular fa-arrow-right-long"></i></span>
+                                                    </a>
+                                                </div>
+                                                <h4 class="ms-popular__title"><a href="{{ route('musician.data', $contentant->id) }}">
+                                                        {{ $contentant->name }}
+                                                    </a></h4>
+                                            </div>
+                                        </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="nav-popular-2" role="tabpanel" aria-labelledby="nav-popular-2-tab" tabindex="0">
+                                <div class="swiper-container ms-popular-active fix">
+                                    <div class="swiper-wrapper">
+
+                                        <div class="swiper-slide">
+                                            <div class="ms-popular__item p-relative mb-30">
+                                                <div class="ms-popular__thumb">
+                                                    <div class="ms-popular-overlay"></div>
+                                                    <a href="genres-details.html"><img src="{{ asset('public/frontend/images/popular-popular-03.png') }}" alt="popular band"></a>
+                                                    <a href="genres-details.html" class="ms-popular__link">
+                                                        <span class="ms-popular-icon"><i class="fa-regular fa-arrow-right-long"></i></span>
+                                                    </a>
+                                                </div>
+                                                <h4 class="ms-popular__title"><a href="genres-details.html">Tributes</a>
+                                                </h4>
+                                            </div>
+                                        </div>
+                                        <div class="swiper-slide">
+                                            <div class="ms-popular__item p-relative mb-30">
+                                                <div class="ms-popular__thumb">
+                                                    <div class="ms-popular-overlay"></div>
+                                                    <a href="genres-details.html"><img src="{{ asset('public/frontend/images/popular-popular-04.png') }}" alt="popular band"></a>
+                                                    <a href="genres-details.html" class="ms-popular__link">
+                                                        <span class="ms-popular-icon"><i class="fa-regular fa-arrow-right-long"></i></span>
+                                                    </a>
+                                                </div>
+                                                <h4 class="ms-popular__title"><a href="genres-details.html">Solo
+                                                        Musicians
+                                                    </a></h4>
+                                            </div>
+                                        </div>
+                                        <div class="swiper-slide">
+                                            <div class="ms-popular__item p-relative mb-30">
+                                                <div class="ms-popular__thumb">
+                                                    <div class="ms-popular-overlay"></div>
+                                                    <a href="genres-details.html"><img src="{{ asset('public/frontend/images/popular-popular-01.png') }}" alt="popular band"></a>
+                                                    <a href="genres-details.html" class="ms-popular__link">
+                                                        <span class="ms-popular-icon"><i class="fa-regular fa-arrow-right-long"></i></span>
+                                                    </a>
+                                                </div>
+                                                <h4 class="ms-popular__title"><a href="genres-details.html">Singers</a>
+                                                </h4>
+                                            </div>
+                                        </div>
+                                        <div class="swiper-slide">
+                                            <div class="ms-popular__item p-relative mb-30">
+                                                <div class="ms-popular__thumb">
+                                                    <div class="ms-popular-overlay"></div>
+                                                    <a href="genres-details.html"><img src="{{ asset('public/frontend/images/popular-popular-02.png') }}" alt="popular band"></a>
+                                                    <a href="genres-details.html" class="ms-popular__link">
+                                                        <span class="ms-popular-icon"><i class="fa-regular fa-arrow-right-long"></i></span>
+                                                    </a>
+                                                </div>
+                                                <h4 class="ms-popular__title"><a href="genres-details.html">Bands &amp;
+                                                        Group</a>
+                                                </h4>
+                                            </div>
+                                        </div>
+
+                                        <div class="swiper-slide">
+                                            <div class="ms-popular__item p-relative mb-30">
+                                                <div class="ms-popular__thumb">
+                                                    <div class="ms-popular-overlay"></div>
+                                                    <a href="genres-details.html"><img src="{{ asset('public/frontend/images/popular-popular-03.png') }}" alt="popular band"></a>
+                                                    <a href="genres-details.html" class="ms-popular__link">
+                                                        <span class="ms-popular-icon"><i class="fa-regular fa-arrow-right-long"></i></span>
+                                                    </a>
+                                                </div>
+                                                <h4 class="ms-popular__title"><a href="genres-details.html">Tributes</a>
+                                                </h4>
+                                            </div>
+                                        </div>
+                                        <div class="swiper-slide">
+                                            <div class="ms-popular__item p-relative mb-30">
+                                                <div class="ms-popular__thumb">
+                                                    <div class="ms-popular-overlay"></div>
+                                                    <a href="genres-details.html"><img src="{{ asset('public/frontend/images/popular-popular-04.png') }}" alt="popular band"></a>
+                                                    <a href="genres-details.html" class="ms-popular__link">
+                                                        <span class="ms-popular-icon"><i class="fa-regular fa-arrow-right-long"></i></span>
+                                                    </a>
+                                                </div>
+                                                <h4 class="ms-popular__title"><a href="genres-details.html">Solo
+                                                        Musicians
+                                                    </a></h4>
+                                            </div>
+                                        </div>
+                                        <div class="swiper-slide">
+                                            <div class="ms-popular__item p-relative mb-30">
+                                                <div class="ms-popular__thumb">
+                                                    <div class="ms-popular-overlay"></div>
+                                                    <a href="genres-details.html"><img src="{{ asset('public/frontend/images/popular-popular-01.png') }}" alt="popular band"></a>
+                                                    <a href="genres-details.html" class="ms-popular__link">
+                                                        <span class="ms-popular-icon"><i class="fa-regular fa-arrow-right-long"></i></span>
+                                                    </a>
+                                                </div>
+                                                <h4 class="ms-popular__title"><a href="genres-details.html">Singers</a>
+                                                </h4>
+                                            </div>
+                                        </div>
+                                        <div class="swiper-slide">
+                                            <div class="ms-popular__item p-relative mb-30">
+                                                <div class="ms-popular__thumb">
+                                                    <div class="ms-popular-overlay"></div>
+                                                    <a href="genres-details.html"><img src="{{ asset('public/frontend/images/popular-popular-02.png') }}" alt="popular band"></a>
+                                                    <a href="genres-details.html" class="ms-popular__link">
+                                                        <span class="ms-popular-icon"><i class="fa-regular fa-arrow-right-long"></i></span>
+                                                    </a>
+                                                </div>
+                                                <h4 class="ms-popular__title"><a href="genres-details.html">Bands &amp;
+                                                        Group</a>
+                                                </h4>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="nav-popular-3" role="tabpanel" aria-labelledby="nav-popular-3-tab" tabindex="0">
+                                <div class="swiper-container ms-popular-active fix">
+                                    <div class="swiper-wrapper">
+
+                                        <div class="swiper-slide">
+                                            <div class="ms-popular__item p-relative mb-30">
+                                                <div class="ms-popular__thumb">
+                                                    <div class="ms-popular-overlay"></div>
+                                                    <a href="genres-details.html"><img src="{{ asset('public/frontend/images/popular-popular-04.png') }}" alt="popular band"></a>
+                                                    <a href="genres-details.html" class="ms-popular__link">
+                                                        <span class="ms-popular-icon"><i class="fa-regular fa-arrow-right-long"></i></span>
+                                                    </a>
+                                                </div>
+                                                <h4 class="ms-popular__title"><a href="genres-details.html">Solo
+                                                        Musicians
+                                                    </a></h4>
+                                            </div>
+                                        </div>
+                                        <div class="swiper-slide">
+                                            <div class="ms-popular__item p-relative mb-30">
+                                                <div class="ms-popular__thumb">
+                                                    <div class="ms-popular-overlay"></div>
+                                                    <a href="genres-details.html"><img src="{{ asset('public/frontend/images/popular-popular-01.png') }}" alt="popular band"></a>
+                                                    <a href="genres-details.html" class="ms-popular__link">
+                                                        <span class="ms-popular-icon"><i class="fa-regular fa-arrow-right-long"></i></span>
+                                                    </a>
+                                                </div>
+                                                <h4 class="ms-popular__title"><a href="genres-details.html">Singers</a>
+                                                </h4>
+                                            </div>
+                                        </div>
+                                        <div class="swiper-slide">
+                                            <div class="ms-popular__item p-relative mb-30">
+                                                <div class="ms-popular__thumb">
+                                                    <div class="ms-popular-overlay"></div>
+                                                    <a href="genres-details.html"><img src="{{ asset('public/frontend/images/popular-popular-02.png') }}" alt="popular band"></a>
+                                                    <a href="genres-details.html" class="ms-popular__link">
+                                                        <span class="ms-popular-icon"><i class="fa-regular fa-arrow-right-long"></i></span>
+                                                    </a>
+                                                </div>
+                                                <h4 class="ms-popular__title"><a href="genres-details.html">Bands &amp;
+                                                        Group</a>
+                                                </h4>
+                                            </div>
+                                        </div>
+                                        <div class="swiper-slide">
+                                            <div class="ms-popular__item p-relative mb-30">
+                                                <div class="ms-popular__thumb">
+                                                    <div class="ms-popular-overlay"></div>
+                                                    <a href="genres-details.html"><img src="{{ asset('public/frontend/images/popular-popular-03.png') }}" alt="popular band"></a>
+                                                    <a href="genres-details.html" class="ms-popular__link">
+                                                        <span class="ms-popular-icon"><i class="fa-regular fa-arrow-right-long"></i></span>
+                                                    </a>
+                                                </div>
+                                                <h4 class="ms-popular__title"><a href="genres-details.html">Tributes</a>
+                                                </h4>
+                                            </div>
+                                        </div>
+                                        <div class="swiper-slide">
+                                            <div class="ms-popular__item p-relative mb-30">
+                                                <div class="ms-popular__thumb">
+                                                    <div class="ms-popular-overlay"></div>
+                                                    <a href="genres-details.html"><img src="{{ asset('public/frontend/images/popular-popular-01.png') }}" alt="popular band"></a>
+                                                    <a href="genres-details.html" class="ms-popular__link">
+                                                        <span class="ms-popular-icon"><i class="fa-regular fa-arrow-right-long"></i></span>
+                                                    </a>
+                                                </div>
+                                                <h4 class="ms-popular__title"><a href="genres-details.html">Singers</a>
+                                                </h4>
+                                            </div>
+                                        </div>
+                                        <div class="swiper-slide">
+                                            <div class="ms-popular__item p-relative mb-30">
+                                                <div class="ms-popular__thumb">
+                                                    <div class="ms-popular-overlay"></div>
+                                                    <a href="genres-details.html"><img src="{{ asset('public/frontend/images/popular-popular-02.png') }}" alt="popular band"></a>
+                                                    <a href="genres-details.html" class="ms-popular__link">
+                                                        <span class="ms-popular-icon"><i class="fa-regular fa-arrow-right-long"></i></span>
+                                                    </a>
+                                                </div>
+                                                <h4 class="ms-popular__title"><a href="genres-details.html">Bands &amp;
+                                                        Group</a>
+                                                </h4>
+                                            </div>
+                                        </div>
+                                        <div class="swiper-slide">
+                                            <div class="ms-popular__item p-relative mb-30">
+                                                <div class="ms-popular__thumb">
+                                                    <div class="ms-popular-overlay"></div>
+                                                    <a href="genres-details.html"><img src="{{ asset('public/frontend/images/popular-popular-03.png') }}" alt="popular band"></a>
+                                                    <a href="genres-details.html" class="ms-popular__link">
+                                                        <span class="ms-popular-icon"><i class="fa-regular fa-arrow-right-long"></i></span>
+                                                    </a>
+                                                </div>
+                                                <h4 class="ms-popular__title"><a href="genres-details.html">Tributes</a>
+                                                </h4>
+                                            </div>
+                                        </div>
+                                        <div class="swiper-slide">
+                                            <div class="ms-popular__item p-relative mb-30">
+                                                <div class="ms-popular__thumb">
+                                                    <div class="ms-popular-overlay"></div>
+                                                    <a href="genres-details.html"><img src="{{ asset('public/frontend/images/popular-popular-04.png') }}" alt="popular band"></a>
+                                                    <a href="genres-details.html" class="ms-popular__link">
+                                                        <span class="ms-popular-icon"><i class="fa-regular fa-arrow-right-long"></i></span>
+                                                    </a>
+                                                </div>
+                                                <h4 class="ms-popular__title"><a href="genres-details.html">Solo
+                                                        Musicians
+                                                    </a></h4>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Popular  area end -->
+
+
+        <script>
+
+            /*======================================
+             Cart Quantity Js
+            ========================================*/
+            $(".cart-minus").on("click",function () {
+                var $input = $(this).parent().find("input");
+                var count = parseInt($input.val()) - 1;
+                count = count < 1 ? 1 : count;
+                var price = count * {{ $general_setting->vote_price }};
+                $("#payable-amount").html(price);
+                var coin = count * {{ $general_setting->vote_coin }};
+                $("#payable-coin").html(coin);
+                $input.val(count);
+                $input.change();
+                return false;
+            });
+
+            $(".cart-plus").on("click",function () {
+                var $input = $(this).parent().find("input");
+                var count = parseInt($input.val()) + 1;
+                count = count < 1 ? 1 : count;
+                var price = count * {{ $general_setting->vote_price }};
+                $("#payable-amount").html(price);
+                var coin = count * {{ $general_setting->vote_coin }};
+                $("#payable-coin").html(coin);
+                $input.val(count);
+                $input.change();
+                return false;
+            });
+        </script>
 
     </main>
 @endsection

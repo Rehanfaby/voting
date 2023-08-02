@@ -22,11 +22,13 @@ Route::group(['middleware' => 'auth'], function() {
 Route::get('/', 'HomeController@index')->name('home');
 Route::get('user/signup', 'HomeController@signup')->name('user.signup');
 Route::get('user/login', 'HomeController@login')->name('user.login');
+Route::get('user/contentant', 'HomeController@userContentant')->name('user.contentant');
 Route::get('musician/data/{id}', 'HomeController@employee')->name('musician.data');
 Route::post('musician/find', 'HomeController@employeeFind')->name('musician.find');
 Route::post('musician/vote', 'HomeController@employeeVote')->name('musician.vote');
 Route::get('musician/team', 'HomeController@team')->name('team');
 Route::get('musician/vote/payment', 'HomeController@musicianVotePayment')->name('musician.vote.payment');
+Route::get('musician/vote/payment/coin', 'HomeController@musicianVotePaymentCoin')->name('musician.vote.payment.coin');
 
 
 
@@ -83,18 +85,25 @@ Route::group(['middleware' => ['auth', 'active']], function() {
 
 	Route::post('musician/deletebyselection', 'EmployeeController@deleteBySelection');
 	Route::resource('musician', 'EmployeeController');
-	Route::get('musician/gallery/{id}', 'EmployeeController@gallery')->name('musician.gallery');
-	Route::get('musician/upload/{id}', 'EmployeeController@upload')->name('musician.upload');
-	Route::post('musician/upload/store', 'EmployeeController@uploadStore')->name('musician.file.store');
+    Route::get('musician/gallery/{id}', 'EmployeeController@gallery')->name('musician.gallery');
+    Route::get('musician/upload/{id}', 'EmployeeController@upload')->name('musician.upload');
+    Route::post('musician/upload/store', 'EmployeeController@uploadStore')->name('musician.file.store');
 
 
-	Route::post('notifications/store', 'NotificationController@store')->name('notifications.store');
-	Route::get('notifications/mark-as-read', 'NotificationController@markAsRead');
+    Route::post('notifications/store', 'NotificationController@store')->name('notifications.store');
+    Route::get('notifications/mark-as-read', 'NotificationController@markAsRead');
 
-	Route::resource('currency', 'CurrencyController');
+    Route::resource('currency', 'CurrencyController');
 
-	Route::get('my-transactions/{year}/{month}', 'HomeController@myTransaction');
+    Route::get('my-transactions/{year}/{month}', 'HomeController@myTransaction');
 
+
+    Route::resource('votes', 'VoteController');
+    Route::resource('judge', 'JudgeController');
+
+
+    Route::get('admin/user', 'UserController@admin')->name('admin.index');
+    Route::get('voter/user', 'UserController@voter')->name('voter.index');
 
 });
 

@@ -4,7 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class GeneralSetting extends Model
+class Judge extends Model
 {
-    protected $guarded =[];
+    protected $guarded = [];
 }

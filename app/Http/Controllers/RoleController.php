@@ -93,6 +93,43 @@ class RoleController extends Controller
 
         $role = Role::firstOrCreate(['id' => $request['role_id']]);
 
+        if($request->has('votes-index')){
+            $permission = Permission::firstOrCreate(['name' => 'votes-index']);
+            if(!$role->hasPermissionTo('votes-index')){
+                $role->givePermissionTo($permission);
+            }
+        }
+        else
+            $role->revokePermissionTo('votes-index');
+
+        if($request->has('votes-add')){
+            $permission = Permission::firstOrCreate(['name' => 'votes-add']);
+            if(!$role->hasPermissionTo('votes-add')){
+                $role->givePermissionTo($permission);
+            }
+        }
+        else
+            $role->revokePermissionTo('votes-add');
+
+        if($request->has('votes-edit')){
+            $permission = Permission::firstOrCreate(['name' => 'votes-edit']);
+            if(!$role->hasPermissionTo('votes-edit')){
+                $role->givePermissionTo($permission);
+            }
+        }
+        else
+            $role->revokePermissionTo('votes-edit');
+
+        if($request->has('votes-delete')){
+            $permission = Permission::firstOrCreate(['name' => 'votes-delete']);
+            if(!$role->hasPermissionTo('votes-delete')){
+                $role->givePermissionTo($permission);
+            }
+        }
+        else
+            $role->revokePermissionTo('votes-delete');
+
+
         if($request->has('expenses-index')){
             $permission = Permission::firstOrCreate(['name' => 'expenses-index']);
             if(!$role->hasPermissionTo('expenses-index')){

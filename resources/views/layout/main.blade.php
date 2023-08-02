@@ -99,18 +99,32 @@
         <!-- Sidebar Navigation Menus-->
         <div class="main-menu">
             <ul id="side-main-menu" class="side-menu list-unstyled">
-                @if(Auth::user()->role_id != 7)
-                    <li><a href="{{url('/')}}"> <i class="dripicons-meter"></i><span>{{ __('file.dashboard') }}</span></a></li>
-                @endif
+                <li><a href="{{url('/')}}"> <i class="dripicons-meter"></i><span>{{ __('file.dashboard') }}</span></a></li>
                 <?php
                 $role = DB::table('roles')->find(Auth::user()->role_id);
-
+                $index_permission = DB::table('permissions')->where('name', 'votes-index')->first();
+                $index_permission_active = DB::table('role_has_permissions')->where([
+                    ['permission_id', $index_permission->id],
+                    ['role_id', $role->id]
+                ])->first();
+                ?>
+                @if($index_permission_active)
+                    <li><a href="#vote" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-mail"></i><span>Vote</span></a>
+                        <ul id="vote" class="collapse list-unstyled ">
+                            <li id="vote-menu"><a href="{{route('votes.index')}}">Votes List</a></li>
+                            <li id="vote-menu-create"><a id="add-vote" href="">Create Vote</a></li>
+                        </ul>
+                    </li>
+                <li>
+                @endif
+                <?php
                 $index_permission = DB::table('permissions')->where('name', 'expenses-index')->first();
                 $index_permission_active = DB::table('role_has_permissions')->where([
                     ['permission_id', $index_permission->id],
                     ['role_id', $role->id]
                 ])->first();
                 ?>
+
                 @if($index_permission_active)
                     <li><a href="#expense" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-wallet"></i><span>{{trans('file.Expense')}}</span></a>
                         <ul id="expense" class="collapse list-unstyled ">
@@ -151,7 +165,6 @@
                         <ul id="people" class="collapse list-unstyled ">
 
                             @if($user_index_permission_active)
-                                <li id="user-list-menu"><a href="{{route('user.index')}}">{{trans('file.User List')}}</a></li>
                                     <?php $user_add_permission_active = DB::table('permissions')
                                     ->join('role_has_permissions', 'permissions.id', '=', 'role_has_permissions.permission_id')
                                     ->where([
@@ -161,9 +174,12 @@
                                 @if($user_add_permission_active)
                                     <li id="user-create-menu"><a href="{{route('user.create')}}">{{trans('file.Add User')}}</a></li>
                                 @endif
-
+                                <li id="user-list-menu"><a href="{{route('user.index')}}">{{trans('file.User List')}}</a></li>
                                 @if($index_employee_active)
-                                    <li id="employee-menu"><a href="{{route('musician.index')}}">Musician</a></li>
+                                    <li id="admin-menu"><a href="{{route('admin.index')}}">Admin</a></li>
+                                    <li id="employee-menu"><a href="{{route('musician.index')}}">Contestants</a></li>
+                                    <li id="judge-menu"><a href="{{route('judge.index')}}">Judges</a></li>
+                                    <li id="voter-menu"><a href="{{route('voter.index')}}">Voters</a></li>
                                 @endif
                             @endif
                         </ul>
@@ -423,6 +439,61 @@
     </div>
     <!-- end expense modal -->
 
+    <!-- expense modal -->
+    <div id="vote-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" class="modal fade text-left">
+        <div role="document" class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 id="exampleModalLabel" class="modal-title">Add Vote</h5>
+                    <button type="button" data-dismiss="modal" aria-label="Close" class="close"><span aria-hidden="true"><i class="dripicons-cross"></i></span></button>
+                </div>
+                <div class="modal-body">
+                    <p class="italic"><small>{{trans('file.The field labels marked with * are required input fields')}}.</small></p>
+                    {!! Form::open(['route' => 'votes.store', 'method' => 'post']) !!}
+                    <?php
+                    $users = \App\User::where('role_id', 3)->where('is_active', true)->where('is_deleted', false)->orderBy('id', 'desc')->get();
+                    $contentants = \App\Employee::where('is_active', true)->orderBy('id', 'desc')->get();
+                    ?>
+                    <div class="row">
+                        <div class="col-md-6 form-group">
+                            <label>Refernece *</label>
+                            <input type="text" name="reference" step="any" required class="form-control" placeholder="Any reference no">
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label>Votes *</label>
+                            <input type="number" name="vote" step="any" required class="form-control" value="1">
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label>Votes name *</label>
+                            <select name="user_id" class="selectpicker form-control" required data-live-search="true"   title="Select Voter...">
+                                @foreach($users as $user)
+                                    <option value="{{$user->id}}">{{$user->name}}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label>Votes name *</label>
+                            <select name="musician_id" class="selectpicker form-control" required data-live-search="true"   title="Select Contentant...">
+                                @foreach($contentants as $contentant)
+                                    <option value="{{$contentant->id}}">{{$contentant->name}}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <input class="mt-2" type="checkbox" name="status" value="1" checked>
+                        <label class="mt-2"><strong>Complete</strong></label>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">{{trans('file.submit')}}</button>
+                    </div>
+                    {{ Form::close() }}
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- end expense modal -->
+
 
 
     <!-- notification modal -->
@@ -568,6 +639,11 @@
     $("a#add-expense").click(function(e){
         e.preventDefault();
         $('#expense-modal').modal();
+    });
+
+    $("a#add-vote").click(function(e){
+        e.preventDefault();
+        $('#vote-modal').modal();
     });
 
     $("a#send-notification").click(function(e){
