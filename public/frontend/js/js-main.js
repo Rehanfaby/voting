@@ -116,27 +116,6 @@
 		$(this).css("background-color", $(this).attr("data-bg-color"));
 	});
 
-	/*======================================
-	 Cart Quantity Js
-	========================================*/
-	$(".cart-minus").on("click",function () {
-		var $input = $(this).parent().find("input");
-		var count = parseInt($input.val()) - 1;
-		count = count < 1 ? 1 : count;
-		$input.val(count);
-		$input.change();
-		return false;
-	});
-
-	$(".cart-plus").on("click",function () {
-		var $input = $(this).parent().find("input");
-		var count = parseInt($input.val()) + 1;
-		count = count < 1 ? 1 : count;
-		$input.val(count);
-		$input.change();
-		return false;
-	});
-
 
 	/*======================================
 	MagnificPopup image view
