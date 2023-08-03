@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Employee;
+use App\Gallery;
 use App\User;
 use App\vote;
 use Illuminate\Http\Request;
@@ -72,8 +73,13 @@ class HomeController extends Controller
 
     public function employee($id) {
         $musician = Employee::find($id);
+        $images = Gallery::where('employee_id', $id)->where('type', 'image')->get();
+        $audios = Gallery::where('employee_id', $id)->where('type', 'audio')->get();
+        $videos = Gallery::where('employee_id', $id)->where('type', 'video')->get();
+        $shorts = Gallery::where('employee_id', $id)->where('type', 'short')->get();
+        $youtubes = Gallery::where('employee_id', $id)->where('type', 'link')->get();
         $contentants = Employee::where('is_active', true)->get();
-        return view('frontend.employee', compact('musician', 'contentants'));
+        return view('frontend.employee', compact('musician', 'contentants', 'images', 'audios', 'videos', 'shorts', 'youtubes'));
     }
 
     public function employeeFind(Request $request) {

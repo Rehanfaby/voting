@@ -49,19 +49,19 @@ class EmployeeController extends Controller
     public function store(Request $request)
     {
         $data = $request->except('image');
-        $message = 'Employee created successfully';
+        $message = 'Musician created successfully';
         if(isset($data['user'])){
             $this->validate($request, [
                 'name' => [
                     'max:255',
-                        Rule::unique('users')->where(function ($query) {
+                    Rule::unique('users')->where(function ($query) {
                         return $query->where('is_deleted', false);
                     }),
                 ],
                 'email' => [
                     'email',
                     'max:255',
-                        Rule::unique('users')->where(function ($query) {
+                    Rule::unique('users')->where(function ($query) {
                         return $query->where('is_deleted', false);
                     }),
                 ],
@@ -74,13 +74,13 @@ class EmployeeController extends Controller
             User::create($data);
             $user = User::latest()->first();
             $data['user_id'] = $user->id;
-            $message = 'Employee created successfully and added to user list';
+            $message = 'Musician created successfully and added to user list';
         }
         //validation in employee table
         $this->validate($request, [
             'email' => [
                 'max:255',
-                    Rule::unique('employees')->where(function ($query) {
+                Rule::unique('employees')->where(function ($query) {
                     return $query->where('is_active', true);
                 }),
             ],
@@ -117,7 +117,7 @@ class EmployeeController extends Controller
                 'email' => [
                     'email',
                     'max:255',
-                        Rule::unique('users')->ignore($lims_employee_data->user_id)->where(function ($query) {
+                    Rule::unique('users')->ignore($lims_employee_data->user_id)->where(function ($query) {
                         return $query->where('is_deleted', false);
                     }),
                 ],
@@ -128,7 +128,7 @@ class EmployeeController extends Controller
             'email' => [
                 'email',
                 'max:255',
-                    Rule::unique('employees')->ignore($lims_employee_data->id)->where(function ($query) {
+                Rule::unique('employees')->ignore($lims_employee_data->id)->where(function ($query) {
                     return $query->where('is_active', true);
                 }),
             ],
@@ -146,7 +146,7 @@ class EmployeeController extends Controller
         }
 
         $lims_employee_data->update($data);
-        return redirect('musician')->with('message', 'Employee updated successfully');
+        return redirect('musician')->with('message', 'Musician updated successfully');
     }
 
     public function deleteBySelection(Request $request)
@@ -162,19 +162,14 @@ class EmployeeController extends Controller
             $lims_employee_data->is_active = false;
             $lims_employee_data->save();
         }
-        return 'Employee deleted successfully!';
+        return 'Musician deleted successfully!';
     }
     public function destroy($id)
     {
         $lims_employee_data = Employee::find($id);
-        if($lims_employee_data->user_id){
-            $lims_user_data = User::find($lims_employee_data->user_id);
-            $lims_user_data->is_deleted = true;
-            $lims_user_data->save();
-        }
         $lims_employee_data->is_active = false;
         $lims_employee_data->save();
-        return redirect('employees')->with('not_permitted', 'Employee deleted successfully');
+        return redirect('musician')->with('not_permitted', 'Musician deleted successfully');
     }
 
     public function gallery($id)

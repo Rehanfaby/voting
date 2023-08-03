@@ -18,11 +18,11 @@
         <div class="alert alert-danger alert-dismissible text-center"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>{{ session()->get('not_permitted') }}</div>
     @endif
     <section>
-{{--        @if(in_array("users-add", $all_permission))--}}
-            <div class="container-fluid">
-                <a href="{{route('musician.upload', $lims_employee_data->id)}}" class="btn btn-info"><i class="dripicons-plus"></i> Upload File</a>
-            </div>
-{{--        @endif--}}
+        {{--        @if(in_array("users-add", $all_permission))--}}
+        <div class="container-fluid">
+            <a href="{{route('musician.upload', $lims_employee_data->id)}}" class="btn btn-info"><i class="dripicons-plus"></i> Upload File</a>
+        </div>
+        {{--        @endif--}}
         <div class="">
             <div class="row m-5">
                 @foreach($lims_employee_gallery as $employee_gallery)
@@ -30,16 +30,18 @@
                         <div class="card">
                             <div class="card-body">
                                 @if($employee_gallery->type == 'image')
-                                    <img src="{{asset('images/employee/'.$employee_gallery->file)}}" class="img-fluid">
+                                    <img src="{{asset('public/employee/data/'.$employee_gallery->file)}}" class="img-fluid">
                                 @elseif($employee_gallery->type == 'video')
                                     <video width="320" height="240" controls>
-                                        <source src="{{asset('images/employee/'.$employee_gallery->file)}}" type="video/mp4">
-                                        <source src="{{asset('images/employee/'.$employee_gallery->file)}}" type="video/ogg">
+                                        <source src="{{asset('public/employee/data/'.$employee_gallery->file)}}" type="video/mp4">
+                                        <source src="{{asset('public/employee/data/'.$employee_gallery->file)}}" type="video/ogg">
+                                    </video>
                                         Your browser does not support the video tag.
                                         @elseif($employee_gallery->type == 'audio')
                                             <audio controls>
                                                 <source src="{{asset('public/employee/data/'.$employee_gallery->file)}}" type="audio/ogg">
                                                 <source src="{{asset('public/employee/data/'.$employee_gallery->file)}}" type="audio/mpeg">
+                                            </audio>
                                                 Your browser does not support the audio element.
                                                 @elseif($employee_gallery->type == 'link')
                                                     <iframe src="{{$employee_gallery->file}}" width="400" height="290"></iframe>
