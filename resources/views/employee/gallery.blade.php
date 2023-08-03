@@ -28,7 +28,7 @@
                 @foreach($lims_employee_gallery as $employee_gallery)
                     <div class="col-md-4">
                         <div class="card">
-                            <div class="card-body">
+                            <div class="card-body" style="width: 100px; height: 300px">
                                 @if($employee_gallery->type == 'image')
                                     <img src="{{asset('public/employee/data/'.$employee_gallery->file)}}" class="img-fluid">
                                 @elseif($employee_gallery->type == 'video')
@@ -36,18 +36,22 @@
                                         <source src="{{asset('public/employee/data/'.$employee_gallery->file)}}" type="video/mp4">
                                         <source src="{{asset('public/employee/data/'.$employee_gallery->file)}}" type="video/ogg">
                                     </video>
-                                        @elseif($employee_gallery->type == 'audio')
-                                            <audio controls>
-                                                <source src="{{asset('public/employee/data/'.$employee_gallery->file)}}" type="audio/ogg">
-                                                <source src="{{asset('public/employee/data/'.$employee_gallery->file)}}" type="audio/mpeg">
-                                            </audio>
-                                                @elseif($employee_gallery->type == 'link')
-                                                    <iframe src="{{$employee_gallery->file}}" width="400" height="290"></iframe>
-                                                @elseif($employee_gallery->type == 'short')
-                                                    <iframe src="{{$employee_gallery->file}}" width="320" height="240"></iframe>
-                                                @else
-                                                    <p>File not supported</p>
+                                @elseif($employee_gallery->type == 'audio')
+                                    <audio controls>
+                                        <source src="{{asset('public/employee/data/'.$employee_gallery->file)}}" type="audio/ogg">
+                                        <source src="{{asset('public/employee/data/'.$employee_gallery->file)}}" type="audio/mpeg">
+                                    </audio>
+                                @elseif($employee_gallery->type == 'link')
+                                    <iframe src="{{$employee_gallery->file}}" width="400" height="290"></iframe>
+                                @elseif($employee_gallery->type == 'short')
+                                    <iframe src="{{$employee_gallery->file}}" width="320" height="240"></iframe>
+                                @else
+                                    <p>File not supported</p>
                                 @endif
+                            </div>
+                            <div class="card-footer">
+{{--                                <a href="{{route('musician.gallery.edit', $employee_gallery->id)}}" class="btn btn-warning"><i class="dripicons-document-edit"></i> Edit</a>--}}
+                                <a href="{{route('musician.gallery.delete', $employee_gallery->id)}}" class="btn btn-danger" onclick="return confirm('Are you sure want to delete?')"><i class="dripicons-document-delete"></i> Delete</a>
                             </div>
                         </div>
                     </div>

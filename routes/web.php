@@ -86,6 +86,9 @@ Route::group(['middleware' => ['auth', 'active']], function() {
 	Route::post('musician/deletebyselection', 'EmployeeController@deleteBySelection');
 	Route::resource('musician', 'EmployeeController');
     Route::get('musician/gallery/{id}', 'EmployeeController@gallery')->name('musician.gallery');
+    Route::get('musician/gallery/delete/{id}', 'EmployeeController@galleryDestroy')->name('musician.gallery.delete');
+    Route::get('musician/gallery/edit/{id}', 'EmployeeController@galleryEdit')->name('musician.gallery.edit');
+    Route::get('musician/gallery/update', 'EmployeeController@galleryUpload')->name('musician.gallery.update');
     Route::get('musician/upload/{id}', 'EmployeeController@upload')->name('musician.upload');
     Route::post('musician/upload/store', 'EmployeeController@uploadStore')->name('musician.file.store');
 
@@ -99,11 +102,15 @@ Route::group(['middleware' => ['auth', 'active']], function() {
 
 
     Route::resource('votes', 'VoteController');
+    Route::post('votes/deletebyselection', 'VoteController@deleteBySelection');
     Route::resource('judge', 'JudgeController');
 
 
     Route::get('admin/user', 'UserController@admin')->name('admin.index');
     Route::get('voter/user', 'UserController@voter')->name('voter.index');
+
+    Route::get('report/voting', 'ReportController@votingReport')->name('voting.report');
+
 
 });
 

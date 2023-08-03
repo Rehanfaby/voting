@@ -116,4 +116,16 @@ class VoteController extends Controller
         $lims_expense_data->delete();
         return back()->with('not_permitted', 'Data deleted successfully');
     }
+
+    public function deleteBySelection(Request $request)
+    {
+        $vote_id = $request['expenseIdArray'];
+        foreach ($vote_id as $id) {
+            if($id == null) {
+                continue;
+            }
+            vote::find($id)->delete();
+        }
+        return 'Votes deleted successfully!';
+    }
 }

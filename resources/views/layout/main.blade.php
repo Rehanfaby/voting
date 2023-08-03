@@ -212,25 +212,23 @@
                     </li>
                 @endif
                 <?php
-                $best_seller_active = DB::table('permissions')
+                $voting_report_active = DB::table('permissions')
                     ->join('role_has_permissions', 'permissions.id', '=', 'role_has_permissions.permission_id')
                     ->where([
-                        ['permissions.name', 'best-seller'],
+                        ['permissions.name', 'vote-report'],
                         ['role_id', $role->id] ])->first();
                 ?>
-                @if($best_seller_active)
+                @if($voting_report_active)
                     <li><a href="#report" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-document-remove"></i><span>{{trans('file.Reports')}}</span></a>
                         <ul id="report" class="collapse list-unstyled ">
-                            @if($best_seller_active)
-                                <li id="best-seller-report-menu">
-                                    <a href="{{url('report/best_seller')}}">{{trans('file.Best Seller')}}</a>
+                            @if($voting_report_active)
+                                <li id="vote-report-menu">
+                                    <a href="{{url('report/voting')}}">Voting Report</a>
                                 </li>
                             @endif
-
                         </ul>
                     </li>
                 @endif
-
                 <li><a href="#setting" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-gear"></i><span>{{trans('file.settings')}}</span></a>
                     <ul id="setting" class="collapse list-unstyled ">
                         <?php

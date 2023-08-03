@@ -49,7 +49,7 @@ class EmployeeController extends Controller
     public function store(Request $request)
     {
         $data = $request->except('image');
-        $message = 'Musician created successfully';
+        $message = 'Contestant created successfully';
         if(isset($data['user'])){
             $this->validate($request, [
                 'name' => [
@@ -74,7 +74,7 @@ class EmployeeController extends Controller
             User::create($data);
             $user = User::latest()->first();
             $data['user_id'] = $user->id;
-            $message = 'Musician created successfully and added to user list';
+            $message = 'Contestant created successfully';
         }
         //validation in employee table
         $this->validate($request, [
@@ -146,19 +146,17 @@ class EmployeeController extends Controller
         }
 
         $lims_employee_data->update($data);
-        return redirect('musician')->with('message', 'Musician updated successfully');
+        return redirect('musician')->with('message', 'Contestant updated successfully');
     }
 
     public function deleteBySelection(Request $request)
     {
         $employee_id = $request['employeeIdArray'];
         foreach ($employee_id as $id) {
-            $lims_employee_data = Employee::find($id);
-            if($lims_employee_data->user_id){
-                $lims_user_data = User::find($lims_employee_data->user_id);
-                $lims_user_data->is_deleted = true;
-                $lims_user_data->save();
+            if($id == null) {
+                continue;
             }
+            $lims_employee_data = Employee::find($id);
             $lims_employee_data->is_active = false;
             $lims_employee_data->save();
         }
@@ -169,7 +167,7 @@ class EmployeeController extends Controller
         $lims_employee_data = Employee::find($id);
         $lims_employee_data->is_active = false;
         $lims_employee_data->save();
-        return redirect('musician')->with('not_permitted', 'Musician deleted successfully');
+        return redirect('musician')->with('not_permitted', 'Contestant deleted successfully');
     }
 
     public function gallery($id)
@@ -223,5 +221,18 @@ class EmployeeController extends Controller
 
         Gallery::create($data);
         return back()->with('message', 'File uploaded successfully');
+    }
+
+    public function galleryDestroy($id)
+    {
+        $lims_employee_gallery = Gallery::find($id);
+        $lims_employee_gallery->delete();
+        return back()->with('not_permitted', 'File deleted successfully');
+    }
+
+    public function galleryEdit($id)
+    {
+        $lims_employee_gallery = Gallery::find($id);
+        return view('employee.gallery_edit', compact('lims_employee_gallery'));
     }
 }

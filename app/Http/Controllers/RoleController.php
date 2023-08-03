@@ -317,6 +317,17 @@ class RoleController extends Controller
             $role->revokePermissionTo('currency');
 
 
+        if($request->has('vote-report')){
+            $permission = Permission::firstOrCreate(['name' => 'vote-report']);
+            if(!$role->hasPermissionTo('vote-report')){
+                $role->givePermissionTo($permission);
+            }
+        }
+        else
+            $role->revokePermissionTo('vote-report');
+
+
+
         return redirect('role')->with('message', 'Permission updated successfully');
     }
 

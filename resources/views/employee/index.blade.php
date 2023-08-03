@@ -20,7 +20,7 @@
 <section>
     @if(in_array("employees-add", $all_permission))
     <div class="container-fluid">
-        <a href="{{route('musician.create')}}" class="btn btn-info"><i class="dripicons-plus"></i> {{trans('file.Add Musician')}}</a>
+        <a href="{{route('musician.create')}}" class="btn btn-info"><i class="dripicons-plus"></i>Add Contestant</a>
     </div>
     @endif
     <div class="table-responsive">
@@ -97,7 +97,7 @@
     <div role="document" class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 id="exampleModalLabel" class="modal-title">{{trans('file.Update Employee')}}</h5>
+                <h5 id="exampleModalLabel" class="modal-title">Update Contestant</h5>
                 <button type="button" data-dismiss="modal" aria-label="Close" class="close"><span aria-hidden="true"><i class="dripicons-cross"></i></span></button>
             </div>
             <div class="modal-body">
@@ -295,6 +295,7 @@
                                 },
                                 success:function(data){
                                     alert(data);
+                                    location.reload();
                                 }
                             });
                             dt.rows({ page: 'current', selected: true }).remove().draw(false);

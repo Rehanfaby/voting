@@ -37,35 +37,33 @@ use Spatie\Permission\Models\Permission;
 class ReportController extends Controller
 {
 
-    public function bestSeller()
+    public function votingReport(Request $request)
     {
         $role = Role::find(Auth::user()->role_id);
-        if($role->hasPermissionTo('best-seller')){
-            $start = strtotime(date("Y-m", strtotime("-2 months")).'-01');
-            $end = strtotime(date("Y").'-'.date("m").'-31');
-
-            while($start <= $end)
-            {
-                $start_date = date("Y-m", $start).'-'.'01';
-                $end_date = date("Y-m", $start).'-'.'31';
-
-                $best_selling_qty = Product_Sale::select(DB::raw('product_id, sum(qty) as sold_qty'))->whereDate('created_at', '>=' , $start_date)->whereDate('created_at', '<=' , $end_date)->groupBy('product_id')->orderBy('sold_qty', 'desc')->take(1)->get();
-                if(!count($best_selling_qty)){
-                    $product[] = '';
-                    $sold_qty[] = 0;
-                }
-                foreach ($best_selling_qty as $best_seller) {
-                    $product_data = Product::find($best_seller->product_id);
-                    $product[] = $product_data->name.': '.$product_data->code;
-                    $sold_qty[] = $best_seller->sold_qty;
-                }
-                $start = strtotime("+1 month", $start);
+        if($role->hasPermissionTo('vote-report')){
+            $permissions = Role::findByName($role->name)->permissions;
+            foreach ($permissions as $permission)
+                $all_permission[] = $permission->name;
+            if($request->start_date) {;
+                $start_date = $request->start_date;
+                $end_date = $request->end_date;
             }
-            $start_month = date("F Y", strtotime('-2 month'));
-            $lims_warehouse_list = Warehouse::where('is_active', true)->get();
-            $warehouse_id = 0;
-            //return $product;
-            return view('report.best_seller', compact('product', 'sold_qty', 'start_month', 'lims_warehouse_list', 'warehouse_id'));
+        else {
+                $start_date = date('Y-m-d', strtotime('last monday'));
+                $end_date = date('Y-m-d');
+            }
+
+
+            $votes = DB::table('votes')
+                ->select('employees.*', DB::raw('SUM(votes.vote) as total_vote'))
+                ->join('employees', 'employees.id', '=', 'votes.musician_id')
+                ->whereDate('votes.created_at', '>=', $start_date)
+                ->whereDate('votes.created_at', '<=', $end_date)
+                ->orderBy('total_vote', 'desc')
+                ->groupBy('votes.musician_id')
+                ->get();
+
+            return view('report.voting', compact('start_date', 'end_date', 'votes', 'all_permission'));
         }
         else
             return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');

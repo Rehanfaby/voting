@@ -114,10 +114,6 @@
             <div class="modal-body">
               <p class="italic"><small>{{trans('file.The field labels marked with * are required input fields')}}.</small></p>
                 {!! Form::open(['route' => ['votes.update', 1], 'method' => 'put']) !!}
-                <?php
-                    $lims_expense_category_list = DB::table('expense_categories')->where('is_active', true)->get();
-
-                ?>
                   <div class="form-group">
                       <input type="hidden" name="id">
                       <label>{{trans('file.reference')}}</label>
@@ -288,12 +284,13 @@ function confirmDelete() {
                         if(expense_id.length && confirm("Are you sure want to delete?")) {
                             $.ajax({
                                 type:'POST',
-                                url:'expenses/deletebyselection',
+                                url:'votes/deletebyselection',
                                 data:{
                                     expenseIdArray: expense_id
                                 },
                                 success:function(data){
                                     alert(data);
+                                    location.reload();
                                 }
                             });
                             dt.rows({ page: 'current', selected: true }).remove().draw(false);

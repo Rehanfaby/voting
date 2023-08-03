@@ -277,18 +277,18 @@
 						        <tr>
 						            <td>{{trans('file.Reports')}}</td>
 						            <td class="report-permissions" colspan="5">
-{{--						            	<span>--}}
-{{--						                    <div aria-checked="false" aria-disabled="false">--}}
-{{--								                <div class="checkbox">--}}
-{{--							                    	@if(in_array("best-seller", $all_permission))--}}
-{{--							                    	<input type="checkbox" value="1" id="best-seller" name="best-seller" checked>--}}
-{{--							                    	@else--}}
-{{--							                    	<input type="checkbox" value="1" id="best-seller" name="best-seller">--}}
-{{--							                    	@endif--}}
-{{--								                    <label for="best-seller" class="padding05">{{trans('file.Best Seller')}} &nbsp;&nbsp;</label>--}}
-{{--								                </div>--}}
-{{--								            </div>--}}
-{{--						                </span>--}}
+						            	<span>
+						                    <div aria-checked="false" aria-disabled="false">
+								                <div class="checkbox">
+							                    	@if(in_array("vote-report", $all_permission))
+							                    	<input type="checkbox" value="1" id="vote-report" name="vote-report" checked>
+							                    	@else
+							                    	<input type="checkbox" value="1" id="vote-report" name="vote-report">
+							                    	@endif
+								                    <label for="vote-report" class="padding05">Voting Rport &nbsp;&nbsp;</label>
+								                </div>
+								            </div>
+						                </span>
 
 						            </td>
 						        </tr>
