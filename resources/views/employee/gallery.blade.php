@@ -36,13 +36,11 @@
                                         <source src="{{asset('public/employee/data/'.$employee_gallery->file)}}" type="video/mp4">
                                         <source src="{{asset('public/employee/data/'.$employee_gallery->file)}}" type="video/ogg">
                                     </video>
-                                        Your browser does not support the video tag.
                                         @elseif($employee_gallery->type == 'audio')
                                             <audio controls>
                                                 <source src="{{asset('public/employee/data/'.$employee_gallery->file)}}" type="audio/ogg">
                                                 <source src="{{asset('public/employee/data/'.$employee_gallery->file)}}" type="audio/mpeg">
                                             </audio>
-                                                Your browser does not support the audio element.
                                                 @elseif($employee_gallery->type == 'link')
                                                     <iframe src="{{$employee_gallery->file}}" width="400" height="290"></iframe>
                                                 @elseif($employee_gallery->type == 'short')

@@ -183,7 +183,7 @@ class EmployeeController extends Controller
             $all_permission = [];
         }
         $lims_employee_data = Employee::find($id);
-        $lims_employee_gallery = Gallery::where('employee_id', $id)->paginate(9);
+        $lims_employee_gallery = Gallery::where('employee_id', $id)->orderBy('id', 'desc')->get();
         return view('employee.gallery', compact('lims_employee_data', 'lims_employee_gallery', 'all_permission'));
     }
 
@@ -209,7 +209,7 @@ class EmployeeController extends Controller
         $file = $request->file;
         $data['type'] = $request['type'];
         if($data['type'] == 'link' || $data['type'] == 'short'){
-            $data['file'] = $request['file_path'];
+            $data['file'] = "https://www.youtube.com/embed/" . $request['file_path'];
         } else {
             if ($file) {
                 $ext = pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION);

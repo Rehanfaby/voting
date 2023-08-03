@@ -19,9 +19,9 @@
     @endif
     <section class="forms">
 
-            <div class="container-fluid my-3">
-                <a href="{{route('musician.gallery', $lims_employee_data->id)}}" class="btn btn-info"><i class="dripicons-list"></i> Show Gallery</a>
-            </div>
+        <div class="container-fluid my-3">
+            <a href="{{route('musician.gallery', $lims_employee_data->id)}}" class="btn btn-info"><i class="dripicons-list"></i> Show Gallery</a>
+        </div>
 
         <div class="container-fluid">
             <div class="row">
@@ -47,14 +47,14 @@
                                             <option value="image">Image</option>
                                             <option value="video">Video</option>
                                             <option value="audio">Audio</option>
-                                            <option value="link">Link</option>
+                                            <option value="link">Youtube video</option>
                                             <option value="short">Short Video Link</option>
                                         </select>
                                     </div>
                                     <div class="form-group">
                                         <label>{{trans('file.File')}}</label>
                                         <input type="file" name="file" class="form-control" required>
-                                        <input type="text" style="display: none" name="file_path" class="form-control" placeholder="youtube path">
+                                        <input type="text" style="display: none" name="file_path" class="form-control" placeholder="youtube short link">
                                         @if($errors->has('file'))
                                             <span>
                                        <strong>{{ $errors->first('file') }}</strong>
