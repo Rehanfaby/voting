@@ -42,16 +42,16 @@
                 </thead>
                 <tbody>
                 @foreach($votes as $key=>$employee)
-                    @php $department = \App\Department::find($employee->department_id); @endphp
-                    <tr data-id="{{$employee->id}}">
+                    @php $contestant = \App\Employee::find($employee->musician_id); @endphp
+                    <tr>
                         <td>{{$key}}</td>
-                        @if($employee->image)
-                            <td> <img src="{{url('public/images/employee',$employee->image)}}" height="80" width="80">
+                        @if($contestant->image)
+                            <td> <img src="{{url('public/images/employee',$contestant->image)}}" height="80" width="80">
                             </td>
                         @else
                             <td>No Image</td>
                         @endif
-                        <td>{{ $employee->name }}</td>
+                        <td>{{ $contestant->name }}</td>
                         <td>{{ $employee->total_vote}}</td>
                         <td><span class="badge btn-info" style="font-size: 16px">{{ $key + 1}}</span></td>
                     </tr>
