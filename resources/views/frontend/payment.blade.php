@@ -55,7 +55,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-6">
+                    <div class="col-md-6 col-sm-12">
                         <div class="ms-maxw-510">
                                 <div class="ms-login-wrap text-center ms-login-space ms-bg-2">
                                     <h3 class="ms-title4 mb-50">Pay By Momo</h3>
@@ -63,11 +63,11 @@
                                         @php
                                         $user = \Illuminate\Support\Facades\Auth::user();
                                         @endphp
-                                        @if(!$user)
-                                            <div class="ms-input2-box mb-25">
-                                                <input type="text" name="name" placeholder="Name">
-                                            </div>
-                                        @endif
+{{--                                        @if(!$user)--}}
+{{--                                            <div class="ms-input2-box mb-25">--}}
+{{--                                                <input type="text" name="name" placeholder="Name">--}}
+{{--                                            </div>--}}
+{{--                                        @endif--}}
                                         <div class="ms-input2-box mb-25">
                                             @if(!$user)
                                                 <input type="text" name="phone" required placeholder="Phone no" value="+237" id="inputField">
@@ -79,11 +79,11 @@
                                             <input type="hidden" name="amount" value="{{ $data['vote'] * $general_setting->vote_price }}">
                                         </div>
 
-                                        @if(!$user)
-                                            <div class="ms-input2-box mb-25">
-                                                <input type="password" name="password" placeholder="Password">
-                                            </div>
-                                        @endif
+{{--                                        @if(!$user)--}}
+{{--                                            <div class="ms-input2-box mb-25">--}}
+{{--                                                <input type="password" name="password" placeholder="Password">--}}
+{{--                                            </div>--}}
+{{--                                        @endif--}}
                                         <div class="ms-submit-btn mb-40">
                                             <button id="payment-button" class="unfill__btn d-block w-100">Pay {{ $data['vote'] * $general_setting->vote_price }} {{ $currency->code }}</button>
                                         </div>
@@ -91,26 +91,54 @@
                                 </div>
                             </div>
                     </div>
-                    <div class="col-md-6">
+{{--                    <div class="col-md-6 col-sm-12">--}}
+{{--                        <div class="ms-maxw-510">--}}
+{{--                            <div class="ms-login-wrap text-center ms-login-space ms-bg-2">--}}
+{{--                                <h3 class="ms-title4 mb-50">Pay By Beyond Coin</h3>--}}
+{{--                                @if($user)--}}
+{{--                                    <p>You have total {{ $user->beyond_coin }} Beyond Coins.</p>--}}
+{{--                                <form>--}}
+{{--                                    <input type="hidden" name="musician_id" value="{{ $musician->id }}">--}}
+{{--                                    <input type="hidden" name="vote" value="{{ $data['vote'] }}">--}}
+{{--                                    <input type="hidden" name="amount_coin" value="{{ $data['vote'] * $general_setting->vote_coin }}">--}}
+{{--                                    <div class="ms-submit-btn mb-40">--}}
+{{--                                        @if($user->beyond_coin >= $data['vote'] * $general_setting->vote_coin)--}}
+{{--                                            <button id="coin-button" class="unfill__btn d-block w-100">Pay {{ $data['vote'] * $general_setting->vote_coin }} Beyond Coin</button>--}}
+{{--                                        @else--}}
+{{--                                            <span class="unfill__btn d-block w-100 pt-3">You don't have enough Beyond Coin</span>--}}
+{{--                                        @endif--}}
+{{--                                    </div>--}}
+{{--                                </form>--}}
+{{--                                @else--}}
+{{--                                    For use Beyond Coins please <a href="{{ route('user.login') }}" class="link-light">Login</a>--}}
+{{--                                @endif--}}
+{{--                            </div>--}}
+{{--                        </div>--}}
+{{--                    </div>--}}
+                    <div class="col-md-6 col-sm-12">
                         <div class="ms-maxw-510">
                             <div class="ms-login-wrap text-center ms-login-space ms-bg-2">
                                 <h3 class="ms-title4 mb-50">Pay By Beyond Coin</h3>
-                                @if($user)
                                 <form>
-                                    <input type="hidden" name="musician_id" value="{{ $musician->id }}">
-                                    <input type="hidden" name="vote" value="{{ $data['vote'] }}">
-                                    <input type="hidden" name="amount_coin" value="{{ $data['vote'] * $general_setting->vote_coin }}">
-                                    <div class="ms-submit-btn mb-40">
-                                        @if($user->beyond_coin >= $data['vote'] * $general_setting->vote_coin)
-                                            <button id="coin-button" class="unfill__btn d-block w-100">Pay {{ $data['vote'] * $general_setting->vote_coin }} Beyond Coin</button>
+                                    <div class="ms-input2-box mb-25">
+                                        @if(!$user)
+                                            <input type="text" name="phone_number" required placeholder="Phone no" value="+237" id="inputField">
                                         @else
-                                            <span class="unfill__btn d-block w-100 pt-3">You don't have enough Beyond Coin</span>
+                                            <input type="text" name="phone_number" required placeholder="Phone no" value="{{ $user->phone }}" id="inputField">
                                         @endif
                                     </div>
+                                    <div class="ms-input2-box mb-25">
+                                        <input type="text" name="code" required placeholder="Beyond Coin Code"  id="inputField">
+                                        <input type="hidden" name="musician_id" value="{{ $musician->id }}">
+                                        <input type="hidden" name="vote_coin" value="{{ $data['vote'] }}">
+                                        <input type="hidden" name="amount_coin" value="{{ $data['vote'] * $general_setting->vote_coin }}">
+                                    </div>
+                                     <div class="ms-submit-btn mb-40">
+                                        <button id="coin-button" class="unfill__btn d-block w-100">Pay {{ $data['vote'] * $general_setting->vote_coin }} Beyond Coin</button>
+                                    </div>
                                 </form>
-                                @else
-                                    For use Beyond Coins please <a href="{{ route('user.login') }}" class="link-light">Login</a>
-                                @endif
+
+                                <p>If you don't have coins you can contact to <br>{{ $general_setting->developed_by }}</p>
                             </div>
                         </div>
                     </div>
@@ -169,8 +197,10 @@
                     type: "GET",
                     data: {
                         musician_id : $('input[name="musician_id"]').val(),
-                        vote : $('input[name="vote"]').val(),
+                        vote : $('input[name="vote_coin"]').val(),
                         amount : $('input[name="amount_coin"]').val(),
+                        phone_number : $('input[name="phone_number"]').val(),
+                        code : $('input[name="code"]').val(),
                     },
                     success: function (response) {
                         var message = '<div class="alert alert-success">'+response+'</div>';

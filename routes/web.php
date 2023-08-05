@@ -20,6 +20,7 @@ Route::group(['middleware' => 'auth'], function() {
 //frontend
 
 Route::get('/', 'HomeController@index')->name('home');
+Route::get('/about', 'HomeController@about')->name('about');
 Route::get('user/signup', 'HomeController@signup')->name('user.signup');
 Route::get('user/login', 'HomeController@login')->name('user.login');
 Route::get('user/contentant', 'HomeController@userContentant')->name('user.contentant');
@@ -91,6 +92,7 @@ Route::group(['middleware' => ['auth', 'active']], function() {
     Route::get('musician/gallery/update', 'EmployeeController@galleryUpload')->name('musician.gallery.update');
     Route::get('musician/upload/{id}', 'EmployeeController@upload')->name('musician.upload');
     Route::post('musician/upload/store', 'EmployeeController@uploadStore')->name('musician.file.store');
+    Route::get('musician/votes/{id}', 'EmployeeController@votes')->name('musician.votes');
 
 
     Route::post('notifications/store', 'NotificationController@store')->name('notifications.store');
@@ -104,6 +106,8 @@ Route::group(['middleware' => ['auth', 'active']], function() {
     Route::resource('votes', 'VoteController');
     Route::post('votes/deletebyselection', 'VoteController@deleteBySelection');
     Route::resource('judge', 'JudgeController');
+    Route::resource('coins', 'CoinController');
+    Route::post('coins/deletebyselection', 'CoinController@deleteBySelection');
 
 
     Route::get('admin/user', 'UserController@admin')->name('admin.index');

@@ -118,6 +118,22 @@
                 <li>
                 @endif
                 <?php
+                $index_permission = DB::table('permissions')->where('name', 'coins-index')->first();
+                $index_permission_active = DB::table('role_has_permissions')->where([
+                    ['permission_id', $index_permission->id],
+                    ['role_id', $role->id]
+                ])->first();
+                ?>
+                @if($index_permission_active)
+                    <li><a href="#coin" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-mail"></i><span>Coins</span></a>
+                        <ul id="coin" class="collapse list-unstyled ">
+                            <li id="coin-menu"><a href="{{route('coins.index')}}">Coins List</a></li>
+                            <li id="coin-menu-create"><a id="add-coin" href="">Create Coins</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                @endif
+                <?php
                 $index_permission = DB::table('permissions')->where('name', 'expenses-index')->first();
                 $index_permission_active = DB::table('role_has_permissions')->where([
                     ['permission_id', $index_permission->id],
@@ -164,7 +180,6 @@
                     <li><a href="#people" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-user"></i><span>{{trans('file.People')}}</span></a>
                         <ul id="people" class="collapse list-unstyled ">
 
-                            @if($user_index_permission_active)
                                     <?php $user_add_permission_active = DB::table('permissions')
                                     ->join('role_has_permissions', 'permissions.id', '=', 'role_has_permissions.permission_id')
                                     ->where([
@@ -173,15 +188,14 @@
                                     ?>
                                 @if($user_add_permission_active)
                                     <li id="user-create-menu"><a href="{{route('user.create')}}">{{trans('file.Add User')}}</a></li>
-                                @endif
-                                <li id="user-list-menu"><a href="{{route('user.index')}}">{{trans('file.User List')}}</a></li>
-                                @if($index_employee_active)
+                                    <li id="user-list-menu"><a href="{{route('user.index')}}">{{trans('file.User List')}}</a></li>
                                     <li id="admin-menu"><a href="{{route('admin.index')}}">Admin</a></li>
-                                    <li id="employee-menu"><a href="{{route('musician.index')}}">Contestants</a></li>
                                     <li id="judge-menu"><a href="{{route('judge.index')}}">Judges</a></li>
                                     <li id="voter-menu"><a href="{{route('voter.index')}}">Voters</a></li>
-                                @endif
                             @endif
+                                @if($index_employee_active)
+                                <li id="employee-menu"><a href="{{route('musician.index')}}">Contestants</a></li>
+                                @endif
                         </ul>
                     </li>
                 @endif
@@ -493,6 +507,49 @@
     <!-- end expense modal -->
 
 
+    <!-- expense modal -->
+    <div id="coin-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" class="modal fade text-left">
+        <div role="document" class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 id="exampleModalLabel" class="modal-title">Add Coin</h5>
+                    <button type="button" data-dismiss="modal" aria-label="Close" class="close"><span aria-hidden="true"><i class="dripicons-cross"></i></span></button>
+                </div>
+                <div class="modal-body">
+                    <p class="italic"><small>{{trans('file.The field labels marked with * are required input fields')}}.</small></p>
+                    {!! Form::open(['route' => 'coins.store', 'method' => 'post']) !!}
+                    <div class="row">
+                        <div class="col-md-6 form-group">
+                            <label>Phone Number *</label>
+                            <input type="number" name="phone" step="any" required class="form-control" value="+237" placeholder="Phone number">
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label>Coins *</label>
+                            <input type="number" name="coin" step="any" required class="form-control" >
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label><strong>Code *</strong> </label>
+                            <div class="input-group">
+                                <input type="text" name="code" required class="form-control">
+                                <div class="input-group-append">
+                                    <button id="genbutton" type="button" class="btn btn-default">{{trans('file.Generate')}}</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <input class="mt-2" type="checkbox" name="is_active" value="1" checked>
+                        <label class="mt-2"><strong>Active</strong></label>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">{{trans('file.submit')}}</button>
+                    </div>
+                    {{ Form::close() }}
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- end expense modal -->
 
     <!-- notification modal -->
     <div id="notification-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" class="modal fade text-left">
@@ -644,6 +701,11 @@
         $('#vote-modal').modal();
     });
 
+    $("a#add-coin").click(function(e){
+        e.preventDefault();
+        $('#coin-modal').modal();
+    });
+
     $("a#send-notification").click(function(e){
         e.preventDefault();
         $('#notification-modal').modal();
@@ -657,6 +719,13 @@
     $("a#report-link-category").click(function(e){
         e.preventDefault();
         $("#category-report-form").submit();
+    });
+
+
+    $('#genbutton').on("click", function(){
+        $.get('/user/genpass', function(data){
+            $("input[name='code']").val(data);
+        });
     });
 
 

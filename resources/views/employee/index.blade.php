@@ -68,13 +68,16 @@
                                 <li>
                                     <button type="button" data-id="{{$employee->id}}" data-name="{{$employee->name}}" data-email="{{$employee->email}}" data-phone_number="{{$employee->phone_number}}" data-department_id="{{$employee->department_id}}" data-address="{{$employee->address}}" data-city="{{$employee->city}}" data-country="{{$employee->country}}" class="edit-btn btn btn-link" data-toggle="modal" data-target="#editModal"><i class="dripicons-document-edit"></i> {{trans('file.edit')}}</button>
                                 </li>
+                                @endif
                                 <li>
-                                    <a href="{{ route('musician.upload', $employee->id) }}" class="edit-btn btn btn-link"><i class="fa fa-image"></i> Upload</a>
+                                    <a href="{{ route('musician.upload', $employee->id) }}" class="edit-btn btn btn-link"><i class="fa fa-upload"></i> Upload</a>
                                 </li>
                                 <li>
                                     <a href="{{ route('musician.gallery', $employee->id) }}" class="edit-btn btn btn-link"><i class="fa fa-image"></i> Gallery</a>
                                 </li>
-                                @endif
+                                <li>
+                                    <a href="{{ route('musician.votes', $employee->id) }}" class="edit-btn btn btn-link"><i class="dripicons-mail"></i> Votes</a>
+                                </li>
                                 <li class="divider"></li>
                                 @if(in_array("employees-delete", $all_permission))
                                 {{ Form::open(['route' => ['musician.destroy', $employee->id], 'method' => 'DELETE'] ) }}

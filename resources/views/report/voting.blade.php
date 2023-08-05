@@ -51,8 +51,8 @@
                         @else
                             <td>No Image</td>
                         @endif
-                        <td>{{ $contestant->name }}</td>
-                        <td>{{ $employee->total_vote}}</td>
+                        <td><a href="{{ route('musician.votes', $contestant->id) }}">{{ $contestant->name }}</a></td>
+                        <td><a href="{{ route('musician.votes', $contestant->id) }}">{{ $employee->total_vote}}</a></td>
                         <td><span class="badge btn-info" style="font-size: 16px">{{ $key + 1}}</span></td>
                     </tr>
                 @endforeach

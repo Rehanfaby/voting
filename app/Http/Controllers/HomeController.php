@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Coin;
 use App\Employee;
 use App\Gallery;
+use App\Judge;
 use App\User;
 use App\vote;
 use Illuminate\Http\Request;
@@ -36,10 +38,30 @@ class HomeController extends Controller
 {
     public function dashboard()
     {
+        if(Auth::user()) {
+            $role = Auth::user()->role_id;
+            if($role == 3) {
+                return $this->index();
+            }
+        }
+
         return view('home');
     }
 
+    public function about()
+    {
+        return view('frontend.about');
+    }
+
     public function admin() {
+
+        if(Auth::user()) {
+            $role = Auth::user()->role_id;
+            if($role == 3) {
+                return $this->index();
+            }
+        }
+
         return view('index');
     }
 
@@ -53,7 +75,8 @@ class HomeController extends Controller
         }
         $this->checkVotePayment();
         $musicians = Employee::where('is_active', true)->get();
-        return view('frontend.home', compact('musicians'));
+        $judges = Judge::where('is_active', true)->get();
+        return view('frontend.home', compact('musicians', 'judges'));
     }
 
     public function signup()
@@ -101,33 +124,26 @@ class HomeController extends Controller
     public function musicianVotePayment(Request $request) {
 
         $user = Auth::user() ?? null;
+        $password = rand(1, 999999);
         $data['is_active'] = true;
         $data['is_deleted'] = false;
-        $data['password'] = bcrypt($request->password);
-        $data['name'] = $request->name;
+        $data['password'] = bcrypt($password);
+        $data['name'] = $request->phone;
         $data['phone'] = $request->phone;
         $data['email'] = 'user@gmail.com';
         $data['role_id'] = 3;
 
-        if($user == null) {
-            if($data['name'] == null) {
-                return 'Name cannot be null';
-            }
-            if ($user_check = User::where('name', $request->name)->first()) {
-                $pass = Hash::check($request->password, $user_check->password);
-                if ($pass) {
-                    $user = $user_check;
-                } else {
-                    $user_check->update(['password' => $data['password']]);
-                    $user = $user_check;
-                    $this->sendWhatsappMsgForUpdatePassword($user, $request->password);
-                }
-            }
+        if($data['phone'] == null) {
+            return 'Phone cannot be null';
+        }
+
+        if ($user_check = User::where('phone', $request->phone)->first()) {
+            $user = $user_check;
         }
 
         if($user == null) {
             $user = User::create($data);
-            $this->sendWhatsappMsg($user, $request->password);
+            $this->sendWhatsappMsg($user, $password);
         }
 
         $token = $this->mobileMoneyToken();
@@ -141,6 +157,8 @@ class HomeController extends Controller
                     'status' => false,
                     'reference' => $refernece
                 ]);
+
+                $this->sendWhatsappMsgVoteMomo($user, $request->vote, $request->musician_id);
                 return 'Thank you for your vote, Vote status is pending, please pay your payment in 30 minutes';
             }
         }
@@ -151,11 +169,37 @@ class HomeController extends Controller
 
         $user = Auth::user() ?? null;
 
-        if($user == null) {
-            return 'Please login first';
+        if ($request->phone_number == '+237' || $request->phone_number == null) {
+            return "Phone number is incorrect";
         }
 
-        if($request->amount <= $user->beyond_coin) {
+        if ($request->code == null) {
+            return "Code is incorrect";
+        }
+
+        $coin_check = Coin::where('phone', $request->phone_number)->where('is_active', true)->where('code', $request->code)->first();
+        if (!$coin_check) {
+            return "You have entered incorrect phone number and code";
+        }
+
+        if ($user == null) {
+            $user = User::where('phone', $request->phone_number)->first();
+        }
+
+        if ($user == null) {
+            $password = rand(1, 999999);
+            $data['is_active'] = true;
+            $data['is_deleted'] = false;
+            $data['password'] = bcrypt($password);
+            $data['name'] = $request->phone_number;
+            $data['phone'] = $request->phone_number;
+            $data['email'] = 'user@gmail.com';
+            $data['role_id'] = 3;
+            $user = User::create($data);
+            $this->sendWhatsappMsg($user, $password);
+        }
+
+        if($request->amount <= $coin_check->coin) {
             vote::create([
                 'user_id' => $user->id,
                 'musician_id' => $request->musician_id,
@@ -163,8 +207,10 @@ class HomeController extends Controller
                 'status' => true,
                 'reference' => rand(1, 999999)
             ]);
-            $remaining_coin = $user->beyond_coin - $request->amount;
-            $user->update(['beyond_coin' => $remaining_coin]);
+            $remaining_coin = $coin_check->coin - $request->amount;
+
+            $coin_check->update(['coin' => $remaining_coin]);
+            $this->sendWhatsappMsgVote($user, $request->vote, $request->musician_id, $remaining_coin);
             return 'Thank you for your vote';
         }
 
@@ -358,6 +404,61 @@ class HomeController extends Controller
 
         return true;
     }
+
+
+    public function sendWhatsappMsgVote($user, $vote, $musician_id, $remaining_coin)
+    {
+        $musician = Employee::select('name', 'id')->find($musician_id);
+        $total_votes = vote::where('musician_id', $musician_id)->where('status', true)->sum('vote');
+
+        $msg = '*Congrats:* You have casted ' . $vote;
+        if ($vote == 1) {
+            $msg .= ' vote ';
+        } else {
+            $msg .= ' votes ';
+        }
+        $msg .= 'for ' .$musician->name . '\n\n';
+        $msg .= $musician->name . '`s total votes are  '.$total_votes.'\n\n';
+
+        $msg .= 'Your remaining coins are  '.$remaining_coin.'\n\n';
+
+        try{
+            $this->wpMessage($user->phone, $msg);
+        }
+        catch(\Exception $e){
+
+        }
+
+        return true;
+    }
+
+
+    public function sendWhatsappMsgVoteMomo($user, $vote, $musician_id)
+    {
+        $musician = Employee::select('name', 'id')->find($musician_id);
+        $total_votes = vote::where('musician_id', $musician_id)->where('status', true)->sum('vote');
+
+        $msg = '*Thank you for your vote,* Vote status is pending, please pay your payment in 30 minutes \n\n';
+
+        $msg .= 'You have casted ' . $vote;
+        if ($vote == 1) {
+            $msg .= ' vote ';
+        } else {
+            $msg .= ' votes ';
+        }
+        $msg .= 'for ' .$musician->name . '\n\n';
+        $msg .= $musician->name . '`s total votes are  '.$total_votes.'\n\n';
+
+        try{
+            $this->wpMessage($user->phone, $msg);
+        }
+        catch(\Exception $e){
+
+        }
+
+        return true;
+    }
+
 
     public function sendWhatsappMsgForUpdatePassword($user, $password){
 

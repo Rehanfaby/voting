@@ -160,21 +160,6 @@ class UserController extends Controller
         if(!env('USER_VERIFIED'))
             return redirect()->back()->with('not_permitted', 'This feature is disable for demo!');
 
-        $this->validate($request, [
-            'name' => [
-                'max:255',
-                Rule::unique('users')->ignore($id)->where(function ($query) {
-                    return $query->where('is_deleted', false);
-                }),
-            ],
-            'email' => [
-                'email',
-                'max:255',
-                Rule::unique('users')->ignore($id)->where(function ($query) {
-                    return $query->where('is_deleted', false);
-                }),
-            ],
-        ]);
 
         $input = $request->except('sign', 'stemp', 'password');
 

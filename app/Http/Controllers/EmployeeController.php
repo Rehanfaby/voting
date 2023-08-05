@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Gallery;
+use App\vote;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use App\Warehouse;
@@ -25,7 +26,14 @@ class EmployeeController extends Controller
                 $all_permission[] = $permission->name;
             if(empty($all_permission))
                 $all_permission[] = 'dummy text';
-            $lims_employee_all = Employee::where('is_active', true)->get();
+
+            if ($role->id == 1){
+                $lims_employee_all = Employee::where('is_active', true)->get();
+            } elseif ($role->id == 2) {
+                $lims_employee_all = Employee::where('is_active', true)->where('name', Auth::user()->name)->get();
+            } else {
+                return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
+            }
             $lims_department_list = Department::where('is_active', true)->get();
             return view('employee.index', compact('lims_employee_all', 'lims_department_list', 'all_permission'));
         }
@@ -50,32 +58,47 @@ class EmployeeController extends Controller
     {
         $data = $request->except('image');
         $message = 'Contestant created successfully';
-        if(isset($data['user'])){
-            $this->validate($request, [
-                'name' => [
-                    'max:255',
-                    Rule::unique('users')->where(function ($query) {
-                        return $query->where('is_deleted', false);
-                    }),
-                ],
-                'email' => [
-                    'email',
-                    'max:255',
-                    Rule::unique('users')->where(function ($query) {
-                        return $query->where('is_deleted', false);
-                    }),
-                ],
-            ]);
 
-            $data['is_active'] = true;
-            $data['is_deleted'] = false;
-            $data['password'] = bcrypt($data['password']);
-            $data['phone'] = $data['phone_number'];
-            User::create($data);
-            $user = User::latest()->first();
-            $data['user_id'] = $user->id;
-            $message = 'Contestant created successfully';
+        $this->validate($request, [
+            'name' => [
+                'max:255',
+                Rule::unique('users')->where(function ($query) {
+                    return $query->where('is_deleted', false);
+                }),
+            ],
+            'email' => [
+                'email',
+                'max:255',
+                Rule::unique('users')->where(function ($query) {
+                    return $query->where('is_deleted', false);
+                }),
+            ],
+        ]);
+
+        $password = rand(1, 999999);
+        $data['is_active'] = true;
+        $data['is_deleted'] = false;
+        $data['password'] = bcrypt($password);
+        $data['phone'] = $data['phone_number'];
+        $data['name'] = $data['employee_name'];
+        $data['role_id'] = 2;
+        User::create($data);
+        $user = User::latest()->first();
+        $data['user_id'] = $user->id;
+        $message = 'Contestant created successfully';
+
+        $msg = '*Congrats:* Your account has been created \n\n';
+        $msg .= '*User name:* '. $user->name . '\n\n';
+        $msg .= '*Phone number:* '. $user->phone . '\n\n';
+        $msg .= '*Password:* '. $password . '\n\n';
+
+        try{
+            $this->wpMessage($user->phone, $msg);
         }
+        catch(\Exception $e){
+
+        }
+
         //validation in employee table
         $this->validate($request, [
             'email' => [
@@ -96,7 +119,6 @@ class EmployeeController extends Controller
             $data['image'] = $imageName;
         }
 
-        $data['name'] = $data['employee_name'];
         $data['is_active'] = true;
         Employee::create($data);
 
@@ -234,5 +256,11 @@ class EmployeeController extends Controller
     {
         $lims_employee_gallery = Gallery::find($id);
         return view('employee.gallery_edit', compact('lims_employee_gallery'));
+    }
+
+    public function votes($id) {
+        $lims_employee_data = Employee::find($id);
+        $lims_employee_votes = Vote::where('musician_id', $id)->orderBy('id', 'desc')->get();
+        return view('employee.votes', compact('lims_employee_data', 'lims_employee_votes'));
     }
 }

@@ -44,7 +44,7 @@
         <section class="ms-banner-area p-relative">
             <a class="ms-scroll-down" href="#">SCROLL DOWN</a>
             <div class="container-fluid ms-maw-1710">
-                <div class="ms-br-30 mx-auto include__bg z-index-1 ms-overlay-1 p-relative" data-background="">
+                <div class="ms-br-30 mx-auto include__bg z-index-1 ms-overlay-1 p-relative" data-background="{{ url('public/frontend/images/banner-thumb-01.jpg') }}">
                     <div class="container">
                         <div class="row justify-content-center">
                             <div class="col-xl-11">
@@ -123,8 +123,60 @@
         </section>
         <!-- Function Brand Area End Here  -->
 
+
+
+
+        <!-- Popular  area start -->
+        <section class="ms-fun-brand ms-bg-2 pb-130 pt-125">
+            <div class="container">
+                <div class="row align-items-end mb-25 bdFadeUp">
+                    <div class="col-xl-6 col-lg-6">
+                        <div class="section__title-wrapper mb-40 bd-title-anim">
+                            <span class="section__subtitle">Meet Our Judges</span>
+                            <h2 class="section__title msg_title">
+                                <span class="animated-underline active"></span> <br>
+
+                            </h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="row bdFadeUp">
+                    <div class="col-xxl-12">
+                        <div class="tab-content" id="nav-tabContent">
+                            <div class="tab-pane fade show active" id="nav-popular-1" role="tabpanel" aria-labelledby="nav-popular-1-tab" tabindex="0">
+                                <div class="swiper-container ms-popular-active fix">
+                                    <div class="swiper-wrapper">
+                                        @foreach($judges as $contentant)
+                                            <div class="swiper-slide">
+                                                <div class="ms-popular__item p-relative mb-30">
+                                                    <div class="ms-popular__thumb">
+                                                        <div class="ms-popular-overlay"></div>
+                                                        <a href="{{ route('musician.data', $contentant->id) }}"><img src="{{url('public/images/employee',$contentant->image)}}" alt="popular band"></a>
+                                                        <a href="{{ route('musician.data', $contentant->id) }}" class="ms-popular__link">
+                                                            <span class="ms-popular-icon"><i class="fa-regular fa-arrow-right-long"></i></span>
+                                                        </a>
+                                                    </div>
+                                                    <h4 class="ms-popular__title"><a href="{{ route('musician.data', $contentant->id) }}">
+                                                            {{ $contentant->name }}
+                                                        </a></h4>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Popular  area end -->
+
+
+
+
         <!-- Text scroll area start -->
-        <section class="text__scroll-area include__bg ms-ts-space p-relative fix" data-background="">
+        <section class="text__scroll-area include__bg ms-ts-space p-relative fix"  data-background="{{ url('public/frontend/images/sound-bg.png') }}">
             <div class="text__scroll-wrapper">
                 <div class="ms-text-line-1">
                     <div class="swiper-container ms-st-active scroll__text pt-20 pb-20">
@@ -420,7 +472,7 @@
         <!-- CTA Area Start Here  -->
         <section class="ms-cta-area ms-cta--120 p-relative zindex-10">
             <div class="container">
-                <div class="ms-cta-bg include__bg ms-cta-overlay zindex-1 fix" data-background="">
+                <div class="ms-cta-bg include__bg ms-cta-overlay zindex-1 fix"  data-background="{{ url('public/frontend/images/sound-bg.png') }}">
                     <div class="ms-cta-wrap">
                         <div class="ms-cta-item">
                             <div class="ms-cta-content">

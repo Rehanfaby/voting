@@ -52,6 +52,12 @@
 </div>
 <!-- preloader end -->
 
+@php
+    $user = Auth::user() ?? null;
+    if($user) {
+        $contestents = \App\vote::select('musician_id')->where('user_id', $user->id)->groupBy('musician_id')->get()->toArray();
+    }
+@endphp
 <!-- Offcanvas area start -->
 <div class="fix">
     <div class="offcanvas__info">
@@ -74,30 +80,43 @@
                             <span>
                                 <a href="javascript:void(0)"><i class="flaticon-user"></i></a>
                             </span>
+                        <ul></ul>
                         <div class="user__name-mail">
-                            <h4 class="user__name"><a href="javascript:void(0)">Johnson</a></h4>
-                            <p class="user__mail"><a href="" class="__cf_email__" data-cfemail="63090c0b0d100c0d231406010e020a0f4d000c0e">[email&nbsp;protected]</a></p>
+                            @if(!$user)
+                                <h4 class="user__name"><a href="{{ route('user.login') }}">Login</a></h4>
+                            @else
+                            <h4 class="user__name"><a href="javascript:void(0)">{{ $user->name }}</a></h4>
+                            <p class="user__mail">
+                                <a href="{{ route('logout') }}"
+                                   onclick="event.preventDefault();
+                                    document.getElementById('logout-form').submit();"><i class="dripicons-power"></i>
+                                    {{trans('file.logout')}}
+                                </a>
+                            </p>
+                            @endif
                         </div>
                     </div>
                 </div>
-                <div class="offcanvas__search mb-30">
-                    <form action="#">
-                        <input type="text" placeholder="Search Here">
-                        <button type="submit"><i class="far fa-search"></i></button>
-                    </form>
-                </div>
-                <div class="hr-1 mt-30 mb-30 d-xl-none"></div>
-                <div class="mobile-menu fix mb-30  d-xl-none"></div>
                 <div class="hr-1 mt-30 mb-30 d-xl-none"></div>
                 <div class="offcanvas__btn mb-30">
-                    <a class="ms-border-btn" href="services.html"><i class="fa-solid fa-plus"></i> Vote your favourite candidate</a>
+                    <a class="user__name" href="{{ route('home') }}"><i class="fa-solid fa-plus"></i> Home</a>
                 </div>
-                <div class="offcanvas__social">
-                    <div class="ms-footer-social mb-0">
-                        <a href="https://www.linkedin.com/" title="Instagram" target="_blank">IN</a>
-                        <a href="https://twitter.com/" title="Twitter" target="_blank">TW</a>
-                        <a href="https://www.facebook.com/" title="Facebook" target="_blank">FB</a>
-                    </div>
+                <div class="offcanvas__btn mb-30">
+                    <a class="user__name" href="{{ route('about') }}"><i class="fa-solid fa-plus"></i> About Us</a>
+                </div>
+
+                @if($user)
+                <div class="hr-1 mt-30 mb-30 d-xl-none"></div>
+                <div class="offcanvas__btn mb-30">
+                    <a class="user__name" href="{{ route('user.contentant') }}"><i class="fa-solid fa-plus"></i> My Votes</a>
+                </div>
+                <div class="offcanvas__btn mb-30">
+                    <a class="user__name" href="{{ route('user.contentant') }}"><i class="fa-solid fa-plus"></i> My contenstants</a>
+                </div>
+                @endif
+                <div class="hr-1 mt-30 mb-30 d-xl-none"></div>
+                <div class="offcanvas__btn mb-30">
+                    <a class="ms-border-btn" href="{{ route('team') }}"><i class="fa-solid fa-plus"></i> Vote your candidate</a>
                 </div>
             </div>
         </div>
@@ -128,24 +147,13 @@
                                                 <li>
                                                     <a href="{{ route('home') }}">Home</a>
                                                 </li>
+                                                <li>
+                                                    <a href="{{ route('about') }}">About Us</a>
+                                                </li>
                                             </ul>
                                         </nav>
-                                        <!-- for wp -->
-                                        <div class="header__hamburger ml-50 d-none">
-                                            <button type="button" class="hamburger-btn offcanvas-open-btn">
-                                                <span>01</span>
-                                                <span>01</span>
-                                                <span>01</span>
-                                            </button>
-                                        </div>
                                     </div>
                                 </div>
-                                @php
-                                    $user = Auth::user() ?? null;
-                                    if($user) {
-                                        $contestents = \App\vote::select('musician_id')->where('user_id', $user->id)->groupBy('musician_id')->get()->toArray();
-                                    }
-                                @endphp
                                 <div class="header__action-inner d-flex align-items-center">
                                     @if($user)
                                         <div class="enquiry__list ml-10 mr-10 ms-browse-act-wrap p-relative">
@@ -233,7 +241,7 @@
           @yield('content')
             <!-- Footer Area Start Here  -->
             <footer>
-                <div class="ms-footer-bg ms-footer-overlay zindex-1 include__bg pt-120" data-background="">
+                <div class="ms-footer-bg ms-footer-overlay zindex-1 include__bg pt-120" data-background="{{ url('public/frontend/images/sound-bg.png') }}">
 {{--                    <div class="ms-footer-top pt-130">--}}
 {{--                        <div class="container">--}}
 {{--                            <div class="ms-footer-border pb-10">--}}

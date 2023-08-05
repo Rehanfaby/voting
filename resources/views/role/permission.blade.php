@@ -91,6 +91,58 @@
                                 </tr>
 
                                 <tr>
+                                    <td>Beyond Coin</td>
+                                    <td class="text-center">
+                                        <div class="icheckbox_square-blue checked" aria-checked="false" aria-disabled="false">
+                                            <div class="checkbox">
+                                                @if(in_array("coins-index", $all_permission))
+                                                    <input type="checkbox" value="1" id="coins-index" name="coins-index" checked />
+                                                @else
+                                                    <input type="checkbox" value="1" id="coins-index" name="coins-index">
+                                                @endif
+                                                <label for="coins-index"></label>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="icheckbox_square-blue checked" aria-checked="false" aria-disabled="false">
+                                            <div class="checkbox">
+                                                @if(in_array("coins-add", $all_permission))
+                                                    <input type="checkbox" value="1" id="coins-add" name="coins-add" checked />
+                                                @else
+                                                    <input type="checkbox" value="1" id="coins-add" name="coins-add">
+                                                @endif
+                                                <label for="coins-add"></label>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="icheckbox_square-blue" aria-checked="false" aria-disabled="false">
+                                            <div class="checkbox">
+                                                @if(in_array("coins-edit", $all_permission))
+                                                    <input type="checkbox" value="1" id="coins-edit" name="coins-edit" checked>
+                                                @else
+                                                    <input type="checkbox" value="1" id="coins-edit" name="coins-edit">
+                                                @endif
+                                                <label for="coins-edit"></label>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="icheckbox_square-blue" aria-checked="false" aria-disabled="false">
+                                            <div class="checkbox">
+                                                @if(in_array("coins-delete", $all_permission))
+                                                    <input type="checkbox" value="1" id="coins-delete" name="coins-delete" checked>
+                                                @else
+                                                    <input type="checkbox" value="1" id="coins-delete" name="coins-delete">
+                                                @endif
+                                                <label for="coins-delete"></label>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
 						            <td>{{trans('file.Expense')}}</td>
 						            <td class="text-center">
 						                <div class="icheckbox_square-blue checked" aria-checked="false" aria-disabled="false">
@@ -143,7 +195,7 @@
 						        </tr>
 
 						        <tr>
-						            <td>{{trans('file.Employee')}}</td>
+						            <td>Contestants</td>
 						            <td class="text-center">
 						                <div class="icheckbox_square-blue checked" aria-checked="false" aria-disabled="false">
 							                <div class="checkbox">
@@ -340,6 +392,18 @@
 							                    	<input type="checkbox" value="1" id="general_setting" name="general_setting">
 							                    	@endif
 								                    <label for="general_setting" class="padding05">{{trans('file.General Setting')}} &nbsp;&nbsp;</label>
+								                </div>
+								            </div>
+						                </span>
+                                        <span>
+						                    <div aria-checked="false" aria-disabled="false">
+								                <div class="checkbox">
+							                    	@if(in_array("see-votes", $all_permission))
+                                                        <input type="checkbox" value="1" id="see-votes" name="see-votes" checked>
+                                                    @else
+                                                        <input type="checkbox" value="1" id="see-votes" name="see-votes">
+                                                    @endif
+								                    <label for="see-votes" class="padding05">Anyone can See Votes &nbsp;&nbsp;</label>
 								                </div>
 								            </div>
 						                </span>

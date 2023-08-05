@@ -130,6 +130,53 @@ class RoleController extends Controller
             $role->revokePermissionTo('votes-delete');
 
 
+        if($request->has('coins-index')){
+            $permission = Permission::firstOrCreate(['name' => 'coins-index']);
+            if(!$role->hasPermissionTo('coins-index')){
+                $role->givePermissionTo($permission);
+            }
+        }
+        else
+            $role->revokePermissionTo('coins-index');
+
+        if($request->has('coins-add')){
+            $permission = Permission::firstOrCreate(['name' => 'coins-add']);
+            if(!$role->hasPermissionTo('coins-add')){
+                $role->givePermissionTo($permission);
+            }
+        }
+        else
+            $role->revokePermissionTo('coins-add');
+
+        if($request->has('coins-edit')){
+            $permission = Permission::firstOrCreate(['name' => 'coins-edit']);
+            if(!$role->hasPermissionTo('coins-edit')){
+                $role->givePermissionTo($permission);
+            }
+        }
+        else
+            $role->revokePermissionTo('coins-edit');
+
+        if($request->has('coins-delete')){
+            $permission = Permission::firstOrCreate(['name' => 'coins-delete']);
+            if(!$role->hasPermissionTo('coins-delete')){
+                $role->givePermissionTo($permission);
+            }
+        }
+        else
+            $role->revokePermissionTo('coins-delete');
+
+
+        if($request->has('see-votes')){
+            $permission = Permission::firstOrCreate(['name' => 'see-votes']);
+            if(!$role->hasPermissionTo('see-votes')){
+                $role->givePermissionTo($permission);
+            }
+        }
+        else
+            $role->revokePermissionTo('see-votes');
+
+
         if($request->has('expenses-index')){
             $permission = Permission::firstOrCreate(['name' => 'expenses-index']);
             if(!$role->hasPermissionTo('expenses-index')){
