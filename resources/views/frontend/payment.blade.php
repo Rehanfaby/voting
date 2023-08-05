@@ -28,7 +28,6 @@
         <div class="ms-product-area pt-50 pb-70 p-relative">
             <div class="container">
                 <div class="row">
-                    <div class="text-center message-status"></div>
                     <div class="col-md-12">
                         <div class="ms-product-table-wrap mb-60">
                             <div class="ms-product-table mb-50">
@@ -59,6 +58,7 @@
                         <div class="ms-maxw-510">
                                 <div class="ms-login-wrap text-center ms-login-space ms-bg-2">
                                     <h3 class="ms-title4 mb-50">Pay By Momo</h3>
+                                    <div class="text-center message-status"></div>
                                     <form>
                                         @php
                                         $user = \Illuminate\Support\Facades\Auth::user();
@@ -119,6 +119,7 @@
                         <div class="ms-maxw-510">
                             <div class="ms-login-wrap text-center ms-login-space ms-bg-2">
                                 <h3 class="ms-title4 mb-50">Pay By Beyond Coin</h3>
+                                <div class="text-center message-status-coin"></div>
                                 <form>
                                     <div class="ms-input2-box mb-25">
                                         @if(!$user)
@@ -176,15 +177,17 @@
                         amount : $('input[name="amount"]').val(),
                     },
                     success: function (response) {
-                        var message = '<div class="alert alert-success">'+response+'</div>';
-                        $('.message-status').html(message);
                         $('#preloader').hide();
+                        var message = '<div class="alert alert-success">'+response+'</div>';
+                        $('.message-status-coin').html('');
+                        $('.message-status').html(message);
                     },
                     error: function (xhr, status, error) {
                         // Handle the error response, if any
-                        var message = '<div class="alert alert-danger">'+response+'</div>';
-                        $('.message-status').html(message);
                         $('#preloader').hide();
+                        var message = '<div class="alert alert-danger">'+response+'</div>';
+                        $('.message-status-coin').html('');
+                        $('.message-status').html(message);
                     }
                 });
             });
@@ -203,15 +206,17 @@
                         code : $('input[name="code"]').val(),
                     },
                     success: function (response) {
-                        var message = '<div class="alert alert-success">'+response+'</div>';
-                        $('.message-status').html(message);
                         $('#preloader').hide();
+                        var message = '<div class="alert alert-success">'+response+'</div>';
+                        $('.message-status').html('');
+                        $('.message-status-coin').html(message);
                     },
                     error: function (xhr, status, error) {
                         // Handle the error response, if any
-                        var message = '<div class="alert alert-danger">'+response+'</div>';
-                        $('.message-status').html(message);
                         $('#preloader').hide();
+                        var message = '<div class="alert alert-danger">'+response+'</div>';
+                        $('.message-status').html('');
+                        $('.message-status-coin').html(message);
                     }
                 });
             });

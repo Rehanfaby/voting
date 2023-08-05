@@ -60,6 +60,7 @@ class ReportController extends Controller
                 ->whereDate('votes.created_at', '>=', $start_date)
                 ->whereDate('votes.created_at', '<=', $end_date)
                 ->where('employees.is_active', true)
+                ->where('votes.status', true)
                 ->orderBy('total_vote', 'desc')
                 ->groupBy('votes.musician_id')
                 ->get();

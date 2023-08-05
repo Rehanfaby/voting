@@ -24,6 +24,7 @@
             <tr>
                 <th class="not-exported"></th>
                 <th>Voter</th>
+                <th>Phone</th>
                 <th>Votes</th>
                 <th>Status</th>
                 <th>Date</th>
@@ -37,6 +38,9 @@
                     <td class="ms-product-name-flex">
                         <span>{{ @$vote->voters->name }}</span>
                     </td>
+                    <td class="ms-product-name-flex">
+                        <span>{{ @$vote->voters->phone }}</span>
+                    </td>
                     <td>{{ $vote->vote }}</td>
                     <td>{{ $vote->status == 0 ? 'pending' : 'complete' }}</td>
                     <td>{{ $vote->created_at }}</td>
@@ -48,6 +52,7 @@
             <tr>
                 <th></th>
                 <th>Voter</th>
+                <th>Phone</th>
                 <th> {{ $sum }}</th>
                 <th>Status</th>
                 <th>Date</th>
