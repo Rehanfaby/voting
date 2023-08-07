@@ -50,6 +50,12 @@
                     </div>
 
                     <div class="col-lg-6">
+                        <div class="ms-event-play d-inline-block p-relative mb-40">
+                            <img src="{{ asset('frontend/images/event-event-bg-2.png') }}" alt="event img" height="350px" style="border-radius: 15%;">
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
                         <div class=" mb-40">
                             <h2 class="section__title mb-35 bd-title-anim" style="perspective: 400px;"><div style="display: block; text-align: start; position: relative; translate: none; rotate: none; scale: none; transform-origin: 373px 24px; transform: translate3d(0px, 0px, 0px); opacity: 1;">Competition Format:</div></h2>
                             <p>
@@ -134,7 +140,7 @@
                         </div>
                     </div>
 
-                    <div class="col-lg-12">
+                    <div class="col-lg-6">
                         <div class=" mb-40">
                             <h2 class="section__title mb-35 bd-title-anim" style="perspective: 400px;"><div style="display: block; text-align: start; position: relative; translate: none; rotate: none; scale: none; transform-origin: 373px 24px; transform: translate3d(0px, 0px, 0px); opacity: 1;">Conclusion:</div></h2>
                             <p>

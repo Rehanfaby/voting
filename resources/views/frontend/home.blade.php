@@ -151,14 +151,15 @@
                                                 <div class="ms-popular__item p-relative mb-30">
                                                     <div class="ms-popular__thumb">
                                                         <div class="ms-popular-overlay"></div>
-                                                        <a href="{{ route('musician.data', $contentant->id) }}"><img src="{{url('public/images/employee',$contentant->image)}}" alt="popular band"></a>
-                                                        <a href="{{ route('musician.data', $contentant->id) }}" class="ms-popular__link">
+                                                        <a ><img src="{{url('public/images/employee',$contentant->image)}}" alt="popular band"></a>
+                                                        <a class="ms-popular__link">
                                                             <span class="ms-popular-icon"><i class="fa-regular fa-arrow-right-long"></i></span>
                                                         </a>
                                                     </div>
-                                                    <h4 class="ms-popular__title"><a href="{{ route('musician.data', $contentant->id) }}">
+                                                    <h4 class="ms-popular__title"><a >
                                                             {{ $contentant->name }}
-                                                        </a></h4>
+                                                        </a>
+                                                    </h4>
                                                 </div>
                                             </div>
                                         @endforeach
@@ -402,9 +403,7 @@
                     </div>
                     <div class="col-xl-4">
                         <div class="ms-event-play d-inline-block w-img p-relative mb-60">
-                            <div class="ms-event-play-overlay p-absolute"></div>
-                            <img src="{{ asset('public/frontend/images/event-event-bg-2.png') }}" alt="event img">
-                            <a href="https://www.youtube.com/watch?v=Rf9flQISwok" class="ms-play-border ms-event-play-btn popup-video">play</a>
+                            <img src="{{ asset('frontend/images/event-event-bg-2.png') }}" alt="event img"  height="350px" style="border-radius: 15%;">
                         </div>
                     </div>
                 </div>
@@ -428,40 +427,7 @@
                 <div class="swiper-container ms-partner-active bdFadeUp">
                     <div class="swiper-wrapper">
                         <div class="swiper-slide">
-                            <img src="{{ asset('public/frontend/images/partner-partner-01.png') }}" alt="partner image">
-                        </div>
-                        <div class="swiper-slide">
-                            <img src="{{ asset('public/frontend/images/partner-partner-02.png') }}" alt="partner image">
-                        </div>
-                        <div class="swiper-slide">
-                            <img src="{{ asset('public/frontend/images/partner-partner-03.png') }}" alt="partner image">
-                        </div>
-                        <div class="swiper-slide">
-                            <img src="{{ asset('public/frontend/images/partner-partner-04.png') }}" alt="partner image">
-                        </div>
-                        <div class="swiper-slide">
-                            <img src="{{ asset('public/frontend/images/partner-partner-05.png') }}" alt="partner image">
-                        </div>
-                        <div class="swiper-slide">
-                            <img src="{{ asset('public/frontend/images/partner-partner-04.png') }}" alt="partner image">
-                        </div>
-                        <div class="swiper-slide">
-                            <img src="{{ asset('public/frontend/images/partner-partner-01.png') }}" alt="partner image">
-                        </div>
-                        <div class="swiper-slide">
-                            <img src="{{ asset('public/frontend/images/partner-partner-02.png') }}" alt="partner image">
-                        </div>
-                        <div class="swiper-slide">
-                            <img src="{{ asset('public/frontend/images/partner-partner-03.png') }}" alt="partner image">
-                        </div>
-                        <div class="swiper-slide">
-                            <img src="{{ asset('public/frontend/images/partner-partner-04.png') }}" alt="partner image">
-                        </div>
-                        <div class="swiper-slide">
-                            <img src="{{ asset('public/frontend/images/partner-partner-05.png') }}" alt="partner image">
-                        </div>
-                        <div class="swiper-slide">
-                            <img src="{{ asset('public/frontend/images/partner-partner-04.png') }}" alt="partner image">
+                            <img src="{{url('public/logo', $general_setting->site_logo)}}" alt="partner image">
                         </div>
                     </div>
                 </div>
@@ -476,27 +442,15 @@
                     <div class="ms-cta-wrap">
                         <div class="ms-cta-item">
                             <div class="ms-cta-content">
-                                <h2 class="section__title mb-25">Best way to Hire to Musician</h2>
-                                <p class="mb-0">Party Bands For Hire a Live Music Agency offering an
-                                    unknown
-                                    printer took a
-                                    galley
-                                    wtnd scrambled
-                                    it
-                                    to
-                                    makeive centuriesbut
-                                    also.</p>
+                                <h2 class="section__title mb-25">Best Musician of the week</h2>
+                                <p class="mb-0">
+                                    The Best Musician of the Week is a recognition awarded to an exceptional musical artist who has showcased outstanding creativity, skill, and innovation in their recent musical endeavors. This accolade highlights their ability to captivate audiences, push boundaries, and contribute significantly to the world of music within the past week. Whether through groundbreaking compositions, mesmerizing performances, or impactful contributions to the industry, the Best Musician of the Week is a celebration of musical excellence in the here and now.
+                                </p>
                             </div>
                         </div>
                         <div class="ms-cta-item">
-                            <div class="ms-cta-img">
-                                <img src="{{ asset('public/frontend/images/cta-cta-01.png') }}" alt="cta image">
-                            </div>
-                        </div>
-                        <div class="ms-cta-item">
-                            <div class="ms-cta-app">
-{{--                                <a target="_blank" href="#"><img src="{{ asset('public/frontend/images/cta-app-store.png') }}" alt="app store"></a>--}}
-{{--                                <a target="_blank" href="#"><img src="{{ asset('public/frontend/images/cta-play-store.png') }}" alt="play store"></a>--}}
+                            <div class="ms-cta-img ms-popular__thumb">
+                                    <img src="{{url('public/images/employee',$best_musician->image)}}" alt="cta image">
                             </div>
                         </div>
                     </div>

@@ -76,7 +76,37 @@ class HomeController extends Controller
         $this->checkVotePayment();
         $musicians = Employee::where('is_active', true)->get();
         $judges = Judge::where('is_active', true)->get();
-        return view('frontend.home', compact('musicians', 'judges'));
+
+
+        $start_date = date('Y-m-d', strtotime('last monday'));
+        $end_date = date('Y-m-d');
+
+        $best_musician = DB::table('votes')
+            ->select('votes.musician_id', DB::raw('SUM(votes.vote) as total_vote'))
+            ->join('employees', 'employees.id', '=', 'votes.musician_id')
+            ->whereDate('votes.created_at', '>=', $start_date)
+            ->whereDate('votes.created_at', '<=', $end_date)
+            ->where('employees.is_active', true)
+            ->where('votes.status', true)
+            ->orderBy('total_vote', 'desc')
+            ->groupBy('votes.musician_id')
+            ->first();
+
+        if($best_musician != null) {
+            $best_musician  = Employee::find($best_musician->musician_id);
+        } else {
+            $best_musician = DB::table('votes')
+                ->select('votes.musician_id', DB::raw('SUM(votes.vote) as total_vote'))
+                ->join('employees', 'employees.id', '=', 'votes.musician_id')
+                ->where('employees.is_active', true)
+                ->where('votes.status', true)
+                ->orderBy('total_vote', 'desc')
+                ->groupBy('votes.musician_id')
+                ->first();
+            $best_musician  = Employee::find($best_musician->musician_id);
+        }
+
+        return view('frontend.home', compact('musicians', 'judges', 'best_musician'));
     }
 
     public function signup()
