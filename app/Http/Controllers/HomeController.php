@@ -69,7 +69,7 @@ class HomeController extends Controller
     {
         if(Auth::user()) {
             $role = Auth::user()->role_id;
-            if($role == 1) {
+            if($role == 1 || $role == 2) {
                 return $this->admin();
             }
         }
@@ -103,10 +103,20 @@ class HomeController extends Controller
                 ->orderBy('total_vote', 'desc')
                 ->groupBy('votes.musician_id')
                 ->first();
-            $best_musician  = Employee::find($best_musician->musician_id);
+
+            if($best_musician != null) {
+                $best_musician  = Employee::find($best_musician->musician_id);
+            }
         }
 
-        return view('frontend.home', compact('musicians', 'judges', 'best_musician'));
+        $see_votes = false;
+        $role = Role::first();
+        if($role->hasPermissionTo('see-votes')) {
+        $see_votes = true;
+        }
+
+
+        return view('frontend.home', compact('musicians', 'judges', 'best_musician', 'see_votes'));
     }
 
     public function signup()
@@ -132,7 +142,15 @@ class HomeController extends Controller
         $shorts = Gallery::where('employee_id', $id)->where('type', 'short')->get();
         $youtubes = Gallery::where('employee_id', $id)->where('type', 'link')->get();
         $contentants = Employee::where('is_active', true)->get();
-        return view('frontend.employee', compact('musician', 'contentants', 'images', 'audios', 'videos', 'shorts', 'youtubes'));
+
+
+        $see_votes = false;
+        $role = Role::first();
+        if($role->hasPermissionTo('see-votes')) {
+            $see_votes = true;
+        }
+
+        return view('frontend.employee', compact('musician', 'contentants', 'images', 'audios', 'videos', 'shorts', 'youtubes', 'see_votes'));
     }
 
     public function employeeFind(Request $request) {
@@ -402,7 +420,7 @@ class HomeController extends Controller
     }
 
     private function checkVotePayment(){
-        $votes = vote::where('created_at', '>' , date('Y-m-d H:i:s', strtotime('-120 minutes')))->where('status', false)->get();
+        $votes = vote::where('created_at', '>' , date('Y-m-d H:i:s', strtotime('-240 minutes')))->where('status', false)->get();
 
         if($votes->isEmpty()) {
             return true;

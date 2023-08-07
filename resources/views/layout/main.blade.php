@@ -476,7 +476,7 @@
                             <input type="number" name="vote" step="any" required class="form-control" value="1">
                         </div>
                         <div class="col-md-6 form-group">
-                            <label>Votes name *</label>
+                            <label>Voter name *</label>
                             <select name="user_id" class="selectpicker form-control" required data-live-search="true"   title="Select Voter...">
                                 @foreach($users as $user)
                                     <option value="{{$user->id}}">{{$user->name}}</option>
@@ -484,7 +484,7 @@
                             </select>
                         </div>
                         <div class="col-md-6 form-group">
-                            <label>Votes name *</label>
+                            <label>Contestants name *</label>
                             <select name="musician_id" class="selectpicker form-control" required data-live-search="true"   title="Select Contentant...">
                                 @foreach($contentants as $contentant)
                                     <option value="{{$contentant->id}}">{{$contentant->name}}</option>

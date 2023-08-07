@@ -24,7 +24,19 @@
                                         <a href="{{ route('musician.data', $musician->id) }}">
                                             <img src="{{url('public/images/employee',$musician->image)}}" alt="musician name">
                                         </a>
-                                        <span class="ms-song-num">{{ $musician->id }}</span>
+                                        @if($see_votes)
+                                            @php
+                                                $start_date = date('Y-m-d', strtotime('last monday'));
+                                                $end_date = date('Y-m-d');
+
+                                                $vote_count = \App\vote::where('status', true)
+                                                ->where('musician_id', $musician->id)
+                                                ->whereDate('votes.created_at', '>=', $start_date)
+                                                ->whereDate('votes.created_at', '<=', $end_date)
+                                                ->sum('vote');
+                                            @endphp
+                                            <span class="ms-song-num">{{ $vote_count }}</span>
+                                        @endif
                                     </div>
                                     <div class="ms-song-content">
                                         <h3 class="ms-song-title"><a href="{{ route('musician.data', $musician->id) }}">{{ $musician->name }}</a>
@@ -403,7 +415,7 @@
                     </div>
                     <div class="col-xl-4">
                         <div class="ms-event-play d-inline-block w-img p-relative mb-60">
-                            <img src="{{ asset('frontend/images/event-event-bg-2.png') }}" alt="event img"  height="350px" style="border-radius: 15%;">
+                            <img src="{{ asset('public/frontend/images/event-event-bg-2.png') }}" alt="event img"  height="350px" style="border-radius: 15%;">
                         </div>
                     </div>
                 </div>
@@ -439,21 +451,33 @@
         <section class="ms-cta-area ms-cta--120 p-relative zindex-10">
             <div class="container">
                 <div class="ms-cta-bg include__bg ms-cta-overlay zindex-1 fix"  data-background="{{ url('public/frontend/images/sound-bg.png') }}">
-                    <div class="ms-cta-wrap">
-                        <div class="ms-cta-item">
-                            <div class="ms-cta-content">
-                                <h2 class="section__title mb-25">Best Musician of the week</h2>
-                                <p class="mb-0">
-                                    The Best Musician of the Week is a recognition awarded to an exceptional musical artist who has showcased outstanding creativity, skill, and innovation in their recent musical endeavors. This accolade highlights their ability to captivate audiences, push boundaries, and contribute significantly to the world of music within the past week. Whether through groundbreaking compositions, mesmerizing performances, or impactful contributions to the industry, the Best Musician of the Week is a celebration of musical excellence in the here and now.
-                                </p>
+                    @if($best_musician)
+                        <a href="{{ route('musician.data', $best_musician->id) }}">
+                    @endif
+                        <div class="ms-cta-wrap">
+                            <div class="ms-cta-item">
+                                <div class="ms-cta-content">
+                                    <h2 class="section__title mb-25">Best Musician of the week</h2>
+                                    @if($best_musician)
+                                        <h4 class="section__title mb-25">({{ $best_musician->name }})</h4>
+                                    @endif
+                                    <p class="mb-0">
+                                        The Best Musician of the Week is a recognition awarded to an exceptional musical artist who has showcased outstanding creativity, skill, and innovation in their recent musical endeavors.
+                                        This accolade highlights their ability to captivate audiences, push boundaries, and contribute significantly to the world of music within the past week.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="ms-cta-item">
+                                <div class="ms-cta-img ms-popular__thumb">
+                                    @if($best_musician)
+                                        <img src="{{url('public/images/employee',$best_musician->image)}}" alt="cta image">
+                                    @endif
+                                </div>
                             </div>
                         </div>
-                        <div class="ms-cta-item">
-                            <div class="ms-cta-img ms-popular__thumb">
-                                    <img src="{{url('public/images/employee',$best_musician->image)}}" alt="cta image">
-                            </div>
-                        </div>
-                    </div>
+                    @if($best_musician)
+                        </a>
+                    @endif
                 </div>
             </div>
         </section>

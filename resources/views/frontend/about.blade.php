@@ -51,7 +51,7 @@
 
                     <div class="col-lg-6">
                         <div class="ms-event-play d-inline-block p-relative mb-40">
-                            <img src="{{ asset('frontend/images/event-event-bg-2.png') }}" alt="event img" height="350px" style="border-radius: 15%;">
+                            <img src="{{ asset('public/frontend/images/event-event-bg-2.png') }}" alt="event img" height="350px" style="border-radius: 15%;">
                         </div>
                     </div>
 
