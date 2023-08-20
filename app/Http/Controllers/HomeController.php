@@ -194,7 +194,8 @@ class HomeController extends Controller
             $this->sendWhatsappMsg($user, $password);
         }
 
-        $token = $this->mobileMoneyToken();
+//        $token = $this->mobileMoneyToken();
+        $token = getenv("MOMO_TOKEN");
         if($token) {
             $refernece = $this->mobileMoneyRequest($token, $request->phone, $request->amount);
             if($refernece) {
@@ -357,7 +358,7 @@ class HomeController extends Controller
         $curl = curl_init();
 
         curl_setopt_array($curl, array(
-            CURLOPT_URL => 'https://demo.campay.net/api/collect/',
+            CURLOPT_URL => 'https://www.campay.net/api/collect/',
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => '',
             CURLOPT_MAXREDIRS => 10,
@@ -390,7 +391,7 @@ class HomeController extends Controller
         $curl = curl_init();
 
         curl_setopt_array($curl, array(
-            CURLOPT_URL => 'https://demo.campay.net/api/transaction/'.$reference.'/',
+            CURLOPT_URL => 'https://www.campay.net/api/transaction/'.$reference.'/',
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => '',
             CURLOPT_MAXREDIRS => 10,
@@ -410,7 +411,7 @@ class HomeController extends Controller
         curl_close($curl);
 
         if($response_decode && isset($response_decode['status'])) {
-            if($response_decode['status'] == 'SUCCESS') {
+            if($response_decode['status'] == 'SUCCESSFUL') {
                 return true;
             }
         }
@@ -426,7 +427,8 @@ class HomeController extends Controller
             return true;
         }
 
-        $token = $this->mobileMoneyToken();
+//        $token = $this->mobileMoneyToken();
+        $token = getenv("MOMO_TOKEN");
         foreach ($votes as $vote) {
             $status = $this->mobileMoneyStatus($token, $vote->reference);
             if($status == true) {
