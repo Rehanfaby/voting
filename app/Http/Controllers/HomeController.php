@@ -61,6 +61,7 @@ class HomeController extends Controller
                 return $this->index();
             }
         }
+        $this->checkVotePayment();
 
         return view('index');
     }
@@ -73,7 +74,6 @@ class HomeController extends Controller
                 return $this->admin();
             }
         }
-        $this->checkVotePayment();
         $musicians = Employee::where('is_active', true)->get();
         $judges = Judge::where('is_active', true)->get();
 
@@ -207,7 +207,7 @@ class HomeController extends Controller
                     'reference' => $refernece
                 ]);
 
-                $this->sendWhatsappMsgVoteMomo($user, $request->vote, $request->musician_id);
+//                $this->sendWhatsappMsgVoteMomo($user, $request->vote, $request->musician_id);
                 return 'Thank you for your vote, Vote status is pending, please pay your payment in 30 minutes';
             }
         }
@@ -412,27 +412,32 @@ class HomeController extends Controller
 
         if($response_decode && isset($response_decode['status'])) {
             if($response_decode['status'] == 'SUCCESSFUL') {
-                return true;
+                return 1;
+            }
+            if($response_decode['status'] == 'FAILED') {
+                return 2;
             }
         }
 
-        return false;
+        return 0;
 
     }
 
     private function checkVotePayment(){
-        $votes = vote::where('created_at', '>' , date('Y-m-d H:i:s', strtotime('-240 minutes')))->where('status', false)->get();
-
+        $votes = vote::where('created_at', '>' , date('Y-m-d H:i:s', strtotime('-1440 minutes')))->where('status', 0)->get();
         if($votes->isEmpty()) {
             return true;
         }
 
-//        $token = $this->mobileMoneyToken();
         $token = getenv("MOMO_TOKEN");
         foreach ($votes as $vote) {
             $status = $this->mobileMoneyStatus($token, $vote->reference);
-            if($status == true) {
+            if($status == 1) {
                 $vote->update(['status' => 1]);
+                $this->sendWhatsappMsgVoteMomoSuccess($vote->voters, $vote->vote, $vote->musician_id);
+            }
+            if($status == 2) {
+                $vote->update(['status' => 2]);
             }
         }
     }
@@ -489,6 +494,32 @@ class HomeController extends Controller
         $total_votes = vote::where('musician_id', $musician_id)->where('status', true)->sum('vote');
 
         $msg = '*Thank you for your vote,* Vote status is pending, please pay your payment in 30 minutes \n\n';
+
+        $msg .= 'You have casted ' . $vote;
+        if ($vote == 1) {
+            $msg .= ' vote ';
+        } else {
+            $msg .= ' votes ';
+        }
+        $msg .= 'for ' .$musician->name . '\n\n';
+        $msg .= $musician->name . '`s total votes are  '.$total_votes.'\n\n';
+
+        try{
+            $this->wpMessage($user->phone, $msg);
+        }
+        catch(\Exception $e){
+
+        }
+
+        return true;
+    }
+
+    public function sendWhatsappMsgVoteMomoSuccess($user, $vote, $musician_id)
+    {
+        $musician = Employee::select('name', 'id')->find($musician_id);
+        $total_votes = vote::where('musician_id', $musician_id)->where('status', true)->sum('vote');
+
+        $msg = '*Thank you for your vote,*  \n\n';
 
         $msg .= 'You have casted ' . $vote;
         if ($vote == 1) {

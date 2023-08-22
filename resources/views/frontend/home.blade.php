@@ -17,7 +17,7 @@
             <div class="container-fluid ms-maw-1710">
                 <div class="swiper-container ms-song-active fix">
                     <div class="swiper-wrapper">
-                        @foreach($musicians as $musician)
+                        @foreach($musicians as $key=>$musician)
                             <div class="swiper-slide">
                                 <div class="ms-song-item">
                                     <div class="ms-song-img p-relative">
@@ -29,13 +29,13 @@
                                                 $start_date = date('Y-m-d', strtotime('last monday'));
                                                 $end_date = date('Y-m-d');
 
-                                                $vote_count = \App\vote::where('status', true)
+                                                $vote_count[] = \App\vote::where('status', true)
                                                 ->where('musician_id', $musician->id)
                                                 ->whereDate('votes.created_at', '>=', $start_date)
                                                 ->whereDate('votes.created_at', '<=', $end_date)
                                                 ->sum('vote');
                                             @endphp
-                                            <span class="ms-song-num">{{ $vote_count }}</span>
+                                            <span class="ms-song-num">{{ $vote_count[$key] }}</span>
                                         @endif
                                     </div>
                                     <div class="ms-song-content">
@@ -97,38 +97,40 @@
                 <div class="row justify-content-center bdFadeUp">
                     <div class="col-xl-7">
                         <div class="section__title-wrapper mb-65 text-center bd-title-anim">
-                            <span class="section__subtitle">Music Competitor</span>
+                            <span class="section__subtitle">Beyond The Talent Showr</span>
                             <h2 class="section__title">
-                                our <span class="animated-underline active">most popular Musicians</span>
+                                Qualified <span class="animated-underline active">Contestants for the Week!</span>
 
                             </h2>
                         </div>
                     </div>
                 </div>
                 <div class="ms-fun-brand-wrap bdFadeUp">
-                    @foreach($musicians as $musician)
-                        <div class="ms-fun-brand-item ms-fun-border">
-                            <div class="ms-fun-brand-top mb-20">
-                                <div class="ms-fun-brand-thumb">
-                                    <a href="{{ route('musician.data', $musician->id) }}"><img src="{{url('public/images/employee',$musician->image)}}" alt="function brand"></a>
+                    @foreach($musicians as $key=>$musician)
+                        <a href="{{ route('musician.data', $musician->id) }}">
+                            <div class="ms-fun-brand-item ms-fun-border" style="cursor: pointer">
+                                <div class="ms-fun-brand-top mb-20">
+                                    <div class="ms-fun-brand-thumb">
+                                        <img src="{{url('public/images/employee',$musician->image)}}" alt="function brand">
+                                    </div>
+                                    <div class="ms-fun-brand-content">
+                                        <h3 class="ms-fun-brand-title">
+                                            {{ $musician->name }}</h3>
+                                        <span class="ms-fun-brand-subtitle">{{ @$musician->departments->name }}</span>
+                                    </div>
                                 </div>
-                                <div class="ms-fun-brand-content">
-                                    <h3 class="ms-fun-brand-title">
-                                        <a href="{{ route('musician.data', $musician->id) }}">{{ $musician->name }}</a></h3>
-                                    <span class="ms-fun-brand-subtitle">{{ @$musician->departments->name }}</span>
+                                <div class="ms-fun-brand-bottom">
+                                    <div class="ms-fun-brand-location">
+                                        <i class="fa fa-vote-yea"></i> Vote Me
+                                    </div>
+                                    @if($see_votes)
+                                        <div class="ms-fun-brand-rating">
+                                            <span style="color: yellow">{{ $vote_count[$key] }}</span>
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
-                            <div class="ms-fun-brand-bottom">
-                                <div class="ms-fun-brand-location">
-                                    <a href="{{ route('musician.data', $musician->id) }}"> <i class="fa fa-vote-yea"></i>Vote</a>
-                                </div>
-                                <div class="ms-fun-brand-rating">
-                                    <a href="{{ route('musician.data', $musician->id) }}">
-                                        <button>Vote me</button>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
+                        </a>
                     @endforeach
                 </div>
             </div>
@@ -144,7 +146,7 @@
                 <div class="row align-items-end mb-25 bdFadeUp">
                     <div class="col-xl-6 col-lg-6">
                         <div class="section__title-wrapper mb-40 bd-title-anim">
-                            <span class="section__subtitle">Meet Our Judges</span>
+                            <span class="section__subtitle">Our Seasoned Judges</span>
                             <h2 class="section__title msg_title">
                                 <span class="animated-underline active"></span> <br>
 
@@ -210,19 +212,19 @@
                                 <h3><span class="text-color-1">To</span></h3>
                             </div>
                             <div class="swiper-slide">
-                                <h3>The</h3>
+                                <h3>Beyond The </h3>
+                            </div>
+                            <div class="swiper-slide">
+                                <h3>Talent</h3>
+                            </div>
+                            <div class="swiper-slide">
+                                <h3><span class="text-color-2">Show</span></h3>
                             </div>
                             <div class="swiper-slide">
                                 <h3>Music</h3>
                             </div>
                             <div class="swiper-slide">
-                                <h3><span class="text-color-2">Competition</span></h3>
-                            </div>
-                            <div class="swiper-slide">
-                                <h3>Band</h3>
-                            </div>
-                            <div class="swiper-slide">
-                                <h3>Challenge</h3>
+                                <h3>Competition</h3>
                             </div>
                         </div>
                     </div>
@@ -231,13 +233,13 @@
                     <div class="swiper-container ms-str-active scroll__text pt-20 pb-20">
                         <div class="swiper-wrapper ms-str-active-wrapper">
                             <div class="swiper-slide">
-                                <h3>Compose</h3>
+                                <h3>Beyond</h3>
                             </div>
                             <div class="swiper-slide">
-                                <h3>Your</h3>
+                                <h3>The</h3>
                             </div>
                             <div class="swiper-slide">
-                                <h3><span class="text-color-1">Victory</span></h3>
+                                <h3><span class="text-color-1">Talent Show</span></h3>
                             </div>
                             <div class="swiper-slide">
                                 <h3>Music</h3>
@@ -348,61 +350,53 @@
                                                 <h3 class="ms-event-title"><a href="event-details.html">Corporate
                                                         entertainment ideas</a>
                                                 </h3>
-                                                <p class="ms-event-text">Our hand-picked acts will guarantee
-                                                    you fantastic
-                                                    wedding
-                                                    entertainment for each part.
-                                                    We'll provide help and support 24 hours a day, 7 days a
-                                                    week, right up
-                                                    until</p>
+                                                <p class="ms-event-text">Hosted by Beyond Company Limited
+                                                    weill be come together to sing hymns and worship
+                                                    the almighty God.
+                                                </p>
                                                 <div class="ms-event-inner">
                                                     <div class="ms-event-location">
-                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>Chicago</a>
+                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>Bamenda</a>
                                                     </div>
                                                     <div class="ms-event-date">
-                                                        <span>7:00 PM, Saturday, February 26, 2023</span>
+                                                        <span>3:00 PM, Sunday, February 3rd, 2023</span>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="ms-event-item">
                                             <div class="ms-event-item-top">
-                                                <h3 class="ms-event-title"><a href="event-details.html">Party
-                                                        entertainment
+                                                <h3 class="ms-event-title"><a href="event-details.html">The Hymns
+                                                        Festival
                                                         ideas</a></h3>
-                                                <p class="ms-event-text">Our hand-picked acts will guarantee
-                                                    you fantastic
-                                                    wedding
-                                                    entertainment for each part.
-                                                    We'll provide help and support 24 hours a day, 7 days a
-                                                    week, right up
-                                                    until</p>
+                                                <p class="ms-event-text">Hosted by Beyond Company Limited
+                                                    weill be come together to sing hymns and worship
+                                                    the almighty God.
+                                                </p>
                                                 <div class="ms-event-inner">
                                                     <div class="ms-event-location">
-                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>Chicago</a>
+                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>Bamenda</a>
                                                     </div>
                                                     <div class="ms-event-date">
-                                                        <span>7:00 PM, Saturday, February 18, 2023</span>
+                                                        <span>3:00 PM, Sunday, February 3rd, 2023</span>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div class="ms-event-item-bottom">
-                                                <h3 class="ms-event-title"><a href="event-details.html">New
-                                                        Year&rsquo;s Eve party
+                                                <h3 class="ms-event-title"><a href="event-details.html">Royal
+                                                        Priesthood &rsquo;s Choir
                                                         bands</a></h3>
-                                                <p class="ms-event-text">Our hand-picked acts will guarantee
-                                                    you fantastic
-                                                    wedding
-                                                    entertainment for each part.
-                                                    We'll provide help and support 24 hours a day, 7 days a
-                                                    week, right up
-                                                    until</p>
+                                                <p class="ms-event-text">Come and Join
+                                                    us as we
+                                                    build
+                                                    the house of God.Nothing is too small.
+                                                </p>
                                                 <div class="ms-event-inner">
                                                     <div class="ms-event-location">
-                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>Chicago</a>
+                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>Cameroon</a>
                                                     </div>
                                                     <div class="ms-event-date">
-                                                        <span>7:00 PM, Saturday, February 26, 2023</span>
+                                                        <span>2:00 PM, Sunday, Auguest 27, 2023</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -430,7 +424,7 @@
                     <div class="col-lg-6">
                         <div class="section__title-wrapper mb-65 text-center bd-title-anim">
                             <span class="section__subtitle">Our Partners</span>
-                            <h2 class="section__title">Valuable <span class="animated-underline active">Featured</span>
+                            <h2 class="section__title">Most <span class="animated-underline active">Valuable</span>
                                 Partners
                             </h2>
                         </div>
@@ -453,29 +447,28 @@
                 <div class="ms-cta-bg include__bg ms-cta-overlay zindex-1 fix"  data-background="{{ url('public/frontend/images/sound-bg.png') }}">
                     @if($best_musician)
                         <a href="{{ route('musician.data', $best_musician->id) }}">
-                    @endif
-                        <div class="ms-cta-wrap">
-                            <div class="ms-cta-item">
-                                <div class="ms-cta-content">
-                                    <h2 class="section__title mb-25">Best Musician of the week</h2>
-                                    @if($best_musician)
-                                        <h4 class="section__title mb-25">({{ $best_musician->name }})</h4>
-                                    @endif
-                                    <p class="mb-0">
-                                        The Best Musician of the Week is a recognition awarded to an exceptional musical artist who has showcased outstanding creativity, skill, and innovation in their recent musical endeavors.
-                                        This accolade highlights their ability to captivate audiences, push boundaries, and contribute significantly to the world of music within the past week.
-                                    </p>
+                            @endif
+                            <div class="ms-cta-wrap">
+                                <div class="ms-cta-item">
+                                    <div class="ms-cta-content">
+                                        <h2 class="section__title mb-25">Most Voted Music of the Week</h2>
+                                        @if($best_musician)
+                                            <h4 class="section__title mb-25">({{ $best_musician->name }})</h4>
+                                        @endif
+                                        <p class="mb-0">
+                                            Here comes the best musician of the week!
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="ms-cta-item">
+                                    <div class="ms-cta-img ms-popular__thumb">
+                                        @if($best_musician)
+                                            <img src="{{url('public/images/employee',$best_musician->image)}}" alt="cta image">
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
-                            <div class="ms-cta-item">
-                                <div class="ms-cta-img ms-popular__thumb">
-                                    @if($best_musician)
-                                        <img src="{{url('public/images/employee',$best_musician->image)}}" alt="cta image">
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-                    @if($best_musician)
+                            @if($best_musician)
                         </a>
                     @endif
                 </div>
