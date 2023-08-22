@@ -21,6 +21,8 @@ Route::group(['middleware' => 'auth'], function() {
 
 Route::get('/', 'HomeController@index')->name('home');
 Route::get('/about', 'HomeController@about')->name('about');
+Route::get('/contact', 'HomeController@contact')->name('contact');
+Route::post('/contact/message', 'HomeController@contactMessage')->name('contact.message');
 Route::get('user/signup', 'HomeController@signup')->name('user.signup');
 Route::get('user/login', 'HomeController@login')->name('user.login');
 Route::get('user/contentant', 'HomeController@userContentant')->name('user.contentant');

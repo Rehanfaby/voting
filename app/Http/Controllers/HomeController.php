@@ -53,6 +53,24 @@ class HomeController extends Controller
         return view('frontend.about');
     }
 
+    public function contact()
+    {
+        return view('frontend.contact');
+    }
+
+     public function contactMessage(Request $request){
+         $msg = '*Thanks for contacting ' . getenv("APP_NAME") . '.* ' . '\n\n';
+         $msg .= 'How might we be of help? \n\n';
+
+         try{
+             $this->wpMessage($request->number, $msg);
+         }
+         catch(\Exception $e){
+
+         }
+         return back()->with('message', 'Your message has been delivered, We will contact you ASAP..!');
+     }
+
     public function admin() {
 
         if(Auth::user()) {

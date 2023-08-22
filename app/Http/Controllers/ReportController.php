@@ -44,7 +44,7 @@ class ReportController extends Controller
             $permissions = Role::findByName($role->name)->permissions;
             foreach ($permissions as $permission)
                 $all_permission[] = $permission->name;
-            if($request->start_date) {;
+            if($request->start_date) {
                 $start_date = $request->start_date;
                 $end_date = $request->end_date;
             }

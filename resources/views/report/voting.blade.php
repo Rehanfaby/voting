@@ -41,9 +41,12 @@
                 </tr>
                 </thead>
                 <tbody>
+                @php
+                    $total_votes = 0;
+                @endphp
                 @foreach($votes as $key=>$employee)
                     @php $contestant = \App\Employee::find($employee->musician_id); @endphp
-                    <tr>
+                    <tr data-id="{{$contestant->id}}" class="clickable-row" style="cursor: pointer" data-href="{{ route('musician.votes', $contestant->id) }}">
                         <td>{{$key}}</td>
                         @if($contestant->image)
                             <td> <img src="{{url('public/images/employee',$contestant->image)}}" height="80" width="80">
@@ -51,12 +54,24 @@
                         @else
                             <td>No Image</td>
                         @endif
-                        <td><a href="{{ route('musician.votes', $contestant->id) }}">{{ $contestant->name }}</a></td>
-                        <td><a href="{{ route('musician.votes', $contestant->id) }}">{{ $employee->total_vote}}</a></td>
+                        <td>{{ $contestant->name }}</td>
+                        <td>{{ $employee->total_vote }}</td>
                         <td><span class="badge btn-info" style="font-size: 16px">{{ $key + 1}}</span></td>
                     </tr>
+                    @php
+                        $total_votes += $employee->total_vote;
+                    @endphp
                 @endforeach
                 </tbody>
+                <tfoot>
+                <tr>
+                    <th></th>
+                    <th></th>
+                    <th>Total</th>
+                    <th>{{ $total_votes }}</th>
+                    <th></th>
+                </tr>
+                </tfoot>
             </table>
         </div>
     </section>
@@ -78,6 +93,11 @@
             }
         });
 
+        $(document).ready(function($) {
+            $('.clickable-row td:not(:last-child)').click(function () {
+                window.location = $(this).closest('tr').data("href");
+            });
+        });
 
 
         $('#employee-table').DataTable( {

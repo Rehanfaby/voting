@@ -104,6 +104,9 @@
                 <div class="offcanvas__btn mb-30">
                     <a class="user__name" href="{{ route('about') }}"><i class="fa-solid fa-plus"></i> About Us</a>
                 </div>
+                <div class="offcanvas__btn mb-30">
+                    <a class="user__name" href="{{ route('contact') }}"><i class="fa-solid fa-plus"></i> Contact Us</a>
+                </div>
 
                 @if($user)
                 <div class="hr-1 mt-30 mb-30 d-xl-none"></div>
@@ -149,6 +152,9 @@
                                                 </li>
                                                 <li>
                                                     <a href="{{ route('about') }}">About Us</a>
+                                                </li>
+                                                <li>
+                                                    <a href="{{ route('contact') }}">Contact Us</a>
                                                 </li>
                                             </ul>
                                         </nav>
@@ -333,7 +339,9 @@
                                     </a>
                                 </div>
                                 <div class="ms-footer-copy">
-                                    <p>{{ $general_setting->developed_by }}</p>
+                                    <a href="{{ route('contact') }}">
+                                        <p style="font-size: 25px">{{ $general_setting->developed_by }}</p>
+                                    </a>
                                 </div>
                             </div>
                         </div>

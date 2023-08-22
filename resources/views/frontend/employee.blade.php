@@ -256,6 +256,9 @@
                 var $input = $(this).parent().find("input");
                 var count = parseInt($input.val()) - 1;
                 count = count < 1 ? 1 : count;
+                if (count == undefined) {
+                    return false;
+                }
                 var price = count * {{ $general_setting->vote_price }};
                 $("#payable-amount").html(price);
                 var coin = count * {{ $general_setting->vote_coin }};
@@ -269,6 +272,10 @@
                 var $input = $(this).parent().find("input");
                 var count = parseInt($input.val()) + 1;
                 count = count < 1 ? 1 : count;
+                count = count < 1 ? 1 : count;
+                if (count == undefined) {
+                    return false;
+                }
                 var price = count * {{ $general_setting->vote_price }};
                 $("#payable-amount").html(price);
                 var coin = count * {{ $general_setting->vote_coin }};
@@ -277,6 +284,34 @@
                 $input.change();
                 return false;
             });
+
+
+            {{--function priceCalculate(count, $input){--}}
+            {{--    var price = count * {{ $general_setting->vote_price }};--}}
+            {{--    $("#payable-amount").html(price);--}}
+            {{--    var coin = count * {{ $general_setting->vote_coin }};--}}
+            {{--    $("#payable-coin").html(coin);--}}
+            {{--    $input.val(count);--}}
+            {{--    $input.change();--}}
+            {{--    return false;--}}
+            {{--}--}}
+
+            $(".cart-input").on("change keyup input",function () {
+                var $input = $(this);
+                var count = $(this).val();
+                count = count < 1 ? 0 : count;
+                if (count == 0) {
+                    return false;
+                }
+                var price = count * {{ $general_setting->vote_price }};
+                $("#payable-amount").html(price);
+                var coin = count * {{ $general_setting->vote_coin }};
+                $("#payable-coin").html(coin);
+                $input.val(count);
+                $input.change();
+                return false;
+            });
+
         </script>
 
     </main>
