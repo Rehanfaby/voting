@@ -79,13 +79,14 @@ class HomeController extends Controller
                 return $this->index();
             }
         }
-        $this->checkVotePayment();
 
         return view('index');
     }
 
     public function index()
     {
+
+        $this->checkVotePayment();
         if(Auth::user()) {
             $role = Auth::user()->role_id;
             if($role == 1 || $role == 2) {
@@ -96,14 +97,14 @@ class HomeController extends Controller
         $judges = Judge::where('is_active', true)->get();
 
 
-        $start_date = date('Y-m-d', strtotime('last monday'));
-        $end_date = date('Y-m-d');
+//        $start_date = date('Y-m-d', strtotime('last monday'));
+//        $end_date = date('Y-m-d');
 
         $best_musician = DB::table('votes')
             ->select('votes.musician_id', DB::raw('SUM(votes.vote) as total_vote'))
             ->join('employees', 'employees.id', '=', 'votes.musician_id')
-            ->whereDate('votes.created_at', '>=', $start_date)
-            ->whereDate('votes.created_at', '<=', $end_date)
+//            ->whereDate('votes.created_at', '>=', $start_date)
+//            ->whereDate('votes.created_at', '<=', $end_date)
             ->where('employees.is_active', true)
             ->where('votes.status', true)
             ->orderBy('total_vote', 'desc')

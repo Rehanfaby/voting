@@ -39,6 +39,7 @@ class ReportController extends Controller
 
     public function votingReport(Request $request)
     {
+        $start_date = null;
         $role = Role::find(Auth::user()->role_id);
         if($role->hasPermissionTo('vote-report')){
             $permissions = Role::findByName($role->name)->permissions;
@@ -49,7 +50,7 @@ class ReportController extends Controller
                 $end_date = $request->end_date;
             }
             else {
-                $start_date = date('Y-m-d', strtotime('last monday'));
+                $start_date = '2023-07-01';
                 $end_date = date('Y-m-d');
             }
 

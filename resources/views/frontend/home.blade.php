@@ -26,13 +26,13 @@
                                         </a>
                                         @if($see_votes)
                                             @php
-                                                $start_date = date('Y-m-d', strtotime('last monday'));
-                                                $end_date = date('Y-m-d');
+//                                                $start_date = date('Y-m-d', strtotime('last monday'));
+//                                                $end_date = date('Y-m-d');
 
                                                 $vote_count[] = \App\vote::where('status', true)
                                                 ->where('musician_id', $musician->id)
-                                                ->whereDate('votes.created_at', '>=', $start_date)
-                                                ->whereDate('votes.created_at', '<=', $end_date)
+//                                                ->whereDate('votes.created_at', '>=', $start_date)
+//                                                ->whereDate('votes.created_at', '<=', $end_date)
                                                 ->sum('vote');
                                             @endphp
                                             <span class="ms-song-num">{{ $vote_count[$key] }}</span>

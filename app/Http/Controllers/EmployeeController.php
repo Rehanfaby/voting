@@ -260,13 +260,13 @@ class EmployeeController extends Controller
 
     public function votes($id) {
         $lims_employee_data = Employee::find($id);
-        $start_date = date('Y-m-d', strtotime('last monday'));
-        $end_date = date('Y-m-d');
+//        $start_date = date('Y-m-d', strtotime('last monday'));
+//        $end_date = date('Y-m-d');
 
         $lims_employee_votes = Vote::where('musician_id', $id)
                                 ->orderBy('id', 'desc')
-                                ->whereDate('created_at', '>=', $start_date)
-                                ->whereDate('created_at', '<=', $end_date)
+//                                ->whereDate('created_at', '>=', $start_date)
+//                                ->whereDate('created_at', '<=', $end_date)
                                 ->where('status', true)
                                 ->get();
 
