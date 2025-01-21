@@ -131,7 +131,7 @@ class HomeController extends Controller
         $see_votes = false;
         $role = Role::first();
         if($role->hasPermissionTo('see-votes')) {
-        $see_votes = true;
+            $see_votes = true;
         }
 
 
@@ -243,6 +243,10 @@ class HomeController extends Controller
 
         if ($request->code == null) {
             return "Code is incorrect";
+        }
+
+        if($request->phone_number[0] == '+') {
+            $request->phone_number = substr($request->phone_number, 1);
         }
 
         $coin_check = Coin::where('phone', $request->phone_number)->where('is_active', true)->where('code', $request->code)->first();
