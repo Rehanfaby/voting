@@ -35,7 +35,7 @@
             {!! Form::close() !!}
         </div>
         @if(in_array("votes-add", $all_permission))
-            <button class="btn btn-info" data-toggle="modal" data-target="#vote-modal"><i class="dripicons-plus"></i> Add Vote</button>
+            <button class="btn btn-info" data-toggle="modal" data-target="#vote-modal"><i class="dripicons-plus"></i> {{trans('file.Add Vote')}}</button>
         @endif
     </div>
     <div class="table-responsive">
@@ -45,10 +45,10 @@
                     <th class="not-exported"></th>
                     <th>{{trans('file.Date')}}</th>
                     <th>{{trans('file.reference')}} No</th>
-                    <th>Contentant</th>
-                    <th>Voter</th>
-                    <th>Votes</th>
-                    <th>Status</th>
+                    <th>{{trans('file.Contentment')}}</th>
+                    <th>{{trans('file.Voter name')}}</th>
+                    <th>{{trans('file.Votes')}}</th>
+                    <th>{{trans('file.Status')}}</th>
                     <th class="not-exported">{{trans('file.action')}}</th>
                 </tr>
             </thead>

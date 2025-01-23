@@ -18,7 +18,7 @@
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-xxl-11">
-                    <h3 class="ms-page-title text-center">Sign In</h3>
+                    <h3 class="ms-page-title text-center">{{trans("file.Sign In")}}</h3>
                 </div>
             </div>
         </div>
@@ -30,7 +30,7 @@
         <div class="container">
             <div class="ms-maxw-510 mx-auto">
                 <div class="ms-login-wrap text-center ms-login-space ms-bg-2">
-                    <h3 class="ms-title4 mb-50">Login Your account</h3>
+                    <h3 class="ms-title4 mb-50">{{trans("file.Login Your account")}}</h3>
                     <form action="{{ route('login') }}" method="post">
                         @csrf
                         <div class="ms-input2-box mb-25">
@@ -50,15 +50,14 @@
                             @endif
                         </div>
                         <div class="ms-submit-btn mb-40">
-                            <button class="unfill__btn d-block w-100" type="submit">Login
+                            <button class="unfill__btn d-block w-100" type="submit">{{trans("file.Login")}}
                                 </button>
                         </div>
                         <div class="ms-divided-btn mb-45">
-                            <span>or</span>
+                            <span>{{trans("file.or")}}</span>
                         </div>
                         <div class="ms-not-account mb-35">
-                            <p>Don't have an account? <a href="{{ route('user.signup') }}">Sign
-                                    Up</a></p>
+                            <p>{{trans("file.Don't have an account")}}? <a href="{{ route('user.signup') }}">{{trans("file.Sign Up")}}</a></p>
                         </div>
 
                     </form>

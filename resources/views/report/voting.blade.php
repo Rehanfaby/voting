@@ -36,8 +36,8 @@
                     <th class="not-exported"></th>
                     <th>{{trans('file.Image')}}</th>
                     <th>{{trans('file.name')}}</th>
-                    <th>Votes</th>
-                    <th>Position</th>
+                    <th>{{trans('file.Votes')}}</th>
+                    <th>{{trans('file.Position')}}</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -67,7 +67,7 @@
                 <tr>
                     <th></th>
                     <th></th>
-                    <th>Total</th>
+                    <th>{{trans('file.Total')}}</th>
                     <th>{{ $total_votes }}</th>
                     <th></th>
                 </tr>

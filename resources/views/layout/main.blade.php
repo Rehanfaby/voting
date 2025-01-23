@@ -109,10 +109,10 @@
                 ])->first();
                 ?>
                 @if($index_permission_active)
-                    <li><a href="#vote" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-mail"></i><span>Vote</span></a>
+                    <li><a href="#vote" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-mail"></i><span>{{trans('file.Vote')}}</span></a>
                         <ul id="vote" class="collapse list-unstyled ">
-                            <li id="vote-menu"><a href="{{route('votes.index')}}">Votes List</a></li>
-                            <li id="vote-menu-create"><a id="add-vote" href="">Create Vote</a></li>
+                            <li id="vote-menu"><a href="{{route('votes.index')}}">{{trans('file.Votes List')}}</a></li>
+                            <li id="vote-menu-create"><a id="add-vote" href="">{{trans('file.Create Vote')}}</a></li>
                         </ul>
                     </li>
                 <li>
@@ -125,10 +125,10 @@
                 ])->first();
                 ?>
                 @if($index_permission_active)
-                    <li><a href="#coin" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-mail"></i><span>Coins</span></a>
+                    <li><a href="#coin" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-mail"></i><span>{{trans('file.Coins')}}</span></a>
                         <ul id="coin" class="collapse list-unstyled ">
-                            <li id="coin-menu"><a href="{{route('coins.index')}}">Coins List</a></li>
-                            <li id="coin-menu-create"><a id="add-coin" href="">Create Coins</a></li>
+                            <li id="coin-menu"><a href="{{route('coins.index')}}">{{trans('file.Coins List')}}</a></li>
+                            <li id="coin-menu-create"><a id="add-coin" href="">{{trans('file.Create Coins')}}</a></li>
                         </ul>
                     </li>
                     <li>
@@ -189,12 +189,12 @@
                                 @if($user_add_permission_active)
                                     <li id="user-create-menu"><a href="{{route('user.create')}}">{{trans('file.Add User')}}</a></li>
                                     <li id="user-list-menu"><a href="{{route('user.index')}}">{{trans('file.User List')}}</a></li>
-                                    <li id="admin-menu"><a href="{{route('admin.index')}}">Admin</a></li>
-                                    <li id="judge-menu"><a href="{{route('judge.index')}}">Judges</a></li>
-                                    <li id="voter-menu"><a href="{{route('voter.index')}}">Voters</a></li>
+                                    <li id="admin-menu"><a href="{{route('admin.index')}}">{{trans('file.Admin')}}</a></li>
+                                    <li id="judge-menu"><a href="{{route('judge.index')}}">{{trans('file.Judges')}}</a></li>
+                                    <li id="voter-menu"><a href="{{route('voter.index')}}">{{trans('file.Voters')}}</a></li>
                             @endif
                                 @if($index_employee_active)
-                                <li id="employee-menu"><a href="{{route('musician.index')}}">Contestants</a></li>
+                                <li id="employee-menu"><a href="{{route('musician.index')}}">{{trans('file.Contestants')}}</a></li>
                                 @endif
                         </ul>
                     </li>
@@ -237,7 +237,7 @@
                         <ul id="report" class="collapse list-unstyled ">
                             @if($voting_report_active)
                                 <li id="vote-report-menu">
-                                    <a href="{{url('report/voting')}}">Voting Report</a>
+                                    <a href="{{url('report/voting')}}">{{trans('file.Voting Report')}}</a>
                                 </li>
                             @endif
                         </ul>
@@ -320,6 +320,9 @@
                                 <a href="{{ url('language_switch/en') }}" class="btn btn-link"> English</a>
                             </li>
                             <li>
+                                <a href="{{ url('language_switch/fr') }}" class="btn btn-link"> Français</a>
+                            </li>
+                            <li>
                                 <a href="{{ url('language_switch/es') }}" class="btn btn-link"> Español</a>
                             </li>
                             <li>
@@ -327,9 +330,6 @@
                             </li>
                             <li>
                                 <a href="{{ url('language_switch/pt_BR') }}" class="btn btn-link"> Portuguese</a>
-                            </li>
-                            <li>
-                                <a href="{{ url('language_switch/fr') }}" class="btn btn-link"> Français</a>
                             </li>
                             <li>
                                 <a href="{{ url('language_switch/de') }}" class="btn btn-link"> Deutsche</a>
@@ -456,7 +456,7 @@
         <div role="document" class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 id="exampleModalLabel" class="modal-title">Add Vote</h5>
+                    <h5 id="exampleModalLabel" class="modal-title">{{trans('file.Add Vote')}}</h5>
                     <button type="button" data-dismiss="modal" aria-label="Close" class="close"><span aria-hidden="true"><i class="dripicons-cross"></i></span></button>
                 </div>
                 <div class="modal-body">
@@ -468,23 +468,23 @@
                     ?>
                     <div class="row">
                         <div class="col-md-6 form-group">
-                            <label>Refernece *</label>
+                            <label>{{trans('file.Reference')}} *</label>
                             <input type="text" name="reference" step="any" required class="form-control" placeholder="Any reference no">
                         </div>
                         <div class="col-md-6 form-group">
-                            <label>Votes *</label>
+                            <label>{{trans('file.Votes')}} *</label>
                             <input type="number" name="vote" step="any" required class="form-control" value="1">
                         </div>
                         <div class="col-md-6 form-group">
-                            <label>Voter name *</label>
-                            <select name="user_id" class="selectpicker form-control" required data-live-search="true"   title="Select Voter...">
+                            <label>{{trans('file.Voter name')}} *</label>
+                            <select name="user_id" class="selectpicker form-control" required data-live-search="true"   title="{{trans('file.Select Voter')}}...">
                                 @foreach($users as $user)
                                     <option value="{{$user->id}}">{{$user->name}}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="col-md-6 form-group">
-                            <label>Contestants name *</label>
+                            <label>{{trans('file.Contestants name')}} *</label>
                             <select name="musician_id" class="selectpicker form-control" required data-live-search="true"   title="Select Contentant...">
                                 @foreach($contentants as $contentant)
                                     <option value="{{$contentant->id}}">{{$contentant->name}}</option>
@@ -512,7 +512,7 @@
         <div role="document" class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 id="exampleModalLabel" class="modal-title">Add Coin</h5>
+                    <h5 id="exampleModalLabel" class="modal-title">{{trans('file.Add Coin')}}</h5>
                     <button type="button" data-dismiss="modal" aria-label="Close" class="close"><span aria-hidden="true"><i class="dripicons-cross"></i></span></button>
                 </div>
                 <div class="modal-body">
@@ -520,15 +520,15 @@
                     {!! Form::open(['route' => 'coins.store', 'method' => 'post']) !!}
                     <div class="row">
                         <div class="col-md-6 form-group">
-                            <label>Phone Number *</label>
-                            <input type="number" name="phone" step="any" required class="form-control" value="+237" placeholder="Phone number">
+                            <label>{{trans('file.Phone Number')}} *</label>
+                            <input type="number" name="phone" step="any" required class="form-control" value="+237" placeholder="{{trans('file.Phone Number')}}">
                         </div>
                         <div class="col-md-6 form-group">
-                            <label>Coins *</label>
+                            <label>{{trans('file.Coins')}} *</label>
                             <input type="number" name="coin" step="any" required class="form-control" >
                         </div>
                         <div class="col-md-6 form-group">
-                            <label><strong>Code *</strong> </label>
+                            <label><strong>{{trans('file.Code')}} *</strong> </label>
                             <div class="input-group">
                                 <input type="text" name="code" required class="form-control">
                                 <div class="input-group-append">

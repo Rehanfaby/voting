@@ -63,21 +63,19 @@
                                 <div class="ms-banner__main-wrapper">
                                     <div class="ms-banner__content text-center">
                                         <h1 class="ms-banner__bg-title" data-background="">
-                                            Musicly
+                                            {{trans('file.Musicly')}}
                                         </h1>
-                                        <h2 class="ms-banner__title msg_title bd-title-anim">Vote your favourite Musician</h2>
+                                        <h2 class="ms-banner__title msg_title bd-title-anim">{{trans('file.Vote your favourite Musician')}}</h2>
                                     </div>
                                     <div class="ms-banner__form bdFadeUp">
                                         <form action="{{ route('musician.find') }}" method="post">
                                             @csrf
                                             <div class="ms-banner__from-inner white-bg">
                                                 <div class="ms-input2-box white-bg">
-                                                    <input type="text" placeholder="Search Your Musician" name="search">
+                                                    <input type="text" placeholder="{{trans("file.Search Your Musician")}}" name="search">
                                                 </div>
                                                 <div class="banner__form-button">
-                                                    <button type="submit" class="input__btn"><i class="flaticon-loupe"></i>
-                                                        Find
-                                                        Acts</button>
+                                                    <button type="submit" class="input__btn"><i class="flaticon-loupe"></i>{{trans('file.Find Acts')}}</button>
                                                 </div>
                                             </div>
                                         </form>
@@ -97,9 +95,9 @@
                 <div class="row justify-content-center bdFadeUp">
                     <div class="col-xl-7">
                         <div class="section__title-wrapper mb-65 text-center bd-title-anim">
-                            <span class="section__subtitle">Beyond The Talent Showr</span>
+                            <span class="section__subtitle">{{trans('file.Beyond The Talent Show')}}</span>
                             <h2 class="section__title">
-                                Qualified <span class="animated-underline active">Contestants for the Week!</span>
+                                {{trans('file.Qualified')}} <span class="animated-underline active">{{trans('file.Contestants for the Week')}}!</span>
 
                             </h2>
                         </div>
@@ -121,7 +119,7 @@
                                 </div>
                                 <div class="ms-fun-brand-bottom">
                                     <div class="ms-fun-brand-location">
-                                        <i class="fa fa-vote-yea"></i> Vote Me
+                                        <i class="fa fa-vote-yea"></i> {{trans('file.Vote Me')}}
                                     </div>
                                     @if($see_votes)
                                         <div class="ms-fun-brand-rating">
@@ -146,7 +144,7 @@
                 <div class="row align-items-end mb-25 bdFadeUp">
                     <div class="col-xl-6 col-lg-6">
                         <div class="section__title-wrapper mb-40 bd-title-anim">
-                            <span class="section__subtitle">Our Seasoned Judges</span>
+                            <span class="section__subtitle">{{trans('file.Our Seasoned Judges')}}</span>
                             <h2 class="section__title msg_title">
                                 <span class="animated-underline active"></span> <br>
 
@@ -197,34 +195,34 @@
                     <div class="swiper-container ms-st-active scroll__text pt-20 pb-20">
                         <div class="swiper-wrapper ms-st-active-wrapper">
                             <div class="swiper-slide">
-                                <h3>Strum</h3>
+                                <h3>{{trans('file.Strum')}}</h3>
                             </div>
                             <div class="swiper-slide">
-                                <h3>Sing</h3>
+                                <h3>{{trans('file.Sing')}}</h3>
                             </div>
                             <div class="swiper-slide">
-                                <h3><span class="text-color-1">Soar</span></h3>
+                                <h3><span class="text-color-1">{{trans('file.Soar')}}</span></h3>
                             </div>
                             <div class="swiper-slide">
-                                <h3>Rise</h3>
+                                <h3>{{trans('file.Rise')}}</h3>
                             </div>
                             <div class="swiper-slide">
-                                <h3><span class="text-color-1">To</span></h3>
+                                <h3><span class="text-color-1">{{trans('file.To')}}</span></h3>
                             </div>
                             <div class="swiper-slide">
-                                <h3>Beyond The </h3>
+                                <h3>{{trans('file.Beyond The')}} </h3>
                             </div>
                             <div class="swiper-slide">
-                                <h3>Talent</h3>
+                                <h3>{{trans('file.Talent')}}</h3>
                             </div>
                             <div class="swiper-slide">
-                                <h3><span class="text-color-2">Show</span></h3>
+                                <h3><span class="text-color-2">{{trans('file.Show')}}</span></h3>
                             </div>
                             <div class="swiper-slide">
-                                <h3>Music</h3>
+                                <h3>{{trans('file.Music')}}</h3>
                             </div>
                             <div class="swiper-slide">
-                                <h3>Competition</h3>
+                                <h3>{{trans('file.Competition')}}</h3>
                             </div>
                         </div>
                     </div>
@@ -233,22 +231,22 @@
                     <div class="swiper-container ms-str-active scroll__text pt-20 pb-20">
                         <div class="swiper-wrapper ms-str-active-wrapper">
                             <div class="swiper-slide">
-                                <h3>Beyond</h3>
+                                <h3>{{trans('file.Beyond')}}</h3>
                             </div>
                             <div class="swiper-slide">
-                                <h3>The</h3>
+                                <h3>{{trans('file.The')}}</h3>
                             </div>
                             <div class="swiper-slide">
-                                <h3><span class="text-color-1">Talent Show</span></h3>
+                                <h3><span class="text-color-1">{{trans('file.Talent Show')}}</span></h3>
                             </div>
                             <div class="swiper-slide">
-                                <h3>Music</h3>
+                                <h3>{{trans('file.Music')}}</h3>
                             </div>
                             <div class="swiper-slide">
-                                <h3><span class="text-color-1">Competition</span></h3>
+                                <h3><span class="text-color-1">{{trans('file.Competition')}}</span></h3>
                             </div>
                             <div class="swiper-slide">
-                                <h3>Awaits</h3>
+                                <h3>{{trans('file.Awaits')}}</h3>
                             </div>
                         </div>
                     </div>
@@ -263,16 +261,15 @@
                 <div class="row align-items-end mb-25 bdFadeUp">
                     <div class="col-lg-8">
                         <div class="section__title-wrapper mb-40 bd-title-anim">
-                            <span class="section__subtitle">Special Events</span>
-                            <h2 class="section__title"><span class="animated-underline active">Special
-                                        event</span>
-                                coming up
+                            <span class="section__subtitle">{{trans('file.Special Events')}}</span>
+                            <h2 class="section__title"><span class="animated-underline active">{{trans('file.Special events')}}</span>
+                                {{trans('file.coming up')}}
                             </h2>
                         </div>
                     </div>
                     <div class="col-lg-4">
                         <div class="trending-btn mb-40 d-flex justify-content-lg-end">
-                            <a class="border__btn" href="event.html">View All Event</a>
+                            <a class="border__btn" href="#">{{trans('file.View All Events')}}</a>
                         </div>
                     </div>
                 </div>
@@ -285,118 +282,87 @@
                                     <div class="ms-event-active">
                                         <div class="ms-event-item">
                                             <div class="ms-event-item-top">
-                                                <h3 class="ms-event-title"><a href="event-details.html">Wedding
-                                                        entertainment
-                                                        ideas</a></h3>
-                                                <p class="ms-event-text">Our hand-picked acts will guarantee
-                                                    you fantastic
-                                                    wedding
-                                                    entertainment for each part.
-                                                    We'll provide help and support 24 hours a day, 7 days a
-                                                    week, right up
-                                                    until</p>
+                                                <h3 class="ms-event-title"><a href="#">{{trans("file.Wedding entertainment ideas")}}</a></h3>
+                                                <p class="ms-event-text">{{trans("file.Our hand-picked acts will guarantee you fantastic wedding entertainment for each part. We'll provide help and support 24 hours a day, 7 days a week, right up until")}}</p>
                                                 <div class="ms-event-inner">
                                                     <div class="ms-event-location">
-                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>Chicago</a>
+                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>{{trans("file.Chicago")}}</a>
                                                     </div>
                                                     <div class="ms-event-date">
-                                                        <span>7:00 PM, Saturday, February 18, 2023</span>
+                                                        <span>{{trans("file.2:00 PM, Sunday, Auguest 27, 2025")}}</span>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div class="ms-event-item-bottom">
-                                                <h3 class="ms-event-title"><a href="event-details.html">Corporate
-                                                        entertainment ideas</a>
+                                                <h3 class="ms-event-title"><a href="#">{{trans("file.Corporate entertainment ideas")}}</a>
                                                 </h3>
-                                                <p class="ms-event-text">Our hand-picked acts will guarantee
-                                                    you fantastic
-                                                    wedding
-                                                    entertainment for each part.
-                                                    We'll provide help and support 24 hours a day, 7 days a
-                                                    week, right up
-                                                    until</p>
+                                                <p class="ms-event-text">{{trans("file.Our hand-picked acts will guarantee you fantastic wedding entertainment for each part. We'll provide help and support 24 hours a day, 7 days a week, right up until")}}</p>
                                                 <div class="ms-event-inner">
                                                     <div class="ms-event-location">
-                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>Chicago</a>
+                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>{{trans("file.Chicago")}}</a>
                                                     </div>
                                                     <div class="ms-event-date">
-                                                        <span>7:00 PM, Saturday, February 26, 2023</span>
+                                                        <span>{{trans("file.2:00 PM, Sunday, Auguest 27, 2025")}}</span>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="ms-event-item">
                                             <div class="ms-event-item-top">
-                                                <h3 class="ms-event-title"><a href="event-details.html">Party
-                                                        entertainment
-                                                        ideas</a></h3>
-                                                <p class="ms-event-text">Our hand-picked acts will guarantee
-                                                    you fantastic
-                                                    wedding
-                                                    entertainment for each part.
-                                                    We'll provide help and support 24 hours a day, 7 days a
-                                                    week, right up
-                                                    until</p>
+                                                <h3 class="ms-event-title"><a href="#">{{trans("file.Party entertainment ideas")}}</a></h3>
+                                                <p class="ms-event-text">{{trans("file.Our hand-picked acts will guarantee you fantastic wedding entertainment for each part. We'll provide help and support 24 hours a day, 7 days a week, right up until")}}</p>
                                                 <div class="ms-event-inner">
                                                     <div class="ms-event-location">
-                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>Chicago</a>
+                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>{{trans("file.Chicago")}}</a>
                                                     </div>
                                                     <div class="ms-event-date">
-                                                        <span>7:00 PM, Saturday, February 18, 2023</span>
+                                                        <span>{{trans("file.2:00 PM, Sunday, Auguest 27, 2025")}}</span>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div class="ms-event-item-bottom">
-                                                <h3 class="ms-event-title"><a href="event-details.html">Corporate
-                                                        entertainment ideas</a>
+                                                <h3 class="ms-event-title"><a href="#">{{trans("file.Videos")}}Corporate entertainment ideas</a>
                                                 </h3>
-                                                <p class="ms-event-text">Hosted by Beyond Company Limited
-                                                    weill be come together to sing hymns and worship
-                                                    the almighty God.
+                                                <p class="ms-event-text">
+                                                    {{trans("file.Hosted by Beyond Company Limited weill be come together to sing hymns and worship the almighty God")}}.
                                                 </p>
                                                 <div class="ms-event-inner">
                                                     <div class="ms-event-location">
-                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>Bamenda</a>
+                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>{{trans("file.Bamenda")}}</a>
                                                     </div>
                                                     <div class="ms-event-date">
-                                                        <span>3:00 PM, Sunday, February 3rd, 2023</span>
+                                                        <span>{{trans("file.2:00 PM, Sunday, Auguest 27, 2025")}}</span>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="ms-event-item">
                                             <div class="ms-event-item-top">
-                                                <h3 class="ms-event-title"><a href="event-details.html">The Hymns
-                                                        Festival
-                                                        ideas</a></h3>
-                                                <p class="ms-event-text">Hosted by Beyond Company Limited
-                                                    weill be come together to sing hymns and worship
-                                                    the almighty God.
+                                                <h3 class="ms-event-title"><a href="#">
+                                                        {{trans("file.The Hymns Festival ideas")}}
+                                                    </a></h3>
+                                                <p class="ms-event-text">
+                                                    {{trans("file.Hosted by Beyond Company Limited weill be come together to sing hymns and worship the almighty God")}}.
                                                 </p>
                                                 <div class="ms-event-inner">
                                                     <div class="ms-event-location">
-                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>Bamenda</a>
+                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>{{trans("file.Bamenda")}}</a>
                                                     </div>
                                                     <div class="ms-event-date">
-                                                        <span>3:00 PM, Sunday, February 3rd, 2023</span>
+                                                        <span>{{trans("file.2:00 PM, Sunday, Auguest 27, 2025")}}</span>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div class="ms-event-item-bottom">
-                                                <h3 class="ms-event-title"><a href="event-details.html">Royal
-                                                        Priesthood &rsquo;s Choir
-                                                        bands</a></h3>
-                                                <p class="ms-event-text">Come and Join
-                                                    us as we
-                                                    build
-                                                    the house of God.Nothing is too small.
+                                                <h3 class="ms-event-title"><a href="#">{{trans("file.Royal Priesthood &rsquo;s Choir bands")}}</a></h3>
+                                                <p class="ms-event-text">{{trans("file.Come and Join us as we build the house of God.Nothing is too small")}}.
                                                 </p>
                                                 <div class="ms-event-inner">
                                                     <div class="ms-event-location">
-                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>Cameroon</a>
+                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>{{trans("file.Cameroon")}}</a>
                                                     </div>
                                                     <div class="ms-event-date">
-                                                        <span>2:00 PM, Sunday, Auguest 27, 2023</span>
+                                                        <span>{{trans("file.2:00 PM, Sunday, Auguest 27, 2025")}}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -423,9 +389,9 @@
                 <div class="row justify-content-center bdFadeUp">
                     <div class="col-lg-6">
                         <div class="section__title-wrapper mb-65 text-center bd-title-anim">
-                            <span class="section__subtitle">Our Partners</span>
-                            <h2 class="section__title">Most <span class="animated-underline active">Valuable</span>
-                                Partners
+                            <span class="section__subtitle">{{trans("file.Our Partners")}}</span>
+                            <h2 class="section__title">{{trans("file.Most")}} <span class="animated-underline active">{{trans("file.Valuable")}}</span>
+                                {{trans("file.Partners")}}
                             </h2>
                         </div>
                     </div>
@@ -447,28 +413,28 @@
                 <div class="ms-cta-bg include__bg ms-cta-overlay zindex-1 fix"  data-background="{{ url('public/frontend/images/sound-bg.png') }}">
                     @if($best_musician)
                         <a href="{{ route('musician.data', $best_musician->id) }}">
-                            @endif
-                            <div class="ms-cta-wrap">
-                                <div class="ms-cta-item">
-                                    <div class="ms-cta-content">
-                                        <h2 class="section__title mb-25">Most Voted Music of the Week</h2>
-                                        @if($best_musician)
-                                            <h4 class="section__title mb-25">({{ $best_musician->name }})</h4>
-                                        @endif
-                                        <p class="mb-0">
-                                            Here comes the best musician of the week!
-                                        </p>
-                                    </div>
-                                </div>
-                                <div class="ms-cta-item">
-                                    <div class="ms-cta-img ms-popular__thumb">
-                                        @if($best_musician)
-                                            <img src="{{url('public/images/employee',$best_musician->image)}}" alt="cta image">
-                                        @endif
-                                    </div>
+                    @endif
+                        <div class="ms-cta-wrap">
+                            <div class="ms-cta-item">
+                                <div class="ms-cta-content">
+                                    <h2 class="section__title mb-25">{{trans("file.Most Voted Music of the Week")}}</h2>
+                                    @if($best_musician)
+                                        <h4 class="section__title mb-25">({{ $best_musician->name }})</h4>
+                                    @endif
+                                    <p class="mb-0">
+                                        {{trans("file.Here comes the best musician of the week")}}!
+                                    </p>
                                 </div>
                             </div>
-                            @if($best_musician)
+                            <div class="ms-cta-item">
+                                <div class="ms-cta-img ms-popular__thumb">
+                                    @if($best_musician)
+                                        <img src="{{url('public/images/employee',$best_musician->image)}}" alt="cta image">
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    @if($best_musician)
                         </a>
                     @endif
                 </div>

@@ -10,11 +10,11 @@
     <div class="container-fluid">
         <div class="card">
             <div class="card-header mt-2">
-                <h3 class="text-center">Coins List</h3>
+                <h3 class="text-center">{{trans('file.Coins List')}}</h3>
             </div>
         </div>
-        @if(in_array("votes-add", $all_permission))
-            <button class="btn btn-info" data-toggle="modal" data-target="#coin-modal"><i class="dripicons-plus"></i> Add Coin</button>
+        @if(in_array("coins-add", $all_permission))
+            <button class="btn btn-info" data-toggle="modal" data-target="#coin-modal"><i class="dripicons-plus"></i> {{trans('file.Add Coin')}}</button>
         @endif
     </div>
     <div class="table-responsive">
@@ -23,10 +23,10 @@
                 <tr>
                     <th class="not-exported"></th>
                     <th>{{trans('file.Date')}}</th>
-                    <th>Phone</th>
-                    <th>Coins</th>
-                    <th>Code</th>
-                    <th>Status</th>
+                    <th>{{trans('file.Phone')}}</th>
+                    <th>{{trans('file.Coins')}}</th>
+                    <th>{{trans('file.Code')}}</th>
+                    <th>{{trans('file.Status')}}</th>
                     <th class="not-exported">{{trans('file.action')}}</th>
                 </tr>
                 </thead>
