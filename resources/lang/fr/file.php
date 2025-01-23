@@ -712,5 +712,6 @@ return [
     "Voting Report" => "Rapport de vote",
     "Position" => "Position",
     "Contestants" => "Candidats",
+    "SCROLL DOWN" => "DÉFILER",
 ];
 ?>

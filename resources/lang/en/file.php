@@ -821,6 +821,7 @@ return [
     "Voting Report" => "Voting Report",
     "Position" => "Position",
     "Contestants" => "Contestants",
+    "SCROLL DOWN" => "SCROLL DOWN",
 
 ];
 ?>

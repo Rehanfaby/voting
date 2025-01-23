@@ -60,7 +60,7 @@
                 <div class="offcanvas__top mb-40 d-flex justify-content-between align-items-center">
                     <div class="offcanvas__logo">
                         <a href="{{ route('home') }}">
-                            <img src="{{url('public/logo', $general_setting->site_logo)}}" alt="logo" style="height: 100px">
+                            <img src="{{url('public/logo', $general_setting->site_logo)}}" alt="{{trans('file.Site Logo')}}" style="height: 100px">
                         </a>
                     </div>
                     <div class="offcanvas__close">
@@ -146,7 +146,7 @@
                         <div class="header__main ms-border2 d-flex align-items-center justify-content-between">
                             <div class="header__logo pt-25 pb-25">
                                 <a href="{{ route('home') }}">
-                                    <img src="{{url('public/logo', $general_setting->site_logo)}}" alt="logo not found" style="height: 70px">
+                                    <img src="{{url('public/logo', $general_setting->site_logo)}}" alt="{{trans('file.Site Logo')}}" style="height: 70px">
                                 </a>
                             </div>
                             <div class="header__right">
@@ -185,7 +185,7 @@
                                                     @php $musician = \App\Employee::find($contestent['musician_id']); @endphp
                                                 <div class="ms-song-item">
                                                     <div class="ms-song-img p-relative">
-                                                        <a href="{{ route('musician.data', $musician->id) }}"><img src="{{url('public/images/employee',$musician->image)}}" alt="brand-song"></a>
+                                                        <a href="{{ route('musician.data', $musician->id) }}"><img src="{{url('public/images/employee',$musician->image)}}" alt="{{trans('file.Contestants name')}}"></a>
                                                     </div>
                                                     <div class="ms-song-content">
                                                         <h3 class="ms-song-title">
@@ -355,7 +355,7 @@
                             <div class="ms-footer-bottom-wrap align-items-center d-flex flex-wrap justify-content-between pt-35 pb-20">
                                 <div class="ms-footer-logo mb-15">
                                     <a href="{{ route('home') }}">
-                                        <img src="{{url('public/logo', $general_setting->site_logo)}}" alt="logo">
+                                        <img src="{{url('public/logo', $general_setting->site_logo)}}" alt="{{trans('file.Site Logo')}}">
                                     </a>
                                 </div>
                                 <div class="ms-footer-copy">

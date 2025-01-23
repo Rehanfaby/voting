@@ -22,7 +22,7 @@
                                 <div class="ms-song-item">
                                     <div class="ms-song-img p-relative">
                                         <a href="{{ route('musician.data', $musician->id) }}">
-                                            <img src="{{url('public/images/employee',$musician->image)}}" alt="musician name">
+                                            <img src="{{url('public/images/employee',$musician->image)}}" alt="{{trans('file.Contestants name')}}">
                                         </a>
                                         @if($see_votes)
                                             @php
@@ -54,7 +54,7 @@
 
         <!-- Banner Area Start Here  -->
         <section class="ms-banner-area p-relative">
-            <a class="ms-scroll-down" href="#">SCROLL DOWN</a>
+            <a class="ms-scroll-down" href="#">{{trans('file.SCROLL DOWN')}}</a>
             <div class="container-fluid ms-maw-1710">
                 <div class="ms-br-30 mx-auto include__bg z-index-1 ms-overlay-1 p-relative" data-background="{{ url('public/frontend/images/banner-thumb-01.jpg') }}">
                     <div class="container">
@@ -109,7 +109,7 @@
                             <div class="ms-fun-brand-item ms-fun-border" style="cursor: pointer">
                                 <div class="ms-fun-brand-top mb-20">
                                     <div class="ms-fun-brand-thumb">
-                                        <img src="{{url('public/images/employee',$musician->image)}}" alt="function brand">
+                                        <img src="{{url('public/images/employee',$musician->image)}}">
                                     </div>
                                     <div class="ms-fun-brand-content">
                                         <h3 class="ms-fun-brand-title">
@@ -163,7 +163,7 @@
                                                 <div class="ms-popular__item p-relative mb-30">
                                                     <div class="ms-popular__thumb">
                                                         <div class="ms-popular-overlay"></div>
-                                                        <a ><img src="{{url('public/images/employee',$contentant->image)}}" alt="popular band"></a>
+                                                        <a ><img src="{{url('public/images/employee',$contentant->image)}}" ></a>
                                                         <a class="ms-popular__link">
                                                             <span class="ms-popular-icon"><i class="fa-regular fa-arrow-right-long"></i></span>
                                                         </a>
@@ -375,7 +375,7 @@
                     </div>
                     <div class="col-xl-4">
                         <div class="ms-event-play d-inline-block w-img p-relative mb-60">
-                            <img src="{{ asset('public/frontend/images/event-event-bg-2.png') }}" alt="event img"  height="350px" style="border-radius: 15%;">
+                            <img src="{{ asset('public/frontend/images/event-event-bg-2.png') }}" height="350px" style="border-radius: 15%;">
                         </div>
                     </div>
                 </div>
@@ -399,7 +399,7 @@
                 <div class="swiper-container ms-partner-active bdFadeUp">
                     <div class="swiper-wrapper">
                         <div class="swiper-slide">
-                            <img src="{{url('public/logo', $general_setting->site_logo)}}" alt="partner image">
+                            <img src="{{url('public/logo', $general_setting->site_logo)}}">
                         </div>
                     </div>
                 </div>
@@ -429,7 +429,7 @@
                             <div class="ms-cta-item">
                                 <div class="ms-cta-img ms-popular__thumb">
                                     @if($best_musician)
-                                        <img src="{{url('public/images/employee',$best_musician->image)}}" alt="cta image">
+                                        <img src="{{url('public/images/employee',$best_musician->image)}}">
                                     @endif
                                 </div>
                             </div>

@@ -194,7 +194,7 @@
                                     <li id="voter-menu"><a href="{{route('voter.index')}}">{{trans('file.Voters')}}</a></li>
                             @endif
                                 @if($index_employee_active)
-                                <li id="employee-menu"><a href="{{route('musician.index')}}">{{trans('file.Contestants')}}</a></li>
+                                <li id="employee-menu"><a href="{{route('musician.index')}}">{{trans('file.Contestants name')}}</a></li>
                                 @endif
                         </ul>
                     </li>
