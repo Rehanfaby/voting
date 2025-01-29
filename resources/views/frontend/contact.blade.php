@@ -16,7 +16,7 @@
         <!-- Join Area Start Here  -->
         <section class="ms-join-area pb-60 pt-130 p-relative">
             <div class="ms-join-position p-absolute text-center">
-                <h2 class="ms-title2 white-text mb-50">Contact With us</h2>
+                <h2 class="ms-title2 white-text mb-50">{{trans('file.Contact With Us')}}</h2>
                 <div class="ms-banner3-item-wrap ms-join-img-grid">
                     <div class="ms-banner3-item d-none d-md-block">
                         <div class="ms-banner3-img1 ms-opacity-2 p-relative m-img">
@@ -41,19 +41,19 @@
                 <div class="row">
                     <div class="col-xl-12">
                         <div class="ms-join-wrap ms-join-space mb-70 ms-bg-2">
-                            <h3 class="white-text ms-title3 mb-60">Enter Your NUmber</h3>
+                            <h3 class="white-text ms-title3 mb-60">{{trans('file.Enter Your Number')}}</h3>
                             <form method="post" action="{{ route('contact.message') }}">
                                 @csrf
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <div class="ms-input-box style-2">
-                                            <label>Contact Number</label>
+                                            <label>{{trans('file.Contact Number')}}</label>
                                             <input type="number" name="number" placeholder="237" value="237">
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
                                         <div class="ms-input-box style-2 mt-2">
-                                            <button class="unfill__btn" type="submit" style="margin-top: 2vw">Contact Us</button>
+                                            <button class="unfill__btn" type="submit" style="margin-top: 2vw">{{trans('file.Contact Us')}}</button>
                                         </div>
                                     </div>
 

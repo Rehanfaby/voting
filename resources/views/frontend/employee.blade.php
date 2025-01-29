@@ -45,7 +45,7 @@
                     <div class="col-lg-6">
                         <div class="ms-product-modal-content mb-60">
                             <div class="d-flex align-items-center justify-content-between mb-35 mr-40">
-                                <h3 class="ms-product-price">{{ $general_setting->vote_price }} {{ $currency->code }} for 1 vote</h3>
+                                <h3 class="ms-product-price">{{ $general_setting->vote_price }} {{ $currency->code }} {{trans('file.for 1 vote')}}</h3>
                             </div>
                             <h2 class="ms-product-title2 mb-30">
                                 <a href="$">{{ $musician->name }}</a>
@@ -62,11 +62,11 @@
 //                                        ->whereDate('votes.created_at', '<=', $end_date)
                                         ->sum('vote');
                                     @endphp
-                                    <i class="fa-solid fa-check"></i> Total votes:<span> {{ $vote_count }}</span>
+                                    <i class="fa-solid fa-check"></i> {{trans('file.Total votes')}}:<span> {{ $vote_count }}</span>
                                 </div>
                             @endif
                             <div class="ms-is-product-stock mb-25">
-                                <span><i class="fa-solid fa-check"></i> Do vote</span>
+                                <span><i class="fa-solid fa-check"></i> {{trans('file.Do vote')}}</span>
                             </div>
                             <form action="{{ route('musician.vote') }}" method="post">
                                 @csrf
@@ -82,13 +82,13 @@
                                                 <i class="far fa-plus"></i>
                                             </button>
                                         </div>
-                                        <button type="submit" class="ms-addto-cart-btn"><span>Vote</span></button>
+                                        <button type="submit" class="ms-addto-cart-btn"><span>{{trans('file.Vote')}}</span></button>
                                     </div>
                                 </div>
                             </form>
-                            <div class="ms-is-product-stock mb-25 ms-product-title2">Your payable amount is : <span id="payable-amount" style="font-size: 30px">{{ $general_setting->vote_price }}</span> {{ $currency->code }}</div>
+                            <div class="ms-is-product-stock mb-25 ms-product-title2">{{trans('file.Your payable amount is')}} : <span id="payable-amount" style="font-size: 30px">{{ $general_setting->vote_price }}</span> {{ $currency->code }}</div>
                             OR
-                            <div class="ms-is-product-stock mt-25 ms-product-title2">Your payable coin is : <span id="payable-coin" style="font-size: 30px">{{ $general_setting->vote_coin }}</span> Beyond Coin</div>
+                            <div class="ms-is-product-stock mt-25 ms-product-title2">{{trans('file.Your payable coin is')}} : <span id="payable-coin" style="font-size: 30px">{{ $general_setting->vote_coin }}</span> {{trans('file.Beyond Coin')}}</div>
                         </div>
                     </div>
                     <div class="row">
@@ -96,19 +96,19 @@
                             <div class="ms-product-ddesc ms-border2">
                                 <ul class="nav nav-tabs pt-30 mb-45" id="myTab" role="tablist">
                                     <li class="nav-item" role="presentation">
-                                        <button class="nav-link active" id="image-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane" type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true">Images</button>
+                                        <button class="nav-link active" id="image-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane" type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true">{{trans('file.Images')}}</button>
                                     </li>
                                     <li class="nav-item" role="presentation">
-                                        <button class="nav-link" id="audio-tab" data-bs-toggle="tab" data-bs-target="#audio-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">Audios</button>
+                                        <button class="nav-link" id="audio-tab" data-bs-toggle="tab" data-bs-target="#audio-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">{{trans('file.Audios')}}</button>
                                     </li>
                                     <li class="nav-item" role="presentation">
-                                        <button class="nav-link" id="video-tab" data-bs-toggle="tab" data-bs-target="#video-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">Videos</button>
+                                        <button class="nav-link" id="video-tab" data-bs-toggle="tab" data-bs-target="#video-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">{{trans('file.Videos')}}</button>
                                     </li>
                                     <li class="nav-item" role="presentation">
-                                        <button class="nav-link" id="shorts-tab" data-bs-toggle="tab" data-bs-target="#shorts-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">Shorts</button>
+                                        <button class="nav-link" id="shorts-tab" data-bs-toggle="tab" data-bs-target="#shorts-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">{{trans('file.Shorts')}}</button>
                                     </li>
                                     <li class="nav-item" role="presentation">
-                                        <button class="nav-link" id="youtube-tab" data-bs-toggle="tab" data-bs-target="#youtube-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">Youtube Videos</button>
+                                        <button class="nav-link" id="youtube-tab" data-bs-toggle="tab" data-bs-target="#youtube-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">{{trans('file.Youtube Videos')}}</button>
                                     </li>
                                 </ul>
                                 <div class="tab-content" id="myTabContent">
@@ -206,10 +206,10 @@
                 <div class="row align-items-end mb-25 bdFadeUp">
                     <div class="col-xl-6 col-lg-6">
                         <div class="section__title-wrapper mb-40 bd-title-anim">
-                            <span class="section__subtitle">Our Popular Contestants</span>
+                            <span class="section__subtitle">{{trans('file.Our Popular Contestants')}}</span>
                             <h2 class="section__title msg_title">
-                                <span class="animated-underline active">Vote</span> <br>
-                                Your favourite Contestant
+                                <span class="animated-underline active">{{trans('file.Vote')}}</span> <br>
+                                {{trans('file.Your favourite Contestant')}}
                             </h2>
                         </div>
                     </div>

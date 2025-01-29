@@ -22,7 +22,7 @@
                             <div class="page-title-icon mx-auto mb-30">
                                 <i class="flaticon-star"></i>
                             </div>
-                            <h3 class="ms-page-title lh-1">Vote Your Favourite Contentment</h3>
+                            <h3 class="ms-page-title lh-1">{{trans("file.Vote Your Favourite Contentment")}}</h3>
                         </div>
                     </div>
                 </div>
@@ -36,7 +36,7 @@
                 <div class="row justify-content-center">
                     <div class="col-xl-6">
                         <div class="section__title-wrapper text-center mb-80">
-                            <h2 class="section__title">Contentment</h2>
+                            <h2 class="section__title">{{trans("file.Contentment")}}</h2>
                         </div>
                     </div>
                 </div>

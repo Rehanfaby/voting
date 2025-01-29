@@ -17,7 +17,7 @@
             <div class="container">
                 <div class="row justify-content-center">
                     <div class="col-xxl-11">
-                        <h3 class="ms-page-title text-center">My Votes</h3>
+                        <h3 class="ms-page-title text-center">{{trans("file.My Votes")}}</h3>
                     </div>
                 </div>
             </div>
@@ -35,17 +35,17 @@
                                 <table class="table table-striped table-hover">
                                     <thead>
                                     <tr>
-                                        <th>Contentant</th>
-                                        <th>Votes</th>
-                                        <th>Status</th>
-                                        <th>Date</th>
+                                        <th>{{trans("file.Contentment")}}</th>
+                                        <th>{{trans("file.Votes")}}</th>
+                                        <th>{{trans("file.Status")}}</th>
+                                        <th>{{trans("file.Date")}}</th>
                                     </tr>
                                     </thead>
                                     <tbody>
                                     @foreach($votes as $vote)
                                         <tr>
                                             <td class="ms-product-name-flex">
-                                                <img src="{{ url('public/images/employee', $vote->musicians->image) }}" alt="contenstant" style="width: 100px">
+                                                <img src="{{ url('public/images/employee', $vote->musicians->image) }}" alt="{{trans("file.Contentment")}}" style="width: 100px">
                                                 <span>{{ $vote->musicians->name }}</span>
                                             </td>
                                             <td>{{ $vote->vote }}</td>

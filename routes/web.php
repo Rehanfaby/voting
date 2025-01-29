@@ -34,7 +34,7 @@ Route::get('musician/vote/payment', 'HomeController@musicianVotePayment')->name(
 Route::get('musician/vote/payment/coin', 'HomeController@musicianVotePaymentCoin')->name('musician.vote.payment.coin');
 
 
-
+Route::get('language_switch/{locale}', 'LanguageController@switchLanguage');
 //end frontend
 
 Route::group(['middleware' => ['auth', 'active']], function() {
@@ -49,8 +49,6 @@ Route::group(['middleware' => ['auth', 'active']], function() {
 	Route::get('/mms', 'HomeController@mobileMoneyStatus');
 	Route::get('/dashboard-filter/{start_date}/{end_date}', 'HomeController@dashboardFilter');
 	Route::get('check-batch-availability/{product_id}/{batch_no}/{warehouse_id}', 'ProductController@checkBatchAvailability');
-
-	Route::get('language_switch/{locale}', 'LanguageController@switchLanguage');
 
 	Route::get('role/permission/{id}', 'RoleController@permission')->name('role.permission');
 	Route::post('role/set_permission', 'RoleController@setPermission')->name('role.setPermission');

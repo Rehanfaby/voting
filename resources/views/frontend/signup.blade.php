@@ -18,7 +18,7 @@
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-xxl-11">
-                    <h3 class="ms-page-title text-center">Sign up</h3>
+                    <h3 class="ms-page-title text-center">{{trans("file.Sign Up")}}</h3>
                 </div>
             </div>
         </div>
@@ -30,11 +30,11 @@
         <div class="container">
             <div class="ms-maxw-510 mx-auto">
                 <div class="ms-login-wrap text-center ms-login-space ms-bg-2">
-                    <h3 class="ms-title4 mb-50">Create Your account</h3>
+                    <h3 class="ms-title4 mb-50">{{trans("file.Create Your account")}}</h3>
                     <form action="{{ route('register') }}" method="post">
                         @csrf
                         <div class="ms-input2-box mb-25">
-                            <input type="text" placeholder="Name" name="name" required>
+                            <input type="text" placeholder="{{trans("file.Name")}}" name="name" required>
                             @if ($errors->has('name'))
                                 <p>
                                     <strong>{{ $errors->first('name') }}</strong>
@@ -42,7 +42,7 @@
                             @endif
                         </div>
                         <div class="ms-input2-box mb-25">
-                            <input type="email" placeholder="Email" name="email" required>
+                            <input type="email" placeholder="{{trans("file.Email")}}" name="email" required>
                             <input type="hidden" name="role_id" value="3">
                             @if ($errors->has('email'))
                                 <p>
@@ -51,10 +51,10 @@
                             @endif
                         </div>
                         <div class="ms-input2-box mb-25">
-                            <input type="text" placeholder="Phone no" name="phone_number" value="+237" required>
+                            <input type="text" placeholder="{{trans("file.Phone number")}}" name="phone_number" value="+237" required>
                         </div>
                         <div class="ms-input2-box mb-50">
-                            <input type="password" placeholder="Password" name="password" required>
+                            <input type="password" placeholder="{{trans("file.Password")}}" name="password" required>
                             @if ($errors->has('password'))
                                 <p>
                                     <strong>{{ $errors->first('password') }}</strong>
@@ -62,18 +62,16 @@
                             @endif
                         </div>
                         <div class="ms-input2-box mb-50">
-                            <input type="password" placeholder="Confirm Password" name="password_confirmation" required>
+                            <input type="password" placeholder="{{trans("file.Confirm Password")}}" name="password_confirmation" required>
                         </div>
                         <div class="ms-submit-btn mb-40">
-                            <button class="unfill__btn d-block w-100" type="submit">Create
-                                Account</button>
+                            <button class="unfill__btn d-block w-100" type="submit">{{trans("file.Create Account")}}</button>
                         </div>
                         <div class="ms-divided-btn mb-45">
                             <span>or</span>
                         </div>
                         <div class="ms-not-account mb-35">
-                            <p>Already have an account? <a href="{{ route('user.login') }}">Log
-                                    in</a></p>
+                            <p>{{trans("file.Already have an account")}}? <a href="{{ route('user.login') }}">{{trans("file.Log in")}}</a></p>
                         </div>
 
                     </form>

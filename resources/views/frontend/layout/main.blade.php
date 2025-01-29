@@ -25,14 +25,8 @@
 </head>
 
 <body>
-
-
-<!--[if lte IE 9]>
-<p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
-<![endif]-->
-
 <div class="mouseCursor cursor-outer"></div>
-<div class="mouseCursor cursor-inner"><span>Drag</span></div>
+<div class="mouseCursor cursor-inner"><span>{{trans('file.Darg')}}</span></div>
 
 <!-- Preloader start -->
 <div id="preloader">
@@ -66,7 +60,7 @@
                 <div class="offcanvas__top mb-40 d-flex justify-content-between align-items-center">
                     <div class="offcanvas__logo">
                         <a href="{{ route('home') }}">
-                            <img src="{{url('public/logo', $general_setting->site_logo)}}" alt="logo" style="height: 100px">
+                            <img src="{{url('public/logo', $general_setting->site_logo)}}" alt="{{trans('file.Site Logo')}}" style="height: 100px">
                         </a>
                     </div>
                     <div class="offcanvas__close">
@@ -83,7 +77,7 @@
                         <ul></ul>
                         <div class="user__name-mail">
                             @if(!$user)
-                                <h4 class="user__name"><a href="{{ route('user.login') }}">Login</a></h4>
+                                <h4 class="user__name"><a href="{{ route('user.login') }}">{{trans('file.LogIn')}}</a></h4>
                             @else
                             <h4 class="user__name"><a href="javascript:void(0)">{{ $user->name }}</a></h4>
                             <p class="user__mail">
@@ -99,27 +93,40 @@
                 </div>
                 <div class="hr-1 mt-30 mb-30 d-xl-none"></div>
                 <div class="offcanvas__btn mb-30">
-                    <a class="user__name" href="{{ route('home') }}"><i class="fa-solid fa-plus"></i> Home</a>
+                    <a class="user__name" href="{{ route('home') }}"><i class="fa-solid fa-plus"></i> {{trans('file.Home')}}</a>
                 </div>
                 <div class="offcanvas__btn mb-30">
-                    <a class="user__name" href="{{ route('about') }}"><i class="fa-solid fa-plus"></i> About Us</a>
+                    <a class="user__name" href="{{ route('about') }}"><i class="fa-solid fa-plus"></i> {{trans('file.About Us')}}</a>
                 </div>
                 <div class="offcanvas__btn mb-30">
-                    <a class="user__name" href="{{ route('contact') }}"><i class="fa-solid fa-plus"></i> Contact Us</a>
+                    <a class="user__name" href="{{ route('contact') }}"><i class="fa-solid fa-plus"></i> {{trans('file.Contact Us')}}</a>
                 </div>
 
                 @if($user)
                 <div class="hr-1 mt-30 mb-30 d-xl-none"></div>
                 <div class="offcanvas__btn mb-30">
-                    <a class="user__name" href="{{ route('user.contentant') }}"><i class="fa-solid fa-plus"></i> My Votes</a>
+                    <a class="user__name" href="{{ route('user.contentant') }}"><i class="fa-solid fa-plus"></i> {{trans('file.My Votes')}}</a>
                 </div>
                 <div class="offcanvas__btn mb-30">
-                    <a class="user__name" href="{{ route('user.contentant') }}"><i class="fa-solid fa-plus"></i> My contenstants</a>
+                    <a class="user__name" href="{{ route('user.contentant') }}"><i class="fa-solid fa-plus"></i> {{trans('file.My Contestants')}}</a>
                 </div>
                 @endif
                 <div class="hr-1 mt-30 mb-30 d-xl-none"></div>
                 <div class="offcanvas__btn mb-30">
-                    <a class="ms-border-btn" href="{{ route('team') }}"><i class="fa-solid fa-plus"></i> Vote your candidate</a>
+                    <a class="ms-border-btn" href="{{ route('team') }}"><i class="fa-solid fa-plus"></i> {{trans('file.Vote your Candidate')}}</a>
+                </div>
+                <div class="enquiry__list ml-10 mr-10 ms-browse-act-wrap p-relative">
+                    <div class="ms-enquiry-box p-relative">
+                        <a href="#"><span class="text">Switch Language <sup>({{ \App::getLocale() }})</sup></span></a></a>
+                    </div>
+                    <div class="ms-browse-act-item-wrap p-absolute">
+                        <div class="ms-song-item">
+                            <div class="ms-song-content">
+                                <h3 class="ms-song-title"><a href="{{ url('language_switch/en') }}">English</a></h3>
+                                <h3 class="ms-song-title"><a href="{{ url('language_switch/fr') }}">Français</a></h3>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -139,7 +146,7 @@
                         <div class="header__main ms-border2 d-flex align-items-center justify-content-between">
                             <div class="header__logo pt-25 pb-25">
                                 <a href="{{ route('home') }}">
-                                    <img src="{{url('public/logo', $general_setting->site_logo)}}" alt="logo not found" style="height: 70px">
+                                    <img src="{{url('public/logo', $general_setting->site_logo)}}" alt="{{trans('file.Site Logo')}}" style="height: 70px">
                                 </a>
                             </div>
                             <div class="header__right">
@@ -148,13 +155,13 @@
                                         <nav id="mobile-menu">
                                             <ul>
                                                 <li>
-                                                    <a href="{{ route('home') }}">Home</a>
+                                                    <a href="{{ route('home') }}">{{trans('file.Home')}}</a>
                                                 </li>
                                                 <li>
-                                                    <a href="{{ route('about') }}">About Us</a>
+                                                    <a href="{{ route('about') }}">{{trans('file.About Us')}}</a>
                                                 </li>
                                                 <li>
-                                                    <a href="{{ route('contact') }}">Contact Us</a>
+                                                    <a href="{{ route('contact') }}">{{trans('file.Contact Us')}}</a>
                                                 </li>
                                             </ul>
                                         </nav>
@@ -165,20 +172,20 @@
                                         <div class="enquiry__list ml-10 mr-10 ms-browse-act-wrap p-relative">
                                             <div class="ms-enquiry-box p-relative d-none d-xl-inline-flex">
                                                 <a href="{{ route('user.contentant') }}">
-                                                    <span class="text">My Votes</span></a>
+                                                    <span class="text">{{trans('file.My Votes')}}</span></a>
                                             </div>
                                         </div>
                                         <div class="enquiry__list ml-10 mr-10 ms-browse-act-wrap p-relative">
                                             <div class="ms-enquiry-box p-relative d-none d-xl-inline-flex">
                                                 <a href="{{ route('user.contentant') }}"><i class="flaticon-star icon"></i>
-                                                    <span class="text">My contenstants</span> <span class="number">{{ count($contestents) }}</span></a>
+                                                    <span class="text">{{trans('file.My Contestants')}}</span> <span class="number">{{ count($contestents) }}</span></a>
                                             </div>
                                             <div class="ms-browse-act-item-wrap p-absolute">
                                                 @foreach($contestents as $contestent)
                                                     @php $musician = \App\Employee::find($contestent['musician_id']); @endphp
                                                 <div class="ms-song-item">
                                                     <div class="ms-song-img p-relative">
-                                                        <a href="{{ route('musician.data', $musician->id) }}"><img src="{{url('public/images/employee',$musician->image)}}" alt="brand-song"></a>
+                                                        <a href="{{ route('musician.data', $musician->id) }}"><img src="{{url('public/images/employee',$musician->image)}}" alt="{{trans('file.Contestants name')}}"></a>
                                                     </div>
                                                     <div class="ms-song-content">
                                                         <h3 class="ms-song-title">
@@ -191,7 +198,7 @@
                                         </div>
                                     @endif
                                     <div class="header__btn">
-                                        <a href="{{ route('team') }}" class="ms-border-btn"><i class="fa-regular fa-plus"></i>Vote your favourite candidate</a>
+                                        <a href="{{ route('team') }}" class="ms-border-btn"><i class="fa-regular fa-plus"></i>{{trans('file.Vote your favourite candidate')}}</a>
                                     </div>
                                     @if(!$user)
                                     <div class="user__acount d-none d-xxl-inline-flex">
@@ -223,6 +230,19 @@
                                             </div>
                                         </div>
                                     @endif
+                                </div>
+                                <div class="enquiry__list ml-10 mr-10 ms-browse-act-wrap p-relative">
+                                    <div class="ms-enquiry-box p-relative d-none d-xl-inline-flex">
+                                        <a href="#"><span class="text">Switch Language <sup>({{ \App::getLocale() }})</sup></span></a></a>
+                                    </div>
+                                    <div class="ms-browse-act-item-wrap p-absolute">
+                                        <div class="ms-song-item">
+                                            <div class="ms-song-content">
+                                                <h3 class="ms-song-title"><a href="{{ url('language_switch/en') }}">English</a></h3>
+                                                <h3 class="ms-song-title"><a href="{{ url('language_switch/fr') }}">Français</a></h3>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="header__hamburger">
                                     <div class="sidebar__toggle">
@@ -335,7 +355,7 @@
                             <div class="ms-footer-bottom-wrap align-items-center d-flex flex-wrap justify-content-between pt-35 pb-20">
                                 <div class="ms-footer-logo mb-15">
                                     <a href="{{ route('home') }}">
-                                        <img src="{{url('public/logo', $general_setting->site_logo)}}" alt="logo">
+                                        <img src="{{url('public/logo', $general_setting->site_logo)}}" alt="{{trans('file.Site Logo')}}">
                                     </a>
                                 </div>
                                 <div class="ms-footer-copy">
