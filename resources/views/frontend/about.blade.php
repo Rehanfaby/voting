@@ -38,7 +38,7 @@
                         <div class=" mb-40">
                             <h2 class="section__title mb-35 bd-title-anim" style="perspective: 400px;"><div  transform-origin: 373px 24px; transform: translate3d(0px, 0px, 0px); opacity: 1;">{{trans('file.Introduction')}}:</div></h2>
                             <p>
-                                {{trans('file.Beyond the Talent Show is an exciting music competition set to take place in Bamenda, Cameroon, from July 1st to August 2023. This innovative event aims to showcase and celebrate the rich musical talent of the region while providing a platform for aspiring musicians to shine. Beyond the Talent Show goes beyond the conventional talent show format by incorporating elements of mentorship, cultural exchange, and professional development, making it a truly unique and transformative experience for participants and audiences alike')}}.
+                                {{trans('file.The Mulema Gospel Show is an exciting music competition set to take place in Cameroon, March 1st, 2025. This innovative event aims to showcase and celebrate the rich musical culture of the Cameroon while providing a platform for aspiring musicians to shine. The Mulema Gospel Show goes beyond the conventional talent show format by incorporating elements of mentorship, cultural exchange, and professional development, making it a truly unique and transformative experience for participants and audiences alike')}}.
                             </p>
                         </div>
                     </div>
@@ -62,7 +62,7 @@
                         <div class=" mb-40">
                             <h2 class="section__title mb-35 bd-title-anim" style="perspective: 400px;"><div style="display: block; text-align: start; position: relative; translate: none; rotate: none; scale: none; transform-origin: 373px 24px; transform: translate3d(0px, 0px, 0px); opacity: 1;">{{trans('file.Auditions and Selection')}}:</div></h2>
                             <p>
-                                {{trans('file.Beyond the Talent Show will begin with open auditions, where talented musicians from Bamenda and surrounding regions will have the opportunity to demonstrate their skills. A panel of renowned music industry professionals, including local and international artists, producers, and experts, will carefully assess the auditions and select the most promising contestants to advance to the next stages of the competition')}}.
+                                {{trans('file.The Mulema Gospel Show will begin with open auditions, where talented musicians from Bamenda, Maroua, Buea, Douala, Garoua etc and surrounding regions will have the opportunity to demonstrate their skills. A panel of renowned music industry professionals, including local and international artists, producers, and experts, will carefully assess the auditions and select the most promising contestants to advance to the next stages of the competition')}}.
                             </p>
                         </div>
                     </div>
@@ -71,7 +71,7 @@
                         <div class=" mb-40">
                             <h2 class="section__title mb-35 bd-title-anim" style="perspective: 400px;"><div style="display: block; text-align: start; position: relative; translate: none; rotate: none; scale: none; transform-origin: 373px 24px; transform: translate3d(0px, 0px, 0px); opacity: 1;">{{trans('file.Mentorship and Workshops')}}:</div></h2>
                             <p>
-                                {{trans("file.One of the unique aspects of Beyond the Talent Show is its focus on mentorship and professional development. Contestants who progress through the competition will have the invaluable opportunity to receive guidance and mentorship from established musicians and industry professionals. These mentors will share their expertise, provide constructive feedback, and offer insights into the music industry, enhancing the contestants' skills and confidence")}}. <br>
+                                {{trans("file.One of the unique aspects of The Mulema Gospel Show is its focus on mentorship and professional development. Contestants who progress through the competition will have the invaluable opportunity to receive guidance and mentorship from established musicians and industry professionals. These mentors will share their expertise, provide constructive feedback, and offer insights into the music industry, enhancing the contestants' skills and confidence")}}. <br>
                                 {{trans('file.In addition to mentorship, the competition will feature workshops and masterclasses led by industry experts like Oriel, Cal Keys, Nathan Bass, Didi Drums, Ernest Melody, Sir Keys and more. These sessions will cover various aspects of music production, songwriting, stage performance, and music marketing, equipping the contestants with a comprehensive skill set and empowering them to excel in their musical careers')}}
                             </p>
                         </div>
@@ -81,7 +81,7 @@
                         <div class=" mb-40">
                             <h2 class="section__title mb-35 bd-title-anim" style="perspective: 400px;"><div style="display: block; text-align: start; position: relative; translate: none; rotate: none; scale: none; transform-origin: 373px 24px; transform: translate3d(0px, 0px, 0px); opacity: 1;">{{trans('file.Cultural Exchange and Collaboration')}}:</div></h2>
                             <p>
-                                {{trans("file.Beyond the Talent Show aims to foster cultural exchange by providing a platform for musicians from diverse backgrounds to collaborate and create unique musical experiences. Throughout the competition, contestants will have opportunities to work together, blending their individual styles and influences to create new and exciting music. This collaboration will not only enrich the competition but also promote unity and appreciation for Cameroon's diverse musical heritage")}}.
+                                {{trans("file.The Mulema Gospel Show aims to foster cultural exchange by providing a platform for musicians from diverse backgrounds to collaborate and create unique musical experiences. Throughout the competition, contestants will have opportunities to work together, blending their individual styles and influences to create new and exciting music. This collaboration will not only enrich the competition but also promote unity and appreciation for Cameroon's diverse musical heritage")}}.
                             </p>
                         </div>
                     </div>
@@ -99,7 +99,7 @@
                         <div class=" mb-40">
                             <h2 class="section__title mb-35 bd-title-anim" style="perspective: 400px;"><div style="display: block; text-align: start; position: relative; translate: none; rotate: none; scale: none; transform-origin: 373px 24px; transform: translate3d(0px, 0px, 0px); opacity: 1;">{{trans('file.Conclusion')}}:</div></h2>
                             <p>
-                                {{trans('file.Beyond the Talent Show is not just a music competition; it is a transformative experience that aims to elevate the music scene in Bamenda, Cameroon. By providing a platform for aspiring musicians to showcase their talent, receive mentorship, and engage in cultural exchange, this event will contribute to the growth and development of the local music industry. Beyond the Talent Show promises to be a remarkable celebration of music, talent, and the vibrant culture of Cameroon')}}.
+                                {{trans('file.The Mulema Gospel Show is not just a music competition; it is a transformative experience that aims to elevate the music scene in Bamenda, Cameroon. By providing a platform for aspiring musicians to showcase their talent, receive mentorship, and engage in cultural exchange, this event will contribute to the growth and development of the local music industry. Beyond the Talent Show promises to be a remarkable celebration of music, talent, and the vibrant culture of Cameroon')}}.
                             </p>
                         </div>
                     </div>
