@@ -1,25 +1,25 @@
 <?php return array (
   'barryvdh/laravel-dompdf' => 
   array (
-    'aliases' => 
-    array (
-      'PDF' => 'Barryvdh\\DomPDF\\Facade\\Pdf',
-      'Pdf' => 'Barryvdh\\DomPDF\\Facade\\Pdf',
-    ),
     'providers' => 
     array (
       0 => 'Barryvdh\\DomPDF\\ServiceProvider',
     ),
+    'aliases' => 
+    array (
+      'Pdf' => 'Barryvdh\\DomPDF\\Facade\\Pdf',
+      'PDF' => 'Barryvdh\\DomPDF\\Facade\\Pdf',
+    ),
   ),
   'facade/ignition' => 
   array (
-    'aliases' => 
-    array (
-      'Flare' => 'Facade\\Ignition\\Facades\\Flare',
-    ),
     'providers' => 
     array (
       0 => 'Facade\\Ignition\\IgnitionServiceProvider',
+    ),
+    'aliases' => 
+    array (
+      'Flare' => 'Facade\\Ignition\\Facades\\Flare',
     ),
   ),
   'fideloper/proxy' => 
@@ -31,13 +31,13 @@
   ),
   'intervention/image' => 
   array (
-    'aliases' => 
-    array (
-      'Image' => 'Intervention\\Image\\Facades\\Image',
-    ),
     'providers' => 
     array (
       0 => 'Intervention\\Image\\ImageServiceProvider',
+    ),
+    'aliases' => 
+    array (
+      'Image' => 'Intervention\\Image\\Facades\\Image',
     ),
   ),
   'laravel/tinker' => 
@@ -68,25 +68,25 @@
   ),
   'maatwebsite/excel' => 
   array (
-    'aliases' => 
-    array (
-      'Excel' => 'Maatwebsite\\Excel\\Facades\\Excel',
-    ),
     'providers' => 
     array (
       0 => 'Maatwebsite\\Excel\\ExcelServiceProvider',
     ),
+    'aliases' => 
+    array (
+      'Excel' => 'Maatwebsite\\Excel\\Facades\\Excel',
+    ),
   ),
   'milon/barcode' => 
   array (
+    'providers' => 
+    array (
+      0 => 'Milon\\Barcode\\BarcodeServiceProvider',
+    ),
     'aliases' => 
     array (
       'DNS1D' => 'Milon\\Barcode\\Facades\\DNS1DFacade',
       'DNS2D' => 'Milon\\Barcode\\Facades\\DNS2DFacade',
-    ),
-    'providers' => 
-    array (
-      0 => 'Milon\\Barcode\\BarcodeServiceProvider',
     ),
   ),
   'nesbot/carbon' => 
@@ -123,13 +123,13 @@
   ),
   'srmklive/paypal' => 
   array (
-    'aliases' => 
-    array (
-      'PayPal' => 'Srmklive\\PayPal\\Facades\\PayPal',
-    ),
     'providers' => 
     array (
       0 => 'Srmklive\\PayPal\\Providers\\PayPalServiceProvider',
+    ),
+    'aliases' => 
+    array (
+      'PayPal' => 'Srmklive\\PayPal\\Facades\\PayPal',
     ),
   ),
 );
