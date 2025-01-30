@@ -65,7 +65,7 @@
                                         <h1 class="ms-banner__bg-title" data-background="">
                                             {{trans('file.Musicly')}}
                                         </h1>
-                                        <h2 class="ms-banner__title msg_title bd-title-anim">{{trans('file.Vote your favourite Musician')}}</h2>
+                                        <h2 class="ms-banner__title msg_title bd-title-anim">{{trans('file.Vote for your favourite Contestant')}}</h2>
                                     </div>
                                     <div class="ms-banner__form bdFadeUp">
                                         <form action="{{ route('musician.find') }}" method="post">
@@ -75,7 +75,7 @@
                                                     <input type="text" placeholder="{{trans("file.Search Your Musician")}}" name="search">
                                                 </div>
                                                 <div class="banner__form-button">
-                                                    <button type="submit" class="input__btn"><i class="flaticon-loupe"></i>{{trans('file.Find Acts')}}</button>
+                                                    <button type="submit" class="input__btn"><i class="flaticon-loupe"></i>{{trans('file.Discover Talents')}}</button>
                                                 </div>
                                             </div>
                                         </form>
@@ -95,7 +95,7 @@
                 <div class="row justify-content-center bdFadeUp">
                     <div class="col-xl-7">
                         <div class="section__title-wrapper mb-65 text-center bd-title-anim">
-                            <span class="section__subtitle">{{trans('file.Beyond The Talent Show')}}</span>
+                            <span class="section__subtitle">{{trans('file.Mulema The Gospel Show')}}</span>
                             <h2 class="section__title">
                                 {{trans('file.Qualified')}} <span class="animated-underline active">{{trans('file.Contestants for the Week')}}!</span>
 
@@ -210,10 +210,10 @@
                                 <h3><span class="text-color-1">{{trans('file.To')}}</span></h3>
                             </div>
                             <div class="swiper-slide">
-                                <h3>{{trans('file.Beyond The')}} </h3>
+                                <h3>{{trans('file.Mumela the')}} </h3>
                             </div>
                             <div class="swiper-slide">
-                                <h3>{{trans('file.Talent')}}</h3>
+                                <h3>{{trans('file.Gospel')}}</h3>
                             </div>
                             <div class="swiper-slide">
                                 <h3><span class="text-color-2">{{trans('file.Show')}}</span></h3>
@@ -231,13 +231,13 @@
                     <div class="swiper-container ms-str-active scroll__text pt-20 pb-20">
                         <div class="swiper-wrapper ms-str-active-wrapper">
                             <div class="swiper-slide">
-                                <h3>{{trans('file.Beyond')}}</h3>
+                                <h3>{{trans('file.Mulema')}}</h3>
                             </div>
                             <div class="swiper-slide">
                                 <h3>{{trans('file.The')}}</h3>
                             </div>
                             <div class="swiper-slide">
-                                <h3><span class="text-color-1">{{trans('file.Talent Show')}}</span></h3>
+                                <h3><span class="text-color-1">{{trans('file.Gospel Show')}}</span></h3>
                             </div>
                             <div class="swiper-slide">
                                 <h3>{{trans('file.Music')}}</h3>
@@ -282,41 +282,41 @@
                                     <div class="ms-event-active">
                                         <div class="ms-event-item">
                                             <div class="ms-event-item-top">
-                                                <h3 class="ms-event-title"><a href="#">{{trans("file.Wedding entertainment ideas")}}</a></h3>
-                                                <p class="ms-event-text">{{trans("file.Our hand-picked acts will guarantee you fantastic wedding entertainment for each part. We'll provide help and support 24 hours a day, 7 days a week, right up until")}}</p>
+                                                <h3 class="ms-event-title"><a href="#">{{trans("file.Auditions in ten regions of Cameroon")}}</a></h3>
+                                                <p class="ms-event-text">{{trans("file.Candidates from around cameroon will be auditioned in their different regions")}}</p>
                                                 <div class="ms-event-inner">
                                                     <div class="ms-event-location">
-                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>{{trans("file.Chicago")}}</a>
+                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>{{trans("file.Bamenda")}}</a>
                                                     </div>
                                                     <div class="ms-event-date">
-                                                        <span>{{trans("file.2:00 PM, Sunday, Auguest 27, 2025")}}</span>
+                                                        <span>{{trans("file.2:00 PM, Saturday, March 15th , 2025")}}</span>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div class="ms-event-item-bottom">
-                                                <h3 class="ms-event-title"><a href="#">{{trans("file.Corporate entertainment ideas")}}</a>
+                                                <h3 class="ms-event-title"><a href="#">{{trans("file.Gospel entertainment and Culture")}}</a>
                                                 </h3>
-                                                <p class="ms-event-text">{{trans("file.Our hand-picked acts will guarantee you fantastic wedding entertainment for each part. We'll provide help and support 24 hours a day, 7 days a week, right up until")}}</p>
+                                                <p class="ms-event-text">{{trans("file.Experience the Gospel being drunk in cultural Cups")}}</p>
                                                 <div class="ms-event-inner">
                                                     <div class="ms-event-location">
-                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>{{trans("file.Chicago")}}</a>
+                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>{{trans("file.Maroua")}}</a>
                                                     </div>
                                                     <div class="ms-event-date">
-                                                        <span>{{trans("file.2:00 PM, Sunday, Auguest 27, 2025")}}</span>
+                                                        <span>{{trans("file.2:00 PM, Sunday, March 16, 2025")}}</span>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="ms-event-item">
                                             <div class="ms-event-item-top">
-                                                <h3 class="ms-event-title"><a href="#">{{trans("file.Party entertainment ideas")}}</a></h3>
-                                                <p class="ms-event-text">{{trans("file.Our hand-picked acts will guarantee you fantastic wedding entertainment for each part. We'll provide help and support 24 hours a day, 7 days a week, right up until")}}</p>
+                                                <h3 class="ms-event-title"><a href="#">{{trans("file.Guest Musicians from all of Cameroon")}}</a></h3>
+                                                <p class="ms-event-text">{{trans("file.You will be thrilled by some of Cameroon's finest Gospel Musicians")}}</p>
                                                 <div class="ms-event-inner">
                                                     <div class="ms-event-location">
-                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>{{trans("file.Chicago")}}</a>
+                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>{{trans("file.Ngoundere")}}</a>
                                                     </div>
                                                     <div class="ms-event-date">
-                                                        <span>{{trans("file.2:00 PM, Sunday, Auguest 27, 2025")}}</span>
+                                                        <span>{{trans("file.2:00 PM, Thursday, March 20, 2025")}}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -324,14 +324,14 @@
                                                 <h3 class="ms-event-title"><a href="#">{{trans("file.Videos")}}Corporate entertainment ideas</a>
                                                 </h3>
                                                 <p class="ms-event-text">
-                                                    {{trans("file.Hosted by Beyond Company Limited weill be come together to sing hymns and worship the almighty God")}}.
+                                                    {{trans("file.Hosted by Muleme Gospel Limited")}}.
                                                 </p>
                                                 <div class="ms-event-inner">
                                                     <div class="ms-event-location">
-                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>{{trans("file.Bamenda")}}</a>
+                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>{{trans("file.Yaounde")}}</a>
                                                     </div>
                                                     <div class="ms-event-date">
-                                                        <span>{{trans("file.2:00 PM, Sunday, Auguest 27, 2025")}}</span>
+                                                        <span>{{trans("file.2:00 PM, Sunday, March 20, 2025")}}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -339,17 +339,17 @@
                                         <div class="ms-event-item">
                                             <div class="ms-event-item-top">
                                                 <h3 class="ms-event-title"><a href="#">
-                                                        {{trans("file.The Hymns Festival ideas")}}
+                                                        {{trans("file.Gospel in Hymns and All Genres")}}
                                                     </a></h3>
                                                 <p class="ms-event-text">
-                                                    {{trans("file.Hosted by Beyond Company Limited weill be come together to sing hymns and worship the almighty God")}}.
+                                                    {{trans("file.Hosted by Muleme Gospel Limited")}}.
                                                 </p>
                                                 <div class="ms-event-inner">
                                                     <div class="ms-event-location">
-                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>{{trans("file.Bamenda")}}</a>
+                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>{{trans("file.Douala")}}</a>
                                                     </div>
                                                     <div class="ms-event-date">
-                                                        <span>{{trans("file.2:00 PM, Sunday, Auguest 27, 2025")}}</span>
+                                                        <span>{{trans("file.2:00 PM, Tuesday, March 26, 2025")}}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -359,10 +359,10 @@
                                                 </p>
                                                 <div class="ms-event-inner">
                                                     <div class="ms-event-location">
-                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>{{trans("file.Cameroon")}}</a>
+                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>{{trans("file.Baffoussam")}}</a>
                                                     </div>
                                                     <div class="ms-event-date">
-                                                        <span>{{trans("file.2:00 PM, Sunday, Auguest 27, 2025")}}</span>
+                                                        <span>{{trans("file.2:00 PM, Monday, March 17, 2025")}}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -417,12 +417,12 @@
                         <div class="ms-cta-wrap">
                             <div class="ms-cta-item">
                                 <div class="ms-cta-content">
-                                    <h2 class="section__title mb-25">{{trans("file.Most Voted Music of the Week")}}</h2>
+                                    <h2 class="section__title mb-25">{{trans("file.Most Voted Contestant of the Week")}}</h2>
                                     @if($best_musician)
                                         <h4 class="section__title mb-25">({{ $best_musician->name }})</h4>
                                     @endif
                                     <p class="mb-0">
-                                        {{trans("file.Here comes the best musician of the week")}}!
+                                        {{trans("file.Here comes the best Contestant of the week")}}!
                                     </p>
                                 </div>
                             </div>

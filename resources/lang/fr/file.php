@@ -1,6 +1,7 @@
 <?php
 return [
 	"dashboard" => "Tableau de bord",
+
 	"language" => "La langue",
 	"revenue" => "Revenu",
 	"product" => "Produit",
@@ -713,5 +714,34 @@ return [
     "Position" => "Position",
     "Contestants" => "Candidats",
     "SCROLL DOWN" => "DÉFILER",
+
+	"Vote for your favourite Contestant" => "Votez pour votre candidat préféré",
+	"Discover Talents" => "Découvrez des talents",
+	"Mulema The Gospel Show" => "Mulema Le Spectacle Gospel",
+	"Mumela the" => "Mumela le",
+	"Gospel" => "Évangile",
+	"Mulema" => "Mulema",
+	"Gospel Show" => "Spectacle Gospel",
+	"Auditions in ten regions of Cameroon" => "Auditions dans dix régions du Cameroun",
+	"Candidates from around cameroon will be auditioned in their different regions" => "Les candidats de tout le Cameroun seront auditionnés dans leurs différentes régions",
+	"Bamenda" => "Bamenda",
+	"2:00 PM, Saturday, March 15th , 2025" => "14h00, Samedi 15 Mars 2025",
+	"Gospel entertainment and Culture" => "Divertissement gospel et culture",
+	"Experience the Gospel being drunk in cultural Cups" => "Vivez l'Évangile consommé dans des coupes culturelles",
+	"Maroua" => "Maroua",
+	"2:00 PM, Sunday, March 16, 2025" => "14h00, Dimanche 16 Mars 2025",
+	"Guest Musicians from all of Cameroon" => "Musiciens invités de tout le Cameroun",
+	"You will be thrilled by some of Cameroon's finest Gospel Musicians" => "Vous serez émerveillés par certains des meilleurs musiciens gospel du Cameroun",
+	"Ngoundere" => "Ngoundéré",
+	"2:00 PM, Thursday, March 20, 2025" => "14h00, Jeudi 20 Mars 2025",
+	"Hosted by Muleme Gospel Limited" => "Présenté par Muleme Gospel Limited",
+	"Yaounde" => "Yaoundé",
+	"2:00 PM, Sunday, March 20, 2025" => "14h00, Dimanche 20 Mars 2025",
+	"Gospel in Hymns and All Genres" => "Gospel en hymnes et tous genres",
+	"2:00 PM, Tuesday, March 26, 2025" => "14h00, Mardi 26 Mars 2025",
+	"2:00 PM, Monday, March 17, 2025" => "14h00, Lundi 17 Mars 2025",
+	"Most Voted Contestant of the Week" => "Candidat le plus voté de la semaine",
+	"Here comes the best Contestant of the week" => "Voici le meilleur candidat de la semaine",
+
 ];
 ?>
