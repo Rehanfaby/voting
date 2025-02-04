@@ -59,15 +59,11 @@
                                 <div class="ms-login-wrap text-center ms-login-space ms-bg-2">
                                     <h3 class="ms-title4 mb-50">{{trans("file.Pay By Momo")}}</h3>
                                     <div class="text-center message-status"></div>
-                                    <form>
+                                    <form id="" method="post" action="{{ route('musician.vote.payment') }}">
+                                        @csrf
                                         @php
                                         $user = \Illuminate\Support\Facades\Auth::user();
                                         @endphp
-{{--                                        @if(!$user)--}}
-{{--                                            <div class="ms-input2-box mb-25">--}}
-{{--                                                <input type="text" name="name" placeholder="Name">--}}
-{{--                                            </div>--}}
-{{--                                        @endif--}}
                                         <div class="ms-input2-box mb-25">
                                             @if(!$user)
                                                 <input type="text" name="phone" required placeholder="{{trans("file.Phone number")}}" value="+237" id="inputField">
@@ -78,12 +74,6 @@
                                             <input type="hidden" name="vote" value="{{ $data['vote'] }}">
                                             <input type="hidden" name="amount" value="{{ $data['vote'] * $general_setting->vote_price }}">
                                         </div>
-
-{{--                                        @if(!$user)--}}
-{{--                                            <div class="ms-input2-box mb-25">--}}
-{{--                                                <input type="password" name="password" placeholder="Password">--}}
-{{--                                            </div>--}}
-{{--                                        @endif--}}
                                         <div class="ms-submit-btn mb-40">
                                             <button id="payment-button" class="unfill__btn d-block w-100">{{trans("file.Pay")}} {{ $data['vote'] * $general_setting->vote_price }} {{ $currency->code }}</button>
                                         </div>
@@ -161,36 +151,36 @@
                 });
             });
 
-            $('#payment-button').on('click', function (event) {
-                event.preventDefault();
-                $('#preloader').show();
-                $.ajax({
-                    url: "{{ route('musician.vote.payment') }}",
-                    type: "GET",
-                    data: {
-                        // Additional data to send in the AJAX request if needed
-                        name : $('input[name="name"]').val() ?? null,
-                        password : $('input[name="password"]').val() ?? null,
-                        phone : $('input[name="phone"]').val(),
-                        musician_id : $('input[name="musician_id"]').val(),
-                        vote : $('input[name="vote"]').val(),
-                        amount : $('input[name="amount"]').val(),
-                    },
-                    success: function (response) {
-                        $('#preloader').hide();
-                        var message = '<div class="alert alert-success">'+response+'</div>';
-                        $('.message-status-coin').html('');
-                        $('.message-status').html(message);
-                    },
-                    error: function (xhr, status, error) {
-                        // Handle the error response, if any
-                        $('#preloader').hide();
-                        var message = '<div class="alert alert-danger">'+response+'</div>';
-                        $('.message-status-coin').html('');
-                        $('.message-status').html(message);
-                    }
-                });
-            });
+            {{--$('#payment-button').on('click', function (event) {--}}
+            {{--    event.preventDefault();--}}
+            {{--    $('#preloader').show();--}}
+            {{--    $.ajax({--}}
+            {{--        url: "{{ route('musician.vote.payment') }}",--}}
+            {{--        type: "GET",--}}
+            {{--        data: {--}}
+            {{--            // Additional data to send in the AJAX request if needed--}}
+            {{--            name : $('input[name="name"]').val() ?? null,--}}
+            {{--            password : $('input[name="password"]').val() ?? null,--}}
+            {{--            phone : $('input[name="phone"]').val(),--}}
+            {{--            musician_id : $('input[name="musician_id"]').val(),--}}
+            {{--            vote : $('input[name="vote"]').val(),--}}
+            {{--            amount : $('input[name="amount"]').val(),--}}
+            {{--        },--}}
+            {{--        success: function (response) {--}}
+            {{--            $('#preloader').hide();--}}
+            {{--            var message = '<div class="alert alert-success">'+response+'</div>';--}}
+            {{--            $('.message-status-coin').html('');--}}
+            {{--            $('.message-status').html(message);--}}
+            {{--        },--}}
+            {{--        error: function (xhr, status, error) {--}}
+            {{--            // Handle the error response, if any--}}
+            {{--            $('#preloader').hide();--}}
+            {{--            var message = '<div class="alert alert-danger">'+response+'</div>';--}}
+            {{--            $('.message-status-coin').html('');--}}
+            {{--            $('.message-status').html(message);--}}
+            {{--        }--}}
+            {{--    });--}}
+            {{--});--}}
 
             $('#coin-button').on('click', function (event) {
                 event.preventDefault();

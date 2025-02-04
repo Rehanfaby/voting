@@ -213,24 +213,52 @@ class HomeController extends Controller
             $this->sendWhatsappMsg($user, $password);
         }
 
-//        $token = $this->mobileMoneyToken();
-        $token = getenv("MOMO_TOKEN");
-        if($token) {
-            $refernece = $this->mobileMoneyRequest($token, $request->phone, $request->amount);
-            if($refernece) {
-                vote::create([
+        $vote = vote::create([
                     'user_id' => $user->id,
                     'musician_id' => $request->musician_id,
                     'vote' => $request->vote,
                     'status' => false,
-                    'reference' => $refernece
+                    'reference' => 'abc'
                 ]);
-
-//                $this->sendWhatsappMsgVoteMomo($user, $request->vote, $request->musician_id);
-                return 'Thank you for your vote, Vote status is pending, please pay your payment in 30 minutes';
+        $token = getenv("MOMO_TOKEN");
+        if($token && $vote) {
+            $route = route('musician.vote.payment.check');
+            $mtn_number = $data['phone'];
+            $amount = $request->amount;
+            $link = $this->mobileMoneyRequestLink($token, $amount, $route, $vote->id, $mtn_number);
+            if ($link == false) {
+                $message = 'Phone Number is incorrect or There is any other issue in payment method';
+                return back()->with('not_permitted', $message);
             }
+            header("Location: $link");
+            die();
         }
-        return 'Some thing went wrong, please check your phone number';
+        $message = 'There is any other issue in payment method, please contact the system administrator';
+        return back()->with('not_permitted', $message);
+    }
+
+    public function musicianVotePaymentCheck(Request $request)
+    {
+//        dd($request->all());
+        if($request->status != 'SUCCESSFUL'){
+            Vote::where('id', $request->external_reference)->delete();
+            return redirect()->back()->with('not_permitted', 'payment failed.');
+        }
+
+        $vote = Vote::where('id', $request->external_reference)->first();
+        $vote->status = true;
+        $vote->reference = $request->reference;
+        $vote->save();
+
+        if($vote) {
+            $this->sendWhatsappMsgVoteMomoSuccess($vote->voters, $vote->vote, $vote->musician_id);
+            $message = 'Thank you for your voting';
+            return redirect()->back()->with('message', $message);
+        }
+
+        $message = 'There is any issue, please contact the system administrator';
+        return redirect()->back()->with('not_permitted', $message);
+
     }
 
     public function musicianVotePaymentCoin(Request $request) {
