@@ -26,14 +26,14 @@
                                         </a>
                                         @if($see_votes)
                                             @php
-//                                                $start_date = date('Y-m-d', strtotime('last monday'));
-//                                                $end_date = date('Y-m-d');
+                                                //                                                $start_date = date('Y-m-d', strtotime('last monday'));
+                                                //                                                $end_date = date('Y-m-d');
 
-                                                $vote_count[] = \App\vote::where('status', true)
-                                                ->where('musician_id', $musician->id)
-//                                                ->whereDate('votes.created_at', '>=', $start_date)
-//                                                ->whereDate('votes.created_at', '<=', $end_date)
-                                                ->sum('vote');
+                                                                                                $vote_count[] = \App\vote::where('status', true)
+                                                                                                ->where('musician_id', $musician->id)
+                                                //                                                ->whereDate('votes.created_at', '>=', $start_date)
+                                                //                                                ->whereDate('votes.created_at', '<=', $end_date)
+                                                                                                ->sum('vote');
                                             @endphp
                                             <span class="ms-song-num">{{ $vote_count[$key] }}</span>
                                         @endif
@@ -56,36 +56,40 @@
         <section class="ms-banner-area p-relative">
             <a class="ms-scroll-down" href="#">{{trans('file.SCROLL DOWN')}}</a>
             <div class="container-fluid ms-maw-1710">
-                <div class="ms-br-30 mx-auto include__bg z-index-1 ms-overlay-1 p-relative" data-background="{{ url('public/frontend/images/banner-thumb-01.jpg') }}">
-                    <div class="container">
-                        <div class="row justify-content-center">
-                            <div class="col-xl-11">
-                                <div class="ms-banner__main-wrapper">
-                                    <div class="ms-banner__content text-center">
-                                        <h1 class="ms-banner__bg-title" data-background="">
-                                            {{trans('file.Musicly')}}
-                                        </h1>
-                                        <h2 class="ms-banner__title msg_title bd-title-anim">{{trans('file.Vote for your favourite Contestant')}}</h2>
-                                    </div>
-                                    <div class="ms-banner__form bdFadeUp">
-                                        <form action="{{ route('musician.find') }}" method="post">
-                                            @csrf
-                                            <div class="ms-banner__from-inner white-bg">
-                                                <div class="ms-input2-box white-bg">
-                                                    <input type="text" placeholder="{{trans("file.Search Your Musician")}}" name="search">
+                @if(\App::getLocale() == 'en')
+                    <div class="ms-br-30 mx-auto include__bg z-index-1 ms-overlay-1 p-relative" data-background="{{ url('public/frontend/images/top-banner-en.jpeg') }}">
+                        @else
+                            <div class="ms-br-30 mx-auto include__bg z-index-1 ms-overlay-1 p-relative" data-background="{{ url('public/frontend/images/top-banner-fr.jpeg') }}">
+                                @endif
+                                <div class="container">
+                                    <div class="row justify-content-center">
+                                        <div class="col-xl-11">
+                                            <div class="ms-banner__main-wrapper">
+                                                <div class="ms-banner__content text-center">
+                                                    <h1 class="ms-banner__bg-title" data-background="">
+                                                        {{trans('file.Musicly')}}
+                                                    </h1>
+                                                    <h2 class="ms-banner__title msg_title bd-title-anim">{{trans('file.Vote for your favourite Contestant')}}</h2>
                                                 </div>
-                                                <div class="banner__form-button">
-                                                    <button type="submit" class="input__btn"><i class="flaticon-loupe"></i>{{trans('file.Discover Talents')}}</button>
+                                                <div class="ms-banner__form bdFadeUp">
+                                                    <form action="{{ route('musician.find') }}" method="post">
+                                                        @csrf
+                                                        <div class="ms-banner__from-inner white-bg">
+                                                            <div class="ms-input2-box white-bg">
+                                                                <input type="text" placeholder="{{trans("file.Search Your Musician")}}" name="search">
+                                                            </div>
+                                                            <div class="banner__form-button">
+                                                                <button type="submit" class="input__btn"><i class="flaticon-loupe"></i>{{trans('file.Discover Talents')}}</button>
+                                                            </div>
+                                                        </div>
+                                                    </form>
                                                 </div>
                                             </div>
-                                        </form>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
                     </div>
-                </div>
-            </div>
         </section>
         <!-- Banner Area End Here  -->
 
@@ -375,7 +379,12 @@
                     </div>
                     <div class="col-xl-4">
                         <div class="ms-event-play d-inline-block w-img p-relative mb-60">
-                            <img src="{{ asset('public/frontend/images/event-event-bg-2.png') }}" height="350px" style="border-radius: 15%;">
+                            @if(\App::getLocale() == 'en')
+                                <img src="{{ asset('public/frontend/images/bottom-banner-en.jpeg') }}" height="350px" style="border-radius: 15%;">
+                            @else
+                                <img src="{{ asset('public/frontend/images/bottom-banner-fr.jpeg') }}" height="350px" style="border-radius: 15%;">
+                            @endif
+
                         </div>
                     </div>
                 </div>
@@ -413,28 +422,28 @@
                 <div class="ms-cta-bg include__bg ms-cta-overlay zindex-1 fix"  data-background="{{ url('public/frontend/images/sound-bg.png') }}">
                     @if($best_musician)
                         <a href="{{ route('musician.data', $best_musician->id) }}">
-                    @endif
-                        <div class="ms-cta-wrap">
-                            <div class="ms-cta-item">
-                                <div class="ms-cta-content">
-                                    <h2 class="section__title mb-25">{{trans("file.Most Voted Contestant of the Week")}}</h2>
-                                    @if($best_musician)
-                                        <h4 class="section__title mb-25">({{ $best_musician->name }})</h4>
-                                    @endif
-                                    <p class="mb-0">
-                                        {{trans("file.Here comes the best Contestant of the week")}}!
-                                    </p>
+                            @endif
+                            <div class="ms-cta-wrap">
+                                <div class="ms-cta-item">
+                                    <div class="ms-cta-content">
+                                        <h2 class="section__title mb-25">{{trans("file.Most Voted Contestant of the Week")}}</h2>
+                                        @if($best_musician)
+                                            <h4 class="section__title mb-25">({{ $best_musician->name }})</h4>
+                                        @endif
+                                        <p class="mb-0">
+                                            {{trans("file.Here comes the best Contestant of the week")}}!
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="ms-cta-item">
+                                    <div class="ms-cta-img ms-popular__thumb">
+                                        @if($best_musician)
+                                            <img src="{{url('public/images/employee',$best_musician->image)}}">
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
-                            <div class="ms-cta-item">
-                                <div class="ms-cta-img ms-popular__thumb">
-                                    @if($best_musician)
-                                        <img src="{{url('public/images/employee',$best_musician->image)}}">
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-                    @if($best_musician)
+                            @if($best_musician)
                         </a>
                     @endif
                 </div>
