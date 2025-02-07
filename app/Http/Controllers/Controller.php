@@ -11,6 +11,46 @@ class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
+    public function mobileMoneyRequestLink($token, $amount, $route, $musician_id, $number){
+
+        $curl = curl_init();
+
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => 'https://www.campay.net/api/get_payment_link/',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS =>'{
+                "amount": "'.$amount.'",
+                "from": "'.$number.'",
+                "currency": "XAF",
+                "external_reference": "'.$musician_id.'",
+                "redirect_url": "'.$route.'",
+                "payment_options":"MOMO,CARD",
+                "failure_redirect_url": "'.$route.'"
+            }',
+            CURLOPT_HTTPHEADER => array(
+                'Authorization: Token ' . $token,
+                'Content-Type: application/json'
+            ),
+        ));
+
+        $response = curl_exec($curl);
+        $response_decode = json_decode($response, true);
+
+        curl_close($curl);
+
+
+        if($response_decode && isset($response_decode['link'])) {
+            return $response_decode['link'];
+        }
+        return false;
+    }
+
     public function wpMessage($number, $msg){
         $params= [
             'token' => getenv('ULTRAMSG_TOKEN'),

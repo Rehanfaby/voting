@@ -30,8 +30,9 @@ Route::get('musician/data/{id}', 'HomeController@employee')->name('musician.data
 Route::post('musician/find', 'HomeController@employeeFind')->name('musician.find');
 Route::post('musician/vote', 'HomeController@employeeVote')->name('musician.vote');
 Route::get('musician/team', 'HomeController@team')->name('team');
-Route::get('musician/vote/payment', 'HomeController@musicianVotePayment')->name('musician.vote.payment');
+Route::post('musician/vote/payment', 'HomeController@musicianVotePayment')->name('musician.vote.payment');
 Route::get('musician/vote/payment/coin', 'HomeController@musicianVotePaymentCoin')->name('musician.vote.payment.coin');
+Route::get('/musician/vote/payment/check', 'HomeController@musicianVotePaymentCheck')->name('musician.vote.payment.check');
 
 
 Route::get('language_switch/{locale}', 'LanguageController@switchLanguage');
