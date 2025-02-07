@@ -851,5 +851,21 @@ return [
 	"Most Voted Contestant of the Week" => "Most Voted Contestant of the Week",
 	"Here comes the best Contestant of the week" => "Here comes the best Contestant of the week",
 
+    "Ambassadors" => "Ambassadors",
+    "Meet Our Ambassadors" => "Meet Our Ambassadors",
+    "Contestant" => "Contestant",
+    "Voter" => "Voter",
+    "OTP" => "OTP",
+    "Submit" => "Submit",
+    "Password Change" => "Password Change",
+    "Please enter your new password and confirm password!" => "Please enter your new password and confirm password!",
+    "Please verify whatsapp otp to receive your new password" => "Please verify whatsapp otp to receive your new password",
+    "Send Code" => "Send Code",
+    "Whatsapp Phone Number" => "Whatsapp Phone Number",
+    "Please Enter your number, we will send your password by whatsapp!" => "Please Enter your number, we will send your password by whatsapp!",
+    "Forgot Password" => "Forgot Password",
+    "Registration" => "Registration",
+    "Video less than 10mb" => "Video less than 10mb",
+
 ];
 ?>

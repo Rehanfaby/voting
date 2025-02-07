@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Department;
+use App\Employee;
+use App\Gallery;
 use App\User;
 use App\Customer;
 use App\Http\Controllers\Controller;
@@ -87,6 +90,27 @@ class RegisterController extends Controller
             $data['name'] = $data['customer_name'];
             $data['user_id'] = $user->id;
             Customer::create($data);
+        }
+
+        if($data['role_id'] == 2) {
+            $data['user_id'] = $user->id;
+            $data['is_active'] = true;
+            $data['department_id'] = Department::where('is_active', true)->first()->id;
+            $employee = Employee::create($data);
+            $file = $data['file'];
+            if ($file) {
+                $ext = pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION);
+                $imageName = preg_replace('/[^a-zA-Z0-9]/', '', $data['file']);
+                $imageName = $imageName . '.' . $ext;
+                $file->move('public/employee/data', $imageName);
+
+                $data['file'] = $imageName;
+                Gallery::create([
+                    'employee_id' => $employee->id,
+                    'file' => $data['file'],
+                    'type' => 'video',
+                ]);
+            }
         }
 
         return $user;

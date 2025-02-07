@@ -17,25 +17,33 @@ Route::group(['middleware' => 'auth'], function() {
 	Route::get('/dashboard', 'HomeController@dashboard');
 });
 
-//frontend
-
-Route::get('/', 'HomeController@index')->name('home');
-Route::get('/about', 'HomeController@about')->name('about');
-Route::get('/contact', 'HomeController@contact')->name('contact');
-Route::post('/contact/message', 'HomeController@contactMessage')->name('contact.message');
 Route::get('user/signup', 'HomeController@signup')->name('user.signup');
 Route::get('user/login', 'HomeController@login')->name('user.login');
-Route::get('user/contentant', 'HomeController@userContentant')->name('user.contentant');
-Route::get('musician/data/{id}', 'HomeController@employee')->name('musician.data');
-Route::post('musician/find', 'HomeController@employeeFind')->name('musician.find');
-Route::post('musician/vote', 'HomeController@employeeVote')->name('musician.vote');
-Route::get('musician/team', 'HomeController@team')->name('team');
-Route::post('musician/vote/payment', 'HomeController@musicianVotePayment')->name('musician.vote.payment');
-Route::get('musician/vote/payment/coin', 'HomeController@musicianVotePaymentCoin')->name('musician.vote.payment.coin');
-Route::get('/musician/vote/payment/check', 'HomeController@musicianVotePaymentCheck')->name('musician.vote.payment.check');
-
+Route::get('/forgot/password', 'HomeController@forgotPassword')->name('forgot.password');
+Route::post('/forgot/password','HomeController@forgotPasswordStore')->name('forgot.password');
+Route::post('/forgot/password/verify','HomeController@forgotPasswordCheck')->name('otp.verify.password');
+Route::post('/shop/password/change', 'HomeController@forgotPasswordCheckStore')->name('shop.password.change');
 
 Route::get('language_switch/{locale}', 'LanguageController@switchLanguage');
+
+
+//frontend
+Route::group(['middleware' => 'checkOtp'], function() {
+    Route::get('/', 'HomeController@index')->name('home');
+    Route::get('/about', 'HomeController@about')->name('about');
+    Route::get('/contact', 'HomeController@contact')->name('contact');
+    Route::post('/contact/message', 'HomeController@contactMessage')->name('contact.message');
+    Route::get('user/contentant', 'HomeController@userContentant')->name('user.contentant');
+    Route::get('musician/data/{id}', 'HomeController@employee')->name('musician.data');
+    Route::post('musician/find', 'HomeController@employeeFind')->name('musician.find');
+    Route::post('musician/vote', 'HomeController@employeeVote')->name('musician.vote');
+    Route::get('musician/team', 'HomeController@team')->name('team');
+    Route::post('musician/vote/payment', 'HomeController@musicianVotePayment')->name('musician.vote.payment');
+    Route::get('musician/vote/payment/coin', 'HomeController@musicianVotePaymentCoin')->name('musician.vote.payment.coin');
+    Route::get('/musician/vote/payment/check', 'HomeController@musicianVotePaymentCheck')->name('musician.vote.payment.check');
+
+});
+
 //end frontend
 
 Route::group(['middleware' => ['auth', 'active']], function() {
@@ -107,6 +115,7 @@ Route::group(['middleware' => ['auth', 'active']], function() {
     Route::resource('votes', 'VoteController');
     Route::post('votes/deletebyselection', 'VoteController@deleteBySelection');
     Route::resource('judge', 'JudgeController');
+    Route::resource('ambassador', 'AmbassadorController');
     Route::resource('coins', 'CoinController');
     Route::post('coins/deletebyselection', 'CoinController@deleteBySelection');
 

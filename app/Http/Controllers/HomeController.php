@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Ambassador;
 use App\Coin;
 use App\Employee;
 use App\Gallery;
@@ -24,6 +25,7 @@ use App\Customer;
 use DB;
 use Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Session;
 use Printing;
 use Rawilk\Printing\Contracts\Printer;
 use Spatie\Permission\Models\Role;
@@ -95,6 +97,7 @@ class HomeController extends Controller
         }
         $musicians = Employee::where('is_active', true)->get();
         $judges = Judge::where('is_active', true)->get();
+        $ambassadors = Ambassador::where('is_active', true)->get();
 
 
 //        $start_date = date('Y-m-d', strtotime('last monday'));
@@ -135,7 +138,7 @@ class HomeController extends Controller
         }
 
 
-        return view('frontend.home', compact('musicians', 'judges', 'best_musician', 'see_votes'));
+        return view('frontend.home', compact('musicians', 'judges', 'best_musician', 'see_votes', 'ambassadors'));
     }
 
     public function signup()
@@ -318,6 +321,9 @@ class HomeController extends Controller
     }
 
     public function logout() {
+
+        $user = Auth::user();
+        $user->update(['otp_verify' => '0']);
         Auth::logout();
         return redirect()->route('home');
     }
@@ -608,5 +614,62 @@ class HomeController extends Controller
 
         return true;
     }
+
+    public function forgotPassword()
+    {
+        return view('frontend.forgot-password');
+    }
+
+    public function forgotPasswordStore(Request $request)
+    {
+        $user = User::where('phone', $request->phone)->where('is_active', true)->first();
+        if ($user) {
+            $otp = $this->sendOTP($user);
+            Session::put('otp', $otp);
+            Session::put('user', $user);
+            return view('frontend.otp_screen_forgot_password');
+        }
+
+        return back()->with('not_permitted', 'Your phone number is incorrect...!');
+    }
+
+    public function forgotPasswordCheck(Request $request)
+    {
+
+        if ($request->otp == Session::get('otp')) {
+            Session::forget('otp');
+            return view('frontend.password_change');
+        }
+        return back()->with('not_permitted', 'OTP is incorrect...!');
+    }
+
+    public function forgotPasswordCheckStore(Request $request) {
+        $data = $request->all();
+        $password = $data['password'];
+
+        if($data['password'] != $data['confirm_password']) {
+            $not_permitted = 'Password and confirm password does not match';
+            return view('frontend.password_change', compact('not_permitted'));
+        }
+
+        $user = Session::get('user');
+        User::where('id', $user->id)->update([
+            'password' => bcrypt($password)
+        ]);
+        Session::forget('user');
+
+        $msg = '*Dear* :'. $user->name .' \n\n';
+        $msg .= '*Your new password is:* '. $password . '\n\n';
+
+        try{
+            $this->wpMessage($user->phone, $msg);
+        }
+        catch(\Exception $e){
+        }
+
+        return redirect()->route('user.login')->with('message', 'Congratulaton: Your password has been updated');
+    }
+
+
 
 }

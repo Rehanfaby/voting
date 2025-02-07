@@ -93,6 +93,12 @@
                 </div>
                 <div class="hr-1 mt-30 mb-30 d-xl-none"></div>
                 <div class="offcanvas__btn mb-30">
+                    <a class="user__name" href="https://mail.hostinger.com" target="_blank"><i class="fa-solid fa-plus"></i> {{trans('file.Email')}}</a>
+                </div>
+                <div class="offcanvas__btn mb-30">
+                    <a class="user__name" href="{{ route('user.signup') }}"><i class="fa-solid fa-plus"></i> {{trans('file.Registration')}}</a>
+                </div>
+                <div class="offcanvas__btn mb-30">
                     <a class="user__name" href="{{ route('home') }}"><i class="fa-solid fa-plus"></i> {{trans('file.Home')}}</a>
                 </div>
                 <div class="offcanvas__btn mb-30">
@@ -154,6 +160,12 @@
                                     <div class="main-menu main-menu-ff-space">
                                         <nav id="mobile-menu">
                                             <ul>
+                                                <li>
+                                                    <a href="https://mail.hostinger.com" target="_blank">{{trans('file.Email')}}</a>
+                                                </li>
+                                                <li>
+                                                    <a href="{{ route('user.signup') }}">{{trans('file.Registration')}}</a>
+                                                </li>
                                                 <li>
                                                     <a href="{{ route('home') }}">{{trans('file.Home')}}</a>
                                                 </li>
