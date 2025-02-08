@@ -760,6 +760,7 @@ return [
     "Forgot Password" => "Mot de Passe Oublié",
     "Registration" => "Inscription",
     "Video less than 10mb" => "Vidéo de moins de 10 Mo",
+    "Forgot your password" => "Mot de passe oublié"
 
 ];
 ?>

@@ -52,6 +52,11 @@
         $contestents = \App\vote::select('musician_id')->where('user_id', $user->id)->groupBy('musician_id')->get()->toArray();
     }
 @endphp
+<style>
+    .header__action-inner {
+         gap: 5px;
+    }
+</style>
 <!-- Offcanvas area start -->
 <div class="fix">
     <div class="offcanvas__info">
@@ -210,7 +215,7 @@
                                         </div>
                                     @endif
                                     <div class="header__btn">
-                                        <a href="{{ route('team') }}" class="ms-border-btn"><i class="fa-regular fa-plus"></i>{{trans('file.Vote your favourite candidate')}}</a>
+                                        <a href="{{ route('team') }}" class="ms-border-btn"><i class="fa-regular fa-plus"></i>{{trans('file.Vote your Candidate')}}</a>
                                     </div>
                                     @if(!$user)
                                     <div class="user__acount d-none d-xxl-inline-flex">
@@ -245,7 +250,7 @@
                                 </div>
                                 <div class="enquiry__list ml-10 mr-10 ms-browse-act-wrap p-relative">
                                     <div class="ms-enquiry-box p-relative d-none d-xl-inline-flex">
-                                        <a href="#"><span class="text">Switch Language <sup>({{ \App::getLocale() }})</sup></span></a></a>
+                                        <a href="#"><span class="text"><span class="fa fa-language"></span> <sup>({{ \App::getLocale() }})</sup></span></a></a>
                                     </div>
                                     <div class="ms-browse-act-item-wrap p-absolute">
                                         <div class="ms-song-item">

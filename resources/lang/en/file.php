@@ -866,6 +866,7 @@ return [
     "Forgot Password" => "Forgot Password",
     "Registration" => "Registration",
     "Video less than 10mb" => "Video less than 10mb",
+    "Forgot your password" => "Forgot your password"
 
 ];
 ?>

@@ -48,7 +48,7 @@
                                     <strong>{{ $errors->first('password') }}</strong>
                                 </p>
                             @endif
-                            <div class="form-group"><a class="font-xs color-gray-500" href="{{ route('forgot.password') }}">Forgot your password?</a></div>
+                            <div class="form-group"><a class="font-xs color-gray-500" href="{{ route('forgot.password') }}">{{trans("file.Forgot your password")}}?</a></div>
                         </div>
                         <div class="ms-submit-btn mb-40">
                             <button class="unfill__btn d-block w-100" type="submit">{{trans("file.Login")}}
