@@ -52,6 +52,11 @@
         $contestents = \App\vote::select('musician_id')->where('user_id', $user->id)->groupBy('musician_id')->get()->toArray();
     }
 @endphp
+<style>
+    .header__action-inner {
+         gap: 5px;
+    }
+</style>
 <!-- Offcanvas area start -->
 <div class="fix">
     <div class="offcanvas__info">
@@ -92,6 +97,12 @@
                     </div>
                 </div>
                 <div class="hr-1 mt-30 mb-30 d-xl-none"></div>
+                <div class="offcanvas__btn mb-30">
+                    <a class="user__name" href="https://mail.hostinger.com" target="_blank"><i class="fa-solid fa-plus"></i> {{trans('file.Email')}}</a>
+                </div>
+                <div class="offcanvas__btn mb-30">
+                    <a class="user__name" href="{{ route('user.signup') }}"><i class="fa-solid fa-plus"></i> {{trans('file.Registration')}}</a>
+                </div>
                 <div class="offcanvas__btn mb-30">
                     <a class="user__name" href="{{ route('home') }}"><i class="fa-solid fa-plus"></i> {{trans('file.Home')}}</a>
                 </div>
@@ -155,6 +166,12 @@
                                         <nav id="mobile-menu">
                                             <ul>
                                                 <li>
+                                                    <a href="https://mail.hostinger.com" target="_blank">{{trans('file.Email')}}</a>
+                                                </li>
+                                                <li>
+                                                    <a href="{{ route('user.signup') }}">{{trans('file.Registration')}}</a>
+                                                </li>
+                                                <li>
                                                     <a href="{{ route('home') }}">{{trans('file.Home')}}</a>
                                                 </li>
                                                 <li>
@@ -198,7 +215,7 @@
                                         </div>
                                     @endif
                                     <div class="header__btn">
-                                        <a href="{{ route('team') }}" class="ms-border-btn"><i class="fa-regular fa-plus"></i>{{trans('file.Vote your favourite candidate')}}</a>
+                                        <a href="{{ route('team') }}" class="ms-border-btn"><i class="fa-regular fa-plus"></i>{{trans('file.Vote your Candidate')}}</a>
                                     </div>
                                     @if(!$user)
                                     <div class="user__acount d-none d-xxl-inline-flex">
@@ -233,7 +250,7 @@
                                 </div>
                                 <div class="enquiry__list ml-10 mr-10 ms-browse-act-wrap p-relative">
                                     <div class="ms-enquiry-box p-relative d-none d-xl-inline-flex">
-                                        <a href="#"><span class="text">Switch Language <sup>({{ \App::getLocale() }})</sup></span></a></a>
+                                        <a href="#"><span class="text"><span class="fa fa-language"></span> <sup>({{ \App::getLocale() }})</sup></span></a></a>
                                     </div>
                                     <div class="ms-browse-act-item-wrap p-absolute">
                                         <div class="ms-song-item">

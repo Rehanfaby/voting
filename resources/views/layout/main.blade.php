@@ -191,6 +191,7 @@
                                     <li id="user-list-menu"><a href="{{route('user.index')}}">{{trans('file.User List')}}</a></li>
                                     <li id="admin-menu"><a href="{{route('admin.index')}}">{{trans('file.Admin')}}</a></li>
                                     <li id="judge-menu"><a href="{{route('judge.index')}}">{{trans('file.Judges')}}</a></li>
+                                    <li id="ambassador-menu"><a href="{{route('ambassador.index')}}">{{trans('file.Ambassadors')}}</a></li>
                                     <li id="voter-menu"><a href="{{route('voter.index')}}">{{trans('file.Voters')}}</a></li>
                             @endif
                                 @if($index_employee_active)
@@ -322,45 +323,45 @@
                             <li>
                                 <a href="{{ url('language_switch/fr') }}" class="btn btn-link"> Français</a>
                             </li>
-                            <li>
-                                <a href="{{ url('language_switch/es') }}" class="btn btn-link"> Español</a>
-                            </li>
-                            <li>
-                                <a href="{{ url('language_switch/ar') }}" class="btn btn-link"> عربى</a>
-                            </li>
-                            <li>
-                                <a href="{{ url('language_switch/pt_BR') }}" class="btn btn-link"> Portuguese</a>
-                            </li>
-                            <li>
-                                <a href="{{ url('language_switch/de') }}" class="btn btn-link"> Deutsche</a>
-                            </li>
-                            <li>
-                                <a href="{{ url('language_switch/id') }}" class="btn btn-link"> Malay</a>
-                            </li>
-                            <li>
-                                <a href="{{ url('language_switch/hi') }}" class="btn btn-link"> हिंदी</a>
-                            </li>
-                            <li>
-                                <a href="{{ url('language_switch/vi') }}" class="btn btn-link"> Tiếng Việt</a>
-                            </li>
-                            <li>
-                                <a href="{{ url('language_switch/ru') }}" class="btn btn-link"> русский</a>
-                            </li>
-                            <li>
-                                <a href="{{ url('language_switch/bg') }}" class="btn btn-link"> български</a>
-                            </li>
-                            <li>
-                                <a href="{{ url('language_switch/tr') }}" class="btn btn-link"> Türk</a>
-                            </li>
-                            <li>
-                                <a href="{{ url('language_switch/it') }}" class="btn btn-link"> Italiano</a>
-                            </li>
-                            <li>
-                                <a href="{{ url('language_switch/nl') }}" class="btn btn-link"> Nederlands</a>
-                            </li>
-                            <li>
-                                <a href="{{ url('language_switch/lao') }}" class="btn btn-link"> Lao</a>
-                            </li>
+{{--                            <li>--}}
+{{--                                <a href="{{ url('language_switch/es') }}" class="btn btn-link"> Español</a>--}}
+{{--                            </li>--}}
+{{--                            <li>--}}
+{{--                                <a href="{{ url('language_switch/ar') }}" class="btn btn-link"> عربى</a>--}}
+{{--                            </li>--}}
+{{--                            <li>--}}
+{{--                                <a href="{{ url('language_switch/pt_BR') }}" class="btn btn-link"> Portuguese</a>--}}
+{{--                            </li>--}}
+{{--                            <li>--}}
+{{--                                <a href="{{ url('language_switch/de') }}" class="btn btn-link"> Deutsche</a>--}}
+{{--                            </li>--}}
+{{--                            <li>--}}
+{{--                                <a href="{{ url('language_switch/id') }}" class="btn btn-link"> Malay</a>--}}
+{{--                            </li>--}}
+{{--                            <li>--}}
+{{--                                <a href="{{ url('language_switch/hi') }}" class="btn btn-link"> हिंदी</a>--}}
+{{--                            </li>--}}
+{{--                            <li>--}}
+{{--                                <a href="{{ url('language_switch/vi') }}" class="btn btn-link"> Tiếng Việt</a>--}}
+{{--                            </li>--}}
+{{--                            <li>--}}
+{{--                                <a href="{{ url('language_switch/ru') }}" class="btn btn-link"> русский</a>--}}
+{{--                            </li>--}}
+{{--                            <li>--}}
+{{--                                <a href="{{ url('language_switch/bg') }}" class="btn btn-link"> български</a>--}}
+{{--                            </li>--}}
+{{--                            <li>--}}
+{{--                                <a href="{{ url('language_switch/tr') }}" class="btn btn-link"> Türk</a>--}}
+{{--                            </li>--}}
+{{--                            <li>--}}
+{{--                                <a href="{{ url('language_switch/it') }}" class="btn btn-link"> Italiano</a>--}}
+{{--                            </li>--}}
+{{--                            <li>--}}
+{{--                                <a href="{{ url('language_switch/nl') }}" class="btn btn-link"> Nederlands</a>--}}
+{{--                            </li>--}}
+{{--                            <li>--}}
+{{--                                <a href="{{ url('language_switch/lao') }}" class="btn btn-link"> Lao</a>--}}
+{{--                            </li>--}}
                         </ul>
                     </li>
                     <li class="nav-item">

@@ -743,5 +743,24 @@ return [
 	"Most Voted Contestant of the Week" => "Candidat le plus voté de la semaine",
 	"Here comes the best Contestant of the week" => "Voici le meilleur candidat de la semaine",
 
+
+
+    "Ambassadors" => "Ambassadeurs",
+    "Meet Our Ambassadors" => "Rencontrez Nos Ambassadeurs",
+    "Contestant" => "Candidat",
+    "Voter" => "Électeur",
+    "OTP" => "OTP",
+    "Submit" => "Soumettre",
+    "Password Change" => "Changement de Mot de Passe",
+    "Please enter your new password and confirm password!" => "Veuillez entrer votre nouveau mot de passe et le confirmer !",
+    "Please verify whatsapp otp to receive your new password" => "Veuillez vérifier l'OTP WhatsApp pour recevoir votre nouveau mot de passe",
+    "Send Code" => "Envoyer le Code",
+    "Whatsapp Phone Number" => "Numéro de Téléphone WhatsApp",
+    "Please Enter your number, we will send your password by whatsapp!" => "Veuillez entrer votre numéro, nous vous enverrons votre mot de passe par WhatsApp !",
+    "Forgot Password" => "Mot de Passe Oublié",
+    "Registration" => "Inscription",
+    "Video less than 10mb" => "Vidéo de moins de 10 Mo",
+    "Forgot your password" => "Mot de passe oublié"
+
 ];
 ?>
