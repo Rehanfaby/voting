@@ -95,6 +95,7 @@ class RegisterController extends Controller
         if($data['role_id'] == 2) {
             $data['user_id'] = $user->id;
             $data['is_active'] = true;
+            $data['is_approve'] = false;
             $data['department_id'] = Department::where('is_active', true)->first()->id;
             $employee = Employee::create($data);
             $file = $data['file'];

@@ -760,7 +760,9 @@ return [
     "Forgot Password" => "Mot de Passe Oublié",
     "Registration" => "Inscription",
     "Video less than 10mb" => "Vidéo de moins de 10 Mo",
-    "Forgot your password" => "Mot de passe oublié"
+    "Forgot your password" => "Mot de passe oublié",
+    "your account is not approved yet, please contact to administrator to approve your account" => "Votre compte n'est pas encore approuvé, veuillez contacter l'administrateur pour approuver votre compte",
+    "Pending Contestants" => "Concourants en attente",
 
 ];
 ?>

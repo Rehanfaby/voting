@@ -866,7 +866,9 @@ return [
     "Forgot Password" => "Forgot Password",
     "Registration" => "Registration",
     "Video less than 10mb" => "Video less than 10mb",
-    "Forgot your password" => "Forgot your password"
+    "Forgot your password" => "Forgot your password",
+    "your account is not approved yet, please contact to administrator to approve your account" => "your account is not approved yet, please contact to administrator to approve your account",
+    "Pending Contestants" => "Pending Contestants",
 
 ];
 ?>

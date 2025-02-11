@@ -195,7 +195,10 @@
                                     <li id="voter-menu"><a href="{{route('voter.index')}}">{{trans('file.Voters')}}</a></li>
                             @endif
                                 @if($index_employee_active)
-                                <li id="employee-menu"><a href="{{route('musician.index')}}">{{trans('file.Contestants name')}}</a></li>
+                                <li id="employee-menu"><a href="{{route('musician.index')}}">{{trans('file.Contestants')}}</a></li>
+                                @if($role->id == 1)
+                                    <li id="employee-pending-menu"><a href="{{route('musician.pending.index')}}">{{trans('file.Pending Contestants')}}</a></li>
+                                @endif
                                 @endif
                         </ul>
                     </li>
@@ -465,7 +468,7 @@
                     {!! Form::open(['route' => 'votes.store', 'method' => 'post']) !!}
                     <?php
                     $users = \App\User::where('role_id', 3)->where('is_active', true)->where('is_deleted', false)->orderBy('id', 'desc')->get();
-                    $contentants = \App\Employee::where('is_active', true)->orderBy('id', 'desc')->get();
+                    $contentants = \App\Employee::where('is_active', true)->where('is_approve', true)->orderBy('id', 'desc')->get();
                     ?>
                     <div class="row">
                         <div class="col-md-6 form-group">

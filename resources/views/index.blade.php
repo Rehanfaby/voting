@@ -12,6 +12,9 @@
       <div class="col-md-12">
         <div class="brand-text float-left mt-4">
             <h3>{{trans('file.welcome')}} <span>{{Auth::user()->name}}</span> </h3>
+            @if(Auth::user()->role_id == 2 && \App\Employee::where('user_id', Auth::user()->id)->value('is_approve') == false)
+                <span class="alert alert-danger"> {{ trans('file.your account is not approved yet, please contact to administrator to approve your account') }}</span>
+            @endif
         </div>
       </div>
     </div>
