@@ -57,7 +57,7 @@
                     <div class="col-md-6 col-sm-12">
                         <div class="ms-maxw-510">
                                 <div class="ms-login-wrap text-center ms-login-space ms-bg-2">
-                                    <h3 class="ms-title4 mb-50">{{trans("file.Pay By Momo")}}</h3>
+                                    <h3 class="ms-title4 mb-50">{{trans("file.Pay By MOMO or OM")}}</h3>
                                     <div class="text-center message-status"></div>
                                     <form id="" method="post" action="{{ route('musician.vote.payment') }}">
                                         @csrf

@@ -866,7 +866,14 @@ return [
     "Forgot Password" => "Forgot Password",
     "Registration" => "Registration",
     "Video less than 10mb" => "Video less than 10mb",
-    "Forgot your password" => "Forgot your password"
+    "Forgot your password" => "Forgot your password",
+	"Search Your Contestant" => "Search Your Contestant",
+	"Vote For Me" => "Vote For Me",
+	"Pay By MOMO or OM" => "Pay By MOMO or OM",
+	"Pay By Mulema Coin" => "Pay By Mulema Coin",
+	"Introducing The Mulema Gospel Talent Show Cameroons Ultimate Gospel Talent Competition Are you ready to witness the next generation of Gospel superstars The Mulema Gospel Talent Show is a thrilling televised competition dedicated to discovering and elevating Cameroons finest Gospel talents This is more than just a show its a movement to showcase raw talent inspire hearts and spread the message of faith through music With a rigorous journey from preselections to grand prime shows in Yaoundé the best voices will rise to the top winning hearts and transforming lives Dont miss out on this life-changing experience Mulema Gospel is where talent meets divine purpose" => "Introducing The Mulema Gospel Talent Show Cameroons Ultimate Gospel Talent Competition Are you ready to witness the next generation of Gospel superstars The Mulema Gospel Talent Show is a thrilling televised competition dedicated to discovering and elevating Cameroons finest Gospel talents This is more than just a show its a movement to showcase raw talent inspire hearts and spread the message of faith through music With a rigorous journey from preselections to grand prime shows in Yaoundé the best voices will rise to the top winning hearts and transforming lives Dont miss out on this life-changing experience Mulema Gospel is where talent meets divine purpose",
+
+
 
 ];
 ?>
