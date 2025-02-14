@@ -28,17 +28,63 @@ class EmployeeController extends Controller
                 $all_permission[] = 'dummy text';
 
             if ($role->id == 1){
-                $lims_employee_all = Employee::where('is_active', true)->get();
+                $lims_employee_all = Employee::where('is_active', true)->where('is_approve', true)->get();
             } elseif ($role->id == 2) {
-                $lims_employee_all = Employee::where('is_active', true)->where('name', Auth::user()->name)->get();
+                $lims_employee_all = Employee::where('is_active', true)->where('is_approve', true)->where('name', Auth::user()->name)->get();
             } else {
                 return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
             }
+            $pending = 0;
             $lims_department_list = Department::where('is_active', true)->get();
-            return view('employee.index', compact('lims_employee_all', 'lims_department_list', 'all_permission'));
+            return view('employee.index', compact('lims_employee_all', 'lims_department_list', 'all_permission', 'pending'));
         }
         else
             return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
+    }
+
+    public function pending()
+    {
+        $role = Role::find(Auth::user()->role_id);
+        if($role->hasPermissionTo('employees-index')){
+            $permissions = Role::findByName($role->name)->permissions;
+            foreach ($permissions as $permission)
+                $all_permission[] = $permission->name;
+            if(empty($all_permission))
+                $all_permission[] = 'dummy text';
+
+            if ($role->id == 1){
+                $lims_employee_all = Employee::where('is_active', true)->where('is_approve', false)->get();
+            } else {
+                return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
+            }
+            $pending = 1;
+            $lims_department_list = Department::where('is_active', true)->get();
+            return view('employee.index', compact('lims_employee_all', 'lims_department_list', 'all_permission', 'pending'));
+        }
+        else
+            return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
+    }
+
+    public function approveStore($id)
+    {
+        Employee::where('id', $id)->update(['is_approve' => true]);
+        return redirect()->back()->with('message', 'Contestant has been approved successfully');
+    }
+
+    public function rejectStore($id)
+    {
+        $employee =  Employee::where('id', $id)->first();
+        $employee->is_approve = false;
+        $employee->is_active = false;
+        $employee->save();
+        $msg = 'Dear ' . $employee->name . ', your account has been rejected.';
+
+        try{
+            $this->wpMessage($employee->phone_number, $msg);
+        }
+        catch(\Exception $e){
+        }
+        return redirect()->back()->with('not_permitted', 'Contestant has been rejected successfully');
     }
 
     public function create()

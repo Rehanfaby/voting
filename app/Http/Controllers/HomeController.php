@@ -95,7 +95,7 @@ class HomeController extends Controller
                 return $this->admin();
             }
         }
-        $musicians = Employee::where('is_active', true)->get();
+        $musicians = Employee::where('is_active', true)->where('is_approve', true)->get();
         $judges = Judge::where('is_active', true)->get();
         $ambassadors = Ambassador::where('is_active', true)->get();
 
@@ -152,7 +152,7 @@ class HomeController extends Controller
     }
 
     public function team(){
-        $musicians = Employee::where('is_active', true)->get();
+        $musicians = Employee::where('is_active', true)->where('is_approve', true)->get();
         return view('frontend.team', compact('musicians'));
     }
 
@@ -163,7 +163,7 @@ class HomeController extends Controller
         $videos = Gallery::where('employee_id', $id)->where('type', 'video')->get();
         $shorts = Gallery::where('employee_id', $id)->where('type', 'short')->get();
         $youtubes = Gallery::where('employee_id', $id)->where('type', 'link')->get();
-        $contentants = Employee::where('is_active', true)->get();
+        $contentants = Employee::where('is_active', true)->where('is_approve', true)->get();
 
 
         $see_votes = false;
@@ -176,7 +176,7 @@ class HomeController extends Controller
     }
 
     public function employeeFind(Request $request) {
-        $musicians = Employee::where('name', 'LIKE', '%' . $request->search . '%')->where('is_active', true)->get();
+        $musicians = Employee::where('name', 'LIKE', '%' . $request->search . '%')->where('is_active', true)->where('is_approve', true)->get();
         return view('frontend.team', compact('musicians'));
     }
 
