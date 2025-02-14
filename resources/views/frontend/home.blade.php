@@ -374,7 +374,7 @@
             <div class="col-lg-6">
                 <div class="section__title-wrapper mb-65 text-center bd-title-anim">
                     <span class="section__subtitle">{{ trans("file.Our Partners") }}</span>
-                    <h2 class="section__title">{{ trans("file.Most") }} 
+                    <h2 class="section__title">{{ trans("file.Most") }}
                         <span class="animated-underline active">{{ trans("file.Valuable") }}</span>
                         {{ trans("file.Partners") }}
                     </h2>
@@ -434,7 +434,7 @@
 </style>
 
 <div class="logo-container">
-    <img src="{{ url('/logo/' . $general_setting->site_logo) }}" alt="Site Logo">
+    <img src="{{ url('public/logo/' . $general_setting->site_logo) }}" alt="Site Logo">
     <img src="{{ url('public/logo/Beyond.png') }}" alt="Beyond Logo">
     <img src="{{ url('public/logo/Elfa.png') }}" alt="Elfa Logo">
     <img src="{{ url('public/logo/MBS.png') }}" alt="MBS Logo">
