@@ -102,6 +102,9 @@ Route::group(['middleware' => ['auth', 'active']], function() {
     Route::get('musician/upload/{id}', 'EmployeeController@upload')->name('musician.upload');
     Route::post('musician/upload/store', 'EmployeeController@uploadStore')->name('musician.file.store');
     Route::get('musician/votes/{id}', 'EmployeeController@votes')->name('musician.votes');
+    Route::get('/musician/pending/index', 'EmployeeController@pending')->name('musician.pending.index');
+    Route::get('/musician/approve/{id}', 'EmployeeController@approveStore')->name('musician.approve');
+    Route::get('/musician/reject/{id}', 'EmployeeController@rejectStore')->name('musician.reject');
 
 
     Route::post('notifications/store', 'NotificationController@store')->name('notifications.store');

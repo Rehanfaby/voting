@@ -13,7 +13,7 @@
     <style>
         .ms-banner__main-wrapper {
              padding-top: 0px;
-            padding-bottom: 210px;
+            padding-bottom: 288px;
         }
     </style>
 

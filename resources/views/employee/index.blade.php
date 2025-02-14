@@ -65,6 +65,14 @@
                             </button>
                             <ul class="dropdown-menu edit-options dropdown-menu-right dropdown-default" user="menu">
                                 @if(in_array("employees-edit", $all_permission))
+                                    @if($employee->is_approve == 0)
+                                        <li>
+                                            <a onclick="return confirm('Are you sure you want to approve this musician?')" href="{{ route('musician.approve', $employee->id) }}" class="edit-btn btn btn-link"><i class="fa fa-check"></i> Approve</a>
+                                        </li>
+                                        <li>
+                                            <a onclick="return confirm('Are you sure you want to reject this musician?')" href="{{ route('musician.reject', $employee->id) }}" class="edit-btn btn btn-link"><i class="fa fa-close"></i> Reject</a>
+                                        </li>
+                                    @endif
                                 <li>
                                     <button type="button" data-id="{{$employee->id}}" data-name="{{$employee->name}}" data-email="{{$employee->email}}" data-phone_number="{{$employee->phone_number}}" data-department_id="{{$employee->department_id}}" data-address="{{$employee->address}}" data-city="{{$employee->city}}" data-country="{{$employee->country}}" class="edit-btn btn btn-link" data-toggle="modal" data-target="#editModal"><i class="dripicons-document-edit"></i> {{trans('file.edit')}}</button>
                                 </li>
@@ -158,7 +166,11 @@
 
     $("ul#people").siblings('a').attr('aria-expanded','true');
     $("ul#people").addClass("show");
+    @if($pending == 0)
     $("ul#people #employee-menu").addClass("active");
+    @else
+    $("ul#people #employee-pending-menu").addClass("active");
+    @endif
 
     var employee_id = [];
     var user_verified = <?php echo json_encode(env('USER_VERIFIED')) ?>;

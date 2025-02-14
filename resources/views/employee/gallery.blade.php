@@ -21,8 +21,16 @@
         {{--        @if(in_array("users-add", $all_permission))--}}
         <div class="container-fluid">
             <a href="{{route('musician.upload', $lims_employee_data->id)}}" class="btn btn-info"><i class="dripicons-plus"></i> Upload File</a>
+            @if(in_array("employees-edit", $all_permission))
+                @if($lims_employee_data->is_approve == 0)
+                    <a onclick="return confirm('Are you sure you want to approve this musician?')" href="{{ route('musician.approve', $lims_employee_data->id) }}" class="btn btn-success"><i class="fa fa-check"></i> Approve</a>
+                    <a onclick="return confirm('Are you sure you want to reject this musician?')" href="{{ route('musician.reject', $lims_employee_data->id) }}" class="btn btn-danger"><i class="fa fa-close"></i> Reject</a>
+                @endif
+            @endif
         </div>
         {{--        @endif--}}
+
+
         <div class="">
             <div class="row m-5">
                 @foreach($lims_employee_gallery as $employee_gallery)
