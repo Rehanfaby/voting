@@ -761,6 +761,13 @@ return [
     "Registration" => "Inscription",
     "Video less than 10mb" => "Vidéo de moins de 10 Mo",
     "Forgot your password" => "Mot de passe oublié",
+
+	"Search Your Contestant" => "Recherchez votre candidat",
+	"Vote For Me" => "Votez pour moi",
+	"Pay By MOMO or OM" => "Payez par MOMO ou OM",
+	"Pay By Mulema Coin" => "Payez avec Mulema Coin",
+	"Introducing The Mulema Gospel Talent Show Cameroons Ultimate Gospel Talent Competition Are you ready to witness the next generation of Gospel superstars The Mulema Gospel Talent Show is a thrilling televised competition dedicated to discovering and elevating Cameroons finest Gospel talents This is more than just a show its a movement to showcase raw talent inspire hearts and spread the message of faith through music With a rigorous journey from preselections to grand prime shows in Yaoundé the best voices will rise to the top winning hearts and transforming lives Dont miss out on this life-changing experience Mulema Gospel is where talent meets divine purpose" => "Découvrez le Mulema Gospel Talent Show, la compétition ultime de talents gospel au Cameroun ! Êtes-vous prêt à découvrir la prochaine génération de superstars du gospel ? Le Mulema Gospel Talent Show est une compétition télévisée passionnante dédiée à la découverte et à l’élévation des meilleurs talents gospel du Cameroun. Ce n’est pas juste un spectacle, c’est un mouvement visant à mettre en lumière les talents bruts, inspirer les cœurs et répandre le message de foi à travers la musique. Avec un parcours rigoureux allant des présélections aux grands shows en direct à Yaoundé, les meilleures voix se hisseront au sommet, conquérant les cœurs et transformant des vies. Ne manquez pas cette expérience inoubliable, Mulema Gospel est l’endroit où le talent rencontre le destin divin.",
+
     "your account is not approved yet, please contact to administrator to approve your account" => "Votre compte n'est pas encore approuvé, veuillez contacter l'administrateur pour approuver votre compte",
     "Pending Contestants" => "Concourants en attente",
 

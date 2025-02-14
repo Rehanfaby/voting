@@ -82,7 +82,7 @@
                                             @csrf
                                             <div class="ms-banner__from-inner white-bg">
                                                 <div class="ms-input2-box white-bg">
-                                                    <input type="text" placeholder="{{trans("file.Search Your Musician")}}" name="search">
+                                                    <input type="text" placeholder="{{trans("file.Search Your Contestant")}}" name="search">
                                                 </div>
                                                 <div class="banner__form-button">
                                                     <button type="submit" class="input__btn"><i class="flaticon-loupe"></i>{{trans('file.Discover Talents')}}</button>
@@ -129,7 +129,7 @@
                                 </div>
                                 <div class="ms-fun-brand-bottom">
                                     <div class="ms-fun-brand-location">
-                                        <i class="fa fa-vote-yea"></i> {{trans('file.Vote Me')}}
+                                        <i class="fa fa-vote-yea"></i> {{trans('file.Vote For Me')}}
                                     </div>
                                     @if($see_votes)
                                         <div class="ms-fun-brand-rating">
@@ -313,159 +313,168 @@
 
         <!-- Special Events Area Start -->
         <section class="ms-event-area pt-130 pb-70">
-            <div class="container">
-                <div class="row align-items-end mb-25 bdFadeUp">
-                    <div class="col-lg-8">
-                        <div class="section__title-wrapper mb-40 bd-title-anim">
-                            <span class="section__subtitle">{{trans('file.Special Events')}}</span>
-                            <h2 class="section__title"><span class="animated-underline active">{{trans('file.Special events')}}</span>
-                                {{trans('file.coming up')}}
-                            </h2>
-                        </div>
-                    </div>
-                    <div class="col-lg-4">
-                        <div class="trending-btn mb-40 d-flex justify-content-lg-end">
-                            <a class="border__btn" href="#">{{trans('file.View All Events')}}</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="row bdFadeUp">
-                    <div class="col-xl-8">
-                        <div class="ms-event-bg p-relative mb-60" data-background="">
-                            <div class="ms-event-overlay p-absolute"></div>
-                            <div class="ms-event-wrap">
-                                <div class="ms-event-inner-box">
-                                    <div class="ms-event-active">
-                                        <div class="ms-event-item">
-                                            <div class="ms-event-item-top">
-                                                <h3 class="ms-event-title"><a href="#">{{trans("file.Auditions in ten regions of Cameroon")}}</a></h3>
-                                                <p class="ms-event-text">{{trans("file.Candidates from around cameroon will be auditioned in their different regions")}}</p>
-                                                <div class="ms-event-inner">
-                                                    <div class="ms-event-location">
-                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>{{trans("file.Bamenda")}}</a>
-                                                    </div>
-                                                    <div class="ms-event-date">
-                                                        <span>{{trans("file.2:00 PM, Saturday, March 15th , 2025")}}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="ms-event-item-bottom">
-                                                <h3 class="ms-event-title"><a href="#">{{trans("file.Gospel entertainment and Culture")}}</a>
-                                                </h3>
-                                                <p class="ms-event-text">{{trans("file.Experience the Gospel being drunk in cultural Cups")}}</p>
-                                                <div class="ms-event-inner">
-                                                    <div class="ms-event-location">
-                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>{{trans("file.Maroua")}}</a>
-                                                    </div>
-                                                    <div class="ms-event-date">
-                                                        <span>{{trans("file.2:00 PM, Sunday, March 16, 2025")}}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="ms-event-item">
-                                            <div class="ms-event-item-top">
-                                                <h3 class="ms-event-title"><a href="#">{{trans("file.Guest Musicians from all of Cameroon")}}</a></h3>
-                                                <p class="ms-event-text">{{trans("file.You will be thrilled by some of Cameroon's finest Gospel Musicians")}}</p>
-                                                <div class="ms-event-inner">
-                                                    <div class="ms-event-location">
-                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>{{trans("file.Ngoundere")}}</a>
-                                                    </div>
-                                                    <div class="ms-event-date">
-                                                        <span>{{trans("file.2:00 PM, Thursday, March 20, 2025")}}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="ms-event-item-bottom">
-                                                <h3 class="ms-event-title"><a href="#">{{trans("file.Videos")}}Corporate entertainment ideas</a>
-                                                </h3>
-                                                <p class="ms-event-text">
-                                                    {{trans("file.Hosted by Muleme Gospel Limited")}}.
-                                                </p>
-                                                <div class="ms-event-inner">
-                                                    <div class="ms-event-location">
-                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>{{trans("file.Yaounde")}}</a>
-                                                    </div>
-                                                    <div class="ms-event-date">
-                                                        <span>{{trans("file.2:00 PM, Sunday, March 20, 2025")}}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="ms-event-item">
-                                            <div class="ms-event-item-top">
-                                                <h3 class="ms-event-title"><a href="#">
-                                                        {{trans("file.Gospel in Hymns and All Genres")}}
-                                                    </a></h3>
-                                                <p class="ms-event-text">
-                                                    {{trans("file.Hosted by Muleme Gospel Limited")}}.
-                                                </p>
-                                                <div class="ms-event-inner">
-                                                    <div class="ms-event-location">
-                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>{{trans("file.Douala")}}</a>
-                                                    </div>
-                                                    <div class="ms-event-date">
-                                                        <span>{{trans("file.2:00 PM, Tuesday, March 26, 2025")}}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="ms-event-item-bottom">
-                                                <h3 class="ms-event-title"><a href="#">{{trans("file.Royal Priesthood &rsquo;s Choir bands")}}</a></h3>
-                                                <p class="ms-event-text">{{trans("file.Come and Join us as we build the house of God.Nothing is too small")}}.
-                                                </p>
-                                                <div class="ms-event-inner">
-                                                    <div class="ms-event-location">
-                                                        <a href="https://www.google.com/maps" target="_blank"><i class="flaticon-pin"></i>{{trans("file.Baffoussam")}}</a>
-                                                    </div>
-                                                    <div class="ms-event-date">
-                                                        <span>{{trans("file.2:00 PM, Monday, March 17, 2025")}}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="ms-event-dots ms-round-dots"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xl-4">
-                        <div class="ms-event-play d-inline-block w-img p-relative mb-60">
-                            @if(\App::getLocale() == 'en')
-                                <img src="{{ asset('public/frontend/images/bottom-banner-en.jpeg') }}" height="350px" style="border-radius: 15%;">
-                            @else
-                                <img src="{{ asset('public/frontend/images/bottom-banner-fr.jpeg') }}" height="350px" style="border-radius: 15%;">
-                            @endif
-
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="row bdFadeUp">
+    <div class="col-xl-12">
+        <div class="ms-event-bg p-relative mb-60" style="background-color: #f8f9fa; padding: 20px; border-radius: 10px;">
+            <h2 style="color: #ff4500; text-align: center; font-weight: bold;">Provincial Casting Calendar 2025</h2>
+            <p style="text-align: center; font-size: 16px; color: #333;">Here's a draft schedule for the Mulema Gospel casting by province in March and April.</p>
+            <table style="width: 100%; border-collapse: collapse; font-size: 16px;">
+                <thead>
+                    <tr style="background-color: #ff4500; color: white;">
+                        <th style="padding: 10px; border: 1px solid #ddd;">Province</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">City/Venue</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="background-color: #ffe5b4;">
+                        <td style="padding: 10px; border: 1px solid #ddd;">Far North</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">Maroua</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">March 15-16, 2025</td>
+                    </tr>
+                    <tr style="background-color: #fff5e1;">
+                        <td style="padding: 10px; border: 1px solid #ddd;">North</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">Garoua</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">March 22-23, 2025</td>
+                    </tr>
+                    <tr style="background-color: #ffe5b4;">
+                        <td style="padding: 10px; border: 1px solid #ddd;">Adamawa</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">Ngaoundéré</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">March 29-30, 2025</td>
+                    </tr>
+                    <tr style="background-color: #fff5e1;">
+                        <td style="padding: 10px; border: 1px solid #ddd;">East</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">Bertoua</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">April 5-6, 2025</td>
+                    </tr>
+                    <tr style="background-color: #ffe5b4;">
+                        <td style="padding: 10px; border: 1px solid #ddd;">South West</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">Buea</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">April 5-6, 2025</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h3 style="color: #ff4500; text-align: center; margin-top: 20px;">Finals Schedule</h3>
+            <ul style="list-style: none; padding: 0;">
+                <li style="background-color: #ffe5b4; padding: 10px; border-radius: 5px; margin-bottom: 5px;">August 9: Prime 1 (25 candidates)</li>
+                <li style="background-color: #fff5e1; padding: 10px; border-radius: 5px; margin-bottom: 5px;">August 16: Prime 2 (20 candidates)</li>
+                <li style="background-color: #ffe5b4; padding: 10px; border-radius: 5px; margin-bottom: 5px;">August 23: Prime 3 (15 candidates)</li>
+                <li style="background-color: #fff5e1; padding: 10px; border-radius: 5px; margin-bottom: 5px;">August 30: Final Prime (10 candidates)</li>
+            </ul>
+        </div>
+    </div>
+</div>
         </section>
         <!-- Special Events Area End -->
 
         <!-- Partner Area Start Here  -->
         <section class="ms-partner-area fix pb-130">
-            <div class="container">
-                <div class="row justify-content-center bdFadeUp">
-                    <div class="col-lg-6">
-                        <div class="section__title-wrapper mb-65 text-center bd-title-anim">
-                            <span class="section__subtitle">{{trans("file.Our Partners")}}</span>
-                            <h2 class="section__title">{{trans("file.Most")}} <span class="animated-underline active">{{trans("file.Valuable")}}</span>
-                                {{trans("file.Partners")}}
-                            </h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="swiper-container ms-partner-active bdFadeUp">
-                    <div class="swiper-wrapper">
-                        <div class="swiper-slide">
-                            <img src="{{url('public/logo', $general_setting->site_logo)}}">
-                        </div>
-                    </div>
+    <div class="container">
+        <div class="row justify-content-center bdFadeUp">
+            <div class="col-lg-6">
+                <div class="section__title-wrapper mb-65 text-center bd-title-anim">
+                    <span class="section__subtitle">{{ trans("file.Our Partners") }}</span>
+                    <h2 class="section__title">{{ trans("file.Most") }} 
+                        <span class="animated-underline active">{{ trans("file.Valuable") }}</span>
+                        {{ trans("file.Partners") }}
+                    </h2>
                 </div>
             </div>
-        </section>
+        </div>
+
+        <style>
+    /* Logo container */
+    .logo-container {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr); /* 4 logos per row */
+        gap: 30px; /* Proper spacing */
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        text-align: center;
+    }
+
+    /* Individual logo styling */
+    .logo-container img {
+        width: 260px; /* 75% larger than original */
+        height: auto;
+        opacity: 0; /* Hidden initially */
+        filter: none !important;
+        transition: transform 0.5s ease-in-out, opacity 1s ease-in-out;
+        animation: fadeInPop 1.5s ease-in-out forwards, float 3s infinite ease-in-out alternate;
+    }
+
+    /* Hover Effect: Spin + Zoom */
+    .logo-container img:hover {
+        transform: scale(1.3) rotate(360deg); /* Zoom + Full Spin */
+        transition: transform 0.8s ease-in-out; /* Smooth animation */
+    }
+
+    /* Fade-in & Pop Effect */
+    @keyframes fadeInPop {
+        0% {
+            opacity: 0;
+            transform: scale(0.8);
+        }
+        100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    /* Floating Animation (Gentle Up & Down Motion) */
+    @keyframes float {
+        0% {
+            transform: translateY(0px);
+        }
+        100% {
+            transform: translateY(10px);
+        }
+    }
+</style>
+
+<div class="logo-container">
+    <img src="{{ url('/logo/' . $general_setting->site_logo) }}" alt="Site Logo">
+    <img src="{{ url('public/logo/Beyond.png') }}" alt="Beyond Logo">
+    <img src="{{ url('public/logo/Elfa.png') }}" alt="Elfa Logo">
+    <img src="{{ url('public/logo/MBS.png') }}" alt="MBS Logo">
+    <img src="{{ url('public/logo/HimFirst.png') }}" alt="HimFirst Logo">
+    <img src="{{ url('public/logo/Nafi.png') }}" alt="Nafi Logo">
+    <img src="{{ url('public/logo/OFCC.png') }}" alt="OFCC Logo">
+    <img src="{{ url('public/logo/DEXDESIGN.png') }}" alt="DEXDESIGN Logo">
+</div>
+
+    </div>
+</section>
+
+<!-- Swiper CSS -->
+<link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
+
+<!-- Swiper JS -->
+<script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+
+<!-- Initialize Swiper -->
+<script>
+var swiper = new Swiper(".swiper-container", {
+    slidesPerView: 3,
+    spaceBetween: 30,
+    loop: true,
+    autoplay: {
+        delay: 2500,
+        disableOnInteraction: false,
+    },
+});
+</script>
+
+<!-- CSS to Ensure Images Show Properly -->
+<style>
+.swiper-slide img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+</style>
+
         <!-- Partner Area End Here  -->
 
         <!-- CTA Area Start Here  -->

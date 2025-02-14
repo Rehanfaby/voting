@@ -98,21 +98,18 @@
                 </div>
                 <div class="hr-1 mt-30 mb-30 d-xl-none"></div>
                 <div class="offcanvas__btn mb-30">
-                    <a class="user__name" href="https://mail.hostinger.com" target="_blank"><i class="fa-solid fa-plus"></i> {{trans('file.Email')}}</a>
+                    <a class="user__name" href="{{ route('home') }}"><i class="fa-solid fa-plus"></i> {{trans('file.Home')}}</a>
                 </div>
                 <div class="offcanvas__btn mb-30">
                     <a class="user__name" href="{{ route('user.signup') }}"><i class="fa-solid fa-plus"></i> {{trans('file.Registration')}}</a>
-                </div>
-                <div class="offcanvas__btn mb-30">
-                    <a class="user__name" href="{{ route('home') }}"><i class="fa-solid fa-plus"></i> {{trans('file.Home')}}</a>
                 </div>
                 <div class="offcanvas__btn mb-30">
                     <a class="user__name" href="{{ route('about') }}"><i class="fa-solid fa-plus"></i> {{trans('file.About Us')}}</a>
                 </div>
                 <div class="offcanvas__btn mb-30">
                     <a class="user__name" href="{{ route('contact') }}"><i class="fa-solid fa-plus"></i> {{trans('file.Contact Us')}}</a>
-                </div>
-
+                </div>        
+                
                 @if($user)
                 <div class="hr-1 mt-30 mb-30 d-xl-none"></div>
                 <div class="offcanvas__btn mb-30">
