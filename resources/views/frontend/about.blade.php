@@ -14,7 +14,7 @@
     <main>
         <!-- About Area Start Here  -->
         <section class="ms-about-area fix">
-            <div class="ms-about-bg include__bg p-relative zindex-1 pt-50 pb-50" data-background="{{ url('public/public/frontend/images/bottom-banner-en.jpeg') }}" style="background-image: {{ url('public/public/frontend/images/bottom-banner-en.jpeg') }}">
+            <div class="ms-about-bg include__bg p-relative zindex-1 pt-50 pb-50" data-background="{{ url('public/frontend/images/bottom-banner-en.jpeg') }}" style="background-image: {{ url('public/public/frontend/images/bottom-banner-en.jpeg') }}">
                 <div class="ms-overlay ms-overlay5 p-absolute zindex--1"></div>
                 <div class="container">
                     <div class="row justify-content-center">
@@ -45,13 +45,13 @@
 
                     <div class="col-lg-6">
                         <div class="ms-event-play d-inline-block p-relative mb-40">
-                            <img src="{{ asset('public/public/frontend/images/bottom-banner-en.jpeg') }}" alt="event img" height="350px" style="border-radius: 15%;">
+                            <img src="{{ asset('public/frontend/images/bottom-banner-en.jpeg') }}" alt="event img" height="350px" style="border-radius: 15%;">
                         </div>
                     </div>
 
 
 
-         
+
 
 
             </div>

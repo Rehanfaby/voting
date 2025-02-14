@@ -108,8 +108,8 @@
                 </div>
                 <div class="offcanvas__btn mb-30">
                     <a class="user__name" href="{{ route('contact') }}"><i class="fa-solid fa-plus"></i> {{trans('file.Contact Us')}}</a>
-                </div>        
-                
+                </div>
+
                 @if($user)
                 <div class="hr-1 mt-30 mb-30 d-xl-none"></div>
                 <div class="offcanvas__btn mb-30">
@@ -162,14 +162,14 @@
                                     <div class="main-menu main-menu-ff-space">
                                         <nav id="mobile-menu">
                                             <ul>
+{{--                                                <li>--}}
+{{--                                                    <a href="https://mail.hostinger.com" target="_blank">{{trans('file.Email')}}</a>--}}
+{{--                                                </li>--}}
                                                 <li>
-                                                    <a href="https://mail.hostinger.com" target="_blank">{{trans('file.Email')}}</a>
+                                                    <a href="{{ route('home') }}">{{trans('file.Home')}}</a>
                                                 </li>
                                                 <li>
                                                     <a href="{{ route('user.signup') }}">{{trans('file.Registration')}}</a>
-                                                </li>
-                                                <li>
-                                                    <a href="{{ route('home') }}">{{trans('file.Home')}}</a>
                                                 </li>
                                                 <li>
                                                     <a href="{{ route('about') }}">{{trans('file.About Us')}}</a>

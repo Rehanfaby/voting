@@ -61,8 +61,10 @@ class HomeController extends Controller
     }
 
      public function contactMessage(Request $request){
-         $msg = '*Thanks for contacting ' . getenv("APP_NAME") . '.* ' . '\n\n';
-         $msg .= 'How might we be of help? \n\n';
+        $query = $request->message;
+         $msg = "*Message:* ".$query . "\n\n";
+         $msg .= '*Thanks for contacting ' . getenv("APP_NAME") . '.* ' . '\n\n';
+         $msg .= 'We will contact you seen. \n\n';
 
          try{
              $this->wpMessage($request->number, $msg);

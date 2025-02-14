@@ -14,7 +14,7 @@
     <main>
 
         <!-- Join Area Start Here  -->
-        <section class="ms-join-area pb-60 pt-130 p-relative" style="background-image: url('{{ asset('public/public/frontend/images/ai.png') }}'); background-size: cover; background-position: center;">
+        <section class="ms-join-area pb-60 pt-130 p-relative" style="background-image: url('{{ asset('public/frontend/images/ai.png') }}'); background-size: cover; background-position: center;">
             <div class="ms-join-position p-absolute text-center">
                 <h2 class="ms-title2 white-text mb-50">{{trans('file.Contact Us')}}</h2>
             </div>
@@ -74,7 +74,7 @@
         </section>
         <!-- Join Area End Here  -->
 
-    </main>  
+    </main>
 
 @endsection
 
