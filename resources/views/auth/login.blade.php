@@ -105,7 +105,7 @@
             <!-- <p>{{trans('file.Do not have an account?')}}</p><a href="{{url('register')}}" class="signup">{{trans('file.Register')}}</a> -->
           </div>
           <div class="copyrights text-center">
-            <p>{{trans('file.Developed By')}} <span class="external">{{env('DEVELOPED_by')}}</span></p>
+            <p>{{trans('file.Developed By')}} <span class="external">{{env('DEVELOPED_BY')}}</span></p>
           </div>
         </div>
       </div>

@@ -652,7 +652,7 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col-sm-12">
-                    <p>&copy; {{$general_setting->site_title}} | {{trans('file.Developed')}} {{trans('file.By')}} <span class="external">{{env('DEVELOPED_by')}}</span></p>
+                    <p>&copy; {{$general_setting->site_title}} | {{trans('file.Developed')}} {{trans('file.By')}} <span class="external">{{env('DEVELOPED_BY')}}</span></p>
                 </div>
             </div>
         </div>
