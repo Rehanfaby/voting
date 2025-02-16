@@ -432,6 +432,11 @@
             transform: translateY(10px);
         }
     }
+    @media (max-width: 450px) {
+        .ms-input2-box input, .ms-input2-box textarea {
+            width: 164%;
+        }
+    }
 </style>
 
 <div class="logo-container">
