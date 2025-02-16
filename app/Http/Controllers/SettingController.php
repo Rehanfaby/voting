@@ -77,7 +77,7 @@ class SettingController extends Controller
         $general_setting->currency_position = $data['currency_position'];
         $general_setting->staff_access = $data['staff_access'];
         $general_setting->date_format = $data['date_format'];
-        $general_setting->developed_by = $data['developed_by'];
+//        $general_setting->developed_by = $data['developed_by'];
         $general_setting->invoice_format = $data['invoice_format'];
         $general_setting->state = $data['state'];
         $general_setting->vote_price = $data['vote_price'];
