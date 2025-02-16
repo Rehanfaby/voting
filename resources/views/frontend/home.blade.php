@@ -1,3 +1,4 @@
+@php use App\Employee; @endphp
 @extends('frontend.layout.main')
 @section('content')
 
@@ -431,6 +432,11 @@
             transform: translateY(10px);
         }
     }
+    @media (max-width: 450px) {
+        .ms-input2-box input, .ms-input2-box textarea {
+            width: 164%;
+        }
+    }
 </style>
 
 <div class="logo-container">
@@ -483,33 +489,95 @@ var swiper = new Swiper(".swiper-container", {
                 <div class="ms-cta-bg include__bg ms-cta-overlay zindex-1 fix"  data-background="{{ url('public/frontend/images/sound-bg.png') }}">
                     @if($best_musician)
                         <a href="{{ route('musician.data', $best_musician->id) }}">
-                            @endif
-                            <div class="ms-cta-wrap">
-                                <div class="ms-cta-item">
-                                    <div class="ms-cta-content">
-                                        <h2 class="section__title mb-25">{{trans("file.Most Voted Contestant of the Week")}}</h2>
-                                        @if($best_musician)
-                                            <h4 class="section__title mb-25">({{ $best_musician->name }})</h4>
-                                        @endif
-                                        <p class="mb-0">
-                                            {{trans("file.Here comes the best Contestant of the week")}}!
-                                        </p>
-                                    </div>
-                                </div>
-                                <div class="ms-cta-item">
-                                    <div class="ms-cta-img ms-popular__thumb">
-                                        @if($best_musician)
-                                            <img src="{{url('public/images/employee',$best_musician->image)}}">
-                                        @endif
-                                    </div>
+                    @endif
+                        <div class="ms-cta-wrap">
+                            <div class="ms-cta-item">
+                                <div class="ms-cta-content">
+                                    <h2 class="section__title mb-25">{{trans("file.Most Voted Contestant of the Week")}}</h2>
+                                    @if($best_musician)
+                                        <h4 class="section__title mb-25">({{ $best_musician->name }})</h4>
+                                    @endif
+                                    <p class="mb-0">
+                                        {{trans("file.Here comes the best Contestant of the week")}}!
+                                    </p>
                                 </div>
                             </div>
-                            @if($best_musician)
+                            <div class="ms-cta-item">
+                                <div class="ms-cta-img ms-popular__thumb">
+                                    @if($best_musician)
+                                        <img src="{{url('public/images/employee',$best_musician->image)}}">
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    @if($best_musician)
                         </a>
                     @endif
                 </div>
             </div>
         </section>
+
+        <!-- Ambassador  area start -->
+        <section class="ms-fun-brand ms-bg-2 pb-130 pt-125">
+            <div class="container">
+                <div class="row align-items-end mb-25 bdFadeUp">
+                    <div class="col-xl-6 col-lg-6">
+                        <div class="section__title-wrapper mb-40 bd-title-anim">
+                            <span class="section__subtitle">{{trans('file.Top Five Contestants')}}</span>
+                            <h2 class="section__title msg_title">
+                                <span class="animated-underline active"></span> <br>
+
+                            </h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="row bdFadeUp">
+                    <div class="col-xxl-12">
+                        <div class="tab-content" id="nav-tabContent">
+                            <div class="tab-pane fade show active" id="nav-popular-1" role="tabpanel" aria-labelledby="nav-popular-1-tab" tabindex="0">
+                                <div class="swiper-container ms-popular-active fix">
+                                    <div class="swiper-wrapper">
+                                        @foreach($best_musicians as $key => $best_musician)
+                                            @php
+                                                $best_musician  = Employee::find($best_musician->musician_id);
+                                            @endphp
+                                            <div class="swiper-slide">
+                                                <div class="ms-popular__item p-relative mb-30">
+                                                    <div class="ms-popular__thumb" style="border-radius: 10%;">
+                                                        <div class="ms-popular-overlay"></div>
+
+                                                        <a ><img src="{{url('public/images/employee',$best_musician->image)}}" ></a>
+                                                        <a class="ms-popular__link" href="{{ route('musician.data', $best_musician->id) }}">
+                                                            <span class="ms-popular-icon"><i class="fa-regular fa-arrow-right-long"></i></span>
+                                                        </a>
+                                                    </div>
+
+                                                    <h4 class="ms-popular__title"><a>
+                                                            @if($key == 0)
+                                                                1st
+                                                            @elseif($key == 1)
+                                                                2nd
+                                                            @elseif($key == 2)
+                                                                3rd
+                                                            @else
+                                                                {{$key + 1}}th
+                                                            @endif
+                                                            -- {{ $best_musician->name }}
+
+                                                        </a>
+                                                    </h4>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Ambassador  area end -->
         <!-- CTA Area End Here  -->
 
     </main>

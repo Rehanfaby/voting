@@ -878,6 +878,7 @@ return [
 
     "your account is not approved yet, please contact to administrator to approve your account" => "your account is not approved yet, please contact to administrator to approve your account",
     "Pending Contestants" => "Pending Contestants",
+    "Top Five Contestants" => "Top Five Contestants",
 
 ];
 ?>

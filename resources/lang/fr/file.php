@@ -770,6 +770,6 @@ return [
 
     "your account is not approved yet, please contact to administrator to approve your account" => "Votre compte n'est pas encore approuvé, veuillez contacter l'administrateur pour approuver votre compte",
     "Pending Contestants" => "Concourants en attente",
-
+    "Top Five Contestants" => "Top cinq concurrents"
 ];
 ?>

@@ -52,6 +52,7 @@ class Controller extends BaseController
     }
 
     public function wpMessage($number, $msg){
+        $msg .= '\n\n *'.getenv("APP_NAME").'*';
         $params= [
             'token' => getenv('ULTRAMSG_TOKEN'),
             'to' => $number,

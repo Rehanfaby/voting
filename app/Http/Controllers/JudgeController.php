@@ -137,24 +137,16 @@ class JudgeController extends Controller
         $employee_id = $request['employeeIdArray'];
         foreach ($employee_id as $id) {
             $lims_employee_data = Judge::find($id);
-            if($lims_employee_data->user_id){
-                $lims_user_data = User::find($lims_employee_data->user_id);
-                $lims_user_data->is_deleted = true;
-                $lims_user_data->save();
+            if ($lims_employee_data) {
+                $lims_employee_data->is_active = false;
+                $lims_employee_data->save();
             }
-            $lims_employee_data->is_active = false;
-            $lims_employee_data->save();
         }
         return 'Judge deleted successfully!';
     }
     public function destroy($id)
     {
         $lims_employee_data = Judge::find($id);
-        if($lims_employee_data->user_id){
-            $lims_user_data = User::find($lims_employee_data->user_id);
-            $lims_user_data->is_deleted = true;
-            $lims_user_data->save();
-        }
         $lims_employee_data->is_active = false;
         $lims_employee_data->save();
         return redirect('judge')->with('not_permitted', 'Judge deleted successfully');

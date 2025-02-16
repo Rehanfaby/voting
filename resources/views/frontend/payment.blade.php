@@ -129,7 +129,7 @@
                                     </div>
                                 </form>
 
-                                <p>{{trans("file.If you don't have coins you can contact to")}} <br>{{ $general_setting->developed_by }}</p>
+                                <p>{{trans("file.If you don't have coins you can contact to")}} <br>{{env('APP_NAME')}}</p>
                             </div>
                         </div>
                     </div>
