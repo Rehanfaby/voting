@@ -374,7 +374,7 @@
                                 </div>
                                 <div class="ms-footer-copy">
                                     <a href="{{ route('contact') }}">
-                                        <p style="font-size: 25px">{{ $general_setting->developed_by }}</p>
+                                        <p style="font-size: 25px">{{env('DEVELOPED_BY')}}</p>
                                     </a>
                                 </div>
                             </div>

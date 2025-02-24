@@ -272,12 +272,13 @@
                         if(employee_id.length && confirm("Are you sure want to delete?")) {
                             $.ajax({
                                 type:'POST',
-                                url:'musician/deletebyselection',
+                                url:'judge/deletebyselection',
                                 data:{
                                     employeeIdArray: employee_id
                                 },
                                 success:function(data){
                                     alert(data);
+                                    location.reload();
                                 }
                             });
                             dt.rows({ page: 'current', selected: true }).remove().draw(false);

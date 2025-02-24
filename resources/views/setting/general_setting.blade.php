@@ -182,12 +182,12 @@
                                         </select>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>{{trans('file.Developed By')}}</label>
-                                        <input type="text" name="developed_by" class="form-control" value="{{$lims_general_setting_data->developed_by}}">
-                                    </div>
-                                </div>
+{{--                                <div class="col-md-6">--}}
+{{--                                    <div class="form-group">--}}
+{{--                                        <label>{{trans('file.Developed By')}}</label>--}}
+{{--                                        <input type="text" name="developed_by" class="form-control" value="{{$lims_general_setting_data->developed_by}}">--}}
+{{--                                    </div>--}}
+{{--                                </div>--}}
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>1 vote Price</label>

@@ -118,6 +118,7 @@ Route::group(['middleware' => ['auth', 'active']], function() {
     Route::resource('votes', 'VoteController');
     Route::post('votes/deletebyselection', 'VoteController@deleteBySelection');
     Route::resource('judge', 'JudgeController');
+    Route::post('judge/deletebyselection', 'JudgeController@deleteBySelection');
     Route::resource('ambassador', 'AmbassadorController');
     Route::resource('coins', 'CoinController');
     Route::post('coins/deletebyselection', 'CoinController@deleteBySelection');
