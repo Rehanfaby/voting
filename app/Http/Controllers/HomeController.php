@@ -30,6 +30,7 @@ use Printing;
 use Rawilk\Printing\Contracts\Printer;
 use Spatie\Permission\Models\Role;
 use Stripe\EphemeralKey;
+use Stripe\Stripe;
 use Twilio\Rest\Client;
 
 /*use vendor\autoload;
@@ -254,6 +255,88 @@ class HomeController extends Controller
         }
         $message = 'There is any other issue in payment method, please contact the system administrator';
         return back()->with('not_permitted', $message);
+    }
+
+    public function musicianVotePaymentStripe(Request $request) {
+
+        $user = Auth::user() ?? null;
+        $password = rand(1, 999999);
+        $data['is_active'] = true;
+        $data['is_deleted'] = false;
+        $data['password'] = bcrypt($password);
+        $data['name'] = $request->phone;
+        $data['phone'] = $request->phone;
+        $data['email'] = 'user@gmail.com';
+        $data['role_id'] = 3;
+
+        if($data['phone'] == null) {
+            return 'Phone cannot be null';
+        }
+
+        if ($user_check = User::where('phone', $request->phone)->first()) {
+            $user = $user_check;
+        }
+
+        if($user == null) {
+            $user = User::create($data);
+            $this->sendWhatsappMsg($user, $password);
+        }
+
+        $vote = vote::create([
+            'user_id' => $user->id,
+            'musician_id' => $request->musician_id,
+            'vote' => $request->vote,
+            'status' => false,
+            'reference' => 'abc'
+        ]);
+
+        if($vote) {
+            $route = route('musician.vote.payment.check.stripe');
+            $mtn_number = $data['phone'];
+            $amount = $request->amount;
+
+            $link = $this->createCheckoutSession($amount, $route, $vote->id, $vote);
+            if ($link == false) {
+                $message = 'There is any other issue in payment method';
+                return back()->with('not_permitted', $message);
+            }
+
+            return redirect($link);
+            die();
+        }
+        $message = 'There is any other issue in payment method, please contact the system administrator';
+        return back()->with('not_permitted', $message);
+    }
+
+
+    public function musicianVotePaymentCheckStripe(Request $request)
+    {
+
+        Stripe::setApiKey(env('STRIPE_SECRET'));
+
+        $session = \Stripe\Checkout\Session::retrieve($request->session_id);
+
+//        dd($session);
+
+        if ($session->payment_status !== 'paid') {
+            Vote::where('id', $session->metadata->vote_id)->delete();
+            return redirect()->back()->with('not_permitted', 'payment failed.');
+        }
+
+        $vote = Vote::where('id', $session->metadata->vote_id)->first();
+        $vote->status = true;
+        $vote->reference = $session->payment_intent;
+        $vote->save();
+
+        if($vote) {
+            $this->sendWhatsappMsgVoteMomoSuccess($vote->voters, $vote->vote, $vote->musician_id);
+            $message = 'Thank you for your voting';
+            return redirect()->back()->with('message', $message);
+        }
+
+        $message = 'There is any issue, please contact the system administrator';
+        return redirect()->back()->with('not_permitted', $message);
+
     }
 
     public function musicianVotePaymentCheck(Request $request)
