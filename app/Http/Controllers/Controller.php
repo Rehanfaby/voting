@@ -2,14 +2,59 @@
 
 namespace App\Http\Controllers;
 
+use App\Employee;
 use Illuminate\Foundation\Bus\DispatchesJobs;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Stripe\Checkout\Session;
+use Stripe\Stripe;
 
 class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
+
+    public function createCheckoutSession($amount, $route, $vote_id, $vote)
+    {
+        $musician = Employee::where('id', $vote->musician_id)->first();
+        $musician_name = 'Vote to: ' . $musician->name;
+
+        Stripe::setApiKey(env('STRIPE_SECRET'));
+
+        try {
+            $session = Session::create([
+                'payment_method_types' => ['card'],
+                'line_items' => [[
+                    'price_data' => [
+                        'currency' => 'XAF',
+                        'product_data' => [
+                            'name' => $musician_name,
+                        ],
+                        'unit_amount' => $amount,
+                    ],
+                    'quantity' => 1,
+                ]],
+                'mode' => 'payment',
+                'success_url' => $route . '?session_id={CHECKOUT_SESSION_ID}',
+                'cancel_url' => route('payment.cancel'),
+                'metadata' => [
+                    'vote_id' => $vote_id,
+                ],
+            ]);
+            if ($session) {
+                return $session->url;
+            } else {
+                return false;
+            }
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
 
     public function mobileMoneyRequestLink($token, $amount, $route, $musician_id, $number){
 

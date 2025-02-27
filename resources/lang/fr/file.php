@@ -770,6 +770,8 @@ return [
 
     "your account is not approved yet, please contact to administrator to approve your account" => "Votre compte n'est pas encore approuvé, veuillez contacter l'administrateur pour approuver votre compte",
     "Pending Contestants" => "Concourants en attente",
-    "Top Five Contestants" => "Top cinq concurrents"
+    "Top Five Contestants" => "Top cinq concurrents",
+    "Pay By Visa or Master Card" => "Payer par Visa ou MasterCard",
+    "Minimum amount for stripe is" => "Le montant minimum pour Stripe est",
 ];
 ?>

@@ -11,6 +11,8 @@
 |
 */
 
+use App\Http\Controllers\StripePaymentController;
+
 Auth::routes();
 
 Route::group(['middleware' => 'auth'], function() {
@@ -25,7 +27,7 @@ Route::post('/forgot/password/verify','HomeController@forgotPasswordCheck')->nam
 Route::post('/shop/password/change', 'HomeController@forgotPasswordCheckStore')->name('shop.password.change');
 
 Route::get('language_switch/{locale}', 'LanguageController@switchLanguage');
-
+Route::get('/payment-cancel', [StripePaymentController::class, 'paymentCancel'])->name('payment.cancel');
 
 //frontend
 Route::group(['middleware' => 'checkOtp'], function() {
@@ -41,6 +43,8 @@ Route::group(['middleware' => 'checkOtp'], function() {
     Route::post('musician/vote/payment', 'HomeController@musicianVotePayment')->name('musician.vote.payment');
     Route::get('musician/vote/payment/coin', 'HomeController@musicianVotePaymentCoin')->name('musician.vote.payment.coin');
     Route::get('/musician/vote/payment/check', 'HomeController@musicianVotePaymentCheck')->name('musician.vote.payment.check');
+    Route::post('musician/vote/payment/Stripe', 'HomeController@musicianVotePaymentStripe')->name('musician.vote.payment.stripe');
+    Route::get('/musician/vote/payment/check/Stripe', 'HomeController@musicianVotePaymentCheckStripe')->name('musician.vote.payment.check.stripe');
 
 });
 

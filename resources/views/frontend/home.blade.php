@@ -353,6 +353,31 @@
                         <td style="padding: 10px; border: 1px solid #ddd;">Buea</td>
                         <td style="padding: 10px; border: 1px solid #ddd;">April 5-6, 2025</td>
                     </tr>
+                    <tr style="background-color: #fff5e1;">
+                        <td style="padding: 10px; border: 1px solid #ddd;">North West</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">Bamenda</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">April 12-13, 2025</td>
+                    </tr>
+                    <tr style="background-color: #ffe5b4;">
+                        <td style="padding: 10px; border: 1px solid #ddd;">West</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">Bafoussam</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">April 19-20, 2025</td>
+                    </tr>
+                    <tr style="background-color: #fff5e1;">
+                        <td style="padding: 10px; border: 1px solid #ddd;">Littoral</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">Douala</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">April 12-13, 2025</td>
+                    </tr>
+                    <tr style="background-color: #ffe5b4;">
+                        <td style="padding: 10px; border: 1px solid #ddd;">South</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">Ebolowa</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">April 19-20, 2025</td>
+                    </tr>
+                    <tr style="background-color: #fff5e1;">
+                        <td style="padding: 10px; border: 1px solid #ddd;">Centre</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">Yaoundé</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">April 26-27, 2025</td>
+                    </tr>
                 </tbody>
             </table>
             <h3 style="color: #ff4500; text-align: center; margin-top: 20px;">Finals Schedule</h3>
@@ -581,4 +606,9 @@ var swiper = new Swiper(".swiper-container", {
         <!-- CTA Area End Here  -->
 
     </main>
+    <script>
+        setTimeout(function() {
+            $(".alert").alert('close');
+        }, 10000); // 10000 milliseconds = 10 seconds
+    </script>
 @endsection
