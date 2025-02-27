@@ -331,11 +331,11 @@ class HomeController extends Controller
         if($vote) {
             $this->sendWhatsappMsgVoteMomoSuccess($vote->voters, $vote->vote, $vote->musician_id);
             $message = 'Thank you for your voting';
-            return redirect()->back()->with('message', $message);
+            return redirect()->route('home')->with('message', $message);
         }
 
         $message = 'There is any issue, please contact the system administrator';
-        return redirect()->back()->with('not_permitted', $message);
+        return redirect()->route('home')->with('not_permitted', $message);
 
     }
 

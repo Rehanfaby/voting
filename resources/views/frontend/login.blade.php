@@ -68,52 +68,6 @@
     </section>
     <!-- login Area End Here  -->
 
-    <!-- Partner Area Start Here  -->
-    <div class="ms-partner-area fix pt-80 pb-130">
-        <div class="container">
-            <div class="swiper-container ms-partner-active">
-                <div class="swiper-wrapper">
-                    <div class="swiper-slide">
-                        <img src="{{ asset('public/frontend/images/partner-partner-01.png') }}" alt="partner image">
-                    </div>
-                    <div class="swiper-slide">
-                        <img src="{{ asset('public/frontend/images/partner-partner-02.png') }}" alt="partner image">
-                    </div>
-                    <div class="swiper-slide">
-                        <img src="{{ asset('public/frontend/images/partner-partner-03.png') }}" alt="partner image">
-                    </div>
-                    <div class="swiper-slide">
-                        <img src="{{ asset('public/frontend/images/partner-partner-04.png') }}" alt="partner image">
-                    </div>
-                    <div class="swiper-slide">
-                        <img src="{{ asset('public/frontend/images/partner-partner-05.png') }}" alt="partner image">
-                    </div>
-                    <div class="swiper-slide">
-                        <img src="{{ asset('public/frontend/images/partner-partner-04.png') }}" alt="partner image">
-                    </div>
-                    <div class="swiper-slide">
-                        <img src="{{ asset('public/frontend/images/partner-partner-01.png') }}" alt="partner image">
-                    </div>
-                    <div class="swiper-slide">
-                        <img src="{{ asset('public/frontend/images/partner-partner-02.png') }}" alt="partner image">
-                    </div>
-                    <div class="swiper-slide">
-                        <img src="{{ asset('public/frontend/images/partner-partner-03.png') }}" alt="partner image">
-                    </div>
-                    <div class="swiper-slide">
-                        <img src="{{ asset('public/frontend/images/partner-partner-04.png') }}" alt="partner image">
-                    </div>
-                    <div class="swiper-slide">
-                        <img src="{{ asset('public/frontend/images/partner-partner-05.png') }}" alt="partner image">
-                    </div>
-                    <div class="swiper-slide">
-                        <img src="{{ asset('public/frontend/images/partner-partner-04.png') }}" alt="partner image">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Partner Area End Here  -->
 
 </main>
 @endsection

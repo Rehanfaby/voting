@@ -85,6 +85,7 @@
                         <div class="ms-maxw-510">
                             <div class="ms-login-wrap text-center ms-login-space ms-bg-2">
                                 <h3 class="ms-title4 mb-50">{{trans("file.Pay By Visa or Master Card")}}</h3>
+                                <sub>{{ trans('file.Minimum amount for stripe is') }} {{ env('STRIPE_MINIMUM_AMOUNT') }}</sub>
                                 <div class="text-center message-status"></div>
                                 <form id="" method="post" action="{{ route('musician.vote.payment.stripe') }}">
                                     @csrf
@@ -102,7 +103,12 @@
                                         <input type="hidden" name="amount" value="{{ $data['vote'] * $general_setting->vote_price }}">
                                     </div>
                                     <div class="ms-submit-btn mb-40">
-                                        <button id="payment-button" class="unfill__btn d-block w-100">{{trans("file.Pay")}} {{ $data['vote'] * $general_setting->vote_price }} {{ $currency->code }}</button>
+{{--                                        @dd(($data['vote'] * $general_setting->vote_price) >= env('STRIPE_MINIMUM_AMOUNT'))--}}
+                                        @if(($data['vote'] * $general_setting->vote_price) >= env('STRIPE_MINIMUM_AMOUNT'))
+                                            <button id="payment-button" class="unfill__btn d-block w-100">{{trans("file.Pay")}} {{ $data['vote'] * $general_setting->vote_price }} {{ $currency->code }}</button>
+                                        @else
+                                            <button id="payment-button" style="cursor: not-allowed" disabled class="unfill__btn d-block w-100">{{trans("file.Pay")}} {{ $data['vote'] * $general_setting->vote_price }} {{ $currency->code }}</button>
+                                        @endif
                                     </div>
                                 </form>
                             </div>

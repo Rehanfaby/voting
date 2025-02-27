@@ -880,6 +880,7 @@ return [
     "Pending Contestants" => "Pending Contestants",
     "Top Five Contestants" => "Top Five Contestants",
     "Pay By Visa or Master Card" => "Pay By Visa or Master Card",
+    "Minimum amount for stripe is" => "Minimum amount for stripe is",
 
 ];
 ?>

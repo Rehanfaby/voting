@@ -772,5 +772,6 @@ return [
     "Pending Contestants" => "Concourants en attente",
     "Top Five Contestants" => "Top cinq concurrents",
     "Pay By Visa or Master Card" => "Payer par Visa ou MasterCard",
+    "Minimum amount for stripe is" => "Le montant minimum pour Stripe est",
 ];
 ?>
