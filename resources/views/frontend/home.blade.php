@@ -461,10 +461,14 @@
         .ms-input2-box input, .ms-input2-box textarea {
             width: 164%;
         }
+        .partner-logos {
+            display: block;
+        }
     }
+
 </style>
 
-<div class="logo-container">
+<div class="logo-container partner-logos">
     <img src="{{ url('public/logo/' . $general_setting->site_logo) }}" alt="Site Logo">
     <img src="{{ url('public/logo/Beyond.png') }}" alt="Beyond Logo">
     <img src="{{ url('public/logo/Elfa.png') }}" alt="Elfa Logo">

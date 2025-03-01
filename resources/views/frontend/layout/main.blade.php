@@ -29,21 +29,21 @@
 <div class="mouseCursor cursor-inner"><span>{{trans('file.Darg')}}</span></div>
 
 <!-- Preloader start -->
-<div id="preloader">
-    <div class="line-loader">
-        <div class="line"></div>
-        <div class="line"></div>
-        <div class="line"></div>
-        <div class="line"></div>
-        <div class="line"></div>
-        <div class="line"></div>
-        <div class="line"></div>
-        <div class="line"></div>
-        <div class="line"></div>
-        <div class="line"></div>
-        <div class="line"></div>
-    </div>
-</div>
+{{--<div id="preloader">--}}
+{{--    <div class="line-loader">--}}
+{{--        <div class="line"></div>--}}
+{{--        <div class="line"></div>--}}
+{{--        <div class="line"></div>--}}
+{{--        <div class="line"></div>--}}
+{{--        <div class="line"></div>--}}
+{{--        <div class="line"></div>--}}
+{{--        <div class="line"></div>--}}
+{{--        <div class="line"></div>--}}
+{{--        <div class="line"></div>--}}
+{{--        <div class="line"></div>--}}
+{{--        <div class="line"></div>--}}
+{{--    </div>--}}
+{{--</div>--}}
 <!-- preloader end -->
 
 @php
