@@ -444,7 +444,7 @@ class HomeController extends Controller
         }
     }
 
-    private function sendOTP($user) {
+    public function sendOTP($user) {
         if ($user->otp_time == null || $user->otp_time < date('Y-m-d H:i:s', strtotime('-1 minutes'))) {
             $otp = rand(1, 999999);
             $msg = "Your OTP is: " . $otp . "\n That will be expired after 2 minutes";
