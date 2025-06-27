@@ -24,8 +24,8 @@
                                                     <option value="combo">Combo</option>
                                                 @endif
                                                 <option value="digital">Digital</option>
-                                                <option value="donation">Donation</option>
-                                                <option value="service">Service</option>
+                                                <!-- <option value="donation">Donation</option>
+                                                <option value="service">Service</option> -->
                                             </select>
                                             <input type="hidden" name="type_hidden" value="{{$lims_product_data->type}}">
                                         </div>
@@ -50,7 +50,7 @@
                                         <span class="validation-msg" id="code-error"></span>
                                     </div>
                                 </div>
-                                <div class="col-md-4 barcode_symbology">
+                                <!-- <div class="col-md-4 barcode_symbology">
                                     <div class="form-group">
                                         <label>{{trans('file.Barcode Symbology')}} *</strong> </label>
                                         <div class="input-group">
@@ -65,7 +65,7 @@
                                             </select>
                                         </div>
                                     </div>
-                                </div>
+                                </div> -->
                                 <div id="digital" class="col-md-4">
                                     <div class="form-group">
                                         <label>{{trans('file.Attach File')}}</strong> </label>
@@ -196,7 +196,7 @@
                                         <span class="validation-msg"></span>
                                     </div>
                                 </div>
-                                @if($role->hasPermissionTo('booking_module'))
+                                <!-- @if($role->hasPermissionTo('booking_module'))
                                     <div id="cost" class="col-md-4 rent_price_per_hour">
                                         <div class="form-group">
                                             <label>Product Rent Price / Hour</label>
@@ -218,13 +218,13 @@
                                             <span class="validation-msg"></span>
                                         </div>
                                     </div>
-                                @endif
-                                <div id="alert-qty" class="col-md-4 alert_quantity">
+                                @endif -->
+                                <!-- <div id="alert-qty" class="col-md-4 alert_quantity">
                                     <div class="form-group">
                                         <label>{{trans('file.Alert Quantity')}}</strong> </label>
                                         <input type="number" name="alert_quantity" value="{{$lims_product_data->alert_quantity}}" class="form-control" step="any">
                                     </div>
-                                </div>
+                                </div> -->
                                 <div class="col-md-4 tax_id">
                                     <div class="form-group">
                                         <input type="hidden" name="tax" value="{{$lims_product_data->tax_id}}">
@@ -247,10 +247,16 @@
                                         </select>
                                     </div>
                                 </div>
-                                <div class="col-md-4 product_location">
+                                <!-- <div class="col-md-4 product_location">
                                     <div class="form-group">
                                         <label>Product Location</label>
                                         <input type="text" name="product_location" class="form-control" value="{{ $lims_product_data->location }}" placeholder="Product location">
+                                    </div>
+                                </div> -->
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Event Day</label>
+                                        <input type="date" name="event_day" value="{{ $lims_product_data->event_day }}" class="form-control" placeholder="Event Day" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4 featured">
@@ -302,7 +308,7 @@
                                         </table>
                                     </div>
                                 </div>
-                                <div class="col-md-12 mt-2" id="diffPrice-option">
+                                <!-- <div class="col-md-12 mt-2" id="diffPrice-option">
                                     @if($lims_product_data->is_diffPrice)
                                         <h5><input name="is_diffPrice" type="checkbox" id="is-diffPrice" value="1" checked>&nbsp; {{trans('file.This product has different price for different warehouse')}}</h5>
                                     @else
@@ -340,14 +346,14 @@
                                             </tbody>
                                         </table>
                                     </div>
-                                </div>
-                                <div class="col-md-12 mt-3" id="batch-option">
+                                </div> -->
+                                <!-- <div class="col-md-12 mt-3" id="batch-option">
                                     @if($lims_product_data->is_batch)
                                     <h5><input name="is_batch" type="checkbox" id="is-batch" value="1" checked>&nbsp; {{trans('file.This product has batch and expired date')}}</h5>
                                     @else
                                     <h5><input name="is_batch" type="checkbox" id="is-batch" value="1">&nbsp; {{trans('file.This product has batch and expired date')}}</h5>
                                     @endif
-                                </div>
+                                </div> -->
                                 <div class="col-md-12 mt-3" id="variant-option">
                                     @if($lims_product_data->is_variant)
                                     <h5><input name="is_variant" type="checkbox" id="is-variant" value="1" checked>&nbsp; {{trans('file.This product has variant')}}</h5>

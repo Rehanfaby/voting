@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Employee;
 use App\BookingProduct;
 use App\Customer;
 use App\GeneralSetting;
 use App\StockDuration;
+use App\Ticket;
 use App\User;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Routing\Controller as BaseController;
@@ -13,6 +15,8 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\View;
 use Spatie\Permission\Models\Role;
+use Stripe\Checkout\Session;
+use Stripe\Stripe;
 
 class Controller extends BaseController
 {
@@ -28,7 +32,7 @@ class Controller extends BaseController
             if ($this->user && $this->user->role_id != 5) {
                 $role = Role::find($this->user->role_id);
                 $permissions = Role::findByName($role->name)->permissions;
-
+                $all_permission = [];
                 foreach ($permissions as $permission) {
                     $all_permission[] = $permission->name;
                 }
@@ -39,6 +43,88 @@ class Controller extends BaseController
     }
 
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
+
+    public function createCheckoutSession($amount, $route, $vote_id, $vote)
+    {
+        $musician = Employee::where('id', $vote->musician_id)->first();
+        $musician_name = 'Vote to: ' . $musician->name;
+
+        Stripe::setApiKey(env('STRIPE_SECRET'));
+
+        try {
+            $session = Session::create([
+                'payment_method_types' => ['card'],
+                'line_items' => [[
+                    'price_data' => [
+                        'currency' => 'XAF',
+                        'product_data' => [
+                            'name' => $musician_name,
+                        ],
+                        'unit_amount' => $amount,
+                    ],
+                    'quantity' => 1,
+                ]],
+                'mode' => 'payment',
+                'success_url' => $route . '?session_id={CHECKOUT_SESSION_ID}',
+                'cancel_url' => route('payment.cancel'),
+                'metadata' => [
+                    'vote_id' => $vote_id,
+                ],
+            ]);
+            if ($session) {
+                return $session->url;
+            } else {
+                return false;
+            }
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
+    public function createCheckoutSessionForTicket($amount, $route, $ticket_id)
+    {
+        $ticket = Ticket::where('id', $ticket_id)->first();
+
+        Stripe::setApiKey(env('STRIPE_SECRET'));
+
+        try {
+            $session = Session::create([
+                'payment_method_types' => ['card'],
+                'line_items' => [[
+                    'price_data' => [
+                        'currency' => 'XAF',
+                        'product_data' => [
+                            'name' => $ticket->name,
+                        ],
+                        'unit_amount' => $amount,
+                    ],
+                    'quantity' => 1,
+                ]],
+                'mode' => 'payment',
+                'success_url' => $route . '?session_id={CHECKOUT_SESSION_ID}',
+                'cancel_url' => route('payment.cancel'),
+                'metadata' => [
+                    'ticket_id' => $ticket_id,
+                ],
+            ]);
+            if ($session) {
+                return $session->url;
+            } else {
+                return false;
+            }
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
 
     public function mobileMoneyRequestLink($token, $amount, $route, $patient_id, $number){
 

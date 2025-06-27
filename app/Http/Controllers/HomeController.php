@@ -22,6 +22,8 @@ use App\Payment;
 use App\Account;
 use App\Product_Sale;
 use App\Customer;
+use App\Product;
+use App\Ticket;
 use DB;
 use Auth;
 use Illuminate\Support\Facades\Hash;
@@ -32,6 +34,9 @@ use Spatie\Permission\Models\Role;
 use Stripe\EphemeralKey;
 use Stripe\Stripe;
 use Twilio\Rest\Client;
+use Illuminate\Support\Str;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Illuminate\Support\Facades\File;
 
 /*use vendor\autoload;
 use Mike42\Escpos\PrintConnectors\NetworkPrintConnector;
@@ -192,6 +197,22 @@ class HomeController extends Controller
         return view('frontend.employee', compact('musician', 'contentants', 'images', 'audios', 'videos', 'shorts', 'youtubes', 'see_votes'));
     }
 
+    public function tickets() {
+        $tickets = Product::where('is_active', true)->paginate(12);
+        return view('frontend.tickets', compact('tickets'));
+    }
+
+    public function ticket($id) {
+        $ticket = Product::find($id);
+        return view('frontend.ticket', compact('ticket'));
+    }
+
+    public function purchaseTicket(Request $request) {
+        $data = $request->all();
+        $ticket = Product::find($data['ticket_id']);
+        return view('frontend.ticket-payment', compact('data', 'ticket'));
+    }
+
     public function employeeFind(Request $request) {
         $musicians = Employee::where('name', 'LIKE', '%' . $request->search . '%')->where('is_active', true)->where('is_approve', true)->get();
         return view('frontend.team', compact('musicians'));
@@ -206,6 +227,11 @@ class HomeController extends Controller
     public function userContentant() {
         $votes = vote::where('user_id', Auth::user()->id)->orderBy('id', 'desc')->get();
         return view('frontend.votes', compact('votes'));
+    }
+
+    public function userEvents() {
+        $tickets = Ticket::where('user_id', Auth::user()->id)->orderBy('id', 'desc')->paginate(5);
+        return view('frontend.ticket-purchased', compact('tickets'));
     }
 
     public function musicianVotePayment(Request $request) {
@@ -248,7 +274,7 @@ class HomeController extends Controller
             $link = $this->mobileMoneyRequestLink($token, $amount, $route, $vote->id, $mtn_number);
             if ($link == false) {
                 $message = 'Phone Number is incorrect or There is any other issue in payment method';
-                return back()->with('not_permitted', $message);
+                return redirect()->route('home')->with('not_permitted', $message);
             }
             header("Location: $link");
             die();
@@ -339,9 +365,200 @@ class HomeController extends Controller
 
     }
 
+        public function ticketPaymentStripe(Request $request) {
+
+        $user = Auth::user() ?? null;
+        $password = rand(1, 999999);
+        $data['is_active'] = true;
+        $data['is_deleted'] = false;
+        $data['password'] = bcrypt($password);
+        $data['name'] = $request->phone;
+        $data['phone'] = $request->phone;
+        $data['email'] = 'user@gmail.com';
+        $data['role_id'] = 3;
+
+        if($data['phone'] == null) {
+            return 'Phone cannot be null';
+        }
+
+        if ($user_check = User::where('phone', $request->phone)->first()) {
+            $user = $user_check;
+        }
+
+        if($user == null) {
+            $user = User::create($data);
+            $this->sendWhatsappMsg($user, $password);
+        }
+
+        $ticket = Ticket::create([
+            'user_id' => $user->id,
+            'product_id' => $request->ticket_id,
+            'qty' => $request->qty,
+            'status' => false,
+            'reference' => 'abc',
+            'identity_type' => $request->identity_type ?? 1,
+            'cnic' => $request->identity_number,
+            'student_card' => $request->student_number,
+            'passport' => $request->passport_number,
+            'phone' => $request->phone,
+            'name' => $request->name,
+            'email' => $request->email,
+            'token' => Str::random(10)
+        ]);
+
+        if($ticket) {
+            $route = route('ticket.payment.check.stripe');
+            $mtn_number = $data['phone'];
+            $amount = $request->amount;
+
+            $link = $this->createCheckoutSessionForTicket($amount, $route, $ticket->id);
+            if ($link == false) {
+                $message = 'There is any other issue in payment method';
+                return back()->with('not_permitted', $message);
+            }
+
+            return redirect($link);
+            die();
+        }
+        $message = 'There is any other issue in payment method, please contact the system administrator';
+        return back()->with('not_permitted', $message);
+    }
+
+
+    public function ticketPaymentCheckStripe(Request $request)
+    {
+
+        Stripe::setApiKey(env('STRIPE_SECRET'));
+
+        $session = \Stripe\Checkout\Session::retrieve($request->session_id);
+
+        if ($session->payment_status !== 'paid') {
+            Ticket::where('id', $session->metadata->ticket_id)->delete();
+            return redirect()->back()->with('not_permitted', 'payment failed.');
+        }
+
+        $ticket = Ticket::where('id', $session->metadata->ticket_id)->first();
+
+        if($ticket) {
+            $lastSeat = Ticket::where('product_id', $ticket->product_id)
+                    ->where('status', 1)
+                    ->get()
+                    ->pluck('seat_numbers')    // Get all seat_numbers arrays
+                    ->flatten()                // Flatten to a single array of seat numbers
+                    ->max(); 
+            $lastSeat = $lastSeat ? max(json_decode($lastSeat, true)) : 0;
+            $qty = (int) $ticket->qty;
+            $seatNumbers = range($lastSeat + 1, $lastSeat + $qty);
+
+            $ticket->status = true;
+            $ticket->reference = $session->payment_intent;
+            $ticket->seat_numbers = json_encode($seatNumbers);
+            $ticket->save();
+
+            $this->sendWhatsappMsgTicketMomoSuccess($ticket);
+            $message = 'Thank you for your Purchasing Ticket';
+            return redirect()->route('home')->with('message', $message);
+        }
+
+        $message = 'There is any issue, please contact the system administrator';
+        return redirect()->route('home')->with('not_permitted', $message);
+
+    }
+
+    public function ticketPayment(Request $request) {
+
+        $user = Auth::user() ?? null;
+        $password = rand(1, 999999);
+        $data['is_active'] = true;
+        $data['is_deleted'] = false;
+        $data['password'] = bcrypt($password);
+        $data['name'] = $request->name;
+        $data['phone'] = $request->phone;
+        $data['email'] = $request->email ?? 'user@gmail.com';
+        $data['role_id'] = 3;
+
+        if($data['phone'] == null) {
+            return 'Phone cannot be null';
+        }
+
+        if ($user_check = User::where('phone', $request->phone)->first()) {
+            $user = $user_check;
+        }
+
+        if($user == null) {
+            $user = User::create($data);
+            $this->sendWhatsappMsg($user, $password);
+        }
+
+        $ticket = Ticket::create([
+                    'user_id' => $user->id,
+                    'product_id' => $request->ticket_id,
+                    'qty' => $request->qty,
+                    'status' => false,
+                    'reference' => 'abc',
+                    'identity_type' => $request->identity_type ?? 1,
+                    'cnic' => $request->identity_number,
+                    'student_card' => $request->student_number,
+                    'passport' => $request->passport_number,
+                    'phone' => $request->phone,
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'token' => Str::random(10)
+                ]);
+        $token = getenv("MOMO_TOKEN");
+        if($token && $ticket) {
+            $route = route('ticket.payment.check');
+            $mtn_number = $data['phone'];
+            $amount = $request->amount;
+            $link = $this->mobileMoneyRequestLink($token, $amount, $route, $ticket->id, $mtn_number);
+            if ($link == false) {
+                $message = 'Phone Number is incorrect or There is any other issue in payment method';
+                return redirect()->route('tickets')->with('not_permitted', $message);
+            }
+            header("Location: $link");
+            die();
+        }
+        $message = 'There is any other issue in payment method, please contact the system administrator';
+        return back()->with('not_permitted', $message);
+    }
+
+    public function ticketPaymentCheck(Request $request)
+    {
+        if($request->status != 'SUCCESSFUL'){
+            Ticket::where('id', $request->external_reference)->delete();
+            return redirect()->route('tickets')->with('not_permitted', 'payment failed.');
+        }
+
+        $ticket = Ticket::where('id', $request->external_reference)->first();
+
+        if($ticket) {
+            $lastSeat = Ticket::where('product_id', $ticket->product_id)
+                                ->where('status', 1)
+                                ->get()
+                                ->pluck('seat_numbers')    // Get all seat_numbers arrays
+                                ->flatten()                // Flatten to a single array of seat numbers
+                                ->max(); 
+            $lastSeat = $lastSeat ? max(json_decode($lastSeat, true)) : 0;
+            $qty = (int) $ticket->qty;
+            $seatNumbers = range($lastSeat + 1, $lastSeat + $qty);
+
+            $ticket->status = true;
+            $ticket->reference = $request->reference;
+            $ticket->seat_numbers = json_encode($seatNumbers);
+            $ticket->save();
+
+            $this->sendWhatsappMsgTicketMomoSuccess($ticket);
+            $message = 'Thank you for your Purchasing Ticket';
+            return redirect()->route('home')->with('message', $message);
+        }        
+
+        $message = 'There is any issue, please contact the system administrator';
+        return redirect()->back()->with('not_permitted', $message);
+
+    }
+
     public function musicianVotePaymentCheck(Request $request)
     {
-//        dd($request->all());
         if($request->status != 'SUCCESSFUL'){
             Vote::where('id', $request->external_reference)->delete();
             return redirect()->back()->with('not_permitted', 'payment failed.');
@@ -670,6 +887,45 @@ class HomeController extends Controller
         return true;
     }
 
+    public function sendWhatsappMsgTicketMomoSuccess($ticket)
+    {
+
+        $msg = '*Thank you for your Purchasing Ticket,*  \n\n';
+
+        $msg .= 'You have purchased ' . $ticket->qty . ' ticket(s) for ' . $ticket->product->name . '\n\n';
+        $msg .= 'Your ticket number is: ' . $ticket->token . '\n\n';
+        $msg .= 'Your Seat number is: ' . $ticket->seat_numbers . '\n\n';
+        $msg .= 'QR code has been sent to your whatsapp number please scan it at the entrance of the event' . '\n\n';
+
+        $user = User::find($ticket->user_id);
+
+        try{
+            $this->wpMessage($user->additional_phone, $msg);
+        }
+        catch(\Exception $e){
+
+        }
+
+        // send QR code
+        $filename = 'qr_code_' . $ticket->token . '.png';
+        $path = public_path('public/images/customer/docs/');
+
+        if (!File::exists($path)) {
+            File::makeDirectory($path, 0755, true);
+        }
+        $url = url("/ticket/scan/$ticket->token");
+
+        QrCode::format('png')->size(300)->generate($url, $path . $filename);
+
+        try {
+            $this->wpAttachMessage($path.$filename, $user->additional_phone, $filename);
+        } catch (\Exception $e) {
+
+        }
+
+        return true;
+    }
+
     public function sendWhatsappMsgVoteMomoSuccess($user, $vote, $musician_id)
     {
         $musician = Employee::select('name', 'id')->find($musician_id);
@@ -694,6 +950,51 @@ class HomeController extends Controller
         }
 
         return true;
+    }
+
+
+
+    public function ticketScan($token) {
+        $ticket = Ticket::where('token', $token)->first();
+        if($ticket) {
+            if($ticket->is_used == true) {
+                $error = 'This ticket has already been scanned, Ticket was scanned at: ' . $ticket->used_at;
+                return view('frontend.ticket-scan', compact('error'));
+            }
+            if($ticket->status == false) {
+                $error = 'This ticket is not paid yet';
+                return view('frontend.ticket-scan', compact('error'));
+            }
+            if($ticket->product->is_active == false) {
+                $error = 'This ticket is not valid';
+                return view('frontend.ticket-scan', compact('error'));
+            }
+            if($ticket->product->event_day && $ticket->product->event_day < date('Y-m-d')) {
+                $error = 'This ticket is not valid, event date has been passed, Event date: ' . $ticket->product->event_day;
+                return view('frontend.ticket-scan', compact('error'));
+            }
+            $user = User::find($ticket->user_id);
+            if($user) {
+                $msg = '*Ticket Scan Alert:* Your ticket has been scanned successfully' . '\n\n';
+                $msg .= '*Ticket number:* '. $ticket->token . '\n\n';
+                $msg .= '*Event name:* '. $ticket->product->name . '\n\n';
+                $msg .= '*Event date:* '. $ticket->product->event_day . '\n\n';
+                try{
+                    $this->wpMessage($user->additional_phone, $msg);
+                }
+                catch(\Exception $e){
+
+                }
+            }
+            Ticket::where('token', $token)->update(['is_used' => true, 'used_at' => date('Y-m-d H:i:s')]);
+
+            $success = 'Ticket has been scanned successfully';
+            return view('frontend.ticket-scan', compact('success', 'ticket'));
+        } else {
+            $error = 'This ticket is not valid';
+
+            return view('frontend.ticket-scan', compact('ticket'));
+        }
     }
 
 

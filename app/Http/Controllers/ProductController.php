@@ -616,6 +616,7 @@ class ProductController extends Controller
             $data['file'] = $fileName;
         }
         $data['location'] = $request->product_location;
+        $data['event_day'] = $request->event_day;
         $lims_product_data = Product::create($data);
         //dealing with product variant
         if(!isset($data['is_batch']))
@@ -720,6 +721,7 @@ class ProductController extends Controller
         $data['product_details'] = str_replace('"', '@', $data['product_details']);
         $data['product_details'] = $data['product_details'];
         $data['location'] = $request->product_location;
+        $data['event_day'] = $request->event_day;
         if($data['starting_date'])
             $data['starting_date'] = date('Y-m-d', strtotime($data['starting_date']));
         if($data['last_date'])
@@ -1203,6 +1205,7 @@ class ProductController extends Controller
                     'cost' => $products['cost'][$key],
                     'price' => $products['price'][$key],
                     'location' => $products['product_location'][$key],
+                    'event_day' => $products['event_day'][$key],
                     'is_batch' => $batch,
                     'qty' => $qty
                 ]);
@@ -1215,6 +1218,7 @@ class ProductController extends Controller
                     'cost' => $products['cost'][$key],
                     'price' => $products['price'][$key],
                     'location' => $products['product_location'][$key],
+                    'event_day' => $products['event_day'][$key],
                     'is_batch' => $batch
                 ]);
             }

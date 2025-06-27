@@ -98,6 +98,9 @@
                 </div>
                 <div class="hr-1 mt-30 mb-30 d-xl-none"></div>
                 <div class="offcanvas__btn mb-30">
+                    <a class="user__name" href="{{ route('tickets') }}"><i class="fa-solid fa-plus"></i> {{trans('file.Buy Tickets')}}</a>
+                </div>
+                <div class="offcanvas__btn mb-30">
                     <a class="user__name" href="{{ route('home') }}"><i class="fa-solid fa-plus"></i> {{trans('file.Home')}}</a>
                 </div>
                 <div class="offcanvas__btn mb-30">
@@ -117,6 +120,9 @@
                 </div>
                 <div class="offcanvas__btn mb-30">
                     <a class="user__name" href="{{ route('user.contentant') }}"><i class="fa-solid fa-plus"></i> {{trans('file.My Contestants')}}</a>
+                </div>
+                <div class="offcanvas__btn mb-30">
+                    <a class="user__name" href="{{ route('user.events') }}"><i class="fa-solid fa-plus"></i> {{trans('file.My Events')}}</a>
                 </div>
                 @endif
                 <div class="hr-1 mt-30 mb-30 d-xl-none"></div>
@@ -166,6 +172,9 @@
 {{--                                                    <a href="https://mail.hostinger.com" target="_blank">{{trans('file.Email')}}</a>--}}
 {{--                                                </li>--}}
                                                 <li>
+                                                    <a href="{{ route('tickets') }}">{{trans('file.Buy Tickets')}}</a>
+                                                </li>
+                                                <li>
                                                     <a href="{{ route('home') }}">{{trans('file.Home')}}</a>
                                                 </li>
                                                 <li>
@@ -183,12 +192,12 @@
                                 </div>
                                 <div class="header__action-inner d-flex align-items-center">
                                     @if($user)
-                                        <div class="enquiry__list ml-10 mr-10 ms-browse-act-wrap p-relative">
+                                        <!-- <div class="enquiry__list ml-10 mr-10 ms-browse-act-wrap p-relative">
                                             <div class="ms-enquiry-box p-relative d-none d-xl-inline-flex">
                                                 <a href="{{ route('user.contentant') }}">
                                                     <span class="text">{{trans('file.My Votes')}}</span></a>
                                             </div>
-                                        </div>
+                                        </div> -->
                                         <div class="enquiry__list ml-10 mr-10 ms-browse-act-wrap p-relative">
                                             <div class="ms-enquiry-box p-relative d-none d-xl-inline-flex">
                                                 <a href="{{ route('user.contentant') }}"><i class="flaticon-star icon"></i>
@@ -224,16 +233,29 @@
                                         <div class="enquiry__list ml-10 mr-10 ms-browse-act-wrap p-relative">
                                             <div class="ms-enquiry-box p-relative d-none d-xl-inline-flex">
                                                 <a href="#"><i class="flaticon-star icon"></i>
-                                                    <span class="text">{{ $user->name }}</span></a>
+                                                    <span class="text">{{ $user->name }}</span>
+                                                </a>
                                             </div>
                                             <div class="ms-browse-act-item-wrap p-absolute">
                                                 <div class="ms-song-item">
                                                     <div class="ms-song-content">
                                                         <h3 class="ms-song-title">
+                                                            <a href="{{ route('user.contentant') }}">
+                                                                <span class="text">{{trans('file.My Votes')}}</span>
+                                                            </a>
+                                                        </h3>  
+                                                        <hr> 
+                                                        <h3 class="ms-song-title">
+                                                            <a href="{{ route('user.events') }}">
+                                                                <span class="text">{{trans('file.My Events')}}</span>
+                                                            </a>
+                                                        </h3>  
+                                                        <hr>  
+                                                        <h3 class="ms-song-title" style="margin-bottom: 10px;">
                                                             <a href="{{ route('logout') }}"
-                                                               onclick="event.preventDefault();
-                                                                 document.getElementById('logout-form').submit();"><i class="dripicons-power"></i>
-                                                                {{trans('file.logout')}}
+                                                            onclick="event.preventDefault();
+                                                                document.getElementById('logout-form').submit();">
+                                                                <i class="dripicons-power"></i> {{trans('file.logout')}}
                                                             </a>
                                                             <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                                                                 @csrf

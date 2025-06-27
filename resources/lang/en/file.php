@@ -882,5 +882,27 @@ return [
     "Pay By Visa or Master Card" => "Pay By Visa or Master Card",
     "Minimum amount for stripe is" => "Minimum amount for stripe is",
 
+	"Buy Tickets" => "Buy Tickets",
+	"Ticket Price" => "Ticket Price",
+	"Ticket" => "Ticket",
+	"Ticket List" => "Ticket List",
+	"Ticket Name" => "Ticket Name",
+	"Ticket Description" => "Ticket Description",
+	"Ticket Price" => "Ticket Price",
+	"Ticket Quantity" => "Ticket Quantity",
+	"Ticket Sold" => "Ticket Sold",
+	"Ticket Sold Amount" => "Ticket Sold Amount",
+	"Ticket Code" => "Ticket Code",
+	"Ticket Status" => "Ticket Status",
+	"Ticket Details" => "Ticket Details",
+	"Purchase Ticket" => "Purchase Ticket",
+	"Ticket payment" => "Ticket payment",
+	"Event Day" => "Event Day",
+	"Ticket Scan" => "Ticket Scan",
+	"Ticket Scan Result" => "Ticket Scan Result",
+	"My Events" => "My Events",
+	"Event Name" => "Event Name",
+	"Event Date" => "Event Date",
+	"Seat No" => "Seat No"
 ];
 ?>

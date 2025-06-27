@@ -46,6 +46,22 @@ Route::group(['middleware' => 'checkOtp'], function() {
     Route::post('musician/vote/payment/Stripe', 'HomeController@musicianVotePaymentStripe')->name('musician.vote.payment.stripe');
     Route::get('/musician/vote/payment/check/Stripe', 'HomeController@musicianVotePaymentCheckStripe')->name('musician.vote.payment.check.stripe');
 
+
+
+	Route::get('/tickets', 'HomeController@tickets')->name('tickets');
+	Route::get('/ticket/data/{id}', 'HomeController@ticket')->name('ticket.data');
+	Route::post('/purchase/ticket', 'HomeController@purchaseTicket')->name('purchase.ticket');
+
+	Route::post('/ticket/payment', 'HomeController@ticketPayment')->name('ticket.payment');
+    Route::get('/ticket/payment/check', 'HomeController@ticketPaymentCheck')->name('ticket.payment.check');
+    Route::post('/ticket/payment/Stripe', 'HomeController@ticketPaymentStripe')->name('ticket.payment.stripe');
+    Route::get('/ticket/payment/check/Stripe', 'HomeController@ticketPaymentCheckStripe')->name('ticket.payment.check.stripe');
+
+
+	Route::get('/ticket/scan/{token}', 'HomeController@ticketScan')->name('ticket.snan');
+
+	Route::get('user/events', 'HomeController@userEvents')->name('user.events');
+
 });
 
 //end frontend
