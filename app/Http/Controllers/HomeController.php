@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Ambassador;
+use App\Category;
 use App\Coin;
 use App\Employee;
 use App\Gallery;
@@ -197,8 +198,13 @@ class HomeController extends Controller
         return view('frontend.employee', compact('musician', 'contentants', 'images', 'audios', 'videos', 'shorts', 'youtubes', 'see_votes'));
     }
 
-    public function tickets() {
-        $tickets = Product::where('is_active', true)->paginate(12);
+    public function events() {
+        $events = Category::where('is_active', true)->paginate(12);
+        return view('frontend.events', compact('events'));
+    }
+
+    public function tickets($id) {
+        $tickets = Product::where('category_id', $id)->where('is_active', true)->paginate(12);
         return view('frontend.tickets', compact('tickets'));
     }
 
@@ -403,7 +409,7 @@ class HomeController extends Controller
             'phone' => $request->phone,
             'name' => $request->name,
             'email' => $request->email,
-            'token' => Str::random(10)
+            'token' => Str::random(6)
         ]);
 
         if($ticket) {
@@ -445,7 +451,7 @@ class HomeController extends Controller
                     ->get()
                     ->pluck('seat_numbers')    // Get all seat_numbers arrays
                     ->flatten()                // Flatten to a single array of seat numbers
-                    ->max(); 
+                    ->max();
             $lastSeat = $lastSeat ? max(json_decode($lastSeat, true)) : 0;
             $qty = (int) $ticket->qty;
             $seatNumbers = range($lastSeat + 1, $lastSeat + $qty);
@@ -537,7 +543,7 @@ class HomeController extends Controller
                                 ->get()
                                 ->pluck('seat_numbers')    // Get all seat_numbers arrays
                                 ->flatten()                // Flatten to a single array of seat numbers
-                                ->max(); 
+                                ->max();
             $lastSeat = $lastSeat ? max(json_decode($lastSeat, true)) : 0;
             $qty = (int) $ticket->qty;
             $seatNumbers = range($lastSeat + 1, $lastSeat + $qty);
@@ -550,7 +556,7 @@ class HomeController extends Controller
             $this->sendWhatsappMsgTicketMomoSuccess($ticket);
             $message = 'Thank you for your Purchasing Ticket';
             return redirect()->route('home')->with('message', $message);
-        }        
+        }
 
         $message = 'There is any issue, please contact the system administrator';
         return redirect()->back()->with('not_permitted', $message);

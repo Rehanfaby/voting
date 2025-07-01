@@ -11,6 +11,13 @@
         <div class="alert alert-danger alert-dismissible text-center"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>{{ session()->get('not_permitted') }}</div>
     @endif
     <main>
+        <style>
+            .product__modal-img {
+                padding: 0;
+                width: 300px;
+                height: 300px;
+            }
+        </style>
         <!-- page title area start  -->
         <section class="page-title-area page-title-spacing p-relative zindex-1" data-background="assets/img/shop/shop-page-title.jpg">
             <div class="ms-overlay ms-overlay9 p-absolute zindex--1"></div>
@@ -31,12 +38,16 @@
                 <div class="row mb-30">
                     <div class="col-lg-6">
                         <div class="product__modal-box product-dbox-grid mb-60">
-                            <ul class="nav nav-tabs border-0" id="modalTab" role="tablist">
-                            </ul>
                             <div class="tab-content br-15 ms-bg-2 d-flex align-items-center" id="modalTabContent">
                                 <div class="tab-pane fade active show" id="nav1" role="tabpanel" aria-labelledby="nav1-tab">
-                                    <div class="product__modal-img w-img">
-                                        <img src="{{ url('public/images/product', $ticket->image) }}" alt="product image">
+                                    <div class="product__modal-img w-img text-center mb-3">
+                                        <?php $images = explode(",", $ticket->image)?>
+                                        <img id="main-gallery-image" src="{{ url('public/images/product', $images[0]) }}" alt="product image" style="max-width:100%; max-height:350px; border-radius:10px;">
+                                    </div>
+                                    <div class="gallery-thumbnails d-flex justify-content-center gap-2">
+                                        @foreach($images as $key => $image)
+                                            <img src="{{ url('public/images/product', $image) }}" alt="product thumbnail" class="gallery-thumb" style="width:60px; height:60px; object-fit:cover; border-radius:6px; cursor:pointer; border:2px solid #eee;">
+                                        @endforeach
                                     </div>
                                 </div>
                             </div>
@@ -90,6 +101,17 @@
 
 
         <script>
+
+            document.addEventListener('DOMContentLoaded', function() {
+                const mainImg = document.getElementById('main-gallery-image');
+                document.querySelectorAll('.gallery-thumb').forEach(function(thumb) {
+                    thumb.addEventListener('click', function() {
+                        mainImg.src = this.src;
+                        document.querySelectorAll('.gallery-thumb').forEach(t => t.style.border = '2px solid #eee');
+                        this.style.border = '2px solid #007bff';
+                    });
+                });
+            });
 
             /*======================================
              Cart Quantity Js

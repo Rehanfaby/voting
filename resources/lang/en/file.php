@@ -903,6 +903,8 @@ return [
 	"My Events" => "My Events",
 	"Event Name" => "Event Name",
 	"Event Date" => "Event Date",
-	"Seat No" => "Seat No"
+	"Seat No" => "Seat No",
+    "Events" => "Events",
+    "Event List" => "Event List",
 ];
 ?>

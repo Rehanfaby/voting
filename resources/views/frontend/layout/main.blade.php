@@ -98,7 +98,7 @@
                 </div>
                 <div class="hr-1 mt-30 mb-30 d-xl-none"></div>
                 <div class="offcanvas__btn mb-30">
-                    <a class="user__name" href="{{ route('tickets') }}"><i class="fa-solid fa-plus"></i> {{trans('file.Buy Tickets')}}</a>
+                    <a class="user__name" href="{{ route('events') }}"><i class="fa-solid fa-plus"></i> {{trans('file.Buy Tickets')}}</a>
                 </div>
                 <div class="offcanvas__btn mb-30">
                     <a class="user__name" href="{{ route('home') }}"><i class="fa-solid fa-plus"></i> {{trans('file.Home')}}</a>
@@ -172,7 +172,7 @@
 {{--                                                    <a href="https://mail.hostinger.com" target="_blank">{{trans('file.Email')}}</a>--}}
 {{--                                                </li>--}}
                                                 <li>
-                                                    <a href="{{ route('tickets') }}">{{trans('file.Buy Tickets')}}</a>
+                                                    <a href="{{ route('events') }}">{{trans('file.Buy Tickets')}}</a>
                                                 </li>
                                                 <li>
                                                     <a href="{{ route('home') }}">{{trans('file.Home')}}</a>
@@ -243,14 +243,14 @@
                                                             <a href="{{ route('user.contentant') }}">
                                                                 <span class="text">{{trans('file.My Votes')}}</span>
                                                             </a>
-                                                        </h3>  
-                                                        <hr> 
+                                                        </h3>
+                                                        <hr>
                                                         <h3 class="ms-song-title">
                                                             <a href="{{ route('user.events') }}">
                                                                 <span class="text">{{trans('file.My Events')}}</span>
                                                             </a>
-                                                        </h3>  
-                                                        <hr>  
+                                                        </h3>
+                                                        <hr>
                                                         <h3 class="ms-song-title" style="margin-bottom: 10px;">
                                                             <a href="{{ route('logout') }}"
                                                             onclick="event.preventDefault();

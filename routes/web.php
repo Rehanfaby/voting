@@ -48,7 +48,9 @@ Route::group(['middleware' => 'checkOtp'], function() {
 
 
 
-	Route::get('/tickets', 'HomeController@tickets')->name('tickets');
+    Route::get('/events', 'HomeController@events')->name('events');
+
+	Route::get('/tickets/{id}', 'HomeController@tickets')->name('tickets');
 	Route::get('/ticket/data/{id}', 'HomeController@ticket')->name('ticket.data');
 	Route::post('/purchase/ticket', 'HomeController@purchaseTicket')->name('purchase.ticket');
 
