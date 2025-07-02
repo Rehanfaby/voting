@@ -60,7 +60,8 @@ Route::group(['middleware' => 'checkOtp'], function() {
     Route::get('/ticket/payment/check/Stripe', 'HomeController@ticketPaymentCheckStripe')->name('ticket.payment.check.stripe');
 
 
-	Route::get('/ticket/scan/{token}', 'HomeController@ticketScan')->name('ticket.snan');
+	Route::get('/ticket/scan/{token}', 'HomeController@ticketScan')->name('ticket.scan');
+    Route::get('/ticket/scan/used/{token}', 'HomeController@ticketScanUsed')->name('ticket.scan.used');
 
 	Route::get('user/events', 'HomeController@userEvents')->name('user.events');
 

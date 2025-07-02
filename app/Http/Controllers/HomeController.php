@@ -962,6 +962,17 @@ class HomeController extends Controller
 
     public function ticketScan($token) {
         $ticket = Ticket::where('token', $token)->first();
+        $error = false;
+        if($ticket) {
+            return view('frontend.ticket-scan-permission', compact('ticket'));
+        } else {
+            return view('frontend.ticket-scan-permission', compact('error'));
+        }
+    }
+
+    public function ticketScanUsed($token) {
+        $ticket = Ticket::where('token', $token)->first();
+
         if($ticket) {
             if($ticket->is_used == true) {
                 $error = 'This ticket has already been scanned, Ticket was scanned at: ' . $ticket->used_at;
@@ -998,7 +1009,6 @@ class HomeController extends Controller
             return view('frontend.ticket-scan', compact('success', 'ticket'));
         } else {
             $error = 'This ticket is not valid';
-
             return view('frontend.ticket-scan', compact('ticket'));
         }
     }
