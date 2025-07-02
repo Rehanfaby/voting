@@ -293,63 +293,63 @@
                                 <!-- <div class="col-md-12 mt-3" id="batch-option">
                                     <h5><input name="is_batch" type="checkbox" id="is-batch" value="1">&nbsp; {{trans('file.This product has batch and expired date')}}</h5>
                                 </div> -->
-                                <div class="col-md-12 mt-3" id="variant-option">
-                                    <h5><input name="is_variant" type="checkbox" id="is-variant" value="1">&nbsp; {{trans('file.This product has variant')}}</h5>
-                                </div>
-                                <div class="col-md-12" id="variant-section">
-                                    <div class="col-md-6 form-group mt-2">
-                                        <input type="text" name="variant" class="form-control" placeholder="{{trans('file.Enter variant seperated by comma')}}">
-                                    </div>
-                                    <div class="table-responsive ml-2">
-                                        <table id="variant-table" class="table table-hover variant-list">
-                                            <thead>
-                                                <tr>
-                                                    <th><i class="dripicons-view-apps"></i></th>
-                                                    <th>{{trans('file.name')}}</th>
-                                                    <th>{{trans('file.Item Code')}}</th>
-                                                    <th>{{trans('file.Additional Price')}}</th>
-                                                    <th><i class="dripicons-trash"></i></th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                                <div class="col-md-4 mt-3 promotion">
-                                    <input name="promotion" type="checkbox" id="promotion" value="1">&nbsp;
-                                    <label><h5> {{trans('file.Add Promotional Price')}}</h5></label>
-                                </div>
-                                <div class="col-md-12">
-                                    <div class="row">
-                                        <div class="col-md-4" id="promotion_price">
-                                            <label>{{trans('file.Promotional Price')}}</label>
-                                            <input type="number" name="promotion_price" class="form-control" step="any" />
-                                        </div>
-                                        <div class="col-md-4" id="start_date">
-                                            <div class="form-group">
-                                                <label>{{trans('file.Promotion Starts')}}</label>
-                                                <div class="input-group">
-                                                    <div class="input-group-prepend">
-                                                        <div class="input-group-text"><i class="dripicons-calendar"></i></div>
-                                                    </div>
-                                                    <input type="text" name="starting_date" id="starting_date" class="form-control" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4" id="last_date">
-                                            <div class="form-group">
-                                                <label>{{trans('file.Promotion Ends')}}</label>
-                                                <div class="input-group">
-                                                    <div class="input-group-prepend">
-                                                        <div class="input-group-text"><i class="dripicons-calendar"></i></div>
-                                                    </div>
-                                                    <input type="text" name="last_date" id="ending_date" class="form-control" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+{{--                                <div class="col-md-12 mt-3" id="variant-option">--}}
+{{--                                    <h5><input name="is_variant" type="checkbox" id="is-variant" value="1">&nbsp; {{trans('file.This product has variant')}}</h5>--}}
+{{--                                </div>--}}
+{{--                                <div class="col-md-12" id="variant-section">--}}
+{{--                                    <div class="col-md-6 form-group mt-2">--}}
+{{--                                        <input type="text" name="variant" class="form-control" placeholder="{{trans('file.Enter variant seperated by comma')}}">--}}
+{{--                                    </div>--}}
+{{--                                    <div class="table-responsive ml-2">--}}
+{{--                                        <table id="variant-table" class="table table-hover variant-list">--}}
+{{--                                            <thead>--}}
+{{--                                                <tr>--}}
+{{--                                                    <th><i class="dripicons-view-apps"></i></th>--}}
+{{--                                                    <th>{{trans('file.name')}}</th>--}}
+{{--                                                    <th>{{trans('file.Item Code')}}</th>--}}
+{{--                                                    <th>{{trans('file.Additional Price')}}</th>--}}
+{{--                                                    <th><i class="dripicons-trash"></i></th>--}}
+{{--                                                </tr>--}}
+{{--                                            </thead>--}}
+{{--                                            <tbody>--}}
+{{--                                            </tbody>--}}
+{{--                                        </table>--}}
+{{--                                    </div>--}}
+{{--                                </div>--}}
+{{--                                <div class="col-md-4 mt-3 promotion">--}}
+{{--                                    <input name="promotion" type="checkbox" id="promotion" value="1">&nbsp;--}}
+{{--                                    <label><h5> {{trans('file.Add Promotional Price')}}</h5></label>--}}
+{{--                                </div>--}}
+{{--                                <div class="col-md-12">--}}
+{{--                                    <div class="row">--}}
+{{--                                        <div class="col-md-4" id="promotion_price">--}}
+{{--                                            <label>{{trans('file.Promotional Price')}}</label>--}}
+{{--                                            <input type="number" name="promotion_price" class="form-control" step="any" />--}}
+{{--                                        </div>--}}
+{{--                                        <div class="col-md-4" id="start_date">--}}
+{{--                                            <div class="form-group">--}}
+{{--                                                <label>{{trans('file.Promotion Starts')}}</label>--}}
+{{--                                                <div class="input-group">--}}
+{{--                                                    <div class="input-group-prepend">--}}
+{{--                                                        <div class="input-group-text"><i class="dripicons-calendar"></i></div>--}}
+{{--                                                    </div>--}}
+{{--                                                    <input type="text" name="starting_date" id="starting_date" class="form-control" />--}}
+{{--                                                </div>--}}
+{{--                                            </div>--}}
+{{--                                        </div>--}}
+{{--                                        <div class="col-md-4" id="last_date">--}}
+{{--                                            <div class="form-group">--}}
+{{--                                                <label>{{trans('file.Promotion Ends')}}</label>--}}
+{{--                                                <div class="input-group">--}}
+{{--                                                    <div class="input-group-prepend">--}}
+{{--                                                        <div class="input-group-text"><i class="dripicons-calendar"></i></div>--}}
+{{--                                                    </div>--}}
+{{--                                                    <input type="text" name="last_date" id="ending_date" class="form-control" />--}}
+{{--                                                </div>--}}
+{{--                                            </div>--}}
+{{--                                        </div>--}}
+{{--                                    </div>--}}
+{{--                                </div>--}}
                             </div>
                             <div class="form-group">
                                 <input type="button" value="{{trans('file.submit')}}" id="submit-btn" class="btn btn-primary">

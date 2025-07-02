@@ -118,24 +118,6 @@
                         ['permission_id', $index_permission->id],
                         ['role_id', $role->id]
                     ])->first();
-
-                    $print_barcode = DB::table('permissions')->where('name', 'print_barcode')->first();
-                    $print_barcode_active = DB::table('role_has_permissions')->where([
-                        ['permission_id', $print_barcode->id],
-                        ['role_id', $role->id]
-                    ])->first();
-
-                    $stock_count = DB::table('permissions')->where('name', 'stock_count')->first();
-                    $stock_count_active = DB::table('role_has_permissions')->where([
-                        ['permission_id', $stock_count->id],
-                        ['role_id', $role->id]
-                    ])->first();
-
-                    $adjustment = DB::table('permissions')->where('name', 'adjustment')->first();
-                    $adjustment_active = DB::table('role_has_permissions')->where([
-                        ['permission_id', $adjustment->id],
-                        ['role_id', $role->id]
-                    ])->first();
                     ?>
                     @if($category_permission_active || $index_permission_active || $print_barcode_active || $stock_count_active || $adjustment_active)
                         <li><a href="#product" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-list"></i><span>{{__('file.product')}}</span><span></a>
@@ -156,16 +138,7 @@
                                         <li id="product-create-menu"><a href="{{route('products.create')}}">{{__('file.add_product')}}</a></li>
                                     @endif
                                 @endif
-                                @if($print_barcode_active)
-                                    <li id="printBarcode-menu"><a href="{{route('product.printBarcode')}}">{{__('file.print_barcode')}}</a></li>
-                                @endif
-                                @if($adjustment_active)
-                                    <li id="adjustment-list-menu"><a href="{{route('qty_adjustment.index')}}">{{trans('file.Adjustment List')}}</a></li>
-                                    <li id="adjustment-create-menu"><a href="{{route('qty_adjustment.create')}}">{{trans('file.Add Adjustment')}}</a></li>
-                                @endif
-                                @if($stock_count_active)
-                                    <li id="stock-count-menu"><a href="{{route('stock-count.index')}}">{{trans('file.Stock Count')}}</a></li>
-                                @endif
+
                             </ul>
                         </li>
                     @endif

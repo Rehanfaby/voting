@@ -354,51 +354,51 @@
                                     <h5><input name="is_batch" type="checkbox" id="is-batch" value="1">&nbsp; {{trans('file.This product has batch and expired date')}}</h5>
                                     @endif
                                 </div> -->
-                                <div class="col-md-12 mt-3" id="variant-option">
-                                    @if($lims_product_data->is_variant)
-                                    <h5><input name="is_variant" type="checkbox" id="is-variant" value="1" checked>&nbsp; {{trans('file.This product has variant')}}</h5>
-                                    @else
-                                    <h5><input name="is_variant" type="checkbox" id="is-variant" value="1">&nbsp; {{trans('file.This product has variant')}}</h5>
-                                    @endif
-                                </div>
-                                <div class="col-md-12" id="variant-section">
-                                    <div class="col-md-6 form-group mt-2">
-                                        <input type="text" name="variant" class="form-control" placeholder="{{trans('file.Enter variant seperated by comma')}}">
-                                    </div>
-                                    <div class="table-responsive ml-2">
-                                        <table id="variant-table" class="table table-hover variant-list">
-                                            <thead>
-                                                <tr>
-                                                    <th><i class="dripicons-view-apps"></i></th>
-                                                    <th>{{trans('file.name')}}</th>
-                                                    <th>{{trans('file.Item Code')}}</th>
-                                                    <th>{{trans('file.Additional Price')}}</th>
-                                                    <th><i class="dripicons-trash"></i></th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach($lims_product_variant_data as $key=> $variant)
-                                                <tr>
-                                                    <td style="cursor:grab">
-                                                        <i class="dripicons-view-apps"></i>
-                                                        <input type="hidden" name="product_variant_id[]" value="{{$variant->pivot['id']}}">
-                                                        <input type="hidden" name="variant_id[]" value="{{$variant->pivot['variant_id']}}">
-                                                    </td>
-                                                    <td><input type="text" class="form-control" name="variant_name[]" value="{{$variant->name}}" /></td>
-                                                    <td><input type="text" class="form-control" name="item_code[]" value="{{$variant->pivot['item_code']}}" /></td>
-                                                    <td><input type="number" class="form-control" name="additional_price[]" value="{{$variant->pivot['additional_price']}}" step="any" /></td>
-                                                    <td><button type="button" class="vbtnDel btn btn-sm btn-danger">X</button></td>
-                                                </tr>
-                                                @endforeach
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                                <div class="col-md-4 mt-3 promotion">
-                                    <input type="hidden" name="promotion_hidden" value="{{$lims_product_data->promotion}}">
-                                    <input name="promotion" type="checkbox" id="promotion" value="1">&nbsp;
-                                    <label><h5>{{trans('file.Add Promotional Price')}}</h5></label>
-                                </div>
+{{--                                <div class="col-md-12 mt-3" id="variant-option">--}}
+{{--                                    @if($lims_product_data->is_variant)--}}
+{{--                                    <h5><input name="is_variant" type="checkbox" id="is-variant" value="1" checked>&nbsp; {{trans('file.This product has variant')}}</h5>--}}
+{{--                                    @else--}}
+{{--                                    <h5><input name="is_variant" type="checkbox" id="is-variant" value="1">&nbsp; {{trans('file.This product has variant')}}</h5>--}}
+{{--                                    @endif--}}
+{{--                                </div>--}}
+{{--                                <div class="col-md-12" id="variant-section">--}}
+{{--                                    <div class="col-md-6 form-group mt-2">--}}
+{{--                                        <input type="text" name="variant" class="form-control" placeholder="{{trans('file.Enter variant seperated by comma')}}">--}}
+{{--                                    </div>--}}
+{{--                                    <div class="table-responsive ml-2">--}}
+{{--                                        <table id="variant-table" class="table table-hover variant-list">--}}
+{{--                                            <thead>--}}
+{{--                                                <tr>--}}
+{{--                                                    <th><i class="dripicons-view-apps"></i></th>--}}
+{{--                                                    <th>{{trans('file.name')}}</th>--}}
+{{--                                                    <th>{{trans('file.Item Code')}}</th>--}}
+{{--                                                    <th>{{trans('file.Additional Price')}}</th>--}}
+{{--                                                    <th><i class="dripicons-trash"></i></th>--}}
+{{--                                                </tr>--}}
+{{--                                            </thead>--}}
+{{--                                            <tbody>--}}
+{{--                                                @foreach($lims_product_variant_data as $key=> $variant)--}}
+{{--                                                <tr>--}}
+{{--                                                    <td style="cursor:grab">--}}
+{{--                                                        <i class="dripicons-view-apps"></i>--}}
+{{--                                                        <input type="hidden" name="product_variant_id[]" value="{{$variant->pivot['id']}}">--}}
+{{--                                                        <input type="hidden" name="variant_id[]" value="{{$variant->pivot['variant_id']}}">--}}
+{{--                                                    </td>--}}
+{{--                                                    <td><input type="text" class="form-control" name="variant_name[]" value="{{$variant->name}}" /></td>--}}
+{{--                                                    <td><input type="text" class="form-control" name="item_code[]" value="{{$variant->pivot['item_code']}}" /></td>--}}
+{{--                                                    <td><input type="number" class="form-control" name="additional_price[]" value="{{$variant->pivot['additional_price']}}" step="any" /></td>--}}
+{{--                                                    <td><button type="button" class="vbtnDel btn btn-sm btn-danger">X</button></td>--}}
+{{--                                                </tr>--}}
+{{--                                                @endforeach--}}
+{{--                                            </tbody>--}}
+{{--                                        </table>--}}
+{{--                                    </div>--}}
+{{--                                </div>--}}
+{{--                                <div class="col-md-4 mt-3 promotion">--}}
+{{--                                    <input type="hidden" name="promotion_hidden" value="{{$lims_product_data->promotion}}">--}}
+{{--                                    <input name="promotion" type="checkbox" id="promotion" value="1">&nbsp;--}}
+{{--                                    <label><h5>{{trans('file.Add Promotional Price')}}</h5></label>--}}
+{{--                                </div>--}}
 
                                 <div class="col-md-12">
                                     <div class="row">

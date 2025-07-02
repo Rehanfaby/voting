@@ -589,10 +589,10 @@ class ProductController extends Controller
         $data['rent_price_per_day'] =  $data['rent_price_per_day'] ?? 0;
         $data['rent_price_per_month'] =  $data['rent_price_per_month'] ?? 0;
 
-        if($data['starting_date'])
-            $data['starting_date'] = date('Y-m-d', strtotime($data['starting_date']));
-        if($data['last_date'])
-            $data['last_date'] = date('Y-m-d', strtotime($data['last_date']));
+//        if($data['starting_date'])
+//            $data['starting_date'] = date('Y-m-d', strtotime($data['starting_date']));
+//        if($data['last_date'])
+//            $data['last_date'] = date('Y-m-d', strtotime($data['last_date']));
         $data['is_active'] = true;
         $images = $request->image;
         $image_names = [];
