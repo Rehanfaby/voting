@@ -97,7 +97,7 @@ class HomeController extends Controller
     public function index()
     {
 
-        $this->checkVotePayment();
+//        $this->checkVotePayment();
         if(Auth::user()) {
             $role = Auth::user()->role_id;
             if($role == 1 || $role == 2) {
