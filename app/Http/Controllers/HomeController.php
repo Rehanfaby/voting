@@ -836,10 +836,18 @@ class HomeController extends Controller
 
     public function sendWhatsappMsg($user, $password){
 
-        $msg = '*Congrats:* Your account has been created' . '\n\n';
-        $msg .= '*User name:* '. $user->name . '\n\n';
-        $msg .= '*Phone number:* '. $user->phone . '\n\n';
-        $msg .= '*Password:* '. $password . '\n\n';
+//        $msg = '*Congrats:* Your account has been created' . '\n\n';
+//        $msg .= '*User name:* '. $user->name . '\n\n';
+//        $msg .= '*Phone number:* '. $user->phone . '\n\n';
+//        $msg .= '*Password:* '. $password . '\n\n';
+
+        $msg = "Account Creation\n\n";
+        $msg .= "🎉 *Félicitations : Votre compte a été créé ! / Congrats: Your Account has been Created!* 🎉\n";
+        $msg .= "👤 *Nom d'utilisateur / Username:* " . $user->name . "\n";
+        $msg .= "📱 *Numéro de téléphone / Phone Number:* " . $user->phone . "\n";
+        $msg .= "🔐 *Mot de passe / Password:* " . $password . "\n\n";
+        $msg .= "✅ *Bienvenue à bord ! / Welcome aboard!* 🙌\n\n";
+        $msg .= "🌐". getenv("APP_NAME");
 
 
         try{
