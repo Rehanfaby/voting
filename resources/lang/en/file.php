@@ -798,8 +798,8 @@ return [
     "Name" => "Name",
     "Log in" => "Log in",
     "Create Account" => "Create Account",
-    "Vote Your Favourite Contentment" => "Vote Your Favourite Contentment",
-    "Contentment" => "Contentment",
+    "Vote Your Favourite Contestant" => "Vote Your Favourite Contestant",
+    "Contestant" => "Contestant",
 
     "Most Voted Music of the Week" => "Most Voted Music of the Week",
     "Search Your Musician" => "Search Your Musician",

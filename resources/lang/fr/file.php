@@ -690,8 +690,8 @@ return [
     "Name" => "Nom",
     "Log in" => "Se connecter",
     "Create Account" => "Créer un compte",
-    "Vote Your Favourite Contentment" => "Votez pour votre contenu préféré",
-    "Contentment" => "Contentement",
+    "Vote Your Favourite Contestant" => "Votez pour votre contenu préféré",
+    "Contestant" => "Contestant",
 
     "Most Voted Music of the Week" => "Musique la plus votée de la semaine",
     "Search Your Musician" => "Recherchez votre musicien",

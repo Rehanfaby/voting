@@ -35,7 +35,7 @@
                                 <table class="table table-striped table-hover">
                                     <thead>
                                     <tr>
-                                        <th>{{trans("file.Contentment")}}</th>
+                                        <th>{{trans("file.Contestant")}}</th>
                                         <th>{{trans("file.Votes")}}</th>
                                         <th>{{trans("file.Status")}}</th>
                                         <th>{{trans("file.Date")}}</th>
@@ -45,7 +45,7 @@
                                     @foreach($votes as $vote)
                                         <tr>
                                             <td class="ms-product-name-flex">
-                                                <img src="{{ url('public/images/employee', $vote->musicians->image) }}" alt="{{trans("file.Contentment")}}" style="width: 100px">
+                                                <img src="{{ url('public/images/employee', $vote->musicians->image) }}" alt="{{trans("file.Contestant")}}" style="width: 100px">
                                                 <span>{{ $vote->musicians->name }}</span>
                                             </td>
                                             <td>{{ $vote->vote }}</td>
