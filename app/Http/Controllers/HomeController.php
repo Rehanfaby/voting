@@ -396,6 +396,10 @@ class HomeController extends Controller
             $this->sendWhatsappMsg($user, $password);
         }
 
+        $product = Product::where('id', $request->ticket_id)->select('price')->first();
+        if($product == null) {
+            return 'Ticket not found';
+        }
         $ticket = Ticket::create([
             'user_id' => $user->id,
             'product_id' => $request->ticket_id,
@@ -409,7 +413,10 @@ class HomeController extends Controller
             'phone' => $request->phone,
             'name' => $request->name,
             'email' => $request->email,
-            'token' => Str::random(6)
+            'token' => Str::random(6),
+            'price' => $product->price,
+            'total_amount' => $request->amount,
+            'payment_method' => 1
         ]);
 
         if($ticket) {
@@ -495,7 +502,10 @@ class HomeController extends Controller
             $user = User::create($data);
             $this->sendWhatsappMsg($user, $password);
         }
-
+        $product = Product::where('id', $request->ticket_id)->select('price')->first();
+        if($product == null) {
+            return 'Ticket not found';
+        }
         $ticket = Ticket::create([
                     'user_id' => $user->id,
                     'product_id' => $request->ticket_id,
@@ -509,7 +519,10 @@ class HomeController extends Controller
                     'phone' => $request->phone,
                     'name' => $request->name,
                     'email' => $request->email,
-                    'token' => Str::random(10)
+                    'token' => Str::random(6),
+                    'price' => $product->price,
+                    'total_amount' => $request->amount,
+                    'payment_method' => 0
                 ]);
         $token = getenv("MOMO_TOKEN");
         if($token && $ticket) {
@@ -802,24 +815,24 @@ class HomeController extends Controller
 
     }
 
-    private function checkVotePayment(){
-        $votes = vote::where('created_at', '>' , date('Y-m-d H:i:s', strtotime('-1440 minutes')))->where('status', 0)->get();
-        if($votes->isEmpty()) {
-            return true;
-        }
-
-        $token = getenv("MOMO_TOKEN");
-        foreach ($votes as $vote) {
-            $status = $this->mobileMoneyStatus($token, $vote->reference);
-            if($status == 1) {
-                $vote->update(['status' => 1]);
-                $this->sendWhatsappMsgVoteMomoSuccess($vote->voters, $vote->vote, $vote->musician_id);
-            }
-            if($status == 2) {
-                $vote->update(['status' => 2]);
-            }
-        }
-    }
+//    private function checkVotePayment(){
+//        $votes = vote::where('created_at', '>' , date('Y-m-d H:i:s', strtotime('-1440 minutes')))->where('status', 0)->get();
+//        if($votes->isEmpty()) {
+//            return true;
+//        }
+//
+//        $token = getenv("MOMO_TOKEN");
+//        foreach ($votes as $vote) {
+//            $status = $this->mobileMoneyStatus($token, $vote->reference);
+//            if($status == 1) {
+//                $vote->update(['status' => 1]);
+//                $this->sendWhatsappMsgVoteMomoSuccess($vote->voters, $vote->vote, $vote->musician_id);
+//            }
+//            if($status == 2) {
+//                $vote->update(['status' => 2]);
+//            }
+//        }
+//    }
 
     public function sendWhatsappMsg($user, $password){
 

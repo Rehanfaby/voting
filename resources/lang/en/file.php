@@ -907,5 +907,8 @@ return [
     "Events" => "Events",
     "Event List" => "Event List",
     "Enter Token Here" => "Enter Token Here",
+    "Ticket Owner" => "Ticket Owner",
+    "Ticket Owner Number" => "Ticket Owner Number",
+    "Seats" => "Seats",
 ];
 ?>

@@ -41,11 +41,42 @@
                             <b>Ticket Scan Alert:</b> Your ticket has been scanned successfully and is valid for entry.
                         <table class="table table-striped-columns text-white">
                             <tr>
-                                <th>Event Date</th>
+                                <th>{{trans("file.Ticket Name")}}</th>
+                                <th class="text-white">{{ $ticket->product->name }}</th>
+                            </tr>
+                            <tr>
+                                <th>{{trans("file.Ticket Owner")}}</th>
+                                <th class="text-white">{{ $ticket->user->name }}</th>
+                            </tr>
+                            <tr>
+                                <th>{{trans("file.Ticket Owner Number")}}</th>
+                                <th class="text-white">{{ $ticket->user->phone }}</th>
+                            </tr>
+                            <tr>
+                                <th>{{trans("file.Ticket Price")}}</th>
+                                <th class="text-white">{{ $ticket->price }}</th>
+                            </tr>
+                            <tr>
+                                <th>{{trans("file.Total Amount")}}</th>
+                                <th class="text-white">{{ $ticket->total_amount }}</th>
+                            </tr>
+                            <tr>
+                                <th>{{trans("file.Paid Method")}}</th>
+                                @if($ticket->payment_method == 0)
+                                    <th class="text-white">Momo</th>
+                                @elseif($ticket->payment_method == 1)
+                                    <th class="text-white">Stripe</th>
+                                @else
+                                    unknown
+                                @endif
+
+                            </tr>
+                            <tr>
+                                <th>{{trans("file.Event Date")}}</th>
                                 <th class="text-white">{{ $ticket->product->event_day }}</th>
                             </tr>
                             <tr>
-                                <th>Seats</th>
+                                <th>{{trans("file.Seats")}}</th>
                                 <th class="text-white">{{ $ticket->seat_numbers }}</th>
                             </tr>
                         </table>
