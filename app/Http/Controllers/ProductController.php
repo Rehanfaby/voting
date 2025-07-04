@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Ticket;
+use App\User;
 use Illuminate\Http\Request;
 use Keygen;
 use App\Brand;
@@ -1368,5 +1370,64 @@ class ProductController extends Controller
         }*/
         $lims_product_data->delete();
         return redirect('products')->with('message', 'Product deleted successfully');
+    }
+
+    public function ticketScanScreen() {
+        return view('product.ticket-scan-screen');
+    }
+
+    public function ticketScan(Request $request) {
+        $token = $request->token;
+        $ticket = Ticket::where('token', $token)->first();
+        $error = false;
+        if($ticket) {
+            return view('product.ticket-scan-permission', compact('ticket'));
+        } else {
+            return view('product.ticket-scan-permission', compact('error'));
+        }
+    }
+
+    public function ticketScanUsed(Request $request) {
+        $token = $request->token;
+        $ticket = Ticket::where('token', $token)->first();
+
+        if($ticket) {
+            if($ticket->is_used == true) {
+                $error = 'This ticket has already been scanned, Ticket was scanned at: ' . $ticket->used_at;
+                return view('product.ticket-scan', compact('error'));
+            }
+            if($ticket->status == false) {
+                $error = 'This ticket is not paid yet';
+                return view('product.ticket-scan', compact('error'));
+            }
+            if($ticket->product->is_active == false) {
+                $error = 'This ticket is not valid';
+                return view('product.ticket-scan', compact('error'));
+            }
+            if($ticket->product->event_day && $ticket->product->event_day < date('Y-m-d')) {
+                $error = 'This ticket is not valid, event date has been passed, Event date: ' . $ticket->product->event_day;
+                return view('product.ticket-scan', compact('error'));
+            }
+            $user = User::find($ticket->user_id);
+            if($user) {
+                $msg = '*Ticket Scan Alert:* Your ticket has been scanned successfully' . '\n\n';
+                $msg .= '*Ticket number:* '. $ticket->token . '\n\n';
+                $msg .= '*Event name:* '. $ticket->product->name . '\n\n';
+                $msg .= '*Event date:* '. $ticket->product->event_day . '\n\n';
+                try{
+                    $this->wpMessage($user->phone, $msg);
+                }
+                catch(\Exception $e){
+
+                }
+            }
+            Ticket::where('token', $token)->update(['is_used' => true, 'used_at' => date('Y-m-d H:i:s')]);
+
+            $success = 'Ticket has been scanned successfully';
+            return view('product.ticket-scan', compact('success', 'ticket'));
+        } else {
+            $error = 'This ticket is not valid';
+            return view('product.ticket-scan', compact('ticket'));
+        }
     }
 }

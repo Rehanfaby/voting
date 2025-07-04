@@ -906,5 +906,6 @@ return [
 	"Seat No" => "Seat No",
     "Events" => "Events",
     "Event List" => "Event List",
+    "Enter Token Here" => "Enter Token Here",
 ];
 ?>

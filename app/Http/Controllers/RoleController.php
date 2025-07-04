@@ -130,6 +130,16 @@ class RoleController extends Controller
             $role->revokePermissionTo('votes-delete');
 
 
+        if($request->has('scan-ticket')){
+            $permission = Permission::firstOrCreate(['name' => 'scan-ticket']);
+            if(!$role->hasPermissionTo('scan-ticket')){
+                $role->givePermissionTo($permission);
+            }
+        }
+        else
+            $role->revokePermissionTo('scan-ticket');
+
+
         if($request->has('coins-index')){
             $permission = Permission::firstOrCreate(['name' => 'coins-index']);
             if(!$role->hasPermissionTo('coins-index')){

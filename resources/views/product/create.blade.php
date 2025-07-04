@@ -46,10 +46,13 @@
                                     <div class="form-group">
                                         <label>{{trans('file.Product Code')}} *</strong> </label>
                                         <div class="input-group">
-                                            <input type="text" name="code" class="form-control" id="code" aria-describedby="code" required>
-                                            <!-- <div class="input-group-append">
-                                                <button id="genbutton" type="button" class="btn btn-sm btn-default" title="{{trans('file.Generate')}}"><i class="fa fa-refresh"></i></button>
-                                            </div> -->
+                                            <input type="text" name="code" class="form-control" id="code"
+                                                   aria-describedby="code" required>
+                                            <div class="input-group-append">
+                                                <button id="genbtn" type="button" class="btn btn-sm btn-default"
+                                                        title="{{trans('file.Generate')}}"><i class="fa fa-refresh"></i>
+                                                </button>
+                                            </div>
                                         </div>
                                         <span class="validation-msg" id="code-error"></span>
                                     </div>
@@ -384,11 +387,16 @@
         }
     });
 
-    $('#genbutton').on("click", function(){
+    $('#genbtn').on("click", function(){
       $.get('gencode', function(data){
         $("input[name='code']").val(data);
       });
     });
+
+    // $('#genbtn').on('click', function () {
+    //     var randomCode = Math.floor(1000000 + Math.random() * 9000000);
+    //     $("input[name='code']").val(randomCode);
+    // });
 
 
 

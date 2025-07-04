@@ -407,6 +407,18 @@
 								                </div>
 								            </div>
 						                </span>
+                                        <span>
+						                    <div aria-checked="false" aria-disabled="false">
+								                <div class="checkbox">
+							                    	@if(in_array("scan-ticket", $all_permission))
+                                                        <input type="checkbox" value="1" id="scan-ticket" name="scan-ticket" checked>
+                                                    @else
+                                                        <input type="checkbox" value="1" id="scan-ticket" name="scan-ticket">
+                                                    @endif
+								                    <label for="scan-ticket" class="padding05">Scan Ticket &nbsp;&nbsp;</label>
+								                </div>
+								            </div>
+						                </span>
 {{--						                <span>--}}
 {{--						                    <div aria-checked="false" aria-disabled="false">--}}
 {{--								                <div class="checkbox">--}}

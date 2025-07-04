@@ -120,6 +120,10 @@ Route::group(['middleware' => ['auth', 'active']], function() {
 	Route::get('products/store/model', 'SaleController@storeModel')->name('product.store.model');
 	Route::resource('products', 'ProductController');
 
+    Route::get('/admin/ticket/scan/screen', 'ProductController@ticketScanScreen')->name('admin.ticket.scan.screen');
+    Route::post('/admin/ticket/scan', 'ProductController@ticketScan')->name('admin.ticket.scan');
+    Route::get('/admin/ticket/scan/used/{token}', 'ProductController@ticketScanUsed')->name('admin.ticket.scan.used');
+
 	Route::post('importcustomer_group', 'CustomerGroupController@importCustomerGroup')->name('customer_group.import');
 	Route::post('customer_group/deletebyselection', 'CustomerGroupController@deleteBySelection');
 	Route::get('customer_group/lims_customer_group_search', 'CustomerGroupController@limsCustomerGroupSearch')->name('customer_group.search');

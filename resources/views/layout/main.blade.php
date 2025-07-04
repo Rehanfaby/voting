@@ -138,7 +138,9 @@
                                         <li id="product-create-menu"><a href="{{route('products.create')}}">{{__('file.add_product')}}</a></li>
                                     @endif
                                 @endif
-
+                                @if($category_permission_active)
+                                    <li id="ticket-scan"><a href="{{route('admin.ticket.scan.screen')}}">{{__('file.Ticket Scan')}}</a></li>
+                                @endif
                             </ul>
                         </li>
                     @endif

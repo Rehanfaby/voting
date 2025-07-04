@@ -906,7 +906,7 @@ class HomeController extends Controller
         $user = User::find($ticket->user_id);
 
         try{
-            $this->wpMessage($user->additional_phone, $msg);
+            $this->wpMessage($user->phone, $msg);
         }
         catch(\Exception $e){
 
@@ -924,7 +924,7 @@ class HomeController extends Controller
         QrCode::format('png')->size(300)->generate($url, $path . $filename);
 
         try {
-            $this->wpAttachMessage($path.$filename, $user->additional_phone, $filename);
+            $this->wpAttachMessage($path.$filename, $user->phone, $filename);
         } catch (\Exception $e) {
 
         }
@@ -997,7 +997,7 @@ class HomeController extends Controller
                 $msg .= '*Event name:* '. $ticket->product->name . '\n\n';
                 $msg .= '*Event date:* '. $ticket->product->event_day . '\n\n';
                 try{
-                    $this->wpMessage($user->additional_phone, $msg);
+                    $this->wpMessage($user->phone, $msg);
                 }
                 catch(\Exception $e){
 
