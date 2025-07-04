@@ -47,7 +47,7 @@
                             <div class="ms-team-item-wrap">
                                 <div class="ms-team-item p-relative">
                                     <div class="ms-team-img mb-3">
-                                        <a href="{{ route('ticket.data', $ticket->id) }}">
+                                        <a href="{{ route('tickets', $ticket->id) }}">
                                             <img src="{{ url('public/images/category', $ticket->image) }}" alt="ticket image">
                                         </a>
                                     </div>

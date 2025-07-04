@@ -8570,7 +8570,6 @@ Animate Underline
   object-fit: cover;
 }
 .ms-team-img::before {
-  content: "";
   position: absolute;
   top: -20px;
   inset-inline-end: -20px;
@@ -8598,7 +8597,7 @@ Animate Underline
   }
 }
 .ms-team-img::after {
-  content: "";
+
   position: absolute;
   top: 0;
   right: 0;

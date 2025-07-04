@@ -48,7 +48,8 @@
                                 <div class="ms-team-item p-relative">
                                     <div class="ms-team-img mb-3">
                                         <a href="{{ route('ticket.data', $ticket->id) }}">
-                                            <img src="{{ url('public/images/product', $ticket->image) }}" alt="ticket image">
+                                                <?php $images = explode(",", $ticket->image)?>
+                                            <img src="{{ url('public/images/product', $images[0]) }}" alt="ticket image">
                                         </a>
                                     </div>
                                     <div class="d-flex justify-content-between align-items-center mb-2">
