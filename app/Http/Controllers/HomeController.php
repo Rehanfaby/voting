@@ -866,16 +866,35 @@ class HomeController extends Controller
         $musician = Employee::select('name', 'id')->find($musician_id);
         $total_votes = vote::where('musician_id', $musician_id)->where('status', true)->sum('vote');
 
-        $msg = '*Congrats:* You have casted ' . $vote;
-        if ($vote == 1) {
-            $msg .= ' vote ';
-        } else {
-            $msg .= ' votes ';
-        }
-        $msg .= 'for ' .$musician->name . '\n\n';
-        $msg .= $musician->name . '`s total votes are  '.$total_votes.'\n\n';
+//        $msg = '*Congrats:* You have casted ' . $vote;
+//        if ($vote == 1) {
+//            $msg .= ' vote ';
+//        } else {
+//            $msg .= ' votes ';
+//        }
+//        $msg .= 'for ' .$musician->name . '\n\n';
+//        $msg .= $musician->name . '`s total votes are  '.$total_votes.'\n\n';
+//
+//        $msg .= 'Your remaining coins are  '.$remaining_coin.'\n\n';
 
-        $msg .= 'Your remaining coins are  '.$remaining_coin.'\n\n';
+
+        $msg = "🗳️ Merci pour votre vote ! 🙏 / Thank You for Your Vote! 🙏\n\n";
+        $msg .= "✅ Vous avez voté ".$vote." fois pour 🌟 {$musician->name} !\n";
+        $msg .= "✅ You have successfully cast ".$vote." vote";
+        $msg .= $vote > 1 ? "s" : "";
+        $msg .= " for 🌟 {$musician->name}!\n\n";
+
+        $msg .= "📊 {$musician->name} a maintenant un total de ".$total_votes." votes 🎉👏\n";
+        $msg .= "📊 {$musician->name} now has a total of ".$total_votes." votes 🎉👏\n\n";
+
+        $msg .= "🪙 Coins restants : ".$remaining_coin."\n";
+        $msg .= "🪙 Remaining Coins: ".$remaining_coin."\n\n";
+
+        $msg .= "🙌 Continuez à soutenir ! Chaque vote compte ! 💪🔥\n";
+        $msg .= "🙌 Keep the support coming! Every vote counts! 💪🔥\n\n";
+
+        $msg .= "🌐". getenv("APP_NAME");
+
 
         try{
             $this->wpMessage($user->phone, $msg);
@@ -958,16 +977,31 @@ class HomeController extends Controller
         $musician = Employee::select('name', 'id')->find($musician_id);
         $total_votes = vote::where('musician_id', $musician_id)->where('status', true)->sum('vote');
 
-        $msg = '*Thank you for your vote,*  \n\n';
+//        $msg = '*Thank you for your vote,*  \n\n';
+//
+//        $msg .= 'You have casted ' . $vote;
+//        if ($vote == 1) {
+//            $msg .= ' vote ';
+//        } else {
+//            $msg .= ' votes ';
+//        }
+//        $msg .= 'for ' .$musician->name . '\n\n';
+//        $msg .= $musician->name . '`s total votes are  '.$total_votes.'\n\n';
 
-        $msg .= 'You have casted ' . $vote;
-        if ($vote == 1) {
-            $msg .= ' vote ';
-        } else {
-            $msg .= ' votes ';
-        }
-        $msg .= 'for ' .$musician->name . '\n\n';
-        $msg .= $musician->name . '`s total votes are  '.$total_votes.'\n\n';
+
+        $msg = "🗳️ Merci pour votre vote ! 🙏 / Thank You for Your Vote! 🙏\n\n";
+        $msg .= "✅ Vous avez voté ".$vote." fois pour 🌟 {$musician->name} !\n";
+        $msg .= "✅ You have successfully cast ".$vote." vote";
+        $msg .= $vote > 1 ? "s" : "";
+        $msg .= " for 🌟 {$musician->name}!\n\n";
+
+        $msg .= "📊 {$musician->name} a maintenant un total de ".$total_votes." votes 🎉👏\n";
+        $msg .= "📊 {$musician->name} now has a total of ".$total_votes." votes 🎉👏\n\n";
+
+        $msg .= "🙌 Continuez à soutenir ! Chaque vote compte ! 💪🔥\n";
+        $msg .= "🙌 Keep the support coming! Every vote counts! 💪🔥\n\n";
+
+        $msg .= "🌐". getenv("APP_NAME");
 
         try{
             $this->wpMessage($user->phone, $msg);

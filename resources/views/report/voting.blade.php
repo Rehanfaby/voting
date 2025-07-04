@@ -56,7 +56,7 @@
                         @endif
                         <td>{{ $contestant->name }}</td>
                         <td>{{ $employee->total_vote }}</td>
-                        <td><span class="badge btn-info" style="font-size: 16px">{{ $key + 1}}</span></td>
+                        <td class="badge badge-info">{{ $key + 1}}</td>
                     </tr>
                     @php
                         $total_votes += $employee->total_vote;
