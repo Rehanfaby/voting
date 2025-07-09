@@ -16,7 +16,18 @@
                 padding: 0;
                 width: 300px;
                 height: 300px;
+                overflow: hidden;
+                max-height: 350px;
+                position: relative;
             }
+            .product__modal-img img {
+                max-width: 100%;
+                max-height: 350px;
+                border-radius: 10px;
+                transition: transform 0.3s ease;
+                object-fit: contain;
+            }
+
         </style>
         <!-- page title area start  -->
         <section class="page-title-area page-title-spacing p-relative zindex-1" data-background="assets/img/shop/shop-page-title.jpg">
@@ -38,7 +49,7 @@
                 <div class="row mb-30">
                     <div class="col-lg-6">
                         <div class="product__modal-box product-dbox-grid mb-60">
-                            <div class="tab-content br-15 ms-bg-2 d-flex align-items-center" id="modalTabContent">
+                            <div class="tab-content br-15 d-flex align-items-center" id="modalTabContent">
                                 <div class="tab-pane fade active show" id="nav1" role="tabpanel" aria-labelledby="nav1-tab">
                                     <div class="product__modal-img w-img text-center mb-3">
                                         <?php $images = explode(",", $ticket->image)?>
@@ -90,7 +101,7 @@
                             <div class="ms-is-product-stock mt-25 ms-product-title2">{{trans('file.Your payable coin is')}} : <span id="payable-coin" style="font-size: 30px">{{ $general_setting->vote_coin }}</span> {{trans('file.Beyond Coin')}}</div> -->
                         </div>
                     </div>
-                    
+
             </div>
         </div>
         <!-- Products Area End  -->
@@ -101,6 +112,23 @@
 
 
         <script>
+
+            const container = document.querySelector('.product__modal-img');
+            const image = document.getElementById('main-gallery-image');
+
+            container.addEventListener('mousemove', function (e) {
+                const rect = container.getBoundingClientRect();
+                const x = ((e.clientX - rect.left) / rect.width) * 100;
+                const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+                image.style.transformOrigin = `${x}% ${y}%`;
+                image.style.transform = "scale(2)"; // Adjust zoom level here
+            });
+
+            container.addEventListener('mouseleave', function () {
+                image.style.transformOrigin = "center center";
+                image.style.transform = "scale(1)";
+            });
 
             document.addEventListener('DOMContentLoaded', function() {
                 const mainImg = document.getElementById('main-gallery-image');

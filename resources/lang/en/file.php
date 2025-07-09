@@ -883,7 +883,6 @@ return [
     "Minimum amount for stripe is" => "Minimum amount for stripe is",
 
 	"Buy Tickets" => "Buy Tickets",
-	"Ticket Price" => "Ticket Price",
 	"Ticket" => "Ticket",
 	"Ticket List" => "Ticket List",
 	"Ticket Name" => "Ticket Name",
@@ -910,5 +909,8 @@ return [
     "Ticket Owner" => "Ticket Owner",
     "Ticket Owner Number" => "Ticket Owner Number",
     "Seats" => "Seats",
+    "Back to Scan" => "Back to Scan",
+    "Validate" => "Validate",
+    "Login to validate ticket" => "Login to validate ticket",
 ];
 ?>

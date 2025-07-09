@@ -12,6 +12,11 @@
     @endif
 
     <main>
+        <style>
+            table tr th{
+                text-align: left;
+            }
+        </style>
     <!-- page title area start  -->
     <section class="page-title-area page-title-spacing p-relative zindex-1 " data-background="assets/img/bg/work-bg.jpg">
         <div class="ms-overlay ms-overlay9 p-absolute zindex--1"></div>
@@ -46,20 +51,20 @@
                             </tr>
                             <tr>
                                 <th>{{trans("file.Ticket Owner")}}</th>
-                                <th class="text-white">{{ $ticket->user->name }}</th>
+                                <th class="text-white">{{ $ticket->name }}</th>
                             </tr>
                             <tr>
                                 <th>{{trans("file.Ticket Owner Number")}}</th>
-                                <th class="text-white">{{ $ticket->user->phone }}</th>
+                                <th class="text-white">{{ $ticket->phone }}</th>
                             </tr>
                             <tr>
                                 <th>{{trans("file.Ticket Price")}}</th>
                                 <th class="text-white">{{ $ticket->price }}</th>
                             </tr>
-                            <tr>
-                                <th>{{trans("file.Total Amount")}}</th>
-                                <th class="text-white">{{ $ticket->total_amount }}</th>
-                            </tr>
+                            {{--                            <tr>--}}
+                            {{--                                <th>{{trans("file.Total Amount")}}</th>--}}
+                            {{--                                <th class="text-white">{{ $ticket->total_amount }}</th>--}}
+                            {{--                            </tr>--}}
                             <tr>
                                 <th>{{trans("file.Paid Method")}}</th>
                                 @if($ticket->payment_method == 0)
@@ -79,12 +84,21 @@
                                 <th>{{trans("file.Seats")}}</th>
                                 <th class="text-white">{{ $ticket->seat_numbers }}</th>
                             </tr>
+
                         </table>
                         </p>
-                        @if(auth()->user() && auth()->user()->role_id == 1)
-                            @if($ticket->product->event_day == date('Y-m-d'))
-                                <a href="{{ route('ticket.scan.used', ['token' => $ticket->token]) }}" class="btn btn-success">Do you want to attend Event</a>
+                        @if(auth()->check())
+                            @if(auth()->user()->role_id == 1)
+                                @if($ticket->product->event_day == date('Y-m-d'))
+                                    <a href="{{ route('ticket.scan.used', ['token' => $ticket->token]) }}" class="btn btn-success">
+                                        {{ trans("file.Validate") }}
+                                    </a>
+                                @endif
                             @endif
+                        @else
+                            <a href="{{ route('user.login', ['redirect' => url()->current()]) }}" class="btn btn-warning">
+                                {{ __('Login to validate ticket') }}
+                            </a>
                         @endif
                     @endif
                 </div>

@@ -16,6 +16,11 @@
 @endif
 
 <section>
+    <style>
+        table tr th{
+            text-align: left;
+        }
+    </style>
     <section class="ms-login-area pb-50 pt-130">
         <div class="container">
             <div class="ms-maxw-510 mx-auto">
@@ -32,30 +37,30 @@
                         <table class="table table-striped">
                             <tr>
                                 <th>{{trans("file.Ticket Name")}}</th>
-                                <th class="text-white">{{ $ticket->product->name }}</th>
+                                <th>{{ $ticket->product->name }}</th>
                             </tr>
                             <tr>
                                 <th>{{trans("file.Ticket Owner")}}</th>
-                                <th class="text-white">{{ $ticket->user->name }}</th>
+                                <th>{{ $ticket->name }}</th>
                             </tr>
                             <tr>
                                 <th>{{trans("file.Ticket Owner Number")}}</th>
-                                <th class="text-white">{{ $ticket->user->phone }}</th>
+                                <th>{{ $ticket->phone }}</th>
                             </tr>
                             <tr>
                                 <th>{{trans("file.Ticket Price")}}</th>
-                                <th class="text-white">{{ $ticket->price }}</th>
+                                <th>{{ $ticket->price }}</th>
                             </tr>
-                            <tr>
-                                <th>{{trans("file.Total Amount")}}</th>
-                                <th class="text-white">{{ $ticket->total_amount }}</th>
-                            </tr>
+{{--                            <tr>--}}
+{{--                                <th>{{trans("file.Total Amount")}}</th>--}}
+{{--                                <th>{{ $ticket->total_amount }}</th>--}}
+{{--                            </tr>--}}
                             <tr>
                                 <th>{{trans("file.Paid Method")}}</th>
                                 @if($ticket->payment_method == 0)
-                                    <th class="text-white">Momo</th>
+                                    <th>Momo</th>
                                 @elseif($ticket->payment_method == 1)
-                                    <th class="text-white">Stripe</th>
+                                    <th>Stripe</th>
                                 @else
                                     unknown
                                 @endif
@@ -63,22 +68,22 @@
                             </tr>
                             <tr>
                                 <th>{{trans("file.Event Date")}}</th>
-                                <th class="text-white">{{ $ticket->product->event_day }}</th>
+                                <th>{{ $ticket->product->event_day }}</th>
                             </tr>
                             <tr>
                                 <th>{{trans("file.Seats")}}</th>
-                                <th class="text-white">{{ $ticket->seat_numbers }}</th>
+                                <th>{{ $ticket->seat_numbers }}</th>
                             </tr>
                         </table>
                         </p>
                         @if(auth()->user() && auth()->user()->role_id == 1)
                             @if($ticket->product->event_day == date('Y-m-d'))
-                                <a href="{{ route('admin.ticket.scan.used', ['token' => $ticket->token]) }}" class="btn btn-success">Do you want to attend Event</a>
+                                <a href="{{ route('admin.ticket.scan.used', ['token' => $ticket->token]) }}" class="btn btn-success">{{trans("file.Validate")}}</a>
                             @endif
                         @endif
                     @endif
 
-                    <a class="btn btn-warning" href="{{ route('admin.ticket.scan.screen') }}">Back to Scan</a>
+                    <a class="btn btn-warning" href="{{ route('admin.ticket.scan.screen') }}">{{trans("file.Back to Scan")}}</a>
                 </div>
             </div>
         </div>
