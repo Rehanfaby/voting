@@ -245,6 +245,9 @@ class ProductController extends Controller
                             <ul class="dropdown-menu edit-options dropdown-menu-right dropdown-default" user="menu">
                             <li>
                                 <button="type" class="btn btn-link view"><i class="fa fa-eye"></i> '.trans('file.View').'</button>
+                            </li>
+                            <li>
+                                <a href="/productsStats/'.$product->id.'" class="btn btn-link view"><i class="fa fa-list"></i> '.trans('file.Show Stats').'</a>
                             </li>';
                 if(in_array("products-edit", $request['all_permission']))
                     $nestedData['options'] .= '<li>
@@ -1429,5 +1432,37 @@ class ProductController extends Controller
             $error = 'This ticket is not valid';
             return view('product.ticket-scan', compact('ticket'));
         }
+    }
+    public function productsStats($id)
+    {
+        // Find product with its tickets (status = 1)
+        $product = Product::with(['tickets' => function ($query) {
+            $query->where('status', 1);
+        }])->findOrFail($id);
+
+        // Total qty from product itself
+        $totalQty = $product->qty;
+
+        // Booked = sum of ticket.qty where status = 1
+        $bookedQty = $product->tickets->sum('qty');
+
+        // Used = ticket.qty where status = 1 AND is_used = 1
+        $usedQty = $product->tickets->where('is_used', 1)->sum('qty');
+
+        $availableQty = $totalQty - $bookedQty;
+
+        // Optionally get buyer info
+        $buyers = $product->tickets()->where('status', 1)
+            ->select('name', 'phone', 'qty', 'is_used', 'created_at')
+            ->get();
+
+        return view('product.stats', compact(
+            'product',
+            'totalQty',
+            'bookedQty',
+            'usedQty',
+            'availableQty',
+            'buyers'
+        ));
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Ticket;
 use Illuminate\Http\Request;
 use App\Category;
 use App\Product;
@@ -102,6 +103,9 @@ class CategoryController extends Controller
                               <span class="sr-only">Toggle Dropdown</span>
                             </button>
                             <ul class="dropdown-menu edit-options dropdown-menu-right dropdown-default" user="menu">
+                                <li>
+                                    <a class="btn btn-link" href="/categoryStats/'.$category->id.'"><i class="fa fa-list"></i> '.trans("file.Show Stats").'</a>
+                                </li>
                                 <li>
                                     <button type="button" data-id="'.$category->id.'" class="open-EditCategoryDialog btn btn-link" data-toggle="modal" data-target="#editModal" ><i class="dripicons-document-edit"></i> '.trans("file.edit").'</button>
                                 </li>
@@ -267,5 +271,54 @@ class CategoryController extends Controller
             unlink('public/images/category/'.$lims_category_data->image);
         $lims_category_data->save();
         return redirect('category')->with('not_permitted', 'Category deleted successfully');
+    }
+
+    public function categoryStats($id)
+    {
+        // Fetch all active products under this category in one go (eager loading tickets)
+        $products = Product::with(['tickets' => function ($query) {
+            $query->where('status', 1);
+        }])
+            ->where('category_id', $id)
+            ->where('is_active', 1)
+            ->get();
+
+        // Initialize totals
+        $totalQty = 0;
+        $bookedQty = 0;
+        $usedQty = 0;
+
+        // Build product-wise listing and totals
+        $productStats = $products->map(function ($product) use (&$totalQty, &$bookedQty, &$usedQty) {
+            $qty = $product->qty;
+            $totalQty += $qty;
+
+            $tickets = $product->tickets ?? collect();
+            $booked = $tickets->sum('qty');
+            $bookedQty += $booked;
+
+            $used = $tickets->where('is_used', 1)->sum('qty');
+            $usedQty += $used;
+
+            return [
+                'product_id'   => $product->id,
+                'product_name' => $product->name ?? 'N/A',
+                'qty'          => $qty,
+                'booked'       => $booked,
+                'used'         => $used,
+                'available'    => $qty - $booked,
+            ];
+        });
+
+        $availableQty = $totalQty - $bookedQty;
+
+        return view('category.stats', compact(
+            'totalQty',
+            'bookedQty',
+            'usedQty',
+            'availableQty',
+            'productStats'
+        ));
+
     }
 }

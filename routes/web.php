@@ -80,6 +80,7 @@ Route::group(['middleware' => ['auth', 'active']], function() {
 	Route::post('category/import', 'CategoryController@import')->name('category.import');
 	Route::post('category/deletebyselection', 'CategoryController@deleteBySelection');
 	Route::post('category/category-data', 'CategoryController@categoryData');
+    Route::get('/categoryStats/{id}', 'CategoryController@categoryStats');
 	Route::resource('category', 'CategoryController');
 
 	Route::post('importtax', 'TaxController@importTax')->name('tax.import');
@@ -99,6 +100,7 @@ Route::group(['middleware' => ['auth', 'active']], function() {
 	Route::resource('qty_adjustment', 'AdjustmentController');
 
 	//Route::get('products/getbarcode', 'ProductController@getBarcode');
+	Route::get('productsStats/{id}', 'ProductController@productsStats');
 	Route::post('products/product-data', 'ProductController@productData');
 	Route::post('products/product-data/vendor', 'ProductController@productDataVendor');
 	Route::get('products/gencode', 'ProductController@generateCode');

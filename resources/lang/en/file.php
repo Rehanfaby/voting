@@ -912,5 +912,6 @@ return [
     "Back to Scan" => "Back to Scan",
     "Validate" => "Validate",
     "Login to validate ticket" => "Login to validate ticket",
+    "Show Stats" => "Show Stats"
 ];
 ?>
