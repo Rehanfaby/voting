@@ -28,6 +28,7 @@ use App\Ticket;
 use DB;
 use Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Printing;
 use Rawilk\Printing\Contracts\Printer;
@@ -597,6 +598,27 @@ class HomeController extends Controller
         $message = 'There is any issue, please contact the system administrator';
         return redirect()->back()->with('not_permitted', $message);
 
+    }
+
+    public function handleCampayWebhook(Request $request)
+    {
+        $data = $request->all();
+
+        Log::info('Campay Webhook Received', $data);
+
+        if (($data['status'] ?? '') === 'SUCCESSFUL' && isset($data['external_reference'])) {
+            $vote = Vote::where('id', $data['external_reference'])->first();
+
+            if ($vote && !$vote->status) {
+                $vote->status = true;
+                $vote->reference = $data['reference'] ?? 'from_webhook';
+                $vote->save();
+                Log::info('Campay Webhook Completed', $data);
+                $this->sendWhatsappMsgVoteMomoSuccess($vote->voters, $vote->vote, $vote->musician_id);
+            }
+        }
+
+        return response()->json(['status' => 'ok'], 200);
     }
 
     public function musicianVotePaymentCoin(Request $request) {
