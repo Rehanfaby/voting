@@ -21,7 +21,7 @@
             <div class="ms-maxw-510 mx-auto">
                 <div class="row">
                     <div class="col-md-6">
-                        <h3>📊 Product Stats — {{ $product->name }}</h3>
+                        <h3>📊 Ticket Stats — {{ $product->name }}</h3>
 
                         <ul class="list-group my-4">
                             <li class="list-group-item d-flex justify-content-between">
@@ -41,7 +41,7 @@
                     </div>
                     <div class="col-md-6">
                         <div class="mb-5">
-                            <h5 class="mb-3">📊 Product Stats Chart</h5>
+                            <h5 class="mb-3">📊 Ticket Stats Chart</h5>
                             <canvas id="productStatsChart" height="120"></canvas>
                         </div>
                     </div>
