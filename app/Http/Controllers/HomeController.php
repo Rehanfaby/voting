@@ -671,13 +671,17 @@ class HomeController extends Controller
             $this->sendWhatsappMsg($user, $password);
         }
 
+        $general_setting = GeneralSetting::pluck('vote_coin')->first();
         if($request->amount <= $coin_check->coin) {
             vote::create([
                 'user_id' => $user->id,
                 'musician_id' => $request->musician_id,
                 'vote' => $request->vote,
                 'status' => true,
-                'reference' => rand(1, 999999)
+                'reference' => rand(1, 999999),
+                'price' => $general_setting,
+                'grand_total' => $request->amount,
+                'whatsapp_number' => $data['whatsapp_number']
             ]);
             $remaining_coin = $coin_check->coin - $request->amount;
 
