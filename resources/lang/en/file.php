@@ -913,6 +913,8 @@ return [
     "Validate" => "Validate",
     "Login to validate ticket" => "Login to validate ticket",
     "Show Stats" => "Show Stats",
-    "Tickets Sold" => "Tickets Sold"
+    "Tickets Sold" => "Tickets Sold",
+    "Whatsapp number" => "Whatsapp number",
+    "Momo Number" => "Momo Number"
 ];
 ?>

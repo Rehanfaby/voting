@@ -7,6 +7,7 @@ use App\Category;
 use App\Coin;
 use App\Employee;
 use App\Gallery;
+use App\GeneralSetting;
 use App\Judge;
 use App\User;
 use App\vote;
@@ -250,6 +251,7 @@ class HomeController extends Controller
         $data['password'] = bcrypt($password);
         $data['name'] = $request->phone;
         $data['phone'] = $request->phone;
+        $data['whatsapp_number'] = $request->whatsapp_number ?? $request->phone;
         $data['email'] = 'user@gmail.com';
         $data['role_id'] = 3;
 
@@ -266,12 +268,16 @@ class HomeController extends Controller
             $this->sendWhatsappMsg($user, $password);
         }
 
+        $general_setting = GeneralSetting::pluck('vote_price')->first();
         $vote = vote::create([
                     'user_id' => $user->id,
                     'musician_id' => $request->musician_id,
                     'vote' => $request->vote,
                     'status' => false,
-                    'reference' => 'abc'
+                    'reference' => 'abc',
+                    'price' => $general_setting,
+                    'grand_total' => $general_setting * $request->vote,
+                    'whatsapp_number' => $data['whatsapp_number']
                 ]);
         $token = getenv("MOMO_TOKEN");
         if($token && $vote) {
@@ -299,6 +305,7 @@ class HomeController extends Controller
         $data['password'] = bcrypt($password);
         $data['name'] = $request->phone;
         $data['phone'] = $request->phone;
+        $data['whatsapp_number'] = $request->whatsapp_number ?? $request->phone;
         $data['email'] = 'user@gmail.com';
         $data['role_id'] = 3;
 
@@ -315,12 +322,17 @@ class HomeController extends Controller
             $this->sendWhatsappMsg($user, $password);
         }
 
+        $general_setting = GeneralSetting::pluck('vote_price')->first();
         $vote = vote::create([
             'user_id' => $user->id,
             'musician_id' => $request->musician_id,
             'vote' => $request->vote,
             'status' => false,
-            'reference' => 'abc'
+            'reference' => 'abc',
+            'price' => $general_setting,
+            'grand_total' => $general_setting * $request->vote,
+            'whatsapp_number' => $data['whatsapp_number']
+
         ]);
 
         if($vote) {
@@ -362,7 +374,7 @@ class HomeController extends Controller
         $vote->save();
 
         if($vote) {
-            $this->sendWhatsappMsgVoteMomoSuccess($vote->voters, $vote->vote, $vote->musician_id);
+            $this->sendWhatsappMsgVoteMomoSuccess($vote->voters, $vote->vote, $vote->musician_id, $vote);
             $message = 'Thank you for your voting';
             return redirect()->route('home')->with('message', $message);
         }
@@ -590,7 +602,7 @@ class HomeController extends Controller
         $vote->save();
 
         if($vote) {
-            $this->sendWhatsappMsgVoteMomoSuccess($vote->voters, $vote->vote, $vote->musician_id);
+            $this->sendWhatsappMsgVoteMomoSuccess($vote->voters, $vote->vote, $vote->musician_id, $vote);
             $message = 'Thank you for your voting';
             return redirect()->back()->with('message', $message);
         }
@@ -614,7 +626,7 @@ class HomeController extends Controller
                 $vote->reference = $data['reference'] ?? 'from_webhook';
                 $vote->save();
                 Log::info('Campay Webhook Completed', $data);
-                $this->sendWhatsappMsgVoteMomoSuccess($vote->voters, $vote->vote, $vote->musician_id);
+                $this->sendWhatsappMsgVoteMomoSuccess($vote->voters, $vote->vote, $vote->musician_id, $vote);
             }
         }
 
@@ -994,7 +1006,7 @@ class HomeController extends Controller
         return true;
     }
 
-    public function sendWhatsappMsgVoteMomoSuccess($user, $vote, $musician_id)
+    public function sendWhatsappMsgVoteMomoSuccess($user, $vote, $musician_id, $vote_data)
     {
         $musician = Employee::select('name', 'id')->find($musician_id);
         $total_votes = vote::where('musician_id', $musician_id)->where('status', true)->sum('vote');
@@ -1026,7 +1038,7 @@ class HomeController extends Controller
         $msg .= "🌐". getenv("APP_NAME");
 
         try{
-            $this->wpMessage($user->phone, $msg);
+            $this->wpMessage($vote_data->whatsapp_number ?? $user->phone, $msg);
         }
         catch(\Exception $e){
 
