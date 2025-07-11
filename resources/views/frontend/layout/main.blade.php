@@ -49,7 +49,15 @@
 @php
     $user = Auth::user() ?? null;
     if($user) {
-        $contestents = \App\vote::select('musician_id')->where('user_id', $user->id)->groupBy('musician_id')->get()->toArray();
+//        $contestents = \App\vote::select('musician_id')->where('user_id', $user->id)->groupBy('musician_id')->get()->toArray();
+        $contestents = \App\vote::select('musician_id')
+        ->join('employees', 'votes.musician_id', '=', 'employees.id')
+        ->where('votes.user_id', $user->id)
+        ->where('employees.is_active', 1)
+        ->groupBy('votes.musician_id')
+        ->select('employees.id', 'employees.name', 'employees.image')
+        ->get();
+
     }
 @endphp
 <style>
@@ -205,14 +213,13 @@
                                             </div>
                                             <div class="ms-browse-act-item-wrap p-absolute">
                                                 @foreach($contestents as $contestent)
-                                                    @php $musician = \App\Employee::find($contestent['musician_id']); @endphp
                                                 <div class="ms-song-item">
                                                     <div class="ms-song-img p-relative">
-                                                        <a href="{{ route('musician.data', $musician->id) }}"><img src="{{url('public/images/employee',$musician->image)}}" alt="{{trans('file.Contestants name')}}"></a>
+                                                        <a href="{{ route('musician.data', $contestent->id) }}"><img src="{{url('public/images/employee',$contestent->image)}}" alt="{{trans('file.Contestants name')}}"></a>
                                                     </div>
                                                     <div class="ms-song-content">
                                                         <h3 class="ms-song-title">
-                                                            <a href="{{ route('musician.data', $musician->id) }}">{{ $musician->name }}</a>
+                                                            <a href="{{ route('musician.data', $contestent->id) }}">{{ $contestent->name }}</a>
                                                         </h3>
                                                     </div>
                                                 </div>
