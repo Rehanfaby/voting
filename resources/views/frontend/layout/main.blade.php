@@ -49,15 +49,12 @@
 @php
     $user = Auth::user() ?? null;
     if($user) {
-//        $contestents = \App\vote::select('musician_id')->where('user_id', $user->id)->groupBy('musician_id')->get()->toArray();
-        $contestents = \App\vote::select('musician_id')
-        ->join('employees', 'votes.musician_id', '=', 'employees.id')
+        $contestents = \App\vote::join('employees', 'votes.musician_id', '=', 'employees.id')
         ->where('votes.user_id', $user->id)
         ->where('employees.is_active', 1)
-        ->groupBy('votes.musician_id')
-        ->select('employees.id', 'employees.name', 'employees.image')
+        ->select('employees.id', 'employees.name', 'employees.image', 'votes.musician_id')
+        ->distinct('votes.musician_id')
         ->get();
-
     }
 @endphp
 <style>
