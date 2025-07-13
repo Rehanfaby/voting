@@ -14,15 +14,13 @@
         <style>
             .product__modal-img {
                 padding: 0;
-                width: 300px;
-                height: 300px;
+                width: 500px;
                 overflow: hidden;
                 max-height: 350px;
                 position: relative;
             }
             .product__modal-img img {
                 max-width: 100%;
-                max-height: 350px;
                 border-radius: 10px;
                 transition: transform 0.3s ease;
                 object-fit: contain;
@@ -53,7 +51,7 @@
                                 <div class="tab-pane fade active show" id="nav1" role="tabpanel" aria-labelledby="nav1-tab">
                                     <div class="product__modal-img w-img text-center mb-3">
                                         <?php $images = explode(",", $ticket->image)?>
-                                        <img id="main-gallery-image" src="{{ url('public/images/product', $images[0]) }}" alt="product image" style="max-width:100%; max-height:350px; border-radius:10px;">
+                                        <img id="main-gallery-image" src="{{ url('public/images/product', $images[0]) }}" alt="product image" style="max-width:100%; max-height:500px; border-radius:10px;">
                                     </div>
                                     <div class="gallery-thumbnails d-flex justify-content-center gap-2">
                                         @foreach($images as $key => $image)

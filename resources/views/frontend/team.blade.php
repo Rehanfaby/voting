@@ -41,8 +41,15 @@
                     </div>
                 </div>
                 <div class="row ms-team-inner">
+                    <div class="row justify-content-center">
+                        <div class="col-xl-6">
+                            <div class="section__title-wrapper text-center mb-80">
+                                <input type="text" id="contestant-search" class="form-control mt-3" placeholder="Search Contestants...">
+                            </div>
+                        </div>
+                    </div>
                     @foreach($musicians as $musician)
-                    <div class="col-xl-4 col-md-6">
+                    <div class="col-xl-4 col-md-6 contestant-list">
                         <div class="ms-team-item-wrap">
                             <div class="ms-team-item p-relative">
                                 <div class="ms-team-img">
@@ -60,7 +67,16 @@
             </div>
         </section>
         <!-- team area end here  -->
-
+    <script>
+        $(document).ready(function(){
+            $('#contestant-search').on('keyup', function() {
+                var value = $(this).val().toLowerCase();
+                $('.contestant-list').filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+    </script>
     </main>
 
 @endsection

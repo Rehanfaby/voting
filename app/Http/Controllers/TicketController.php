@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 class TicketController extends Controller
 {
     public function index() {
-        $tickets = Ticket::with('product')->orderBy('created_at', 'desc')->get();
+        $tickets = Ticket::with('product')->where('status', 1)->orderBy('created_at', 'desc')->get();
         return view('ticket.index', compact('tickets'));
     }
 }

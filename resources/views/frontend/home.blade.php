@@ -524,7 +524,7 @@ var swiper = new Swiper(".swiper-container", {
                                 <div class="ms-cta-content">
                                     <h2 class="section__title mb-25">{{trans("file.Most Voted Contestant of the Week")}}</h2>
                                     @if($best_musician)
-                                        <h4 class="section__title mb-25">({{ $best_musician->name }})</h4>
+                                        <h4 class="section__title mb-25">({{ $best_musician->name }}) => ({{@$best_musician_data->total_vote}}   {{trans("file.Votes")}})</h4>
                                     @endif
                                     <p class="mb-0">
                                         {{trans("file.Here comes the best Contestant of the week")}}!

@@ -56,8 +56,11 @@
                                         <h3 class="ms-team-title mb-0">
                                             <a href="{{ route('ticket.data', $ticket->id) }}">{{ $ticket->name }}</a>
                                         </h3>
-                                        <span class="badge bg-primary ms-team-price fs-6">
+                                        <span class="badge bg-success ms-team-price fs-6">
                                             {{trans("file.Ticket Price")}}: {{ number_format($ticket->price, 2) }}
+                                        </span>
+                                        <span class="badge bg-primary ms-team-price fs-6">
+                                            {{trans("file.Remaining Seats")}}: {{ @$ticket->remaining_qty }}
                                         </span>
                                     </div>
                                 </div>

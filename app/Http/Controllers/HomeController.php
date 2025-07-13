@@ -114,7 +114,7 @@ class HomeController extends Controller
 //        $start_date = date('Y-m-d', strtotime('last monday'));
 //        $end_date = date('Y-m-d');
 
-        $best_musician = DB::table('votes')
+        $best_musician_data = DB::table('votes')
             ->select('votes.musician_id', DB::raw('SUM(votes.vote) as total_vote'))
             ->join('employees', 'employees.id', '=', 'votes.musician_id')
 //            ->whereDate('votes.created_at', '>=', $start_date)
@@ -139,19 +139,20 @@ class HomeController extends Controller
             ->limit(5)
             ->get();
 
-        if($best_musician != null) {
-            $best_musician  = Employee::find($best_musician->musician_id);
+        if($best_musician_data != null) {
+            $best_musician  = Employee::find($best_musician_data->musician_id);
         } else {
-            $best_musician = DB::table('votes')
+            $best_musician_data = DB::table('votes')
                 ->select('votes.musician_id', DB::raw('SUM(votes.vote) as total_vote'))
                 ->join('employees', 'employees.id', '=', 'votes.musician_id')
                 ->where('employees.is_active', true)
+                ->where('employees.is_approve', true)
                 ->where('votes.status', true)
                 ->orderBy('total_vote', 'desc')
                 ->groupBy('votes.musician_id')
                 ->first();
 
-            if($best_musician != null) {
+            if($best_musician_data != null) {
                 $best_musician  = Employee::find($best_musician->musician_id);
             }
         }
@@ -163,7 +164,7 @@ class HomeController extends Controller
         }
 
 
-        return view('frontend.home', compact('musicians', 'judges', 'best_musician', 'see_votes', 'ambassadors', 'best_musicians'));
+        return view('frontend.home', compact('musicians', 'judges', 'best_musician', 'see_votes', 'ambassadors', 'best_musicians', 'best_musician_data'));
     }
 
     public function signup()
@@ -206,7 +207,15 @@ class HomeController extends Controller
     }
 
     public function tickets($id) {
-        $tickets = Product::where('category_id', $id)->where('is_active', true)->paginate(12);
+        $tickets = Product::where('category_id', $id)->where('is_active', true)->select('id', 'name', 'qty', 'image')->paginate(12);
+        foreach ($tickets as $ticketProduct) {
+            $soldQty = Ticket::where('product_id', $ticketProduct->id)
+                ->where('status', 1)
+                ->sum('qty');
+
+            $remainingQty = $ticketProduct->qty - $soldQty;
+            $ticketProduct->remaining_qty = $remainingQty;
+        }
         return view('frontend.tickets', compact('tickets'));
     }
 

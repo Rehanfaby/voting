@@ -915,6 +915,7 @@ return [
     "Show Stats" => "Show Stats",
     "Tickets Sold" => "Tickets Sold",
     "Whatsapp number" => "Whatsapp number",
-    "Momo Number" => "Momo Number"
+    "Momo Number" => "Momo Number",
+    "Remaining Seats" => "Remaining Seats",
 ];
 ?>

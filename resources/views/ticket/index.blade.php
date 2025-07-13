@@ -25,8 +25,8 @@
                 <th>Token</th>
                 <th>Used?</th>
                 <th>Purchase Date</th>
+                <th>Ticket Name</th>
                 <th>Seat Numbers</th>
-                <th>Product</th>
             </tr>
             </thead>
             <tbody>
@@ -45,21 +45,11 @@
                         @endif
                     </td>
                     <td>{{ \Carbon\Carbon::parse($ticket->created_at)->format('Y-m-d H:i') }}</td>
-                    <td>{{ $ticket->seat_numbers }}</td>
                     <td>{{ optional($ticket->product)->name }}</td>
+                    <td>{{ $ticket->seat_numbers }}</td>
                 </tr>
             @endforeach
             </tbody>
-            <tfoot class="tfoot active">
-                <th></th>
-                <th>{{trans('file.Total')}}</th>
-                <th></th>
-                <th></th>
-                <th></th>
-                <th></th>
-                <th></th>
-                <th></th>
-            </tfoot>
         </table>
     </div>
 </section>
@@ -111,11 +101,6 @@
                     columns: ':visible:Not(.not-exported)',
                     rows: ':visible'
                 },
-                action: function(e, dt, button, config) {
-                    datatable_sum(dt, true);
-                    $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
-                    datatable_sum(dt, false);
-                },
                 footer:true
             },
             {
@@ -125,11 +110,6 @@
                     columns: ':visible:Not(.not-exported)',
                     rows: ':visible'
                 },
-                action: function(e, dt, button, config) {
-                    datatable_sum(dt, true);
-                    $.fn.dataTable.ext.buttons.csvHtml5.action.call(this, e, dt, button, config);
-                    datatable_sum(dt, false);
-                },
                 footer:true
             },
             {
@@ -138,11 +118,6 @@
                 exportOptions: {
                     columns: ':visible:Not(.not-exported)',
                     rows: ':visible'
-                },
-                action: function(e, dt, button, config) {
-                    datatable_sum(dt, true);
-                    $.fn.dataTable.ext.buttons.print.action.call(this, e, dt, button, config);
-                    datatable_sum(dt, false);
                 },
                 footer:true
             },
@@ -183,21 +158,8 @@
                 text: '<i title="column visibility" class="fa fa-eye"></i>',
                 columns: ':gt(0)'
             },
-        ],
-        drawCallback: function () {
-            var api = this.api();
-            datatable_sum(api, false);
-        }
+        ]
     } );
 
-    function datatable_sum(dt_selector, is_calling_first) {
-        if (dt_selector.rows( '.selected' ).any() && is_calling_first) {
-            var rows = dt_selector.rows( '.selected' ).indexes();
-            $( dt_selector.column( 5 ).footer() ).html(dt_selector.cells( rows, 5, { page: 'current' } ).data().sum().toFixed(2));
-        }
-        else {
-            $( dt_selector.column( 5 ).footer() ).html(dt_selector.cells( rows, 5, { page: 'current' } ).data().sum().toFixed(2));
-        }
-    }
 </script>
 @endsection

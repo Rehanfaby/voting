@@ -334,11 +334,11 @@
                             ['role_id', $role->id]
                         ])->first();
 
-                        $customer_group_permission = DB::table('permissions')->where('name', 'customer_group')->first();
-                        $customer_group_permission_active = DB::table('role_has_permissions')->where([
-                            ['permission_id', $customer_group_permission->id],
-                            ['role_id', $role->id]
-                        ])->first();
+//                        $customer_group_permission = DB::table('permissions')->where('name', 'customer_group')->first();
+//                        $customer_group_permission_active = DB::table('role_has_permissions')->where([
+//                            ['permission_id', $customer_group_permission->id],
+//                            ['role_id', $role->id]
+//                        ])->first();
 
                         $warehouse_permission = DB::table('permissions')->where('name', 'warehouse')->first();
                         $warehouse_permission_active = DB::table('role_has_permissions')->where([
@@ -366,9 +366,9 @@
                         @if($general_setting_permission_active)
                             <li id="general-setting-menu"><a href="{{route('setting.general')}}">{{trans('file.General Setting')}}</a></li>
                         @endif
-                        @if($customer_group_permission_active)
-                            <li id="customer-group-menu"><a href="{{route('customer_group.index')}}">{{trans('file.Customer Group')}}</a></li>
-                        @endif
+{{--                        @if($customer_group_permission_active)--}}
+{{--                            <li id="customer-group-menu"><a href="{{route('customer_group.index')}}">{{trans('file.Customer Group')}}</a></li>--}}
+{{--                        @endif--}}
                         @if($brand_permission_active)
                             <li id="brand-menu"><a href="{{route('brand.index')}}">{{trans('file.Brand')}}</a></li>
                         @endif
