@@ -86,30 +86,35 @@
                                                 <input type="text" name="name" required placeholder="{{trans('file.Name')}}" >
                                                 <input type="text" name="email" required placeholder="email">
                                                 <select class="select-identity" name="identity_type" id="identity_type" required>
-                                                    <option value="1">{{ __('ID') }}</option>
-                                                    <option value="2">{{ __('Student No.') }}</option>
+                                                    <option value="1">{{ __('NIC') }}</option>
+                                                    <option value="2">{{ __('Student ID') }}</option>
                                                     <option value="3">{{ __('Passport') }}</option>
+                                                    <option value="4">{{ __('Others') }}</option>
                                                 </select>
                                                 <input type="text" name="identity_number" id="identity_number" class="mt-2" placeholder="{{ __('Identity Number') }}">
                                                 <input type="text" name="student_number" id="student_number" class="mt-2" placeholder="{{ __('Student Number') }}" style="display:none;">
                                                 <input type="text" name="passport_number" id="passport_number" class="mt-2" placeholder="{{ __('Passport Number') }}" style="display:none;">
+                                                <input type="text" name="identity_number" id="other_number" class="mt-2" placeholder="{{ __('Others') }}" style="display:none;">
 
-                                                <input type="text" name="phone" required placeholder="{{trans('file.Phone number')}}" value="+237" id="inputField">
+                                                <input type="text" name="phone" required placeholder="{{trans('file.Momo Number')}}" id="inputField">
+                                                <input type="text" name="whatsapp_number" required placeholder="{{trans('file.Whatsapp number')}}">
                                             @else
 
                                                 <input type="text" name="name" required placeholder="{{trans('file.Name')}}" value="{{ $user->name }}">
                                                 <input type="text" name="email" required placeholder="email" value="{{ $user->email }}">
                                                 <select class="select-identity" name="identity_type" id="identity_type" required>
-                                                    <option value="1">{{ __('ID') }}</option>
-                                                    <option value="2">{{ __('Student No.') }}</option>
+                                                    <option value="1">{{ __('NIC') }}</option>
+                                                    <option value="2">{{ __('Student ID') }}</option>
                                                     <option value="3">{{ __('Passport') }}</option>
+                                                    <option value="4">{{ __('Others') }}</option>
                                                 </select>
                                                 <input type="text" name="identity_number" id="identity_number" class="mt-2" placeholder="{{ __('Identity Number') }}">
                                                 <input type="text" name="student_number" id="student_number" class="mt-2" placeholder="{{ __('Student Number') }}" style="display:none;">
                                                 <input type="text" name="passport_number" id="passport_number" class="mt-2" placeholder="{{ __('Passport Number') }}" style="display:none;">
+                                                <input type="text" name="identity_number" id="other_number" class="mt-2" placeholder="{{ __('Others') }}" style="display:none;">
 
-
-                                                <input type="text" name="phone" required placeholder="{{trans('file.Phone number')}}" value="{{ $user->phone }}" id="inputField">
+                                                <input type="text" name="phone" required placeholder="{{trans('file.Momo Number')}}" id="inputField">
+                                                <input type="text" name="whatsapp_number" required placeholder="{{trans('file.Whatsapp number')}}">
                                             @endif
                                             <input type="hidden" name="ticket_id" value="{{ $ticket->id }}">
                                             <input type="hidden" name="qty" value="{{ $data['vote'] }}">
@@ -138,10 +143,12 @@
                                                     <option value="1">{{ __('ID') }}</option>
                                                     <option value="2">{{ __('Student No.') }}</option>
                                                     <option value="3">{{ __('Passport') }}</option>
+                                                    <option value="4">{{ __('Others') }}</option>
                                                 </select>
                                                 <input type="text" name="identity_number" id="identity_number" class="mt-2" placeholder="{{ __('Identity Number') }}">
                                                 <input type="text" name="student_number" id="student_number" class="mt-2" placeholder="{{ __('Student Number') }}" style="display:none;">
                                                 <input type="text" name="passport_number" id="passport_number" class="mt-2" placeholder="{{ __('Passport Number') }}" style="display:none;">
+                                                <input type="text" name="identity_number" id="other_number" class="mt-2" placeholder="{{ __('Others') }}" style="display:none;">
 
                                                 <input type="text" name="phone" required placeholder="{{trans('file.Phone number')}}" value="+237" id="inputField">
                                             @else
@@ -152,10 +159,12 @@
                                                     <option value="1">{{ __('ID') }}</option>
                                                     <option value="2">{{ __('Student No.') }}</option>
                                                     <option value="3">{{ __('Passport') }}</option>
+                                                    <option value="4">{{ __('Others') }}</option>
                                                 </select>
                                                 <input type="text" name="identity_number" id="identity_number" class="mt-2" placeholder="{{ __('Identity Number') }}">
                                                 <input type="text" name="student_number" id="student_number" class="mt-2" placeholder="{{ __('Student Number') }}" style="display:none;">
                                                 <input type="text" name="passport_number" id="passport_number" class="mt-2" placeholder="{{ __('Passport Number') }}" style="display:none;">
+                                                <input type="text" name="identity_number" id="other_number" class="mt-2" placeholder="{{ __('Others') }}" style="display:none;">
 
 
                                                 <input type="text" name="phone" required placeholder="{{trans('file.Phone number')}}" value="{{ $user->phone }}" id="inputField">
@@ -227,6 +236,7 @@
                     document.getElementById('identity_number').style.display = (val === '1') ? '' : 'none';
                     document.getElementById('student_number').style.display = (val === '2') ? '' : 'none';
                     document.getElementById('passport_number').style.display = (val === '3') ? '' : 'none';
+                    document.getElementById('other_number').style.display = (val === '4') ? '' : 'none';
                 }
                 document.getElementById('identity_type').addEventListener('change', toggleIdentityFields);
                 toggleIdentityFields(); // Set initial state

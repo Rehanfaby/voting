@@ -509,14 +509,20 @@ class HomeController extends Controller
         $data['password'] = bcrypt($password);
         $data['name'] = $request->name;
         $data['phone'] = $request->phone;
+        $data['whatsapp_number'] = $request->whatsapp_number ?? $request->phone;
         $data['email'] = $request->email ?? 'user@gmail.com';
         $data['role_id'] = 3;
+
 
         if($data['phone'] == null) {
             return 'Phone cannot be null';
         }
 
         if ($user_check = User::where('phone', $request->phone)->first()) {
+            if($user_check->whatsapp_number !== $request->whatsapp_number) {
+                $user_check->whatsapp_number = $request->whatsapp_number;
+                $user_check->save();
+            }
             $user = $user_check;
         }
 
@@ -898,7 +904,7 @@ class HomeController extends Controller
 
 
         try{
-            $this->wpMessage($user->phone, $msg);
+            $this->wpMessage($user->whatsapp_number ?? $user->phone, $msg);
         }
         catch(\Exception $e){
 
@@ -993,7 +999,7 @@ class HomeController extends Controller
         $user = User::find($ticket->user_id);
 
         try{
-            $this->wpMessage($user->phone, $msg);
+            $this->wpMessage($user->whatsapp_number ?? $user->phone, $msg);
         }
         catch(\Exception $e){
 
