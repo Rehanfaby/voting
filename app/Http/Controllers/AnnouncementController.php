@@ -3,83 +3,440 @@
 namespace App\Http\Controllers;
 
 use App\Announcement;
+use App\AnnouncementAttachment;
+use App\Customer;
+use App\GeneralSetting;
+use App\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use PDF;
+use Illuminate\Support\Facades\Mail;
 
 class AnnouncementController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index()
     {
-        //
+        $data = Announcement::where('is_active', true)->orderBy('id', 'desc')->get();
+        return view('announcement.index', compact('data'));
     }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function create()
     {
-        //
+        $user = User::where('is_active', true)->where('role_id', '!=' , 3)->get();
+        $customer = User::where('is_active', true)->where('role_id', 3)->get();
+        return view('announcement.create', compact('user', 'customer'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
-        //
+        $data = $request->all();
+
+        $image = $request->attachment;
+        if (isset($image)) {
+            $imageName = date("Ymdhis").$image->getClientOriginalName();
+            $image->move('public/announcement/attachment', $imageName);
+            $data['attachment'] = $imageName;
+        }
+
+        if($data['people_type'] == "customer") {
+            $data['to_customer'] = array_unique($data['to_customer']);
+            $data['cc_customer'] = array_unique($data['cc_customer']);
+            $data['to'] = implode(",", $data['to_customer']);
+            $data['cc'] = isset($data['cc_customer']) ? implode(",", $data['cc_customer']) : null;
+        } else if($data['people_type'] == "user") {
+            $data['to'] = array_unique($data['to']);
+            $data['cc'] = array_unique($data['cc']);
+            $data['to'] = implode(",", $data['to']);
+            $data['cc'] = isset($data['cc']) ? implode(",", $data['cc']) : null;
+        } else if($data['people_type'] == "csv") {
+            $to_csv = $request->to_csv;
+            if (isset($to_csv)) {
+                $imageName = date("Ymdhis").$to_csv->getClientOriginalName();
+                $to_csv->move('public/announcement/csv', $imageName);
+                $data['to'] = $imageName;
+            }
+        }
+
+
+        $image = $request->attachments;
+        if (isset($image[0])) {
+            $imageName = date("Ymdhis").$image[0]->getClientOriginalName();
+            $image[0]->move('public/announcement/attachment', $imageName);
+            $data['attachment'] = $imageName;
+        }
+
+        $data['created_by'] = Auth::user()->id;
+
+
+        unset($data['customer_type']);
+        unset($data['to_customer_group']);
+        unset($data['is_template']);
+        unset($data['to_customer']);
+        unset($data['cc_customer']);
+        unset($data['to_csv']);
+        if(isset($data['attachments'])) {
+            $data_multiple['attachments'] = $data['attachments'];
+        }
+        unset($data['attachments']);
+
+        $announcement = Announcement::create($data);
+
+        $attachments = isset($data_multiple['attachments']) ? $data_multiple['attachments'] : [];
+        if ($attachments) {
+            foreach ($attachments as $key => $attachment) {
+                if($key == 0) {
+                    AnnouncementAttachment::create(['announcement_id' => $announcement->id, 'attachment' => $imageName]);
+                } else {
+                    $attachmentName = date("Ymdhis").$attachments[$key]->getClientOriginalName();
+                    $attachments[$key]->move('public/announcement/attachment', $attachmentName);
+                    AnnouncementAttachment::create(['announcement_id' => $announcement->id, 'attachment' => $attachmentName]);
+                }
+            }
+        }
+
+        return redirect()->route('announcement.create')->with('message', 'Announcement created successfully');
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Announcement  $announcement
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Announcement $announcement)
+    public function edit($id)
     {
-        //
+        $data = Announcement::findorfail($id);
+        $user = User::where('is_active', true)->get();
+        return view('announcement.edit', compact('user', 'data'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Announcement  $announcement
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Announcement $announcement)
+    public function announcementAttachmentDelete($id)
     {
-        //
+        $attachment = AnnouncementAttachment::where('id', $id)->first();
+        @unlink('public/announcement/attachment/'.$attachment->attachment);
+        $attachment->delete();
+        return back();
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Announcement  $announcement
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Announcement $announcement)
+    public function letterAttachmentDeleteFirst($id)
     {
-        //
+        $letter = Announcement::where('id', $id)->first();
+        @unlink('public/announcement/attachment/'.$letter->attachment);
+        $letter->update(['attachment' => null]);
+        return back()->with('not_permitted', 'Announcement attachment deleted successfully');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Announcement  $announcement
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Announcement $announcement)
+    public function update(Request $request, Announcement $announcement, $id)
     {
-        //
+        $data = $request->all();
+        $letter = $announcement->find($id);
+        $attachments = $request->attachments;
+        if ($attachments) {
+            foreach ($attachments as $key => $attachment) {
+                $attachmentName = date("Ymdhis").$attachments[$key]->getClientOriginalName();
+                $attachments[$key]->move('public/announcement/attachment', $attachmentName);
+                AnnouncementAttachment::create(['announcement_id' => $id, 'attachment' => $attachmentName]);
+            }
+        }
+
+        if($letter->people_type == "csv") {
+            $to_csv = $request->to_csv;
+            if (isset($to_csv)) {
+                $imageName = date("Ymdhis").$to_csv->getClientOriginalName();
+                $to_csv->move('public/letter/csv', $imageName);
+                $data['to'] = $imageName;
+            }
+        } else {
+            $data['to'] = implode(",", $data['to']);
+            $data['cc'] = isset($data['cc']) ? implode(",", $data['cc']) : null;
+        }
+        unset($data['attachments']);
+        unset($data['to_csv']);
+        $letter->update($data);
+        return back()->with('message', 'Letter updated successfully');
+    }
+
+    public function imageUpload(Request $request)
+    {
+        $image = $request->file('image')->store('public/images/announcement');
+        $url = Storage::url($image);
+
+        return response()->json(['location' => $url]);
+    }
+
+    public function show(Announcement $announcement, $id)
+    {
+        $data = $announcement->with( 'createdBy', 'attachmentLib')->where('id', $id)->first();
+        return view('announcement.show', compact('data'));
+    }
+
+    public function destroy($id)
+    {
+        $data = Announcement::find($id);
+        $data->is_active = false;
+        $data->save();
+        return back()->with('not_permitted','Data deleted successfully');
+    }
+
+    public function send(Announcement $announcement, $id)
+    {
+        $announcement = $announcement->find($id);
+        if($announcement->people_type == 'customer') {
+            $customer = Customer::class;
+        } else {
+            $customer = User::class;
+        }
+//            ProcessQueue::dispatch($announcement, $id, $customer);
+        foreach (explode(",", $announcement->to) as $to) {
+            $lims_customer_data = $customer::find($to);
+            $message = $this->sendPDF($announcement, $lims_customer_data, $to);
+            $message = $this->sendMail($announcement, $lims_customer_data, $to);
+        }
+        if ($announcement->cc != null) {
+            foreach (explode(",", $announcement->cc) as $cc) {
+                $lims_customer_data = $customer::find($cc);
+                $this->sendPDFToCC($announcement, $lims_customer_data, $announcement->to);
+            }
+        }
+
+        $announcement->update(['is_sent'=>true]);
+        return redirect()->back()->with('message', 'Announcement will sent soon');
+
+    }
+
+
+    public function download(Announcement $announcement, $id)
+    {
+        $announcement = $announcement->find($id);
+        $customer = User::class;
+
+        $data = [
+            'data' => $announcement,
+            'user' => $customer,
+            'people_type' => $announcement->people_type
+        ];
+
+        $pdf = PDF::loadView('pdf.announcement_download_pdf', $data)->setPaper('A4', 'portrait');
+        return $pdf->download('announcement.pdf');
+
+    }
+
+    public function print(Announcement $announcement, $id)
+    {
+        $announcement = $announcement->find($id);
+        $customer = User::class;
+
+        $data = [
+            'data' => $announcement,
+            'user' => $customer,
+            'people_type' => $announcement->people_type
+        ];
+
+        $pdf = PDF::loadView('pdf.announcement_download_pdf', $data)->setPaper('A4', 'portrait');
+        return $pdf->stream('announcement.pdf');
+
+    }
+
+    public function sendWhatsapp(Announcement $announcement, $id)
+    {
+        $announcement = $announcement->find($id);
+        $customer = User::class;
+
+
+        ProcessQueue::dispatch($announcement, $id, $customer);
+
+        $announcement->find($id)->update(['is_sent'=>true, 'sent_by'=>Auth::user()->id, 'otp' => null]);
+        return redirect()->back()->with('message', 'Announcement will send soon');
+    }
+
+    public function sendEmail(Announcement $announcement, $id)
+    {
+        $announcement = $announcement->find($id);
+        $customer = User::class;
+
+        foreach (explode(",", $announcement->to) as $to) {
+            $lims_customer_data = $customer::find($to);
+            $message = $this->sendMail($announcement, $lims_customer_data, $to);
+
+        }
+
+        $announcement->find($id)->update(['is_sent'=>true, 'sent_by'=>Auth::user()->id, 'otp' => null]);
+        return redirect()->back()->with('message', 'Announcement Sent successfully');
+    }
+
+    public function sendMail($announcement, $lims_customer_data, $to) {
+        $cc_emails = [];
+        $attachments = [];
+        $customer = User::class;
+
+        if ($announcement->cc != null) {
+            foreach (explode(",", $announcement->cc) as $cc) {
+                $lims_customer_data_cc = $customer::find($cc);
+                if($lims_customer_data_cc->email) {
+                    $cc_emails []= $lims_customer_data_cc->email;
+                }
+            }
+        }
+        if($announcement->attachment) {
+            $attachment_path = public_path('announcement/attachment/');
+            $attachments[] = $attachment_path.$announcement->attachment;
+        }
+        if(isset($announcement->attachmentlib[0])) {
+            foreach ($announcement->attachmentlib as $key => $attachment) {
+                if ($key == 0) {
+                    continue;
+                }
+                $attachments[] = $attachment_path.$attachment->attachment;
+            }
+        }
+        if ($lims_customer_data == null) {
+            return true;
+        }
+        $data = [
+            'to' => $to,
+            'data' => $announcement,
+            'mail' => $lims_customer_data->email,
+            'subject' => $announcement->subject,
+            'cc_emails' => $cc_emails,
+            'attachments' => $attachments
+        ];
+
+        $message = 'Announcement notification sent successfully';
+        try{
+            Mail::send( 'mail.announcement_details', $data, function( $message ) use ($data)
+            {
+                $message->to($data['mail'])->subject($data['subject'])->cc($data['cc_emails']);
+
+                foreach ($data['attachments'] as $attachment) {
+                    $message->attach($attachment);
+                }
+            });
+        }
+        catch(\Exception $e){
+            $message = 'Announcement is not sent. Please setup your <a href="setting/mail_setting">mail setting</a> to send mail.';
+        }
+        return $message;
+    }
+
+    public function sendPDF($announcement, $lims_customer_data, $to) {
+        $data = [
+            'to' => $to,
+            'data' => $announcement
+        ];
+        // return view('pdf.announcement_pdf', $data);
+        $pdf = PDF::loadView('pdf.announcement_pdf', $data)->setPaper('A4', 'portrait');
+
+        $content = $pdf->download()->getOriginalContent();
+
+        Storage::put('public/announcement/announcement.pdf',$content);
+        $path = storage_path('app/public/announcement/announcement.pdf');
+        $attachment_path = public_path('announcement/attachment/');
+        $message = 'Announcement notification sent successfully';
+        try{
+            $this->wpPDFAnnouncement($path, $lims_customer_data, $lims_customer_data->name.'_announcement.pdf');
+        }
+        catch(\Exception $e){
+            $message = 'Announcement not sent. Please setup your whatsapp setting.';
+        }
+
+
+        if($announcement->attachment) {
+            $attachment_name = 'attachment-'.$announcement->attachment;
+            try{
+                $this->wpPDFAnnouncement($attachment_path . $announcement->attachment, $lims_customer_data, $attachment_name);
+            }
+            catch(\Exception $e){
+                $message = 'Announcement not sent. Please setup your whatsapp setting.';
+            }
+        }
+        if(isset($announcement->attachmentlib[0])) {
+            foreach ($announcement->attachmentlib as $key => $attachment) {
+                if($key == 0) {
+                    continue;
+                }
+                $attachment_name = 'attachment-'.$attachment->attachment;
+                try{
+                    $this->wpPDFAnnouncement($attachment_path . $attachment->attachment, $lims_customer_data, $attachment_name);
+                }
+                catch(\Exception $e){
+                    $message = 'Announcement not sent. Please setup your whatsapp setting.';
+                }
+            }
+
+        }
+        return $message;
+    }
+
+    public function sendSMS($announcement, $lims_customer_data)
+    {
+        $message = 'Announcement notification sent successfully';
+        $account_sid = env('ACCOUNT_SID');
+        $auth_token = env('AUTH_TOKEN');
+        $twilio_phone_number = env('TWILIO_NUMBER');
+
+        $data['message'] = $announcement->subject . "<br><br>";
+        $data['message'] .= $announcement->header . "<br><br>";
+        $data['message'] .= $announcement->body . "<br><br>";
+        $data['message'] .= $announcement->footer . "<br><br><br>";
+        $data['message'] .= request()->getSchemeAndHttpHost;
+        try{
+            $client = new Client($account_sid, $auth_token);
+            $client->messages->create(
+                $lims_customer_data->phone_number,
+                array(
+                    "from" => $twilio_phone_number,
+                    "body" => $data['message']
+                )
+            );
+        }
+        catch(\Exception $e){
+            $message = 'Announcement is not sent. Please setup your <a href="setting/mail_setting">mail setting</a> to send mail.';
+        }
+
+        return $message;
+    }
+
+    public function sendPDFToCC($announcement, $lims_customer_data, $to) {
+        $data = [
+            'to' => $to,
+            'data' => $announcement
+        ];
+        // return view('pdf.announcement_pdf', $data);
+        $pdf = PDF::loadView('pdf.cc_announcement_pdf', $data)->setPaper('A4', 'portrait');
+
+        $content = $pdf->download()->getOriginalContent();
+
+
+        Storage::put('public/announcement/announcement.pdf',$content);
+        $path = storage_path('app/public/announcement/announcement.pdf');
+        $attachment_path = public_path('announcement/attachment/');
+        $message = 'Announcement notification sent successfully';
+        try{
+            $this->wpPDFAnnouncement($path, $lims_customer_data, $lims_customer_data->name.'-announcement.pdf');
+        }
+        catch(\Exception $e){
+            $message = 'Announcement not sent. Please setup your whatsapp setting.';
+        }
+
+
+        if($announcement->attachment) {
+            $attachment_name = 'attachment-'.$announcement->attachment;
+            try{
+                $this->wpPDFAnnouncement($attachment_path . $announcement->attachment, $lims_customer_data, $attachment_name);
+            }
+            catch(\Exception $e){
+                $message = 'Announcement not sent. Please setup your whatsapp setting.';
+            }
+        }
+        if(isset($announcement->attachmentlib[0])) {
+            foreach ($announcement->attachmentlib as $key => $attachment) {
+                if($key == 0) {
+                    continue;
+                }
+                $attachment_name = 'attachment-'.$attachment->attachment;
+                try{
+                    $this->wpPDFAnnouncement($attachment_path . $attachment->attachment, $lims_customer_data, $attachment_name);
+                }
+                catch(\Exception $e){
+                    $message = 'Announcement not sent. Please setup your whatsapp setting.';
+                }
+            }
+
+        }
+        return $message;
     }
 }

@@ -356,6 +356,11 @@
                                 <a href="" id="send-notification">{{trans('file.Send Notification')}}</a>
                             </li>
                         @endif
+                        @if(in_array('announcement_index', $all_permission))
+                            <li id="announcement-menu">
+                                <a href="{{ route('announcement.index') }}">{{trans('file.Announcement')}}</a>
+                            </li>
+                        @endif
                         @if($currency_permission_active)
                             <li id="currency-menu"><a href="{{route('currency.index')}}">{{trans('file.Currency')}}</a></li>
                         @endif

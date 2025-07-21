@@ -917,5 +917,8 @@ return [
     "Whatsapp number" => "Whatsapp number",
     "Momo Number" => "Momo Number",
     "Remaining Seats" => "Remaining Seats",
+    "Announcement" => "Announcement",
+    "Create Announcement" => "Create Announcement",
+    "Announcement List" => "Announcement List"
 ];
 ?>

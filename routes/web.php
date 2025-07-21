@@ -249,6 +249,25 @@ Route::group(['middleware' => ['auth', 'active']], function() {
     Route::resource('coins', 'CoinController');
     Route::post('coins/deletebyselection', 'CoinController@deleteBySelection');
 
+    Route::get('/announcement/index', 'AnnouncementController@index')->name('announcement.index');
+    Route::get('/announcement/create', 'AnnouncementController@create')->name('announcement.create');
+    Route::get('/announcement/show/{id}', 'AnnouncementController@show')->name('announcement.show');
+    Route::post('/announcement', 'AnnouncementController@store')->name('announcement.store');
+    Route::get('/announcement/{announcement}/edit', 'AnnouncementController@edit')->name('announcement.edit');
+    Route::put('/announcement/{announcement}', 'AnnouncementController@update')->name('announcement.update');
+    Route::post('/announcement/update/{id}', 'AnnouncementController@update')->name('announcement.update');
+    Route::get('/announcement/delete/{id}', 'AnnouncementController@destroy')->name('announcement.destroy');
+
+    Route::post('/announcement/upload/image', 'AnnouncementController@imageUpload')->name('announcement.upload.image');
+    Route::get('/announcement/{id}/send', 'AnnouncementController@send')->name('announcement.send');
+    Route::get('/announcement/{id}/send/whatsapp', 'AnnouncementController@sendWhatsapp')->name('announcement.send.whatsapp');
+    Route::get('/announcement/{id}/send/mail', 'AnnouncementController@sendEmail')->name('announcement.send.mail');
+    Route::get('/announcement/{id}/download', 'AnnouncementController@download')->name('announcement.send.download');
+    Route::get('/announcement/{id}/print', 'AnnouncementController@print')->name('announcement.send.print');
+    Route::get('/announcement/attachment/delete/{id}', 'AnnouncementController@announcementAttachmentDelete')->name('announcement.attachment.delete');
+    Route::get('/announcement/attachment/delete/first/{id}', 'AnnouncementController@announcementAttachmentDeleteFirst')->name('announcement.attachment.delete.first');
+
+
 
     Route::get('admin/user', 'UserController@admin')->name('admin.index');
     Route::get('voter/user', 'UserController@voter')->name('voter.index');

@@ -177,6 +177,43 @@ class RoleController extends Controller
             $role->revokePermissionTo('coins-delete');
 
 
+        if($request->has('announcement_index')){
+            $permission = Permission::firstOrCreate(['name' => 'announcement_index']);
+            if(!$role->hasPermissionTo('announcement_index')){
+                $role->givePermissionTo($permission);
+            }
+        }
+        else
+            $role->revokePermissionTo('announcement_index');
+
+        if($request->has('announcement_add')){
+            $permission = Permission::firstOrCreate(['name' => 'announcement_add']);
+            if(!$role->hasPermissionTo('announcement_add')){
+                $role->givePermissionTo($permission);
+            }
+        }
+        else
+            $role->revokePermissionTo('announcement_add');
+
+        if($request->has('announcement_edit')){
+            $permission = Permission::firstOrCreate(['name' => 'announcement_edit']);
+            if(!$role->hasPermissionTo('announcement_edit')){
+                $role->givePermissionTo($permission);
+            }
+        }
+        else
+            $role->revokePermissionTo('announcement_edit');
+
+        if($request->has('announcement_delete')){
+            $permission = Permission::firstOrCreate(['name' => 'announcement_delete']);
+            if(!$role->hasPermissionTo('announcement_delete')){
+                $role->givePermissionTo($permission);
+            }
+        }
+        else
+            $role->revokePermissionTo('announcement_delete');
+
+
         if($request->has('see-votes')){
             $permission = Permission::firstOrCreate(['name' => 'see-votes']);
             if(!$role->hasPermissionTo('see-votes')){
