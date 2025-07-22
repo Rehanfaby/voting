@@ -80,7 +80,7 @@
         <div class="popup-overlay" id="popup">
             <div class="popup-content">
                 <span class="close-btn" id="closeBtn">&times;</span>
-                <img src="{{ asset('img/flayer.jpeg') }}" alt="Newscaster Image" class="popup-image" />
+                <img src="{{ asset('public/img/flayer.jpeg') }}" alt="Newscaster Image" class="popup-image" />
             </div>
         </div>
         <!-- Brand Song Area Start Here  -->

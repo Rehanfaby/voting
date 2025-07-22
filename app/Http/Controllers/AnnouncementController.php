@@ -178,8 +178,8 @@ class AnnouncementController extends Controller
 
         if ($announcement->people_type == 'csv') {
 
-//            $csv_path = public_path('announcement/csv/');
-            $csv_path = public_path('public/announcement/csv/');
+            $csv_path = public_path('announcement/csv/');
+//            $csv_path = public_path('public/announcement/csv/');
             $csvFilePath = $csv_path.$announcement->to;
             $file = fopen($csvFilePath, 'r');
 
