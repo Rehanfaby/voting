@@ -31,7 +31,7 @@
                                                 <option value="">--Choose--</option>
                                                 <option value="user">--Employee--</option>
                                                 <option value="customer">--Customer--</option>
-{{--                                                <option value="csv">--CSV--</option>--}}
+                                                <option value="csv">--CSV--</option>
                                             </select>
                                         </div>
                                     </div>
@@ -79,7 +79,7 @@
                                     <div class="col-md-6 csv">
                                         <div class="form-group">
                                             <label>Sample file <strong>*</strong></label>
-                                            <a target=_blank"" href="{{ asset('public/sample_file/letter_csv_sample.csv') }}"><span class="fa fa-download"></span> Download CSV Sample</a>
+                                            <a target=_blank"" href="{{ asset('public/sample_file/announcement_csv_sample.csv') }}"><span class="fa fa-download"></span> Download CSV Sample</a>
                                         </div>
                                     </div>
                                     <div class="col-md-12 users">

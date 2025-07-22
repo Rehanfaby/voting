@@ -922,5 +922,6 @@ return [
     "Announcement List" => "Announcement List",
     "Is Used" => "Is Used",
     "Total Purchase Tickets" => "Total Purchase Tickets",
+    "Update Announcement" => "Update Announcement"
 ];
 ?>

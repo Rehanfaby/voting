@@ -97,7 +97,7 @@
             {{ $user::find($to) ? $user::find($to)->name .  ', ' : '' }}
         @endforeach
     @else
-        <a href="{{url('public/letter/csv',$data->to)}}" target="_blank"><span class="fa fa-eye"></span> CSV File</a><br>
+        <a href="{{url('public/announcement/csv',$data->to)}}" target="_blank"><span class="fa fa-eye"></span> CSV File</a><br>
     @endif
 
 </div>

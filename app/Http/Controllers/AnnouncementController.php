@@ -123,7 +123,7 @@ class AnnouncementController extends Controller
     public function update(Request $request, Announcement $announcement, $id)
     {
         $data = $request->all();
-        $letter = $announcement->find($id);
+        $announcement = $announcement->find($id);
         $attachments = $request->attachments;
         if ($attachments) {
             foreach ($attachments as $key => $attachment) {
@@ -133,11 +133,11 @@ class AnnouncementController extends Controller
             }
         }
 
-        if($letter->people_type == "csv") {
+        if($announcement->people_type == "csv") {
             $to_csv = $request->to_csv;
             if (isset($to_csv)) {
                 $imageName = date("Ymdhis").$to_csv->getClientOriginalName();
-                $to_csv->move('public/letter/csv', $imageName);
+                $to_csv->move('public/announcement/csv', $imageName);
                 $data['to'] = $imageName;
             }
         } else {
@@ -146,7 +146,7 @@ class AnnouncementController extends Controller
         }
         unset($data['attachments']);
         unset($data['to_csv']);
-        $letter->update($data);
+        $announcement->update($data);
         return back()->with('message', 'Letter updated successfully');
     }
 
@@ -175,23 +175,47 @@ class AnnouncementController extends Controller
     public function send(Announcement $announcement, $id)
     {
         $announcement = $announcement->find($id);
-        if($announcement->people_type == 'customer') {
-            $customer = Customer::class;
+
+        if ($announcement->people_type == 'csv') {
+
+            $csv_path = public_path('announcement/csv/');
+            $csv_path = public_path('public/announcement/csv/');
+            $csvFilePath = $csv_path.$announcement->to;
+            $file = fopen($csvFilePath, 'r');
+
+            if ($file !== false) {
+                $firstRow = true;
+                while (($data = fgetcsv($file)) !== false) {
+                    $lims_customer_data = '';
+                    if ($firstRow) {
+                        $firstRow = false; // Set the flag to false after skipping the first row
+                        continue; // Skip processing the first row
+                    }
+                    $lims_customer_data = (object) $data;
+                    $lims_customer_data->name = $data[0];
+                    $lims_customer_data->phone = $data[1];
+                    $lims_customer_data->email = $data[2];
+
+                    $this->sendAnnouncementMsg($announcement, $lims_customer_data);
+                }
+            }
+            $announcement->update(['is_sent'=>true]);
+            return redirect()->back()->with('message', 'Announcement has been sent');
+
+        } elseif($announcement->people_type == 'customer') {
+            $customer = User::class;
         } else {
             $customer = User::class;
         }
-//            ProcessQueue::dispatch($announcement, $id, $customer);
+
         foreach (explode(",", $announcement->to) as $to) {
             $lims_customer_data = $customer::find($to);
             $this->sendAnnouncementMsg($announcement, $lims_customer_data);
-//            $message = $this->sendPDF($announcement, $lims_customer_data, $to);
-//            $message = $this->sendMail($announcement, $lims_customer_data, $to);
         }
         if ($announcement->cc != null) {
             foreach (explode(",", $announcement->cc) as $cc) {
                 $lims_customer_data = $customer::find($cc);
                 $this->sendAnnouncementMsg($announcement, $lims_customer_data);
-//                $this->sendPDFToCC($announcement, $lims_customer_data, $announcement->to);
             }
         }
 

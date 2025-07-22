@@ -20,7 +20,7 @@
                     @endif
                     <div class="card">
                         <div class="card-header d-flex align-items-center">
-                            <h4>{{trans('file.Update Letter')}}</h4>
+                            <h4>{{trans('file.Update Announcement')}}</h4>
                         </div>
                         <div class="card-body">
                             <p class="italic"><small>{{trans('file.The field labels marked with * are required input fields')}}.</small></p>
@@ -33,7 +33,7 @@
                                         <input type="hidden" name="is_active" value="1">
                                     </div>
                                 </div>
-                                @if($user)
+                                @if($data->people_type != 'csv')
                                     <div class="col-md-12">
                                         <div class="form-group">
                                             <label>{{trans('file.To')}} <strong>*</strong> </label>

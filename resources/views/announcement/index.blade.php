@@ -51,6 +51,9 @@
                             </button>
                             <ul class="dropdown-menu edit-options dropdown-menu-right dropdown-default">
                                 <li>
+                                    <a href="{{ route('announcement.send', $item->id) }}" class="btn btn-link"><i class="fa fa-send"></i> {{trans('file.Send')}}</a>
+                                </li>
+                                <li>
                                     <a href="{{ route('announcement.show', $item->id) }}" class="btn btn-link"><i class="fa fa-eye"></i> {{trans('file.View')}}</a>
                                 </li>
                                 @if(in_array("announcement_edit", $all_permission))
