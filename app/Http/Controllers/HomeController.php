@@ -153,7 +153,7 @@ class HomeController extends Controller
                 ->first();
 
             if($best_musician_data != null) {
-                $best_musician  = Employee::find($best_musician->musician_id);
+                $best_musician  = Employee::find($best_musician_data->musician_id);
             }
         }
 
