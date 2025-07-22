@@ -83,24 +83,13 @@
 @endphp
 
 <div class="pull-right-no-margin">
-    @if($data->is_edit == 1)
-        @php
-            $edit = \App\User::find($data->edit_by);
-        @endphp
-        <img class="edit" src="{{url('public/images/user',$edit->stemp)}}" height="50vw">
-    @endif
-    @if($data->is_approve == 1)
-        @php
-            $approve = \App\User::find($data->approved_by);
-        @endphp
-        <img class="approve" src="{{url('public/images/user',$approve->approve)}}" height="50vw">
-    @endif
+
     <span class ="header-letter">{!! $data->header !!}</span>
 
 </div>
 <br><br><br><br>
 
-<div>Ref: {{ $data->reference }} <br>
+<div>Ref: {{ $data->id }} <br>
     {{ date('M d, Y') }}</div><br>
 <div>Dear:
     @if($data->people_type != 'csv')
@@ -118,28 +107,12 @@
 </div>
 {!! $data->body !!}
 <br>
-<p>Sincerely, </p>
-<div class="row">
-    <div class="col-md-6">
-        @if($data->is_sign == 1)
-            @php
-                $approve = \App\User::find($data->signed_by);
-            @endphp
-            <img src="{{url('public/images/user',$approve->sign)}}" height="100vw">
-        @endif
-    </div>
-</div>
-<br>
+
 @if($data->footer != null)
     {!! $data->footer !!}
 @else
     {{ $data->name }}
 @endif
-{{--@if($data->comment)--}}
-{{--    <h1 style="background: yellow">Comment:--}}
-{{--        {{ $data->comment }}--}}
-{{--    </h1>--}}
-{{--@endif--}}
 @if($data->cc)
     <br><br>
     <h2>CC:

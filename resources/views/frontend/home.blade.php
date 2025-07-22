@@ -382,10 +382,10 @@
             </table>
             <h3 style="color: #ff4500; text-align: center; margin-top: 20px;">Finals Schedule</h3>
             <ul style="list-style: none; padding: 0;">
-                <li style="background-color: #ffe5b4; padding: 10px; border-radius: 5px; margin-bottom: 5px;">August 9: Prime 1 (25 candidates)</li>
-                <li style="background-color: #fff5e1; padding: 10px; border-radius: 5px; margin-bottom: 5px;">August 16: Prime 2 (20 candidates)</li>
-                <li style="background-color: #ffe5b4; padding: 10px; border-radius: 5px; margin-bottom: 5px;">August 23: Prime 3 (15 candidates)</li>
-                <li style="background-color: #fff5e1; padding: 10px; border-radius: 5px; margin-bottom: 5px;">August 30: Final Prime (10 candidates)</li>
+                <li style="background-color: #ffe5b4; padding: 10px; border-radius: 5px; margin-bottom: 5px;">August 9: Prime 1</li>
+                <li style="background-color: #fff5e1; padding: 10px; border-radius: 5px; margin-bottom: 5px;">August 17: Prime 2</li>
+                <li style="background-color: #ffe5b4; padding: 10px; border-radius: 5px; margin-bottom: 5px;">August 23: Prime 3</li>
+                <li style="background-color: #fff5e1; padding: 10px; border-radius: 5px; margin-bottom: 5px;">August 30: Final Prime</li>
             </ul>
         </div>
     </div>

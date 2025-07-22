@@ -40,12 +40,12 @@ class AnnouncementController extends Controller
 
         if($data['people_type'] == "customer") {
             $data['to_customer'] = array_unique($data['to_customer']);
-            $data['cc_customer'] = array_unique($data['cc_customer']);
+            $data['cc_customer'] = isset($data['cc_customer']) ? array_unique($data['cc_customer']) : [];
             $data['to'] = implode(",", $data['to_customer']);
             $data['cc'] = isset($data['cc_customer']) ? implode(",", $data['cc_customer']) : null;
         } else if($data['people_type'] == "user") {
             $data['to'] = array_unique($data['to']);
-            $data['cc'] = array_unique($data['cc']);
+            $data['cc'] = isset($data['cc']) ? array_unique($data['cc']) : [];
             $data['to'] = implode(",", $data['to']);
             $data['cc'] = isset($data['cc']) ? implode(",", $data['cc']) : null;
         } else if($data['people_type'] == "csv") {
@@ -183,18 +183,20 @@ class AnnouncementController extends Controller
 //            ProcessQueue::dispatch($announcement, $id, $customer);
         foreach (explode(",", $announcement->to) as $to) {
             $lims_customer_data = $customer::find($to);
-            $message = $this->sendPDF($announcement, $lims_customer_data, $to);
-            $message = $this->sendMail($announcement, $lims_customer_data, $to);
+            $this->sendAnnouncementMsg($announcement, $lims_customer_data);
+//            $message = $this->sendPDF($announcement, $lims_customer_data, $to);
+//            $message = $this->sendMail($announcement, $lims_customer_data, $to);
         }
         if ($announcement->cc != null) {
             foreach (explode(",", $announcement->cc) as $cc) {
                 $lims_customer_data = $customer::find($cc);
-                $this->sendPDFToCC($announcement, $lims_customer_data, $announcement->to);
+                $this->sendAnnouncementMsg($announcement, $lims_customer_data);
+//                $this->sendPDFToCC($announcement, $lims_customer_data, $announcement->to);
             }
         }
 
         $announcement->update(['is_sent'=>true]);
-        return redirect()->back()->with('message', 'Announcement will sent soon');
+        return redirect()->back()->with('message', 'Announcement has been sent');
 
     }
 
@@ -310,6 +312,52 @@ class AnnouncementController extends Controller
             $message = 'Announcement is not sent. Please setup your <a href="setting/mail_setting">mail setting</a> to send mail.';
         }
         return $message;
+    }
+
+    public function sendAnnouncementMsg($announcement, $lims_customer_data)
+    {
+        $msg = strip_tags($announcement->header) . "\r\n\n";
+        $msg .= "Ref: " . $announcement->id . "\r\n";
+        $msg .= "Date: " . $announcement->created_at . "\r\n\n";
+        $msg .= "Subject: " . $announcement->subject . "\r\n\n";
+        $msg .= "Dear: " . $lims_customer_data->name . "\r\n";
+        $msg .= strip_tags($announcement->body) . "\r\n\n";
+        $msg .= strip_tags($announcement->footer) . "\r\n";
+
+        try{
+            $this->wpMessage($lims_customer_data->phone, $msg);
+        }
+        catch(\Exception $e){
+        }
+
+        $attachment_path = public_path('public/announcement/attachment/');
+        if($announcement->attachment) {
+            $attachment_name = 'attachment-'.$announcement->attachment;
+            try{
+                $this->wpPDFAnnouncement($attachment_path . $announcement->attachment, $lims_customer_data, $attachment_name);
+            }
+            catch(\Exception $e){
+                $message = 'Announcement not sent. Please setup your whatsapp setting.';
+            }
+        }
+
+        if(isset($announcement->attachmentlib[0])) {
+            foreach ($announcement->attachmentlib as $key => $attachment) {
+                if($key == 0) {
+                    continue;
+                }
+                $attachment_name = 'attachment-'.$attachment->attachment;
+//                dd($attachment_path . $attachment->attachment);
+                try{
+                    $this->wpPDFAnnouncement($attachment_path . $attachment->attachment, $lims_customer_data, $attachment_name);
+                }
+                catch(\Exception $e){
+                    $message = 'Announcement not sent. Please setup your whatsapp setting.';
+                }
+            }
+
+        }
+        return true;
     }
 
     public function sendPDF($announcement, $lims_customer_data, $to) {

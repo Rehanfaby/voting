@@ -252,7 +252,7 @@ Route::group(['middleware' => ['auth', 'active']], function() {
     Route::get('/announcement/index', 'AnnouncementController@index')->name('announcement.index');
     Route::get('/announcement/create', 'AnnouncementController@create')->name('announcement.create');
     Route::get('/announcement/show/{id}', 'AnnouncementController@show')->name('announcement.show');
-    Route::post('/announcement', 'AnnouncementController@store')->name('announcement.store');
+    Route::post('/announcement/store', 'AnnouncementController@store')->name('announcement.store');
     Route::get('/announcement/{announcement}/edit', 'AnnouncementController@edit')->name('announcement.edit');
     Route::put('/announcement/{announcement}', 'AnnouncementController@update')->name('announcement.update');
     Route::post('/announcement/update/{id}', 'AnnouncementController@update')->name('announcement.update');
