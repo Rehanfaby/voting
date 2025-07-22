@@ -273,6 +273,7 @@ Route::group(['middleware' => ['auth', 'active']], function() {
     Route::get('voter/user', 'UserController@voter')->name('voter.index');
 
     Route::get('report/voting', 'ReportController@votingReport')->name('voting.report');
+    Route::get('report/ticket/purchase', 'ReportController@ticketPurchaseReport')->name('report.ticket.purchase');
 
 
 });

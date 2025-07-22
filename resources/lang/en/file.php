@@ -919,6 +919,8 @@ return [
     "Remaining Seats" => "Remaining Seats",
     "Announcement" => "Announcement",
     "Create Announcement" => "Create Announcement",
-    "Announcement List" => "Announcement List"
+    "Announcement List" => "Announcement List",
+    "Is Used" => "Is Used",
+    "Total Purchase Tickets" => "Total Purchase Tickets",
 ];
 ?>

@@ -290,6 +290,9 @@
                                 <li id="vote-report-menu">
                                     <a href="{{url('report/voting')}}">{{trans('file.Voting Report')}}</a>
                                 </li>
+                                <li id="ticket-report-menu">
+                                    <a href="{{url('report/ticket/purchase')}}">{{trans('file.Total Purchase Tickets')}}</a>
+                                </li>
                             @endif
                         </ul>
                     </li>

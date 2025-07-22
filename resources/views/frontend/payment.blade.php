@@ -34,7 +34,7 @@
                                 <table class="table table-striped table-hover">
                                     <thead>
                                     <tr>
-                                        <th>{{trans("file.Musician")}}</th>
+                                        <th>{{trans("file.Contestant")}}</th>
                                         <th>{{trans("file.Votes")}}</th>
                                         <th>{{trans("file.Amount")}}</th>
                                     </tr>
