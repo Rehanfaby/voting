@@ -340,13 +340,13 @@ class AnnouncementController extends Controller
 
     public function sendAnnouncementMsg($announcement, $lims_customer_data)
     {
-        $msg = strip_tags($announcement->header) . "\r\n\n";
+        $msg = strip_tags(html_entity_decode($announcement->header)) . "\r\n\n";
         $msg .= "Ref: " . $announcement->id . "\r\n";
         $msg .= "Date: " . $announcement->created_at . "\r\n\n";
         $msg .= "Subject: " . $announcement->subject . "\r\n\n";
         $msg .= "Dear: " . $lims_customer_data->name . "\r\n\n";
-        $msg .= strip_tags($announcement->body) . "\r\n\n";
-        $msg .= strip_tags($announcement->footer) . "\r\n";
+        $msg .= strip_tags(html_entity_decode($announcement->body)) . "\r\n\n";
+        $msg .= strip_tags(html_entity_decode($announcement->footer)) . "\r\n";
 
         try{
             $this->wpMessage($lims_customer_data->phone, $msg);
@@ -510,5 +510,13 @@ class AnnouncementController extends Controller
 
         }
         return $message;
+    }
+
+    public function announcementAttachmentDeleteFirst($id)
+    {
+        $letter = Announcement::where('id', $id)->first();
+        @unlink('public/announcement/attachment/'.$letter->attachment);
+        $letter->update(['attachment' => null]);
+        return back()->with('not_permitted', 'Announcement attachment deleted successfully');
     }
 }
