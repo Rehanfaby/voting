@@ -354,22 +354,23 @@ class AnnouncementController extends Controller
         catch(\Exception $e){
         }
 
-        $attachment_path = public_path('public/announcement/attachment/');
-        if($announcement->attachment) {
-            $attachment_name = 'attachment-'.$announcement->attachment;
-            try{
-                $this->wpPDFAnnouncement($attachment_path . $announcement->attachment, $lims_customer_data, $attachment_name);
-            }
-            catch(\Exception $e){
-                $message = 'Announcement not sent. Please setup your whatsapp setting.';
-            }
-        }
+//        $attachment_path = public_path('public/announcement/attachment/'); // for local
+        $attachment_path = public_path('announcement/attachment/');
+//        if($announcement->attachment) {
+//            $attachment_name = 'attachment-'.$announcement->attachment;
+//            try{
+//                $this->wpPDFAnnouncement($attachment_path . $announcement->attachment, $lims_customer_data, $attachment_name);
+//            }
+//            catch(\Exception $e){
+//                $message = 'Announcement not sent. Please setup your whatsapp setting.';
+//            }
+//        }
 
         if(isset($announcement->attachmentlib[0])) {
             foreach ($announcement->attachmentlib as $key => $attachment) {
-                if($key == 0) {
-                    continue;
-                }
+//                if($key == 0) {
+//                    continue;
+//                }
                 $attachment_name = 'attachment-'.$attachment->attachment;
 //                dd($attachment_path . $attachment->attachment);
                 try{
