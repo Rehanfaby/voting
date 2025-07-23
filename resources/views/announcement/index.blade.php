@@ -21,7 +21,7 @@
         <table id="role-table" class="table">
             <thead>
             <tr>
-                <th>Select</th>
+                <th>ID</th>
                 <th>{{trans('file.Subject')}}</th>
                 <th>{{trans('file.Created By')}}</th>
                 <th>{{trans('file.Date')}}</th>
@@ -32,7 +32,7 @@
             <tbody>
             @foreach($data as $key=>$item)
                 <tr  data-id="{{$item->id}}" class="clickable-row" style="cursor: pointer" data-href="{{ route('announcement.show', $item->id) }}">
-                    <td><input type="checkbox" class="checkbox-options" name="ids[{{$item->id}}]"></td>
+                    <td>{{$item->id}}</td>
                     <td>{{ $item->subject }}</td>
                     <td>{{ $item->createdBy ? $item->createdBy->name : 'N/N'}}</td>
                     <td>{{ $item->created_at->format('d-M, Y')}}</td>

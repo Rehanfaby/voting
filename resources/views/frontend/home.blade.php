@@ -676,7 +676,7 @@
                                                             @else
                                                                 {{$key + 1}}th
                                                             @endif
-                                                            -- {{ $best_musician->name }}
+                                                            -- {{ $best_musician->name }} ({{ $best_musician_data->total_vote }})
 
                                                         </a>
                                                     </h4>

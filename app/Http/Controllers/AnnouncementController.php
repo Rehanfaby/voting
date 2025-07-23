@@ -147,7 +147,7 @@ class AnnouncementController extends Controller
         unset($data['attachments']);
         unset($data['to_csv']);
         $announcement->update($data);
-        return back()->with('message', 'Letter updated successfully');
+        return redirect()->route('announcement.index')->with('message', 'Letter updated successfully');
     }
 
     public function imageUpload(Request $request)
@@ -344,7 +344,7 @@ class AnnouncementController extends Controller
         $msg .= "Ref: " . $announcement->id . "\r\n";
         $msg .= "Date: " . $announcement->created_at . "\r\n\n";
         $msg .= "Subject: " . $announcement->subject . "\r\n\n";
-        $msg .= "Dear: " . $lims_customer_data->name . "\r\n";
+        $msg .= "Dear: " . $lims_customer_data->name . "\r\n\n";
         $msg .= strip_tags($announcement->body) . "\r\n\n";
         $msg .= strip_tags($announcement->footer) . "\r\n";
 
