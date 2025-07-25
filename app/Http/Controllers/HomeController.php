@@ -208,14 +208,14 @@ class HomeController extends Controller
 
     public function tickets($id) {
         $tickets = Product::where('category_id', $id)->where('is_active', true)->select('id', 'name', 'qty', 'image', 'price')->paginate(12);
-        foreach ($tickets as $ticketProduct) {
-            $soldQty = Ticket::where('product_id', $ticketProduct->id)
-                ->where('status', 1)
-                ->sum('qty');
-
-            $remainingQty = $ticketProduct->qty - $soldQty;
-            $ticketProduct->remaining_qty = $remainingQty;
-        }
+//        foreach ($tickets as $ticketProduct) {
+//            $soldQty = Ticket::where('product_id', $ticketProduct->id)
+//                ->where('status', 1)
+//                ->sum('qty');
+//
+//            $remainingQty = $ticketProduct->qty - $soldQty;
+//            $ticketProduct->remaining_qty = $remainingQty;
+//        }
         return view('frontend.tickets', compact('tickets'));
     }
 
