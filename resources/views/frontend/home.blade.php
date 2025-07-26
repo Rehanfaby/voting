@@ -16,9 +16,73 @@
              padding-top: 0px;
             padding-bottom: 288px;
         }
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .popup-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .popup-content {
+            position: relative;
+            background: white;
+            border-radius: 8px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+        }
+
+
+        .popup-image {
+            max-width: 100%;
+            max-height: 80vh; /* Make it responsive to screen height */
+            height: auto;
+            width: auto;
+            object-fit: contain;
+            display: block;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #000;
+            cursor: pointer;
+            background: #fff;
+            border-radius: 50%;
+            padding: 2px 8px;
+        }
     </style>
 
     <main>
+
+        <!-- Popup Overlay -->
+        <div class="popup-overlay" id="popup">
+            <div class="popup-content">
+                <span class="close-btn" id="closeBtn">&times;</span>
+                <img src="{{ asset('public/img/flayer.jpeg') }}" alt="Newscaster Image" class="popup-image" />
+            </div>
+        </div>
         <!-- Brand Song Area Start Here  -->
         <section class="ms-song-area pt-40 pb-40">
             <div class="container-fluid ms-maw-1710">
@@ -353,14 +417,39 @@
                         <td style="padding: 10px; border: 1px solid #ddd;">Buea</td>
                         <td style="padding: 10px; border: 1px solid #ddd;">April 5-6, 2025</td>
                     </tr>
+                    <tr style="background-color: #fff5e1;">
+                        <td style="padding: 10px; border: 1px solid #ddd;">North West</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">Bamenda</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">April 12-13, 2025</td>
+                    </tr>
+                    <tr style="background-color: #ffe5b4;">
+                        <td style="padding: 10px; border: 1px solid #ddd;">West</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">Bafoussam</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">April 19-20, 2025</td>
+                    </tr>
+                    <tr style="background-color: #fff5e1;">
+                        <td style="padding: 10px; border: 1px solid #ddd;">Littoral</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">Douala</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">April 12-13, 2025</td>
+                    </tr>
+                    <tr style="background-color: #ffe5b4;">
+                        <td style="padding: 10px; border: 1px solid #ddd;">South</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">Ebolowa</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">April 19-20, 2025</td>
+                    </tr>
+                    <tr style="background-color: #fff5e1;">
+                        <td style="padding: 10px; border: 1px solid #ddd;">Centre</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">Yaoundé</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">April 26-27, 2025</td>
+                    </tr>
                 </tbody>
             </table>
             <h3 style="color: #ff4500; text-align: center; margin-top: 20px;">Finals Schedule</h3>
             <ul style="list-style: none; padding: 0;">
-                <li style="background-color: #ffe5b4; padding: 10px; border-radius: 5px; margin-bottom: 5px;">August 9: Prime 1 (25 candidates)</li>
-                <li style="background-color: #fff5e1; padding: 10px; border-radius: 5px; margin-bottom: 5px;">August 16: Prime 2 (20 candidates)</li>
-                <li style="background-color: #ffe5b4; padding: 10px; border-radius: 5px; margin-bottom: 5px;">August 23: Prime 3 (15 candidates)</li>
-                <li style="background-color: #fff5e1; padding: 10px; border-radius: 5px; margin-bottom: 5px;">August 30: Final Prime (10 candidates)</li>
+                <li style="background-color: #ffe5b4; padding: 10px; border-radius: 5px; margin-bottom: 5px;">August 9: Prime 1</li>
+                <li style="background-color: #fff5e1; padding: 10px; border-radius: 5px; margin-bottom: 5px;">August 17: Prime 2</li>
+                <li style="background-color: #ffe5b4; padding: 10px; border-radius: 5px; margin-bottom: 5px;">August 23: Prime 3</li>
+                <li style="background-color: #fff5e1; padding: 10px; border-radius: 5px; margin-bottom: 5px;">August 30: Final Prime</li>
             </ul>
         </div>
     </div>
@@ -436,10 +525,14 @@
         .ms-input2-box input, .ms-input2-box textarea {
             width: 164%;
         }
+        .partner-logos {
+            display: block;
+        }
     }
+
 </style>
 
-<div class="logo-container">
+<div class="logo-container partner-logos">
     <img src="{{ url('public/logo/' . $general_setting->site_logo) }}" alt="Site Logo">
     <img src="{{ url('public/logo/Beyond.png') }}" alt="Beyond Logo">
     <img src="{{ url('public/logo/Elfa.png') }}" alt="Elfa Logo">
@@ -461,7 +554,28 @@
 
 <!-- Initialize Swiper -->
 <script>
-var swiper = new Swiper(".swiper-container", {
+
+    window.addEventListener('load', () => {
+        const popup = document.getElementById('popup');
+        const closeBtn = document.getElementById('closeBtn');
+
+        // Show popup
+        popup.classList.add('active');
+
+        // Close on click
+        closeBtn.addEventListener('click', () => {
+            popup.classList.remove('active');
+        });
+
+        // Optional: Close when clicking outside the popup
+        popup.addEventListener('click', (e) => {
+            if (e.target === popup) {
+                popup.classList.remove('active');
+            }
+        });
+    });
+
+    var swiper = new Swiper(".swiper-container", {
     slidesPerView: 3,
     spaceBetween: 30,
     loop: true,
@@ -495,7 +609,7 @@ var swiper = new Swiper(".swiper-container", {
                                 <div class="ms-cta-content">
                                     <h2 class="section__title mb-25">{{trans("file.Most Voted Contestant of the Week")}}</h2>
                                     @if($best_musician)
-                                        <h4 class="section__title mb-25">({{ $best_musician->name }})</h4>
+                                        <h4 class="section__title mb-25">({{ $best_musician->name }}) => ({{@$best_musician_data->total_vote}}   {{trans("file.Votes")}})</h4>
                                     @endif
                                     <p class="mb-0">
                                         {{trans("file.Here comes the best Contestant of the week")}}!
@@ -537,9 +651,9 @@ var swiper = new Swiper(".swiper-container", {
                             <div class="tab-pane fade show active" id="nav-popular-1" role="tabpanel" aria-labelledby="nav-popular-1-tab" tabindex="0">
                                 <div class="swiper-container ms-popular-active fix">
                                     <div class="swiper-wrapper">
-                                        @foreach($best_musicians as $key => $best_musician)
+                                        @foreach($best_musicians as $key => $best_musician_data)
                                             @php
-                                                $best_musician  = Employee::find($best_musician->musician_id);
+                                                $best_musician  = Employee::find($best_musician_data->musician_id);
                                             @endphp
                                             <div class="swiper-slide">
                                                 <div class="ms-popular__item p-relative mb-30">
@@ -562,7 +676,7 @@ var swiper = new Swiper(".swiper-container", {
                                                             @else
                                                                 {{$key + 1}}th
                                                             @endif
-                                                            -- {{ $best_musician->name }}
+                                                            -- {{ $best_musician->name }} ({{ $best_musician_data->total_vote }})
 
                                                         </a>
                                                     </h4>
@@ -581,4 +695,9 @@ var swiper = new Swiper(".swiper-container", {
         <!-- CTA Area End Here  -->
 
     </main>
+    <script>
+        setTimeout(function() {
+            $(".alert").alert('close');
+        }, 10000); // 10000 milliseconds = 10 seconds
+    </script>
 @endsection

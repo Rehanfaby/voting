@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Ambassador;
+use App\Category;
 use App\Coin;
 use App\Employee;
 use App\Gallery;
+use App\GeneralSetting;
 use App\Judge;
 use App\User;
 use App\vote;
@@ -22,15 +24,22 @@ use App\Payment;
 use App\Account;
 use App\Product_Sale;
 use App\Customer;
+use App\Product;
+use App\Ticket;
 use DB;
 use Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Printing;
 use Rawilk\Printing\Contracts\Printer;
 use Spatie\Permission\Models\Role;
 use Stripe\EphemeralKey;
+use Stripe\Stripe;
 use Twilio\Rest\Client;
+use Illuminate\Support\Str;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Illuminate\Support\Facades\File;
 
 /*use vendor\autoload;
 use Mike42\Escpos\PrintConnectors\NetworkPrintConnector;
@@ -90,7 +99,7 @@ class HomeController extends Controller
     public function index()
     {
 
-        $this->checkVotePayment();
+//        $this->checkVotePayment();
         if(Auth::user()) {
             $role = Auth::user()->role_id;
             if($role == 1 || $role == 2) {
@@ -105,7 +114,7 @@ class HomeController extends Controller
 //        $start_date = date('Y-m-d', strtotime('last monday'));
 //        $end_date = date('Y-m-d');
 
-        $best_musician = DB::table('votes')
+        $best_musician_data = DB::table('votes')
             ->select('votes.musician_id', DB::raw('SUM(votes.vote) as total_vote'))
             ->join('employees', 'employees.id', '=', 'votes.musician_id')
 //            ->whereDate('votes.created_at', '>=', $start_date)
@@ -130,20 +139,21 @@ class HomeController extends Controller
             ->limit(5)
             ->get();
 
-        if($best_musician != null) {
-            $best_musician  = Employee::find($best_musician->musician_id);
+        if($best_musician_data != null) {
+            $best_musician  = Employee::find($best_musician_data->musician_id);
         } else {
-            $best_musician = DB::table('votes')
+            $best_musician_data = DB::table('votes')
                 ->select('votes.musician_id', DB::raw('SUM(votes.vote) as total_vote'))
                 ->join('employees', 'employees.id', '=', 'votes.musician_id')
                 ->where('employees.is_active', true)
+                ->where('employees.is_approve', true)
                 ->where('votes.status', true)
                 ->orderBy('total_vote', 'desc')
                 ->groupBy('votes.musician_id')
                 ->first();
 
-            if($best_musician != null) {
-                $best_musician  = Employee::find($best_musician->musician_id);
+            if($best_musician_data != null) {
+                $best_musician  = Employee::find($best_musician_data->musician_id);
             }
         }
 
@@ -154,7 +164,7 @@ class HomeController extends Controller
         }
 
 
-        return view('frontend.home', compact('musicians', 'judges', 'best_musician', 'see_votes', 'ambassadors', 'best_musicians'));
+        return view('frontend.home', compact('musicians', 'judges', 'best_musician', 'see_votes', 'ambassadors', 'best_musicians', 'best_musician_data'));
     }
 
     public function signup()
@@ -191,6 +201,35 @@ class HomeController extends Controller
         return view('frontend.employee', compact('musician', 'contentants', 'images', 'audios', 'videos', 'shorts', 'youtubes', 'see_votes'));
     }
 
+    public function events() {
+        $events = Category::where('is_active', true)->paginate(12);
+        return view('frontend.events', compact('events'));
+    }
+
+    public function tickets($id) {
+        $tickets = Product::where('category_id', $id)->where('is_active', true)->select('id', 'name', 'qty', 'image', 'price')->paginate(12);
+//        foreach ($tickets as $ticketProduct) {
+//            $soldQty = Ticket::where('product_id', $ticketProduct->id)
+//                ->where('status', 1)
+//                ->sum('qty');
+//
+//            $remainingQty = $ticketProduct->qty - $soldQty;
+//            $ticketProduct->remaining_qty = $remainingQty;
+//        }
+        return view('frontend.tickets', compact('tickets'));
+    }
+
+    public function ticket($id) {
+        $ticket = Product::find($id);
+        return view('frontend.ticket', compact('ticket'));
+    }
+
+    public function purchaseTicket(Request $request) {
+        $data = $request->all();
+        $ticket = Product::find($data['ticket_id']);
+        return view('frontend.ticket-payment', compact('data', 'ticket'));
+    }
+
     public function employeeFind(Request $request) {
         $musicians = Employee::where('name', 'LIKE', '%' . $request->search . '%')->where('is_active', true)->where('is_approve', true)->get();
         return view('frontend.team', compact('musicians'));
@@ -207,7 +246,154 @@ class HomeController extends Controller
         return view('frontend.votes', compact('votes'));
     }
 
+    public function userEvents() {
+        $tickets = Ticket::where('user_id', Auth::user()->id)->orderBy('id', 'desc')->paginate(5);
+        return view('frontend.ticket-purchased', compact('tickets'));
+    }
+
     public function musicianVotePayment(Request $request) {
+
+        $user = Auth::user() ?? null;
+        $password = rand(1, 999999);
+        $data['is_active'] = true;
+        $data['is_deleted'] = false;
+        $data['password'] = bcrypt($password);
+        $data['name'] = $request->phone;
+        $data['phone'] = $request->phone;
+        $data['whatsapp_number'] = $request->whatsapp_number ?? $request->phone;
+        $data['email'] = 'user@gmail.com';
+        $data['role_id'] = 3;
+
+        if($data['phone'] == null) {
+            return 'Phone cannot be null';
+        }
+
+        if ($user_check = User::where('phone', $request->phone)->first()) {
+            $user = $user_check;
+        }
+
+        if($user == null) {
+            $user = User::create($data);
+            $this->sendWhatsappMsg($user, $password);
+        }
+
+        $general_setting = GeneralSetting::pluck('vote_price')->first();
+        $vote = vote::create([
+                    'user_id' => $user->id,
+                    'musician_id' => $request->musician_id,
+                    'vote' => $request->vote,
+                    'status' => false,
+                    'reference' => 'abc',
+                    'price' => $general_setting,
+                    'grand_total' => $general_setting * $request->vote,
+                    'whatsapp_number' => $data['whatsapp_number']
+                ]);
+        $token = getenv("MOMO_TOKEN");
+        if($token && $vote) {
+            $route = route('musician.vote.payment.check');
+            $mtn_number = $data['phone'];
+            $amount = $request->amount;
+            $link = $this->mobileMoneyRequestLink($token, $amount, $route, $vote->id, $mtn_number);
+            if ($link == false) {
+                $message = 'Phone Number is incorrect or There is any other issue in payment method';
+                return redirect()->route('home')->with('not_permitted', $message);
+            }
+            header("Location: $link");
+            die();
+        }
+        $message = 'There is any other issue in payment method, please contact the system administrator';
+        return back()->with('not_permitted', $message);
+    }
+
+    public function musicianVotePaymentStripe(Request $request) {
+
+        $user = Auth::user() ?? null;
+        $password = rand(1, 999999);
+        $data['is_active'] = true;
+        $data['is_deleted'] = false;
+        $data['password'] = bcrypt($password);
+        $data['name'] = $request->phone;
+        $data['phone'] = $request->phone;
+        $data['whatsapp_number'] = $request->whatsapp_number ?? $request->phone;
+        $data['email'] = 'user@gmail.com';
+        $data['role_id'] = 3;
+
+        if($data['phone'] == null) {
+            return 'Phone cannot be null';
+        }
+
+        if ($user_check = User::where('phone', $request->phone)->first()) {
+            $user = $user_check;
+        }
+
+        if($user == null) {
+            $user = User::create($data);
+            $this->sendWhatsappMsg($user, $password);
+        }
+
+        $general_setting = GeneralSetting::pluck('vote_price')->first();
+        $vote = vote::create([
+            'user_id' => $user->id,
+            'musician_id' => $request->musician_id,
+            'vote' => $request->vote,
+            'status' => false,
+            'reference' => 'abc',
+            'price' => $general_setting,
+            'grand_total' => $general_setting * $request->vote,
+            'whatsapp_number' => $data['whatsapp_number']
+
+        ]);
+
+        if($vote) {
+            $route = route('musician.vote.payment.check.stripe');
+            $mtn_number = $data['phone'];
+            $amount = $request->amount;
+
+            $link = $this->createCheckoutSession($amount, $route, $vote->id, $vote);
+            if ($link == false) {
+                $message = 'There is any other issue in payment method';
+                return back()->with('not_permitted', $message);
+            }
+
+            return redirect($link);
+            die();
+        }
+        $message = 'There is any other issue in payment method, please contact the system administrator';
+        return back()->with('not_permitted', $message);
+    }
+
+
+    public function musicianVotePaymentCheckStripe(Request $request)
+    {
+
+        Stripe::setApiKey(env('STRIPE_SECRET'));
+
+        $session = \Stripe\Checkout\Session::retrieve($request->session_id);
+
+//        dd($session);
+
+        if ($session->payment_status !== 'paid') {
+            Vote::where('id', $session->metadata->vote_id)->delete();
+            return redirect()->back()->with('not_permitted', 'payment failed.');
+        }
+
+        $vote = Vote::where('id', $session->metadata->vote_id)->first();
+        $vote->status = true;
+        $vote->reference = $session->payment_intent;
+        $vote->save();
+
+        if($vote) {
+            $this->sendWhatsappMsgVoteMomoSuccess($vote->voters, $vote->vote, $vote->musician_id, $vote);
+            $message = 'Thank you for your voting';
+            return redirect()->route('home')->with('message', $message);
+        }
+
+        $message = 'There is any issue, please contact the system administrator';
+        return redirect()->route('home')->with('not_permitted', $message);
+
+    }
+
+        public function ticketPaymentStripe(Request $request) {
 
         $user = Auth::user() ?? null;
         $password = rand(1, 999999);
@@ -232,22 +418,149 @@ class HomeController extends Controller
             $this->sendWhatsappMsg($user, $password);
         }
 
-        $vote = vote::create([
-                    'user_id' => $user->id,
-                    'musician_id' => $request->musician_id,
-                    'vote' => $request->vote,
-                    'status' => false,
-                    'reference' => 'abc'
-                ]);
-        $token = getenv("MOMO_TOKEN");
-        if($token && $vote) {
-            $route = route('musician.vote.payment.check');
+        $product = Product::where('id', $request->ticket_id)->select('price')->first();
+        if($product == null) {
+            return 'Ticket not found';
+        }
+        $ticket = Ticket::create([
+            'user_id' => $user->id,
+            'product_id' => $request->ticket_id,
+            'qty' => $request->qty,
+            'status' => false,
+            'reference' => 'abc',
+            'identity_type' => $request->identity_type ?? 1,
+            'cnic' => $request->identity_number,
+            'student_card' => $request->student_number,
+            'passport' => $request->passport_number,
+            'phone' => $request->phone,
+            'name' => $request->name,
+            'email' => $request->email,
+            'token' => Str::random(6),
+            'price' => $product->price,
+            'total_amount' => $request->amount,
+            'payment_method' => 1
+        ]);
+
+        if($ticket) {
+            $route = route('ticket.payment.check.stripe');
             $mtn_number = $data['phone'];
             $amount = $request->amount;
-            $link = $this->mobileMoneyRequestLink($token, $amount, $route, $vote->id, $mtn_number);
+
+            $link = $this->createCheckoutSessionForTicket($amount, $route, $ticket->id);
+            if ($link == false) {
+                $message = 'There is any other issue in payment method';
+                return back()->with('not_permitted', $message);
+            }
+
+            return redirect($link);
+            die();
+        }
+        $message = 'There is any other issue in payment method, please contact the system administrator';
+        return back()->with('not_permitted', $message);
+    }
+
+
+    public function ticketPaymentCheckStripe(Request $request)
+    {
+
+        Stripe::setApiKey(env('STRIPE_SECRET'));
+
+        $session = \Stripe\Checkout\Session::retrieve($request->session_id);
+
+        if ($session->payment_status !== 'paid') {
+            Ticket::where('id', $session->metadata->ticket_id)->delete();
+            return redirect()->back()->with('not_permitted', 'payment failed.');
+        }
+
+        $ticket = Ticket::where('id', $session->metadata->ticket_id)->first();
+
+        if($ticket) {
+            $lastSeat = Ticket::where('product_id', $ticket->product_id)
+                    ->where('status', 1)
+                    ->get()
+                    ->pluck('seat_numbers')    // Get all seat_numbers arrays
+                    ->flatten()                // Flatten to a single array of seat numbers
+                    ->max();
+            $lastSeat = $lastSeat ? max(json_decode($lastSeat, true)) : 0;
+            $qty = (int) $ticket->qty;
+            $seatNumbers = range($lastSeat + 1, $lastSeat + $qty);
+
+            $ticket->status = true;
+            $ticket->reference = $session->payment_intent;
+            $ticket->seat_numbers = json_encode($seatNumbers);
+            $ticket->save();
+
+            $this->sendWhatsappMsgTicketMomoSuccess($ticket);
+            $message = 'Thank you for your Purchasing Ticket';
+            return redirect()->route('home')->with('message', $message);
+        }
+
+        $message = 'There is any issue, please contact the system administrator';
+        return redirect()->route('home')->with('not_permitted', $message);
+
+    }
+
+    public function ticketPayment(Request $request) {
+
+        $user = Auth::user() ?? null;
+        $password = rand(1, 999999);
+        $data['is_active'] = true;
+        $data['is_deleted'] = false;
+        $data['password'] = bcrypt($password);
+        $data['name'] = $request->name;
+        $data['phone'] = $request->phone;
+        $data['whatsapp_number'] = $request->whatsapp_number ?? $request->phone;
+        $data['email'] = $request->email ?? 'user@gmail.com';
+        $data['role_id'] = 3;
+
+
+        if($data['phone'] == null) {
+            return 'Phone cannot be null';
+        }
+
+        if ($user_check = User::where('phone', $request->phone)->first()) {
+            if($user_check->whatsapp_number !== $request->whatsapp_number) {
+                $user_check->whatsapp_number = $request->whatsapp_number;
+                $user_check->save();
+            }
+            $user = $user_check;
+        }
+
+        if($user == null) {
+            $user = User::create($data);
+            $this->sendWhatsappMsg($user, $password);
+        }
+        $product = Product::where('id', $request->ticket_id)->select('price')->first();
+        if($product == null) {
+            return 'Ticket not found';
+        }
+        $ticket = Ticket::create([
+                    'user_id' => $user->id,
+                    'product_id' => $request->ticket_id,
+                    'qty' => $request->qty,
+                    'status' => false,
+                    'reference' => 'abc',
+                    'identity_type' => $request->identity_type ?? 1,
+                    'cnic' => $request->identity_number,
+                    'student_card' => $request->student_number,
+                    'passport' => $request->passport_number,
+                    'phone' => $request->phone,
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'token' => Str::random(6),
+                    'price' => $product->price,
+                    'total_amount' => $request->amount,
+                    'payment_method' => 0
+                ]);
+        $token = getenv("MOMO_TOKEN");
+        if($token && $ticket) {
+            $route = route('ticket.payment.check');
+            $mtn_number = $data['phone'];
+            $amount = $request->amount;
+            $link = $this->mobileMoneyRequestLink($token, $amount, $route, $ticket->id, $mtn_number);
             if ($link == false) {
                 $message = 'Phone Number is incorrect or There is any other issue in payment method';
-                return back()->with('not_permitted', $message);
+                return redirect()->route('tickets')->with('not_permitted', $message);
             }
             header("Location: $link");
             die();
@@ -256,9 +569,43 @@ class HomeController extends Controller
         return back()->with('not_permitted', $message);
     }
 
+    public function ticketPaymentCheck(Request $request)
+    {
+        if($request->status != 'SUCCESSFUL'){
+            Ticket::where('id', $request->external_reference)->delete();
+            return redirect()->route('tickets')->with('not_permitted', 'payment failed.');
+        }
+
+        $ticket = Ticket::where('id', $request->external_reference)->first();
+
+        if($ticket) {
+            $lastSeat = Ticket::where('product_id', $ticket->product_id)
+                                ->where('status', 1)
+                                ->get()
+                                ->pluck('seat_numbers')    // Get all seat_numbers arrays
+                                ->flatten()                // Flatten to a single array of seat numbers
+                                ->max();
+            $lastSeat = $lastSeat ? max(json_decode($lastSeat, true)) : 0;
+            $qty = (int) $ticket->qty;
+            $seatNumbers = range($lastSeat + 1, $lastSeat + $qty);
+
+            $ticket->status = true;
+            $ticket->reference = $request->reference;
+            $ticket->seat_numbers = json_encode($seatNumbers);
+            $ticket->save();
+
+            $this->sendWhatsappMsgTicketMomoSuccess($ticket);
+            $message = 'Thank you for your Purchasing Ticket';
+            return redirect()->route('home')->with('message', $message);
+        }
+
+        $message = 'There is any issue, please contact the system administrator';
+        return redirect()->back()->with('not_permitted', $message);
+
+    }
+
     public function musicianVotePaymentCheck(Request $request)
     {
-//        dd($request->all());
         if($request->status != 'SUCCESSFUL'){
             Vote::where('id', $request->external_reference)->delete();
             return redirect()->back()->with('not_permitted', 'payment failed.');
@@ -270,7 +617,7 @@ class HomeController extends Controller
         $vote->save();
 
         if($vote) {
-            $this->sendWhatsappMsgVoteMomoSuccess($vote->voters, $vote->vote, $vote->musician_id);
+            $this->sendWhatsappMsgVoteMomoSuccess($vote->voters, $vote->vote, $vote->musician_id, $vote);
             $message = 'Thank you for your voting';
             return redirect()->back()->with('message', $message);
         }
@@ -278,6 +625,27 @@ class HomeController extends Controller
         $message = 'There is any issue, please contact the system administrator';
         return redirect()->back()->with('not_permitted', $message);
 
+    }
+
+    public function handleCampayWebhook(Request $request)
+    {
+        $data = $request->all();
+
+        Log::info('Campay Webhook Received', $data);
+
+        if (($data['status'] ?? '') === 'SUCCESSFUL' && isset($data['external_reference'])) {
+            $vote = Vote::where('id', $data['external_reference'])->first();
+
+            if ($vote && !$vote->status) {
+                $vote->status = true;
+                $vote->reference = $data['reference'] ?? 'from_webhook';
+                $vote->save();
+                Log::info('Campay Webhook Completed', $data);
+                $this->sendWhatsappMsgVoteMomoSuccess($vote->voters, $vote->vote, $vote->musician_id, $vote);
+            }
+        }
+
+        return response()->json(['status' => 'ok'], 200);
     }
 
     public function musicianVotePaymentCoin(Request $request) {
@@ -318,13 +686,17 @@ class HomeController extends Controller
             $this->sendWhatsappMsg($user, $password);
         }
 
+        $general_setting = GeneralSetting::pluck('vote_coin')->first();
         if($request->amount <= $coin_check->coin) {
             vote::create([
                 'user_id' => $user->id,
                 'musician_id' => $request->musician_id,
                 'vote' => $request->vote,
                 'status' => true,
-                'reference' => rand(1, 999999)
+                'reference' => rand(1, 999999),
+                'price' => $general_setting,
+                'grand_total' => $request->amount,
+                'whatsapp_number' => $data['whatsapp_number']
             ]);
             $remaining_coin = $coin_check->coin - $request->amount;
 
@@ -361,7 +733,7 @@ class HomeController extends Controller
         }
     }
 
-    private function sendOTP($user) {
+    public function sendOTP($user) {
         if ($user->otp_time == null || $user->otp_time < date('Y-m-d H:i:s', strtotime('-1 minutes'))) {
             $otp = rand(1, 999999);
             $msg = "Your OTP is: " . $otp . "\n That will be expired after 2 minutes";
@@ -496,35 +868,43 @@ class HomeController extends Controller
 
     }
 
-    private function checkVotePayment(){
-        $votes = vote::where('created_at', '>' , date('Y-m-d H:i:s', strtotime('-1440 minutes')))->where('status', 0)->get();
-        if($votes->isEmpty()) {
-            return true;
-        }
-
-        $token = getenv("MOMO_TOKEN");
-        foreach ($votes as $vote) {
-            $status = $this->mobileMoneyStatus($token, $vote->reference);
-            if($status == 1) {
-                $vote->update(['status' => 1]);
-                $this->sendWhatsappMsgVoteMomoSuccess($vote->voters, $vote->vote, $vote->musician_id);
-            }
-            if($status == 2) {
-                $vote->update(['status' => 2]);
-            }
-        }
-    }
+//    private function checkVotePayment(){
+//        $votes = vote::where('created_at', '>' , date('Y-m-d H:i:s', strtotime('-1440 minutes')))->where('status', 0)->get();
+//        if($votes->isEmpty()) {
+//            return true;
+//        }
+//
+//        $token = getenv("MOMO_TOKEN");
+//        foreach ($votes as $vote) {
+//            $status = $this->mobileMoneyStatus($token, $vote->reference);
+//            if($status == 1) {
+//                $vote->update(['status' => 1]);
+//                $this->sendWhatsappMsgVoteMomoSuccess($vote->voters, $vote->vote, $vote->musician_id);
+//            }
+//            if($status == 2) {
+//                $vote->update(['status' => 2]);
+//            }
+//        }
+//    }
 
     public function sendWhatsappMsg($user, $password){
 
-        $msg = '*Congrats:* Your account has been created' . '\n\n';
-        $msg .= '*User name:* '. $user->name . '\n\n';
-        $msg .= '*Phone number:* '. $user->phone . '\n\n';
-        $msg .= '*Password:* '. $password . '\n\n';
+//        $msg = '*Congrats:* Your account has been created' . '\n\n';
+//        $msg .= '*User name:* '. $user->name . '\n\n';
+//        $msg .= '*Phone number:* '. $user->phone . '\n\n';
+//        $msg .= '*Password:* '. $password . '\n\n';
+
+        $msg = "Account Creation\n\n";
+        $msg .= "🎉 *Félicitations : Votre compte a été créé ! / Congrats: Your Account has been Created!* 🎉\n";
+        $msg .= "👤 *Nom d'utilisateur / Username:* " . $user->name . "\n";
+        $msg .= "📱 *Numéro de téléphone / Phone Number:* " . $user->phone . "\n";
+        $msg .= "🔐 *Mot de passe / Password:* " . $password . "\n\n";
+        $msg .= "✅ *Bienvenue à bord ! / Welcome aboard!* 🙌\n\n";
+        $msg .= "🌐". getenv("APP_NAME");
 
 
         try{
-            $this->wpMessage($user->phone, $msg);
+            $this->wpMessage($user->whatsapp_number ?? $user->phone, $msg);
         }
         catch(\Exception $e){
 
@@ -539,16 +919,35 @@ class HomeController extends Controller
         $musician = Employee::select('name', 'id')->find($musician_id);
         $total_votes = vote::where('musician_id', $musician_id)->where('status', true)->sum('vote');
 
-        $msg = '*Congrats:* You have casted ' . $vote;
-        if ($vote == 1) {
-            $msg .= ' vote ';
-        } else {
-            $msg .= ' votes ';
-        }
-        $msg .= 'for ' .$musician->name . '\n\n';
-        $msg .= $musician->name . '`s total votes are  '.$total_votes.'\n\n';
+//        $msg = '*Congrats:* You have casted ' . $vote;
+//        if ($vote == 1) {
+//            $msg .= ' vote ';
+//        } else {
+//            $msg .= ' votes ';
+//        }
+//        $msg .= 'for ' .$musician->name . '\n\n';
+//        $msg .= $musician->name . '`s total votes are  '.$total_votes.'\n\n';
+//
+//        $msg .= 'Your remaining coins are  '.$remaining_coin.'\n\n';
 
-        $msg .= 'Your remaining coins are  '.$remaining_coin.'\n\n';
+
+        $msg = "🗳️ Merci pour votre vote ! 🙏 / Thank You for Your Vote! 🙏\n\n";
+        $msg .= "✅ Vous avez voté ".$vote." fois pour 🌟 {$musician->name} !\n";
+        $msg .= "✅ You have successfully cast ".$vote." vote";
+        $msg .= $vote > 1 ? "s" : "";
+        $msg .= " for 🌟 {$musician->name}!\n\n";
+
+        $msg .= "📊 {$musician->name} a maintenant un total de ".$total_votes." votes 🎉👏\n";
+        $msg .= "📊 {$musician->name} now has a total of ".$total_votes." votes 🎉👏\n\n";
+
+        $msg .= "🪙 Coins restants : ".$remaining_coin."\n";
+        $msg .= "🪙 Remaining Coins: ".$remaining_coin."\n\n";
+
+        $msg .= "🙌 Continuez à soutenir ! Chaque vote compte ! 💪🔥\n";
+        $msg .= "🙌 Keep the support coming! Every vote counts! 💪🔥\n\n";
+
+        $msg .= "🌐". getenv("APP_NAME");
+
 
         try{
             $this->wpMessage($user->phone, $msg);
@@ -587,30 +986,139 @@ class HomeController extends Controller
         return true;
     }
 
-    public function sendWhatsappMsgVoteMomoSuccess($user, $vote, $musician_id)
+    public function sendWhatsappMsgTicketMomoSuccess($ticket)
+    {
+
+        $msg = '*Thank you for your Purchasing Ticket,*  \n\n';
+
+        $msg .= 'You have purchased ' . $ticket->qty . ' ticket(s) for ' . $ticket->product->name . '\n\n';
+        $msg .= 'Your ticket number is: ' . $ticket->token . '\n\n';
+        $msg .= 'Your Seat number is: ' . $ticket->seat_numbers . '\n\n';
+        $msg .= 'QR code has been sent to your whatsapp number please scan it at the entrance of the event' . '\n\n';
+
+        $user = User::find($ticket->user_id);
+
+        try{
+            $this->wpMessage($user->whatsapp_number ?? $user->phone, $msg);
+        }
+        catch(\Exception $e){
+
+        }
+
+        // send QR code
+        $filename = 'qr_code_' . $ticket->token . '.png';
+        $path = public_path('public/images/customer/docs/');
+
+        if (!File::exists($path)) {
+            File::makeDirectory($path, 0755, true);
+        }
+        $url = url("/ticket/scan/$ticket->token");
+
+        QrCode::format('png')->size(300)->generate($url, $path . $filename);
+
+        try {
+            $this->wpAttachMessage($path.$filename, $user->phone, $filename);
+        } catch (\Exception $e) {
+
+        }
+
+        return true;
+    }
+
+    public function sendWhatsappMsgVoteMomoSuccess($user, $vote, $musician_id, $vote_data)
     {
         $musician = Employee::select('name', 'id')->find($musician_id);
         $total_votes = vote::where('musician_id', $musician_id)->where('status', true)->sum('vote');
 
-        $msg = '*Thank you for your vote,*  \n\n';
+//        $msg = '*Thank you for your vote,*  \n\n';
+//
+//        $msg .= 'You have casted ' . $vote;
+//        if ($vote == 1) {
+//            $msg .= ' vote ';
+//        } else {
+//            $msg .= ' votes ';
+//        }
+//        $msg .= 'for ' .$musician->name . '\n\n';
+//        $msg .= $musician->name . '`s total votes are  '.$total_votes.'\n\n';
 
-        $msg .= 'You have casted ' . $vote;
-        if ($vote == 1) {
-            $msg .= ' vote ';
-        } else {
-            $msg .= ' votes ';
-        }
-        $msg .= 'for ' .$musician->name . '\n\n';
-        $msg .= $musician->name . '`s total votes are  '.$total_votes.'\n\n';
+
+        $msg = "🗳️ Merci pour votre vote ! 🙏 / Thank You for Your Vote! 🙏\n\n";
+        $msg .= "✅ Vous avez voté ".$vote." fois pour 🌟 {$musician->name} !\n";
+        $msg .= "✅ You have successfully cast ".$vote." vote";
+        $msg .= $vote > 1 ? "s" : "";
+        $msg .= " for 🌟 {$musician->name}!\n\n";
+
+        $msg .= "📊 {$musician->name} a maintenant un total de ".$total_votes." votes 🎉👏\n";
+        $msg .= "📊 {$musician->name} now has a total of ".$total_votes." votes 🎉👏\n\n";
+
+        $msg .= "🙌 Continuez à soutenir ! Chaque vote compte ! 💪🔥\n";
+        $msg .= "🙌 Keep the support coming! Every vote counts! 💪🔥\n\n";
+
+        $msg .= "🌐". getenv("APP_NAME");
 
         try{
-            $this->wpMessage($user->phone, $msg);
+            $this->wpMessage($vote_data->whatsapp_number ?? $user->phone, $msg);
         }
         catch(\Exception $e){
 
         }
 
         return true;
+    }
+
+
+
+    public function ticketScan($token) {
+        $ticket = Ticket::where('token', $token)->first();
+        $error = false;
+        if($ticket) {
+            return view('frontend.ticket-scan-permission', compact('ticket'));
+        } else {
+            return view('frontend.ticket-scan-permission', compact('error'));
+        }
+    }
+
+    public function ticketScanUsed($token) {
+        $ticket = Ticket::where('token', $token)->first();
+
+        if($ticket) {
+            if($ticket->is_used == true) {
+                $error = 'This ticket has already been scanned, Ticket was scanned at: ' . $ticket->used_at;
+                return view('frontend.ticket-scan', compact('error'));
+            }
+            if($ticket->status == false) {
+                $error = 'This ticket is not paid yet';
+                return view('frontend.ticket-scan', compact('error'));
+            }
+            if($ticket->product->is_active == false) {
+                $error = 'This ticket is not valid';
+                return view('frontend.ticket-scan', compact('error'));
+            }
+            if($ticket->product->event_day && $ticket->product->event_day < date('Y-m-d')) {
+                $error = 'This ticket is not valid, event date has been passed, Event date: ' . $ticket->product->event_day;
+                return view('frontend.ticket-scan', compact('error'));
+            }
+            $user = User::find($ticket->user_id);
+            if($user) {
+                $msg = '*Ticket Scan Alert:* Your ticket has been scanned successfully' . '\n\n';
+                $msg .= '*Ticket number:* '. $ticket->token . '\n\n';
+                $msg .= '*Event name:* '. $ticket->product->name . '\n\n';
+                $msg .= '*Event date:* '. $ticket->product->event_day . '\n\n';
+                try{
+                    $this->wpMessage($user->phone, $msg);
+                }
+                catch(\Exception $e){
+
+                }
+            }
+            Ticket::where('token', $token)->update(['is_used' => true, 'used_at' => date('Y-m-d H:i:s')]);
+
+            $success = 'Ticket has been scanned successfully';
+            return view('frontend.ticket-scan', compact('success', 'ticket'));
+        } else {
+            $error = 'This ticket is not valid';
+            return view('frontend.ticket-scan', compact('ticket'));
+        }
     }
 
 

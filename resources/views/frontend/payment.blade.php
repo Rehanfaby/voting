@@ -34,7 +34,7 @@
                                 <table class="table table-striped table-hover">
                                     <thead>
                                     <tr>
-                                        <th>{{trans("file.Musician")}}</th>
+                                        <th>{{trans("file.Contestant")}}</th>
                                         <th>{{trans("file.Votes")}}</th>
                                         <th>{{trans("file.Amount")}}</th>
                                     </tr>
@@ -54,7 +54,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-6 col-sm-12">
+                    <div class="col-md-4 col-sm-12">
                         <div class="ms-maxw-510">
                                 <div class="ms-login-wrap text-center ms-login-space ms-bg-2">
                                     <h3 class="ms-title4 mb-50">{{trans("file.Pay By MOMO or OM")}}</h3>
@@ -65,11 +65,24 @@
                                         $user = \Illuminate\Support\Facades\Auth::user();
                                         @endphp
                                         <div class="ms-input2-box mb-25">
-                                            @if(!$user)
-                                                <input type="text" name="phone" required placeholder="{{trans("file.Phone number")}}" value="+237" id="inputField">
-                                            @else
-                                                <input type="text" name="phone" required placeholder="{{trans("file.Phone number")}}" value="{{ $user->phone }}" id="inputField">
-                                            @endif
+                                            <div class="row mb-2 align-items-center">
+                                                <label class="col-sm-3 col-form-label">{{ trans("file.Momo Number") }}</label>
+                                                <div class="col-sm-9">
+                                                    @if(!$user)
+                                                        <input type="text" name="phone" required value="+237" id="inputField" class="form-control">
+                                                    @else
+                                                        <input type="text" name="phone" required value="{{ $user->phone }}" id="inputField" class="form-control">
+                                                    @endif
+                                                </div>
+                                            </div>
+
+                                            <div class="row mb-2 align-items-center">
+                                                <label class="col-sm-3 col-form-label">{{ trans("file.Whatsapp number") }}</label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" name="whatsapp_number" placeholder="{{trans("file.Whatsapp number")}}" class="form-control" value="+237">
+                                                </div>
+                                            </div>
+
                                             <input type="hidden" name="musician_id" value="{{ $musician->id }}">
                                             <input type="hidden" name="vote" value="{{ $data['vote'] }}">
                                             <input type="hidden" name="amount" value="{{ $data['vote'] * $general_setting->vote_price }}">
@@ -80,6 +93,39 @@
                                     </form>
                                 </div>
                             </div>
+                    </div>
+                    <div class="col-md-4 col-sm-12">
+                        <div class="ms-maxw-510">
+                            <div class="ms-login-wrap text-center ms-login-space ms-bg-2">
+                                <h3 class="ms-title4 mb-50">{{trans("file.Pay By Visa or Master Card")}}</h3>
+                                <sub>{{ trans('file.Minimum amount for stripe is') }} {{ env('STRIPE_MINIMUM_AMOUNT') }}</sub>
+                                <div class="text-center message-status"></div>
+                                <form id="" method="post" action="{{ route('musician.vote.payment.stripe') }}">
+                                    @csrf
+                                    @php
+                                        $user = \Illuminate\Support\Facades\Auth::user();
+                                    @endphp
+                                    <div class="ms-input2-box mb-25">
+                                        @if(!$user)
+                                            <input type="text" name="phone" required placeholder="{{trans("file.Phone number")}}" value="+237" id="inputField">
+                                        @else
+                                            <input type="text" name="phone" required placeholder="{{trans("file.Phone number")}}" value="{{ $user->phone }}" id="inputField">
+                                        @endif
+                                        <input type="hidden" name="musician_id" value="{{ $musician->id }}">
+                                        <input type="hidden" name="vote" value="{{ $data['vote'] }}">
+                                        <input type="hidden" name="amount" value="{{ $data['vote'] * $general_setting->vote_price }}">
+                                    </div>
+                                    <div class="ms-submit-btn mb-40">
+{{--                                        @dd(($data['vote'] * $general_setting->vote_price) >= env('STRIPE_MINIMUM_AMOUNT'))--}}
+                                        @if(($data['vote'] * $general_setting->vote_price) >= env('STRIPE_MINIMUM_AMOUNT'))
+                                            <button id="payment-button" class="unfill__btn d-block w-100">{{trans("file.Pay")}} {{ $data['vote'] * $general_setting->vote_price }} {{ $currency->code }}</button>
+                                        @else
+                                            <button id="payment-button" style="cursor: not-allowed" disabled class="unfill__btn d-block w-100">{{trans("file.Pay")}} {{ $data['vote'] * $general_setting->vote_price }} {{ $currency->code }}</button>
+                                        @endif
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                     </div>
 {{--                    <div class="col-md-6 col-sm-12">--}}
 {{--                        <div class="ms-maxw-510">--}}
@@ -105,7 +151,7 @@
 {{--                            </div>--}}
 {{--                        </div>--}}
 {{--                    </div>--}}
-                    <div class="col-md-6 col-sm-12">
+                    <div class="col-md-4 col-sm-12">
                         <div class="ms-maxw-510">
                             <div class="ms-login-wrap text-center ms-login-space ms-bg-2">
                                 <h3 class="ms-title4 mb-50">{{trans("file.Pay By Beyond Coin")}}</h3>

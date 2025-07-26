@@ -45,7 +45,7 @@
                     <th class="not-exported"></th>
                     <th>{{trans('file.Date')}}</th>
                     <th>{{trans('file.reference')}} No</th>
-                    <th>{{trans('file.Contentment')}}</th>
+                    <th>{{trans('file.Contestant')}}</th>
                     <th>{{trans('file.Voter name')}}</th>
                     <th>{{trans('file.Votes')}}</th>
                     <th>{{trans('file.Status')}}</th>

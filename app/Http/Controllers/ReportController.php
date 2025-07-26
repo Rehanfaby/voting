@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Booking;
 use App\BookingProduct;
 use App\Category;
+use App\Ticket;
 use Illuminate\Http\Request;
 use App\Product;
 use App\ProductPurchase;
@@ -67,6 +68,41 @@ class ReportController extends Controller
                 ->get();
 
             return view('report.voting', compact('start_date', 'end_date', 'votes', 'all_permission'));
+        }
+        else
+            return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
+    }
+
+    public function ticketPurchaseReport(Request $request)
+    {
+        $start_date = null;
+        $role = Role::find(Auth::user()->role_id);
+        if($role->hasPermissionTo('vote-report')){
+            $permissions = Role::findByName($role->name)->permissions;
+            foreach ($permissions as $permission)
+                $all_permission[] = $permission->name;
+            if($request->start_date) {
+                $start_date = $request->start_date;
+                $end_date = $request->end_date;
+            }
+            else {
+                $start_date = '2023-07-01';
+                $end_date = date('Y-m-d');
+            }
+            $status = $request->status ?? 2;
+
+            $tickets = Ticket::with('product')->where('status', 1)
+                ->whereDate('created_at', '>=', $start_date)
+                ->whereDate('created_at', '<=', $end_date);
+
+            if ($status == 0) {
+                $tickets = $tickets->where('is_used', 0);
+            } elseif ($status == 1) {
+                $tickets = $tickets->where('is_used', 1);
+            }
+            $tickets =  $tickets->orderBy('created_at', 'desc')->get();
+
+            return view('report.ticket-purchase', compact('start_date', 'end_date', 'tickets', 'all_permission', 'status'));
         }
         else
             return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
