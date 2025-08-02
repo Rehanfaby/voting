@@ -28,7 +28,7 @@
                     <th>{{trans('file.Company Name')}}</th>
                     <th>{{trans('file.Phone Number')}}</th>
                     <th>{{trans('file.Role')}}</th>
-                    <th>Beyond Coins</th>
+{{--                    <th>Beyond Coins</th>--}}
                     <th>{{trans('file.Status')}}</th>
                     <th class="not-exported">{{trans('file.action')}}</th>
                 </tr>
@@ -43,7 +43,7 @@
                     <td>{{ $user->phone}}</td>
                     <?php $role = DB::table('roles')->find($user->role_id);?>
                     <td>{{ $role->name }}</td>
-                    <td>{{ $user->beyond_coin }}</td>
+{{--                    <td>{{ $user->beyond_coin }}</td>--}}
                     @if($user->is_active)
                     <td><div class="badge badge-success">Active</div></td>
                     @else

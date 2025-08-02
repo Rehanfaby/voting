@@ -393,7 +393,7 @@ class HomeController extends Controller
 
     }
 
-        public function ticketPaymentStripe(Request $request) {
+    public function ticketPaymentStripe(Request $request) {
 
         $user = Auth::user() ?? null;
         $password = rand(1, 999999);
@@ -1017,7 +1017,7 @@ class HomeController extends Controller
         QrCode::format('png')->size(300)->generate($url, $path . $filename);
 
         try {
-            $this->wpAttachMessage($path.$filename, $user->phone, $filename);
+            $this->wpAttachMessage($path.$filename, $user->whatsapp_number ?? $user->phone, $filename);
         } catch (\Exception $e) {
 
         }
