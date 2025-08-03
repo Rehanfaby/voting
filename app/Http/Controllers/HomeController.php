@@ -9,6 +9,7 @@ use App\Employee;
 use App\Gallery;
 use App\GeneralSetting;
 use App\Judge;
+use App\TicketSeat;
 use App\User;
 use App\vote;
 use Illuminate\Http\Request;
@@ -475,22 +476,8 @@ class HomeController extends Controller
         $ticket = Ticket::where('id', $session->metadata->ticket_id)->first();
 
         if($ticket) {
-            $lastSeat = Ticket::where('product_id', $ticket->product_id)
-                    ->where('status', 1)
-                    ->get()
-                    ->pluck('seat_numbers')    // Get all seat_numbers arrays
-                    ->flatten()                // Flatten to a single array of seat numbers
-                    ->max();
-            $lastSeat = $lastSeat ? max(json_decode($lastSeat, true)) : 0;
-            $qty = (int) $ticket->qty;
-            $seatNumbers = range($lastSeat + 1, $lastSeat + $qty);
+            $this->processTicketSuccessfulPayment($ticket, $session->payment_intent);
 
-            $ticket->status = true;
-            $ticket->reference = $session->payment_intent;
-            $ticket->seat_numbers = json_encode($seatNumbers);
-            $ticket->save();
-
-            $this->sendWhatsappMsgTicketMomoSuccess($ticket);
             $message = 'Thank you for your Purchasing Ticket';
             return redirect()->route('home')->with('message', $message);
         }
@@ -577,30 +564,41 @@ class HomeController extends Controller
         }
 
         $ticket = Ticket::where('id', $request->external_reference)->first();
-
         if($ticket) {
-            $lastSeat = Ticket::where('product_id', $ticket->product_id)
-                                ->where('status', 1)
-                                ->get()
-                                ->pluck('seat_numbers')    // Get all seat_numbers arrays
-                                ->flatten()                // Flatten to a single array of seat numbers
-                                ->max();
-            $lastSeat = $lastSeat ? max(json_decode($lastSeat, true)) : 0;
-            $qty = (int) $ticket->qty;
-            $seatNumbers = range($lastSeat + 1, $lastSeat + $qty);
+            $this->processTicketSuccessfulPayment($ticket, $request->reference);
 
-            $ticket->status = true;
-            $ticket->reference = $request->reference;
-            $ticket->seat_numbers = json_encode($seatNumbers);
-            $ticket->save();
-
-            $this->sendWhatsappMsgTicketMomoSuccess($ticket);
             $message = 'Thank you for your Purchasing Ticket';
             return redirect()->route('home')->with('message', $message);
         }
 
         $message = 'There is any issue, please contact the system administrator';
         return redirect()->back()->with('not_permitted', $message);
+
+    }
+
+    private function processTicketSuccessfulPayment($ticket, $reference)
+    {
+        $lastSeat = TicketSeat::where('product_id', $ticket->product_id)->orderBy('id', 'desc')->first()->seat_number ?? 0;
+        $qty = (int) $ticket->qty;
+        $seatNumbers = range($lastSeat + 1, $lastSeat + $qty);
+
+        $ticket->status = true;
+        $ticket->reference = $reference;
+        $ticket->seat_numbers = json_encode($seatNumbers);
+        $ticket->save();
+
+        for ($i = 1; $i <= $qty; $i++) {
+            $lastSeat++;
+            TicketSeat::create([
+                'ticket_id' => $ticket->id,
+                'product_id' => $ticket->product_id,
+                'seat_number' => $lastSeat,
+                'token' => Str::random(6)
+            ]);
+        }
+
+        $this->sendWhatsappMsgTicketMomoSuccess($ticket);
+        return true;
 
     }
 
@@ -989,39 +987,37 @@ class HomeController extends Controller
     public function sendWhatsappMsgTicketMomoSuccess($ticket)
     {
 
-        $msg = '*Thank you for your Purchasing Ticket,*  \n\n';
+        $ticketSeats = TicketSeat::where('ticket_id', $ticket->id)->get();
 
-        $msg .= 'You have purchased ' . $ticket->qty . ' ticket(s) for ' . $ticket->product->name . '\n\n';
-        $msg .= 'Your ticket number is: ' . $ticket->token . '\n\n';
-        $msg .= 'Your Seat number is: ' . $ticket->seat_numbers . '\n\n';
-        $msg .= 'QR code has been sent to your whatsapp number please scan it at the entrance of the event' . '\n\n';
-
-        $user = User::find($ticket->user_id);
-
-        try{
-            $this->wpMessage($user->whatsapp_number ?? $user->phone, $msg);
-        }
-        catch(\Exception $e){
-
-        }
-
-        // send QR code
-        $filename = 'qr_code_' . $ticket->token . '.png';
         $path = public_path('public/images/customer/docs/');
-
         if (!File::exists($path)) {
             File::makeDirectory($path, 0755, true);
         }
-        $url = url("/ticket/scan/$ticket->token");
 
-        QrCode::format('png')->size(300)->generate($url, $path . $filename);
+        foreach ($ticketSeats as $ticketSeat) {
+            $msg = '*Thank you for your Purchasing Ticket,*  \n\n';
+            $msg .= 'You have purchased ' . 1 . ' ticket for ' . $ticket->product->name . '\n\n';
+            $msg .= 'Your ticket number is: ' . $ticketSeat->token . '\n\n';
+            $msg .= 'Your Seat number is: ' . $ticketSeat->seat_number . '\n\n';
+            $msg .= 'QR code has been sent to your whatsapp number please scan it at the entrance of the event' . '\n\n';
 
-        try {
-            $this->wpAttachMessage($path.$filename, $user->whatsapp_number ?? $user->phone, $filename);
-        } catch (\Exception $e) {
+            $user = User::find($ticket->user_id);
 
+            try{
+                $this->wpMessage($user->whatsapp_number ?? $user->phone, $msg);
+            }
+            catch(\Exception $e){
+            }
+
+            // send QR code
+            $filename = 'qr_code_' . $ticketSeat->token . '.png';
+            $url = url("/ticket/scan/$ticketSeat->token");
+            QrCode::format('png')->size(300)->generate($url, $path . $filename);
+            try {
+                $this->wpAttachMessage($path.$filename, $user->whatsapp_number ?? $user->phone, $filename);
+            } catch (\Exception $e) {
+            }
         }
-
         return true;
     }
 
@@ -1069,21 +1065,23 @@ class HomeController extends Controller
 
 
     public function ticketScan($token) {
-        $ticket = Ticket::where('token', $token)->first();
+        $ticketSeat = TicketSeat::where('token', $token)->first();
         $error = false;
-        if($ticket) {
-            return view('frontend.ticket-scan-permission', compact('ticket'));
+        if($ticketSeat) {
+            $ticket = $ticketSeat->ticket;
+            return view('frontend.ticket-scan-permission', compact('ticket', 'ticketSeat'));
         } else {
             return view('frontend.ticket-scan-permission', compact('error'));
         }
     }
 
     public function ticketScanUsed($token) {
-        $ticket = Ticket::where('token', $token)->first();
+        $ticketSeat = TicketSeat::where('token', $token)->first();
 
-        if($ticket) {
-            if($ticket->is_used == true) {
-                $error = 'This ticket has already been scanned, Ticket was scanned at: ' . $ticket->used_at;
+        if($ticketSeat) {
+            $ticket = Ticket::where('id', $ticketSeat->ticket_id)->first();
+            if($ticketSeat->is_used == true) {
+                $error = 'This ticket has already been scanned, Ticket was scanned at: ' . $ticketSeat->used_at;
                 return view('frontend.ticket-scan', compact('error'));
             }
             if($ticket->status == false) {
@@ -1101,23 +1099,32 @@ class HomeController extends Controller
             $user = User::find($ticket->user_id);
             if($user) {
                 $msg = '*Ticket Scan Alert:* Your ticket has been scanned successfully' . '\n\n';
-                $msg .= '*Ticket number:* '. $ticket->token . '\n\n';
+                $msg .= '*Ticket number:* '. $token . '\n\n';
+                $msg .= '*Seat number:* '. $ticketSeat->seat_number . '\n\n';
                 $msg .= '*Event name:* '. $ticket->product->name . '\n\n';
                 $msg .= '*Event date:* '. $ticket->product->event_day . '\n\n';
                 try{
-                    $this->wpMessage($user->phone, $msg);
+                    $this->wpMessage($user->whatsapp_number ?? $user->phone, $msg);
                 }
                 catch(\Exception $e){
 
                 }
             }
-            Ticket::where('token', $token)->update(['is_used' => true, 'used_at' => date('Y-m-d H:i:s')]);
+            $ticketSeat->is_used = true;
+            $ticketSeat->used_at = date('Y-m-d H:i:s');
+            $ticketSeat->save();
+            $unUsedSeats = TicketSeat::where('ticket_id', $ticket->id)->where('is_used', false)->count();
+            if($unUsedSeats == 0) {
+                $ticket->is_used = true;
+                $ticket->used_at = date('Y-m-d H:i:s');
+                $ticket->save();
+            }
 
             $success = 'Ticket has been scanned successfully';
-            return view('frontend.ticket-scan', compact('success', 'ticket'));
+            return view('frontend.ticket-scan', compact('success', 'ticket', 'ticketSeat'));
         } else {
             $error = 'This ticket is not valid';
-            return view('frontend.ticket-scan', compact('ticket'));
+            return view('frontend.ticket-scan', compact('error'));
         }
     }
 

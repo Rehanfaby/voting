@@ -275,29 +275,31 @@ class CategoryController extends Controller
 
     public function categoryStats($id)
     {
-        // Fetch all active products under this category in one go (eager loading tickets)
-        $products = Product::with(['tickets' => function ($query) {
-            $query->where('status', 1);
-        }])
+        // Eager load tickets and their ticket_seats
+        $products = Product::with(['tickets.ticketSeat'])
             ->where('category_id', $id)
             ->where('is_active', 1)
             ->get();
 
-        // Initialize totals
+        // Initialize counters
         $totalQty = 0;
         $bookedQty = 0;
         $usedQty = 0;
 
-        // Build product-wise listing and totals
         $productStats = $products->map(function ($product) use (&$totalQty, &$bookedQty, &$usedQty) {
-            $qty = $product->qty;
+            $qty = $product->qty; // total seats available
             $totalQty += $qty;
 
-            $tickets = $product->tickets ?? collect();
-            $booked = $tickets->sum('qty');
-            $bookedQty += $booked;
+            $booked = 0;
+            $used = 0;
 
-            $used = $tickets->where('is_used', 1)->sum('qty');
+            foreach ($product->tickets as $ticket) {
+                $seats = $ticket->ticketSeat ?? collect();
+                $booked += $seats->count();
+                $used += $seats->where('is_used', 1)->count();
+            }
+
+            $bookedQty += $booked;
             $usedQty += $used;
 
             return [

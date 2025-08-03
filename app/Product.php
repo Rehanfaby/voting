@@ -46,6 +46,11 @@ class Product extends Model
         return $this->hasMany(Ticket::class, 'product_id');
     }
 
+    public function ticketSeats()
+    {
+        return $this->hasMany(TicketSeat::class, 'product_id');
+    }
+
     public function variant()
     {
         return $this->belongsToMany('App\Variant', 'product_variants')->withPivot('id', 'item_code', 'additional_price');

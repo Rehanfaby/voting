@@ -909,6 +909,7 @@ return [
     "Ticket Owner" => "Ticket Owner",
     "Ticket Owner Number" => "Ticket Owner Number",
     "Seats" => "Seats",
+    "Seat" => "Seat",
     "Back to Scan" => "Back to Scan",
     "Validate" => "Validate",
     "Login to validate ticket" => "Login to validate ticket",

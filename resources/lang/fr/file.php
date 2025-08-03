@@ -799,6 +799,7 @@ return [
     "Ticket Owner" => "Propriétaire du billet",
     "Ticket Owner Number" => "Numéro du propriétaire du billet",
     "Seats" => "Sièges",
+    "Seat" => "Siège",
     "Back to Scan" => "Retour au scan",
     "Validate" => "Valider",
     "Login to validate ticket" => "Login to validate ticket"

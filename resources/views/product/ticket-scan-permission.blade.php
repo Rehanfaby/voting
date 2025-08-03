@@ -72,13 +72,17 @@
                             </tr>
                             <tr>
                                 <th>{{trans("file.Seats")}}</th>
-                                <th>{{ $ticket->seat_numbers }}</th>
+                                <th>{{ $ticketSeat->seat_number }}</th>
                             </tr>
                         </table>
                         </p>
-                        @if(auth()->user() && auth()->user()->role_id == 1)
-                            @if($ticket->product->event_day == date('Y-m-d'))
-                                <a href="{{ route('admin.ticket.scan.used', ['token' => $ticket->token]) }}" class="btn btn-success">{{trans("file.Validate")}}</a>
+                        @if($ticketSeat->is_used == true)
+                            <p>Ticket is already used at <b class="text-danger">{{ $ticketSeat->used_at }}</b></p>
+                        @else
+                            @if(auth()->user() && auth()->user()->role_id == 1)
+                                @if($ticket->product->event_day == date('Y-m-d'))
+                                    <a href="{{ route('admin.ticket.scan.used', ['token' => $ticketSeat->token]) }}" class="btn btn-success">{{trans("file.Validate")}}</a>
+                                @endif
                             @endif
                         @endif
                     @endif

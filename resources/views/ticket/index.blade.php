@@ -30,12 +30,12 @@
             </tr>
             </thead>
             <tbody>
-            @foreach($tickets as $index => $ticket)
+            @foreach($ticketSeat as $index => $ticket)
                 <tr class="text-center">
                     <td>{{ $index + 1 }}</td>
-                    <td>{{ $ticket->name }}</td>
-                    <td>{{ $ticket->phone }}</td>
-                    <td>{{ $ticket->qty }}</td>
+                    <td>{{ @$ticket->ticket->name }}</td>
+                    <td>{{ @$ticket->ticket->phone }}</td>
+                    <td>1</td>
                     <td>{{ $ticket->token }}</td>
                     <td>
                         @if($ticket->is_used)
@@ -46,7 +46,7 @@
                     </td>
                     <td>{{ \Carbon\Carbon::parse($ticket->created_at)->format('Y-m-d H:i') }}</td>
                     <td>{{ optional($ticket->product)->name }}</td>
-                    <td>{{ $ticket->seat_numbers }}</td>
+                    <td>{{ $ticket->seat_number }}</td>
                 </tr>
             @endforeach
             </tbody>
