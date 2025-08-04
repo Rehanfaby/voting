@@ -1017,6 +1017,10 @@ class HomeController extends Controller
                 $this->wpAttachMessage($path.$filename, $user->whatsapp_number ?? $user->phone, $filename);
             } catch (\Exception $e) {
             }
+            // Delete the QR code file after sending
+            if (file_exists($path . $filename)) {
+                unlink($path . $filename);
+            }
         }
         return true;
     }
