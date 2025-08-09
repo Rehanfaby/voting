@@ -17,7 +17,7 @@
     <div class="col-md-6">
         <div class="form-group mb-3">
             <label for="ambassador_id">Ambassadors</label>
-            <select name="ambassador_id" id="ambassador_id" class="form-control" required>
+            <select name="ambassador_id" id="ambassador_id" class="form-control" required data-live-search="true">
                 <option value="">Choose</option>
                 @foreach($ambassadors as $j)
                     <option value="{{ $j->id }}" {{ old('ambassador_id', $point->ambassador_id ?? '') == $j->id ? 'selected' : '' }}>
@@ -34,7 +34,7 @@
     <div class="col-md-6">
         <div class="form-group mb-3">
             <label for="candidate_id">Candidate</label>
-            <select name="candidate_id" id="candidate_id" class="form-control" required>
+            <select name="candidate_id" id="candidate_id" class="form-control" required data-live-search="true">
                 <option value="">Choose</option>
                 @foreach($candidates as $c)
                     <option value="{{ $c->id }}" {{ old('candidate_id', $point->candidate_id ?? '') == $c->id ? 'selected' : '' }}>

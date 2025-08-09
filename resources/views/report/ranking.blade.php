@@ -13,7 +13,7 @@
                 <thead>
                 <tr>
                     <th class="not-exported"></th>
-                    <th>{{trans('file.Image')}}</th>
+                    <th class="not-exported">{{trans('file.Image')}}</th>
                     <th>{{trans('file.name')}}</th>
                     <th>{{trans('file.Votes')}}</th>
                     <th>{{trans('file.Points')}}</th>

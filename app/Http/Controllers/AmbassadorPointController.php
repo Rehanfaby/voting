@@ -19,7 +19,7 @@ class AmbassadorPointController extends Controller
 
     public function create()
     {
-        $ambassadors = Ambassador::orderBy('name')->get();
+        $ambassadors = Ambassador::where('is_active', true)->orderBy('name')->get();
         $candidates = Employee::orderBy('name')->where('is_active', true)->where('is_approve', true)->get();
         return view('ambassador_points.create', compact('candidates', 'ambassadors'));
     }
@@ -53,7 +53,7 @@ class AmbassadorPointController extends Controller
     public function edit($id)
     {
         $point = AmbassadorPoint::where('id', $id)->firstOrFail();
-        $judges = Ambassador::orderBy('name')->get();
+        $judges = Ambassador::where('is_active', true)->orderBy('name')->get();
         $candidates = Employee::orderBy('name')->where('is_active', true)->where('is_approve', true)->get();
         return view('ambassador_points.edit', compact('point','judges','candidates'));
     }

@@ -46,10 +46,22 @@ class PointController extends Controller
         return view('points.edit', compact('point','judges','candidates'));
     }
 
-    public function update(StorePointRequest $request, Point $point)
+    public function update(Request $request, $id)
     {
-        $data = $request->validated();
-        $point->update($data);
+        $data = $request->all();
+        $point = Point::where('id', $id)->update([
+            'depth' => $data['depth'],
+            'diction' => $data['diction'],
+            'accuracy' => $data['accuracy'],
+            'interpretation' => $data['interpretation'],
+            'technique' => $data['technique'],
+            'stage_presence' => $data['stage_presence'],
+            'song_choice' => $data['song_choice'],
+            'overall_presentation' => $data['overall_presentation'],
+            'adaptability' => $data['adaptability'],
+            'audience_interaction' => $data['audience_interaction'],
+        ]);
+        $point = Point::where('id', $id)->first();
         $point->calculateTotal();
         $point->save();
 
