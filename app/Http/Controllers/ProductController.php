@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Ticket;
+use App\TicketSeat;
 use App\User;
 use Illuminate\Http\Request;
 use Keygen;
@@ -1380,11 +1381,13 @@ class ProductController extends Controller
     }
 
     public function ticketScan(Request $request) {
+
         $token = $request->token;
-        $ticket = Ticket::where('token', $token)->first();
+        $ticketSeat = TicketSeat::where('token', $token)->first();
         $error = false;
-        if($ticket) {
-            return view('product.ticket-scan-permission', compact('ticket'));
+        if($ticketSeat) {
+            $ticket = $ticketSeat->ticket;
+            return view('product.ticket-scan-permission', compact('ticket', 'ticketSeat'));
         } else {
             return view('product.ticket-scan-permission', compact('error'));
         }
@@ -1392,10 +1395,11 @@ class ProductController extends Controller
 
     public function ticketScanUsed(Request $request) {
         $token = $request->token;
-        $ticket = Ticket::where('token', $token)->first();
+        $ticketSeat = TicketSeat::where('token', $token)->first();
 
-        if($ticket) {
-            if($ticket->is_used == true) {
+        if($ticketSeat) {
+            $ticket = Ticket::where('id', $ticketSeat->ticket_id)->first();
+            if($ticketSeat->is_used == true) {
                 $error = 'This ticket has already been scanned, Ticket was scanned at: ' . $ticket->used_at;
                 return view('product.ticket-scan', compact('error'));
             }
@@ -1414,23 +1418,33 @@ class ProductController extends Controller
             $user = User::find($ticket->user_id);
             if($user) {
                 $msg = '*Ticket Scan Alert:* Your ticket has been scanned successfully' . '\n\n';
-                $msg .= '*Ticket number:* '. $ticket->token . '\n\n';
+                $msg .= '*Ticket number:* '. $token . '\n\n';
+                $msg .= '*Seat number:* '. $ticketSeat->seat_number . '\n\n';
                 $msg .= '*Event name:* '. $ticket->product->name . '\n\n';
                 $msg .= '*Event date:* '. $ticket->product->event_day . '\n\n';
                 try{
-                    $this->wpMessage($user->phone, $msg);
+                    $this->wpMessage($user->whatsapp_number ?? $user->phone, $msg);
                 }
                 catch(\Exception $e){
 
                 }
             }
-            Ticket::where('token', $token)->update(['is_used' => true, 'used_at' => date('Y-m-d H:i:s')]);
+
+            $ticketSeat->is_used = true;
+            $ticketSeat->used_at = date('Y-m-d H:i:s');
+            $ticketSeat->save();
+            $unUsedSeats = TicketSeat::where('ticket_id', $ticket->id)->where('is_used', false)->count();
+            if($unUsedSeats == 0) {
+                $ticket->is_used = true;
+                $ticket->used_at = date('Y-m-d H:i:s');
+                $ticket->save();
+            }
 
             $success = 'Ticket has been scanned successfully';
-            return view('product.ticket-scan', compact('success', 'ticket'));
+            return view('product.ticket-scan', compact('success', 'ticket', 'ticketSeat'));
         } else {
             $error = 'This ticket is not valid';
-            return view('product.ticket-scan', compact('ticket'));
+            return view('product.ticket-scan', compact('error'));
         }
     }
     public function productsStats($id)
@@ -1444,17 +1458,15 @@ class ProductController extends Controller
         $totalQty = $product->qty;
 
         // Booked = sum of ticket.qty where status = 1
-        $bookedQty = $product->tickets->sum('qty');
+        $bookedQty = $product->ticketSeats->count();
 
         // Used = ticket.qty where status = 1 AND is_used = 1
-        $usedQty = $product->tickets->where('is_used', 1)->sum('qty');
+        $usedQty = $product->ticketSeats->where('is_used', 1)->count('id');
 
         $availableQty = $totalQty - $bookedQty;
 
         // Optionally get buyer info
-        $buyers = $product->tickets()->where('status', 1)
-            ->select('name', 'phone', 'qty', 'is_used', 'created_at')
-            ->get();
+        $buyers = $product->ticketSeats()->get();
 
         return view('product.stats', compact(
             'product',

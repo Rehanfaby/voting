@@ -81,24 +81,28 @@
                                 <th class="text-white">{{ $ticket->product->event_day }}</th>
                             </tr>
                             <tr>
-                                <th>{{trans("file.Seats")}}</th>
-                                <th class="text-white">{{ $ticket->seat_numbers }}</th>
+                                <th>{{trans("file.Seat")}}</th>
+                                <th class="text-white">{{ $ticketSeat->seat_number }}</th>
                             </tr>
 
                         </table>
                         </p>
-                        @if(auth()->check())
-                            @if(auth()->user()->role_id == 1)
-                                @if($ticket->product->event_day == date('Y-m-d'))
-                                    <a href="{{ route('ticket.scan.used', ['token' => $ticket->token]) }}" class="btn btn-success">
-                                        {{ trans("file.Validate") }}
-                                    </a>
-                                @endif
-                            @endif
+                        @if($ticketSeat->is_used == true)
+                            <p>Ticket is already used at <b class="text-danger">{{ $ticketSeat->used_at }}</b></p>
                         @else
-                            <a href="{{ route('user.login', ['redirect' => url()->current()]) }}" class="btn btn-warning">
-                                {{ __('Login to validate ticket') }}
-                            </a>
+                            @if(auth()->check())
+                                @if(auth()->user()->role_id == 1)
+                                    @if($ticket->product->event_day == date('Y-m-d'))
+                                        <a href="{{ route('ticket.scan.used', ['token' => $ticketSeat->token]) }}" class="btn btn-success">
+                                            {{ trans("file.Validate") }}
+                                        </a>
+                                    @endif
+                                @endif
+                            @else
+                                <a href="{{ route('user.login', ['redirect' => url()->current()]) }}" class="btn btn-warning">
+                                    {{ __('Login to validate ticket') }}
+                                </a>
+                            @endif
                         @endif
                     @endif
                 </div>

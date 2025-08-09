@@ -72,10 +72,7 @@
                                 <tr class="collapse ticket-details-row" id="details-{{ $stat['product_id'] }}">
                                     <td colspan="6">
                                         @php
-                                            $buyers = \App\Ticket::where('product_id', $stat['product_id'])
-                                                ->where('status', 1)
-                                                ->select('name', 'phone', 'qty', 'token', 'is_used', 'used_at', 'created_at', 'seat_numbers')
-                                                ->get();
+                                            $buyers = \App\TicketSeat::where('product_id', $stat['product_id'])->get();
                                         @endphp
 
                                         @if($buyers->count())
@@ -94,13 +91,13 @@
                                                 <tbody>
                                                 @foreach($buyers as $buyer)
                                                     <tr>
-                                                        <td>{{ $buyer->name }}</td>
-                                                        <td>{{ $buyer->phone }}</td>
-                                                        <td>{{ $buyer->qty }}</td>
+                                                        <td>{{ @$buyer->ticket->name }}</td>
+                                                        <td>{{ @$buyer->ticket->phone }}</td>
+                                                        <td>{{ 1 }}</td>
                                                         <td>{{ $buyer->token }}</td>
                                                         <td>{{ $buyer->is_used == 1 ? 'Yes' : 'No' }}</td>
-                                                        <td>{{ $buyer->created_at }}</td>
-                                                        <td>{{ $buyer->seat_numbers }}</td>
+                                                        <td>{{ @$buyer->ticket->created_at }}</td>
+                                                        <td>{{ $buyer->seat_number }}</td>
                                                     </tr>
                                                 @endforeach
                                                 </tbody>

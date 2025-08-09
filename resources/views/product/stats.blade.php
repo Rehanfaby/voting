@@ -62,9 +62,9 @@
                             <tbody>
                             @foreach($buyers as $buyer)
                                 <tr>
-                                    <td>{{ $buyer->name }}</td>
-                                    <td>{{ $buyer->phone }}</td>
-                                    <td>{{ $buyer->qty }}</td>
+                                    <td>{{ @$buyer->ticket->name }}</td>
+                                    <td>{{ $buyer->ticket->phone }}</td>
+                                    <td>{{ 1 }}</td>
                                     <td>
                                         @if($buyer->is_used)
                                             <span class="badge bg-success">Used</span>
@@ -72,7 +72,7 @@
                                             <span class="badge bg-warning">Not Used</span>
                                         @endif
                                     </td>
-                                    <td>{{ $buyer->created_at->format('Y-m-d H:i') }}</td>
+                                    <td>{{ @$buyer->ticket->created_at->format('Y-m-d H:i') }}</td>
                                 </tr>
                             @endforeach
                             </tbody>
