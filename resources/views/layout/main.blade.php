@@ -164,6 +164,22 @@
                     </li>
                 <li>
                 @endif
+                @if(in_array('points_index', $all_permission))
+                    <li><a href="#point" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-podcast"></i><span>{{trans('file.Points')}}</span></a>
+                        <ul id="point" class="collapse list-unstyled ">
+                            <li id="point-menu-create"><a href="{{route('points.create')}}">{{trans('file.Create Point')}}</a></li>
+                            <li id="point-menu-list"><a href="{{route('points.index')}}">{{trans('file.Point List')}}</a></li>
+                        </ul>
+                    </li>
+                @endif
+                @if(in_array('ambassador_point_index', $all_permission))
+                    <li><a href="#ambassador-point" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-podcast"></i><span>{{trans('file.Ambassador Points')}}</span></a>
+                        <ul id="ambassador-point" class="collapse list-unstyled ">
+                            <li id="ambassador-point-menu-create"><a href="{{route('ambassador_points.create')}}">{{trans('file.Create Ambassador Point')}}</a></li>
+                            <li id="ambassador-point-menu-list"><a href="{{route('ambassador_points.index')}}">{{trans('file.Ambassador Point List')}}</a></li>
+                        </ul>
+                    </li>
+                @endif
                 <?php
                 $index_permission = DB::table('permissions')->where('name', 'coins-index')->first();
                 $index_permission_active = DB::table('role_has_permissions')->where([
@@ -172,7 +188,7 @@
                 ])->first();
                 ?>
                 @if($index_permission_active)
-                    <li><a href="#coin" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-mail"></i><span>{{trans('file.Coins')}}</span></a>
+                    <li><a href="#coin" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-usd"></i><span>{{trans('file.Coins')}}</span></a>
                         <ul id="coin" class="collapse list-unstyled ">
                             <li id="coin-menu"><a href="{{route('coins.index')}}">{{trans('file.Coins List')}}</a></li>
                             <li id="coin-menu-create"><a id="add-coin" href="">{{trans('file.Create Coins')}}</a></li>
@@ -293,6 +309,11 @@
                                 <li id="ticket-report-menu">
                                     <a href="{{url('report/ticket/purchase')}}">{{trans('file.Total Purchase Tickets')}}</a>
                                 </li>
+                            @endif
+                            @if(in_array('contestant_ranking', $all_permission))
+                                    <li id="contestant-ranking">
+                                        <a href="{{url('report/contestant/ranking')}}">{{trans('file.Contestant Ranking')}}</a>
+                                    </li>
                             @endif
                         </ul>
                     </li>

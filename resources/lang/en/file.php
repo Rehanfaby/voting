@@ -923,6 +923,14 @@ return [
     "Announcement List" => "Announcement List",
     "Is Used" => "Is Used",
     "Total Purchase Tickets" => "Total Purchase Tickets",
-    "Update Announcement" => "Update Announcement"
+    "Update Announcement" => "Update Announcement",
+
+    "Points" => "Judge Points",
+    "Create Point" => "Create Judge Point",
+    "Point List" => "Judge Point List",
+    "Ambassador Points" => "Ambassador Points",
+    "Create Ambassador Point" => "Create Ambassador Point",
+    "Ambassador Point List" => "Ambassador Point List",
+    "Contestant Ranking" => "Contestant Ranking",
 ];
 ?>

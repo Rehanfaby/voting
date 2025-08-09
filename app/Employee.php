@@ -21,4 +21,9 @@ class Employee extends Model
         return $this->belongsTo('App\Department', 'department_id', 'id');
     }
 
+    public function points()
+    {
+        return $this->hasMany(Point::class);
+    }
+
 }

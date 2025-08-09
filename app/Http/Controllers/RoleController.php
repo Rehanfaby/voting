@@ -214,6 +214,90 @@ class RoleController extends Controller
             $role->revokePermissionTo('announcement_delete');
 
 
+        if($request->has('points_index')){
+            $permission = Permission::firstOrCreate(['name' => 'points_index']);
+            if(!$role->hasPermissionTo('points_index')){
+                $role->givePermissionTo($permission);
+            }
+        }
+        else
+            $role->revokePermissionTo('points_index');
+
+        if($request->has('points_add')){
+            $permission = Permission::firstOrCreate(['name' => 'points_add']);
+            if(!$role->hasPermissionTo('points_add')){
+                $role->givePermissionTo($permission);
+            }
+        }
+        else
+            $role->revokePermissionTo('points_add');
+
+        if($request->has('points_edit')){
+            $permission = Permission::firstOrCreate(['name' => 'points_edit']);
+            if(!$role->hasPermissionTo('points_edit')){
+                $role->givePermissionTo($permission);
+            }
+        }
+        else
+            $role->revokePermissionTo('points_edit');
+
+        if($request->has('points_delete')){
+            $permission = Permission::firstOrCreate(['name' => 'points_delete']);
+            if(!$role->hasPermissionTo('points_delete')){
+                $role->givePermissionTo($permission);
+            }
+        }
+        else
+            $role->revokePermissionTo('points_delete');
+
+
+        if($request->has('ambassador_point_index')){
+            $permission = Permission::firstOrCreate(['name' => 'ambassador_point_index']);
+            if(!$role->hasPermissionTo('ambassador_point_index')){
+                $role->givePermissionTo($permission);
+            }
+        }
+        else
+            $role->revokePermissionTo('ambassador_point_index');
+
+        if($request->has('ambassador_point_add')){
+            $permission = Permission::firstOrCreate(['name' => 'ambassador_point_add']);
+            if(!$role->hasPermissionTo('ambassador_point_add')){
+                $role->givePermissionTo($permission);
+            }
+        }
+        else
+            $role->revokePermissionTo('ambassador_point_add');
+
+        if($request->has('ambassador_point_edit')){
+            $permission = Permission::firstOrCreate(['name' => 'ambassador_point_edit']);
+            if(!$role->hasPermissionTo('ambassador_point_edit')){
+                $role->givePermissionTo($permission);
+            }
+        }
+        else
+            $role->revokePermissionTo('ambassador_point_edit');
+
+        if($request->has('ambassador_point_delete')){
+            $permission = Permission::firstOrCreate(['name' => 'ambassador_point_delete']);
+            if(!$role->hasPermissionTo('ambassador_point_delete')){
+                $role->givePermissionTo($permission);
+            }
+        }
+        else
+            $role->revokePermissionTo('ambassador_point_delete');
+
+
+        if($request->has('contestant_ranking')){
+            $permission = Permission::firstOrCreate(['name' => 'contestant_ranking']);
+            if(!$role->hasPermissionTo('contestant_ranking')){
+                $role->givePermissionTo($permission);
+            }
+        }
+        else
+            $role->revokePermissionTo('contestant_ranking');
+
+
         if($request->has('see-votes')){
             $permission = Permission::firstOrCreate(['name' => 'see-votes']);
             if(!$role->hasPermissionTo('see-votes')){
