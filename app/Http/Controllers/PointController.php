@@ -18,7 +18,7 @@ class PointController extends Controller
 
     public function create()
     {
-        $judges = Judge::orderBy('name')->get();
+        $judges = Judge::orderBy('name')->where('is_active', true)->get();
         $candidates = Employee::orderBy('name')->where('is_active', true)->where('is_approve', true)->get();
         return view('points.create', compact('judges','candidates'));
     }
@@ -41,7 +41,7 @@ class PointController extends Controller
 
     public function edit(Point $point)
     {
-        $judges = Judge::orderBy('name')->get();
+        $judges = Judge::orderBy('name')->where('is_active', true)->get();
         $candidates = Employee::orderBy('name')->where('is_active', true)->where('is_approve', true)->get();
         return view('points.edit', compact('point','judges','candidates'));
     }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Booking;
 use App\BookingProduct;
 use App\Category;
+use App\Judge;
 use App\Ticket;
 use Illuminate\Http\Request;
 use App\Product;
@@ -118,6 +119,8 @@ class ReportController extends Controller
             ->limit(1)
             ->value('total_votes');
 
+        $judges_count = Judge::where('is_active', true)->count();
+
         $contestants = DB::table('employees')
             ->join('votes', function($join) {
                 $join->on('votes.musician_id', '=', 'employees.id')
@@ -134,8 +137,8 @@ class ReportController extends Controller
             )
             ->groupBy('employees.id', 'employees.name', 'p.total_points', 'ap.total_ambassador_points')
             ->get()
-            ->map(function ($row) use ($maxVotes) {
-                $score_points = ($row->total_points * 0.60);
+            ->map(function ($row) use ($maxVotes, $judges_count) {
+                $score_points = ($row->total_points/$judges_count * 0.60);
                 $score_ambassador = $row->total_ambassador_points;
                 $score_votes = $maxVotes > 0 ? (($row->total_votes / $maxVotes) * 10) : 0;
 

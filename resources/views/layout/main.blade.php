@@ -119,7 +119,7 @@
                         ['role_id', $role->id]
                     ])->first();
                     ?>
-                    @if($category_permission_active || $index_permission_active || $print_barcode_active || $stock_count_active || $adjustment_active)
+                    @if($category_permission_active || $index_permission_active )
                         <li><a href="#product" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-list"></i><span>{{__('file.product')}}</span><span></a>
                             <ul id="product" class="collapse list-unstyled ">
                                 @if($category_permission_active)
@@ -299,7 +299,7 @@
                         ['permissions.name', 'vote-report'],
                         ['role_id', $role->id] ])->first();
                 ?>
-                @if($voting_report_active)
+
                     <li><a href="#report" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-document-remove"></i><span>{{trans('file.Reports')}}</span></a>
                         <ul id="report" class="collapse list-unstyled ">
                             @if($voting_report_active)
@@ -317,7 +317,6 @@
                             @endif
                         </ul>
                     </li>
-                @endif
                 <li><a href="#setting" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-gear"></i><span>{{trans('file.settings')}}</span></a>
                     <ul id="setting" class="collapse list-unstyled ">
                         <?php
