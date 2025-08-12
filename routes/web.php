@@ -276,8 +276,12 @@ Route::group(['middleware' => ['auth', 'active']], function() {
     Route::get('report/ticket/purchase', 'ReportController@ticketPurchaseReport')->name('report.ticket.purchase');
     Route::get('report/contestant/ranking', 'ReportController@contestantRanking')->name('report.contestant.ranking');
 
+    Route::get('points/awaiting_candidates', 'PointController@awaitingCandidates')->name('points.awaiting_candidates');
+    Route::get('points/create/{candidate_id?}', 'PointController@create')->name('points.create');
     Route::resource('points', 'PointController');
     Route::get('/contestants/{judgeId}/rated', 'PointController@getRatedContestants')->name('contestants.rated');
+    Route::get('ambassador_points/awaiting_candidates', 'AmbassadorPointController@awaitingCandidates')->name('ambassador_points.awaiting_candidates');
+    Route::get('ambassador_points/create/{candidate_id?}', 'AmbassadorPointController@create')->name('ambassador_points.create');
     Route::resource('ambassador_points', 'AmbassadorPointController');
 
 

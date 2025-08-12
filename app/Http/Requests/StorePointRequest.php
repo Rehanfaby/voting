@@ -24,7 +24,7 @@ class StorePointRequest extends FormRequest
     public function rules()
     {
         return [
-            'judge_id' => 'required|exists:judges,id',
+            'judge_id' => 'required|exists:users,id',
             'candidate_id' => 'required|exists:employees,id',
             'depth' => 'required|integer|min:0|max:20',
             'diction' => 'required|integer|min:0|max:10',

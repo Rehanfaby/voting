@@ -86,7 +86,6 @@
             </tbody>
         </table>
 
-        {{ $points->links() }}
     </div>
 
 

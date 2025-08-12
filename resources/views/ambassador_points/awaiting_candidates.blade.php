@@ -12,11 +12,7 @@
         <div class="card">
             <div class="card-header">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h2>Ambassador Points</h2>
-
-                    @if(in_array('ambassador_point_add', $all_permission))
-                        <a href="{{ route('ambassador_points.create') }}" class="btn btn-primary">Add Points</a>
-                    @endif
+                    <h2>Awaiting Candidates</h2>
                 </div>
             </div>
         </div>
@@ -29,48 +25,25 @@
             <thead>
             <tr>
                 <th class="not-exported">#</th>
-                <th>Ambassador</th>
-                <th>Candidate</th>
-                <th>Points</th>
-                <th>Created</th>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Email</th>
                 <th class="not-exported">Actions</th>
             </tr>
             </thead>
             <tbody>
-            @foreach($points as $point)
+            @foreach($awaiting_candidates as $awaiting_candidate)
                 <tr>
-                    <td>{{ $point->id }}</td>
-                    <td>{{ $point->ambassador->name }}</td>
-                    <td>{{ $point->contestant->name }}</td>
-                    <td>{{ $point->points }}</td>
-                    <td>{{ $point->created_at->format('Y-m-d H:i') }}</td>
+                    <td>{{ $awaiting_candidate->id }}</td>
+                    <td>{{ $awaiting_candidate->name }}</td>
+                    <td>{{ $awaiting_candidate->phone_number }}</td>
+                    <td>{{ $awaiting_candidate->email }}</td>
                     <td>
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{trans('file.action')}}
-                                <span class="caret"></span>
-                                <span class="sr-only">Toggle Dropdown</span>
-                            </button>
-                            <ul class="dropdown-menu edit-options dropdown-menu-right dropdown-default" user="menu">
-
-{{--                                <li><a href="{{ route('ambassador_points.show', $point) }}" class="btn btn-link"><i class="fa fa-eye"></i> View</a></li>--}}
-                                @if(in_array("ambassador_point_edit", $all_permission))
-                                    <li>
-                                        <a href="{{ route('ambassador_points.edit', $point) }}" class="btn btn-link"><i class="dripicons-document-edit"></i> Edit</a>
-                                    </li>
-                                @endif
-                                <li class="divider"></li>
-                                @if(in_array("ambassador_point_delete", $all_permission))
-                                    <li>
-                                    <form action="{{ route('ambassador_points.destroy', $point) }}" method="POST" style="display:inline-block">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button  class="btn btn-link" onclick="return confirm('Delete?')"><i class="dripicons-trash"></i> Delete</button>
-                                    </form>
-                                    </li>
-                                @endif
-                            </ul>
-                        </div>
+                        <a href="{{ route('ambassador_points.create', ['candidate_id' => $awaiting_candidate->id]) }}">
+                            <i class="fa fa-pencil"></i> Give Point
+                        </a>
                     </td>
+
                 </tr>
             @endforeach
             </tbody>
@@ -86,7 +59,7 @@
 
     $("ul#ambassador-point").siblings('a').attr('aria-expanded','true');
     $("ul#ambassador-point").addClass("show");
-    $("ul#ambassador-point #ambassador-point-menu-list").addClass("active");
+    $("ul#ambassador-point #ambassador-point-awaiting-list").addClass("active");
 
     var employee_id = [];
     var user_verified = <?php echo json_encode(env('USER_VERIFIED')) ?>;

@@ -5,7 +5,8 @@
         <div class="col-md-6">
             <div class="form-group">
                 <h3>Judge: {{ $point->judge->name }}</h3>
-
+                <input value="{{ $point->candidate_id }}"  name="candidate_id" type="hidden">
+                <input value="{{ $point->judge_id }}"  name="judge_id" type="hidden">
             </div>
         </div>
         <div class="col-md-6">
@@ -18,12 +19,16 @@
         <div class="form-group mb-3">
             <label for="judge_id">Judge</label>
             <select name="judge_id" id="judge_id" class="form-control" required data-live-search="true">
-                <option value="">Choose</option>
-                @foreach($judges as $j)
-                    <option value="{{ $j->id }}" {{ old('judge_id', $point->judge_id ?? '') == $j->id ? 'selected' : '' }}>
-                        {{ $j->name }}
-                    </option>
-                @endforeach
+                @if(auth()->role_id = \App\Roles::where('name', 'judge')->where('is_active', true)->first()->id)
+                    <option value="{{ auth()->user()->id }}" }} selected> {{ auth()->user()->name }} </option>
+                @else
+                    <option value="">Choose</option>
+                    @foreach($judges as $j)
+                        <option value="{{ $j->id }}" {{ old('judge_id', $point->judge_id ?? '') == $j->id ? 'selected' : '' }}>
+                            {{ $j->name }}
+                        </option>
+                    @endforeach
+                @endif
             </select>
             @error('judge_id')
             <small class="text-danger">{{ $message }}</small>
@@ -35,12 +40,16 @@
         <div class="form-group mb-3">
             <label for="candidate_id">Candidate</label>
             <select name="candidate_id" id="candidate_id" class="form-control" required data-live-search="true">
-                <option value="">Choose</option>
-                @foreach($candidates as $c)
-                    <option value="{{ $c->id }}" {{ old('candidate_id', $point->candidate_id ?? '') == $c->id ? 'selected' : '' }}>
-                        {{ $c->name }}
-                    </option>
-                @endforeach
+                @if($candidate_id)
+                    <option value="{{ $candidate_id }}"  selected>{{ $candidate_name }}</option>
+                @else
+                    <option value="">Choose</option>
+                    @foreach($candidates as $c)
+                        <option value="{{ $c->id }}" {{ old('candidate_id', $point->candidate_id ?? '') == $c->id ? 'selected' : '' }}>
+                            {{ $c->name }}
+                        </option>
+                    @endforeach
+                @endif
             </select>
             @error('candidate_id')
             <small class="text-danger">{{ $message }}</small>

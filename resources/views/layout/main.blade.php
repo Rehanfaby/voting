@@ -99,26 +99,28 @@
         <!-- Sidebar Navigation Menus-->
         <div class="main-menu">
             <ul id="side-main-menu" class="side-menu list-unstyled">
-                <li><a href="{{url('/')}}"> <i class="dripicons-meter"></i><span>{{ __('file.dashboard') }}</span></a></li>
                 <?php
-                    $role = \Spatie\Permission\Models\Role::find(Auth::user()->role_id);
-                    if(!isset($all_permission)) {
-                        $permissions = $role->permissions;
-                        foreach ($permissions as $permission) {
-                            $all_permission[] = $permission->name;
-                        }
+                $role = \Spatie\Permission\Models\Role::find(Auth::user()->role_id);
+                if(!isset($all_permission)) {
+                    $permissions = $role->permissions;
+                    foreach ($permissions as $permission) {
+                        $all_permission[] = $permission->name;
                     }
-                    $category_permission_active = DB::table('permissions')
-                        ->join('role_has_permissions', 'permissions.id', '=', 'role_has_permissions.permission_id')
-                        ->where([
-                            ['permissions.name', 'category'],
-                            ['role_id', $role->id] ])->first();
-                    $index_permission = DB::table('permissions')->where('name', 'products-index')->first();
-                    $index_permission_active = DB::table('role_has_permissions')->where([
-                        ['permission_id', $index_permission->id],
-                        ['role_id', $role->id]
-                    ])->first();
-                    ?>
+                }
+                $category_permission_active = DB::table('permissions')
+                    ->join('role_has_permissions', 'permissions.id', '=', 'role_has_permissions.permission_id')
+                    ->where([
+                        ['permissions.name', 'category'],
+                        ['role_id', $role->id] ])->first();
+                $index_permission = DB::table('permissions')->where('name', 'products-index')->first();
+                $index_permission_active = DB::table('role_has_permissions')->where([
+                    ['permission_id', $index_permission->id],
+                    ['role_id', $role->id]
+                ])->first();
+                ?>
+                @if(in_array('dashboard', $all_permission))
+                    <li><a href="{{url('/')}}"> <i class="dripicons-meter"></i><span>{{ __('file.dashboard') }}</span></a></li>
+                @endif
                     @if($category_permission_active || $index_permission_active )
                         <li><a href="#product" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-list"></i><span>{{__('file.product')}}</span><span></a>
                             <ul id="product" class="collapse list-unstyled ">
@@ -167,16 +169,18 @@
                 @if(in_array('points_index', $all_permission))
                     <li><a href="#point" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-podcast"></i><span>{{trans('file.Points')}}</span></a>
                         <ul id="point" class="collapse list-unstyled ">
-                            <li id="point-menu-create"><a href="{{route('points.create')}}">{{trans('file.Create Point')}}</a></li>
+                            <li id="point-awaiting-list"><a href="{{route('points.awaiting_candidates')}}">{{trans('file.Awaiting Candidates')}}</a></li>
                             <li id="point-menu-list"><a href="{{route('points.index')}}">{{trans('file.Point List')}}</a></li>
+                            <li id="point-menu-create"><a href="{{route('points.create')}}">{{trans('file.Create Point')}}</a></li>
                         </ul>
                     </li>
                 @endif
                 @if(in_array('ambassador_point_index', $all_permission))
                     <li><a href="#ambassador-point" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-podcast"></i><span>{{trans('file.Ambassador Points')}}</span></a>
                         <ul id="ambassador-point" class="collapse list-unstyled ">
-                            <li id="ambassador-point-menu-create"><a href="{{route('ambassador_points.create')}}">{{trans('file.Create Ambassador Point')}}</a></li>
+                            <li id="ambassador-point-awaiting-list"><a href="{{route('ambassador_points.awaiting_candidates')}}">{{trans('file.Awaiting Candidates')}}</a></li>
                             <li id="ambassador-point-menu-list"><a href="{{route('ambassador_points.index')}}">{{trans('file.Ambassador Point List')}}</a></li>
+                            <li id="ambassador-point-menu-create"><a href="{{route('ambassador_points.create')}}">{{trans('file.Create Ambassador Point')}}</a></li>
                         </ul>
                     </li>
                 @endif
@@ -299,7 +303,7 @@
                         ['permissions.name', 'vote-report'],
                         ['role_id', $role->id] ])->first();
                 ?>
-
+                @if($voting_report_active || in_array('contestant_ranking', $all_permission))
                     <li><a href="#report" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-document-remove"></i><span>{{trans('file.Reports')}}</span></a>
                         <ul id="report" class="collapse list-unstyled ">
                             @if($voting_report_active)
@@ -317,6 +321,7 @@
                             @endif
                         </ul>
                     </li>
+                @endif
                 <li><a href="#setting" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-gear"></i><span>{{trans('file.settings')}}</span></a>
                     <ul id="setting" class="collapse list-unstyled ">
                         <?php

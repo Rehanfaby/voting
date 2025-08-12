@@ -10,7 +10,7 @@ class Point extends Model
 
     public function judge()
     {
-        return $this->belongsTo(Judge::class);
+        return $this->belongsTo(User::class, 'judge_id', 'id');
     }
 
     public function contestant()

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Employee;
 use App\Gallery;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
@@ -25,9 +26,11 @@ class JudgeController extends Controller
                 $all_permission[] = $permission->name;
             if(empty($all_permission))
                 $all_permission[] = 'dummy text';
-            $lims_employee_all = Judge::where('is_active', true)->get();
-            $lims_department_list = Department::where('is_active', true)->get();
-            return view('judge.index', compact('lims_employee_all', 'lims_department_list', 'all_permission'));
+//            $lims_employee_all = Judge::where('is_active', true)->get();
+//            $lims_department_list = Department::where('is_active', true)->get();
+            $judge_role_id = Role::where('name', 'judge')->first()->id;
+            $lims_user_list = User::where('is_deleted', false)->where('role_id', $judge_role_id)->get();
+            return view('user.judge', compact('lims_user_list', 'all_permission'));
         }
         else
             return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
@@ -150,6 +153,27 @@ class JudgeController extends Controller
         $lims_employee_data->is_active = false;
         $lims_employee_data->save();
         return redirect('judge')->with('not_permitted', 'Judge deleted successfully');
+    }
+
+    public function awaitingCandidates()
+    {
+        $user_id = Auth::user()->id;
+        $user_role = Auth::user()->role_id;
+        $ambassador_role_id = Role::where('name', 'judge')->first()->id;
+
+        if ($user_role == $ambassador_role_id) {
+            $awaiting_candidates = Employee::where('is_active', true)
+                ->where('is_approve', true)
+                ->whereNotIn('id', function($query) use ($user_id) {
+                    $query->select('candidate_id')
+                        ->from('points')
+                        ->where('judge_id', $user_id);
+                })
+                ->get();
+        } else {
+            $awaiting_candidates = [];
+        }
+        return view('points.awaiting_candidates', compact('awaiting_candidates'));
     }
 
 }

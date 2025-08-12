@@ -6,22 +6,40 @@ namespace App\Http\Controllers;
 use App\Ambassador;
 use App\AmbassadorPoint;
 use App\Employee;
+use App\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Spatie\Permission\Models\Role;
 
 class AmbassadorPointController extends Controller
 {
+    private function getJudgeRoleId() {
+        return Role::where('name', 'ambassador')->first()->id;
+    }
+
     public function index()
     {
-
-        $points = AmbassadorPoint::with(['ambassador', 'contestant'])->get();
+        $role = Auth::user()->role_id;
+        if(Auth::user()->role_id == $this->getJudgeRoleId()) {
+            $points = AmbassadorPoint::with(['ambassador', 'contestant'])->where('ambassador_id', Auth::user()->id)->get();;
+        } else {
+            $points = AmbassadorPoint::with(['ambassador', 'contestant'])->get();
+        }
         return view('ambassador_points.index', compact('points'));
     }
 
-    public function create()
+    public function create(Request $request, $candidate_id = null)
     {
-        $ambassadors = Ambassador::where('is_active', true)->orderBy('name')->get();
+        $candidate_id = $candidate_id ?? $request->candidate_id;
+        $candidate_name = null;
+        if ($candidate_id) {
+            $candidate_name = Employee::where('id', $candidate_id)->where('is_active', true)->where('is_approve', true)->first()->name;
+        }
+        $judge_role_id = Role::where('name', 'ambassador')->first()->id;
+        $ambassadors = User::where('is_deleted', false)->where('role_id', $judge_role_id)->get();
+//        $ambassadors = Ambassador::where('is_active', true)->orderBy('name')->get();
         $candidates = Employee::orderBy('name')->where('is_active', true)->where('is_approve', true)->get();
-        return view('ambassador_points.create', compact('candidates', 'ambassadors'));
+        return view('ambassador_points.create', compact('candidates', 'ambassadors', 'candidate_id', 'candidate_name'));
     }
 
     public function store(Request $request)
@@ -53,13 +71,16 @@ class AmbassadorPointController extends Controller
     public function edit($id)
     {
         $point = AmbassadorPoint::where('id', $id)->firstOrFail();
-        $judges = Ambassador::where('is_active', true)->orderBy('name')->get();
+//        $judges = Ambassador::where('is_active', true)->orderBy('name')->get();
         $candidates = Employee::orderBy('name')->where('is_active', true)->where('is_approve', true)->get();
-        return view('ambassador_points.edit', compact('point','judges','candidates'));
+        return view('ambassador_points.edit', compact('point','candidates'));
     }
 
     public function update($id, Request $request)
     {
+        $request->validate([
+            'points'       => 'required|integer|min:1|max:5',
+        ]);
         $ambassador_point = AmbassadorPoint::where('id', $id)->firstOrFail();
         if($ambassador_point) {
             $ambassador_point->update([
@@ -75,5 +96,26 @@ class AmbassadorPointController extends Controller
         $point->delete();
 
         return redirect()->route('ambassador_points.index')->with('success', 'Point deleted');
+    }
+
+    public function awaitingCandidates()
+    {
+        $user_id = Auth::user()->id;
+        $user_role = Auth::user()->role_id;
+        $ambassador_role_id = Role::where('name', 'ambassador')->first()->id;
+
+        if ($user_role == $ambassador_role_id) {
+            $awaiting_candidates = Employee::where('is_active', true)
+                ->where('is_approve', true)
+                ->whereNotIn('id', function($query) use ($user_id) {
+                    $query->select('candidate_id')
+                        ->from('ambassador_points')
+                        ->where('ambassador_id', $user_id);
+                })
+                ->get();
+        } else {
+            $awaiting_candidates = [];
+        }
+        return view('ambassador_points.awaiting_candidates', compact('awaiting_candidates'));
     }
 }

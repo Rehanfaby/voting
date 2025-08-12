@@ -6,21 +6,42 @@ use App\Employee;
 use App\Http\Requests\StorePointRequest;
 use App\Judge;
 use App\Point;
+use App\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Spatie\Permission\Models\Role;
 
 class PointController extends Controller
 {
+
+    private function getJudgeRoleId() {
+        return Role::where('name', 'judge')->first()->id;
+    }
+
     public function index()
     {
-        $points = Point::with(['judge','contestant'])->latest()->paginate(20);
+        if(Auth::user()->role_id == $this->getJudgeRoleId()) {
+            $points = Point::with(['judge','contestant'])->where('judge_id', Auth::user()->id)->latest()->get();
+        } else {
+            $points = Point::with(['judge','contestant'])->latest()->get();
+        }
+
         return view('points.index', compact('points'));
     }
 
-    public function create()
+    public function create(Request $request, $candidate_id = null)
     {
-        $judges = Judge::orderBy('name')->where('is_active', true)->get();
+        $candidate_id = $candidate_id ?? $request->candidate_id;
+        $candidate_name = null;
+        if ($candidate_id) {
+            $candidate_name = Employee::where('id', $candidate_id)->where('is_active', true)->where('is_approve', true)->first()->name;
+        }
+
+        $judge_role_id = Role::where('name', 'judge')->first()->id;
+        $judges = User::where('is_deleted', false)->where('role_id', $judge_role_id)->get();
+//        $judges = Judge::orderBy('name')->where('is_active', true)->get();
         $candidates = Employee::orderBy('name')->where('is_active', true)->where('is_approve', true)->get();
-        return view('points.create', compact('judges','candidates'));
+        return view('points.create', compact('judges','candidates', 'candidate_id', 'candidate_name'));
     }
 
     public function store(StorePointRequest $request)
@@ -41,14 +62,16 @@ class PointController extends Controller
 
     public function edit(Point $point)
     {
-        $judges = Judge::orderBy('name')->where('is_active', true)->get();
+//        $judges = Judge::orderBy('name')->where('is_active', true)->get();
+        $judge_role_id = Role::where('name', 'judge')->first()->id;
+        $judges = User::where('is_deleted', false)->where('role_id', $judge_role_id)->get();
         $candidates = Employee::orderBy('name')->where('is_active', true)->where('is_approve', true)->get();
         return view('points.edit', compact('point','judges','candidates'));
     }
 
-    public function update(Request $request, $id)
+    public function update(StorePointRequest $request, $id)
     {
-        $data = $request->all();
+        $data = $request->validated();
         $point = Point::where('id', $id)->update([
             'depth' => $data['depth'],
             'diction' => $data['diction'],
@@ -92,6 +115,27 @@ class PointController extends Controller
         });
 
         return response()->json($contestants);
+    }
+
+    public function awaitingCandidates()
+    {
+        $user_id = Auth::user()->id;
+        $user_role = Auth::user()->role_id;
+        $judge_role_id = Role::where('name', 'judge')->first()->id;
+
+        if ($user_role == $judge_role_id) {
+            $awaiting_candidates = Employee::where('is_active', true)
+                ->where('is_approve', true)
+                ->whereNotIn('id', function($query) use ($user_id) {
+                    $query->select('candidate_id')
+                        ->from('points')
+                        ->where('judge_id', $user_id);
+                })
+                ->get();
+        } else {
+            $awaiting_candidates = [];
+        }
+        return view('points.awaiting_candidates', compact('awaiting_candidates'));
     }
 
 }

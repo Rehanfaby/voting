@@ -932,5 +932,6 @@ return [
     "Create Ambassador Point" => "Create Ambassador Point",
     "Ambassador Point List" => "Ambassador Point List",
     "Contestant Ranking" => "Contestant Ranking",
+    "Awaiting Candidates" => "Awaiting Candidates",
 ];
 ?>

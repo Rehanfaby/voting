@@ -11,7 +11,7 @@ class AmbassadorPoint extends Model
 
     public function ambassador()
     {
-        return $this->belongsTo(Ambassador::class, 'ambassador_id');
+        return $this->belongsTo(User::class, 'ambassador_id');
     }
 
     public function contestant()
