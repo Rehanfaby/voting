@@ -925,13 +925,26 @@ return [
     "Total Purchase Tickets" => "Total Purchase Tickets",
     "Update Announcement" => "Update Announcement",
 
-    "Points" => "Judge Points",
+    "Points" => "Judge Grading",
     "Create Point" => "Create Judge Point",
     "Point List" => "Judge Point List",
     "Ambassador Points" => "Ambassador Points",
     "Create Ambassador Point" => "Create Ambassador Point",
     "Ambassador Point List" => "Ambassador Point List",
     "Contestant Ranking" => "Contestant Ranking",
-    "Awaiting Candidates" => "Awaiting Candidates",
+    "Awaiting Candidate" => "Awaiting Candidate",
+    "Grade Candidate" => "Grade Candidate",
+    "Grade Listing" => "Grade Listing",
+
+    "Depth and atmosphere / Spiritual impact" => "Depth and atmosphere / Spiritual impact",
+    "Diction and articulation" => "Diction and articulation",
+    "Accuracy and precision" => "Accuracy and precision",
+    "Interpretation, emotion, and heartfelt engagement / Originality and style" => "Interpretation, emotion, and heartfelt engagement / Originality and style",
+    "Vocal technique / Microphone technique" => "Vocal technique / Microphone technique",
+    "Stage presence / Timing" => "Stage presence / Timing",
+    "Choice of song / Key" => "Choice of song / Key",
+    "Overall presentation" => "Overall presentation",
+    "Adaptability and flexibility" => "Adaptability and flexibility",
+    "Audience interaction" => "Audience interaction",
 ];
 ?>

@@ -802,6 +802,29 @@ return [
     "Seat" => "Siège",
     "Back to Scan" => "Retour au scan",
     "Validate" => "Valider",
-    "Login to validate ticket" => "Login to validate ticket"
+    "Login to validate ticket" => "Login to validate ticket",
+
+    "Points" => "Notation du juge",
+    "Create Point" => "Créer une note de juge",
+    "Point List" => "Liste des notes de juge",
+    "Ambassador Points" => "Notation de l'ambassadeur",
+    "Create Ambassador Point" => "Créer un point d'ambassadeur",
+    "Ambassador Point List" => "Liste des points d'ambassadeur",
+    "Contestant Ranking" => "Classement des candidats",
+    "Awaiting Candidate" => "En attente de Notation",
+    "Grade Candidate" => "Noter un candidat",
+    "Grade Listing" => "Liste des notes",
+
+
+    "Depth and atmosphere / Spiritual impact" => "Profondeur et atmosphère / Impact spirituel",
+    "Diction and articulation" => "Diction et articulation",
+    "Accuracy and precision" => "Justesse et précision",
+    "Interpretation, emotion, and heartfelt engagement / Originality and style" => "Interprétation, émotion et engagement du cœur / Originalité et style",
+    "Vocal technique / Microphone technique" => "Technique vocale / Gestion du micro",
+    "Stage presence / Timing" => "Présentation scénique / Durée",
+    "Choice of song / Key" => "Choix de la chanson / Gamme",
+    "Overall presentation" => "Présentation générale",
+    "Adaptability and flexibility" => "Adaptabilité et flexibilité",
+    "Audience interaction" => "Intéraction du public",
 ];
 ?>

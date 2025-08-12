@@ -18,7 +18,7 @@
         <div class="form-group mb-3">
             <label for="ambassador_id">Ambassadors</label>
             <select name="ambassador_id" id="ambassador_id" class="form-control" required data-live-search="true">
-                @if(auth()->role_id = \App\Roles::where('name', 'ambassador')->where('is_active', true)->first()->id)
+                    @if(auth()->user()->role_id == \App\Roles::where('name', 'ambassador')->where('is_active', true)->first()->id)
                     <option value="{{ auth()->user()->id }}" }} selected> {{ auth()->user()->name }} </option>
                 @else
                     <option value="">Choose</option>

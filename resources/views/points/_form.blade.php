@@ -19,7 +19,7 @@
         <div class="form-group mb-3">
             <label for="judge_id">Judge</label>
             <select name="judge_id" id="judge_id" class="form-control" required data-live-search="true">
-                @if(auth()->role_id = \App\Roles::where('name', 'judge')->where('is_active', true)->first()->id)
+                @if(auth()->user()->role_id == \App\Roles::where('name', 'judge')->where('is_active', true)->first()->id)
                     <option value="{{ auth()->user()->id }}" }} selected> {{ auth()->user()->name }} </option>
                 @else
                     <option value="">Choose</option>
@@ -59,17 +59,18 @@
     @endif
 
 @php
+
     $fields = [
-        ['key'=>'depth','label'=>'Profondeur et atmosphere (0-20)'],
-        ['key'=>'diction','label'=>'Diction et articulation (0-10)'],
-        ['key'=>'accuracy','label'=>'Justesse et precision (0-10)'],
-        ['key'=>'interpretation','label'=>'Interpretation, emotion (0-10)'],
-        ['key'=>'technique','label'=>'Technique vocale (0-10)'],
-        ['key'=>'stage_presence','label'=>'Presentation scénique (0-10)'],
-        ['key'=>'song_choice','label'=>'Choix de la chanson (0-10)'],
-        ['key'=>'overall_presentation','label'=>'Presentation generale (0-10)'],
-        ['key'=>'adaptability','label'=>'Adaptabilite (0-5)'],
-        ['key'=>'audience_interaction','label'=>'Interaction du public (0-5)'],
+        ['key'=>'depth', 'label'=>__('file.Depth and atmosphere / Spiritual impact')],
+        ['key'=>'diction', 'label'=>__('file.Diction and articulation')],
+        ['key'=>'accuracy', 'label'=>__('file.Accuracy and precision')],
+        ['key'=>'interpretation', 'label'=>__('file.Interpretation, emotion, and heartfelt engagement / Originality and style')],
+        ['key'=>'technique', 'label'=>__('file.Vocal technique / Microphone technique')],
+        ['key'=>'stage_presence', 'label'=>__('file.Stage presence / Timing')],
+        ['key'=>'song_choice', 'label'=>__('file.Choice of song / Key')],
+        ['key'=>'overall_presentation', 'label'=>__('file.Overall presentation')],
+        ['key'=>'adaptability', 'label'=>__('file.Adaptability and flexibility')],
+        ['key'=>'audience_interaction', 'label'=>__('file.Audience interaction')],
     ];
 @endphp
 

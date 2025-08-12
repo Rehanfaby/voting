@@ -12,7 +12,7 @@
         <div class="card">
             <div class="card-header">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h2>Awaiting Candidates</h2>
+                    <h2>{{trans('file.Awaiting Candidate')}}</h2>
                 </div>
             </div>
         </div>
