@@ -114,11 +114,11 @@ class HomeController extends Controller
 
 
         $musicians = Employee::where('is_active', true)->where('is_approve', true)->get();
-//        $judges = Judge::where('is_active', true)->get();
-//        $ambassadors = Ambassador::where('is_active', true)->get();
+        $judges = Judge::where('is_active', true)->get();
+        $ambassadors = Ambassador::where('is_active', true)->get();
 
-        $judges = User::where('is_active', true)->where('role_id', $judge_role_id)->get();
-        $ambassadors = User::where('is_active', true)->where('role_id', $ambassador_role_id)->get();
+//        $judges = User::where('is_active', true)->where('role_id', $judge_role_id)->get();
+//        $ambassadors = User::where('is_active', true)->where('role_id', $ambassador_role_id)->get();
 
 
 //        $start_date = date('Y-m-d', strtotime('last monday'));

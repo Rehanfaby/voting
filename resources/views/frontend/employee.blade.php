@@ -82,7 +82,7 @@
                                                 <i class="far fa-plus"></i>
                                             </button>
                                         </div>
-{{--                                        <button type="submit" class="ms-addto-cart-btn"><span>{{trans('file.Vote')}}</span></button>--}}
+                                        <!-- <button type="submit" class="ms-addto-cart-btn"><span>{{ trans('file.Vote') }}</span></button> -->
                                     </div>
                                 </div>
                             </form>
