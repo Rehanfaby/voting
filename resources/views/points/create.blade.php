@@ -3,7 +3,8 @@
     <div class="container-fluid">
         <div class="card">
             <div class="card-header d-flex align-items-center">
-                <h3>Create Point</h3>
+                <h3>{{ trans('file.Grade Candidate') }} </h3>
+                @if($candidate_name) &nbsp; <h4> => ({{ $candidate_name }})</h4> @endif
             </div>
             <div class="card-body">
                 @if ($errors->any())
@@ -18,6 +19,9 @@
                 <form action="{{ route('points.store') }}" method="POST">
                     @include('points._form')
                 </form>
+            </div>
+            <div class="card-footer">
+                <h3  class="ml-2">{{ trans('file.Total') }} (<span class="total-points">0</span>)</h3>
             </div>
         </div>
     </div>
@@ -51,6 +55,31 @@
                 $select.selectpicker('refresh');
             }
         });
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const inputs = document.querySelectorAll('.points-input');
+        const totalSpan = document.querySelector('.total-points');
+
+        function updateTotal() {
+            let total = 0;
+            inputs.forEach(input => {
+                let val = parseFloat(input.value);
+                console.log(val);
+                if (!isNaN(val)) {
+                    total += val;
+                }
+            });
+            totalSpan.textContent = total;
+        }
+
+        // Update on input
+        inputs.forEach(input => {
+            input.addEventListener('input', updateTotal);
+        });
+
+        // Initial calculation in case values are pre-filled
+        updateTotal();
     });
 
 </script>

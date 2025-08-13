@@ -118,4 +118,19 @@ class AmbassadorPointController extends Controller
         }
         return view('ambassador_points.awaiting_candidates', compact('awaiting_candidates'));
     }
+
+
+    public function deleteBySelection(Request $request)
+    {
+        $role = Role::find(Auth::user()->role_id);
+        if($role->hasPermissionTo('ambassador_point_delete')) {
+            $ids = array_filter($request->ids);
+            if ($ids) {
+                AmbassadorPoint::whereIn('id', $ids)->delete();
+            }
+            return 'Grading deleted successfully!';
+        } else {
+            return 'You do not have permission to delete this!';
+        }
+    }
 }

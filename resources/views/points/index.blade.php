@@ -23,9 +23,9 @@
         <div class="card">
             <div class="card-header">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h3>Judget Points</h3>
+                    <h3>{{ trans('file.Points') }}</h3>
                     @if(in_array("points_add", $all_permission))
-                    <a href="{{ route('points.create') }}" class="btn btn-primary">New Point</a>
+                    <a href="{{ route('points.create') }}" class="btn btn-primary">{{ trans('file.Grade Candidate') }}</a>
                     @endif
                 </div>
             </div>
@@ -48,7 +48,7 @@
             </thead>
             <tbody>
             @foreach($points as $point)
-                <tr>
+                <tr data-id="{{ $point->id }}">
                     <td>{{ $point->id }}</td>
                     <td>{{ $point->judge->name }}</td>
                     <td>{{ $point->contestant->name }}</td>
@@ -219,9 +219,9 @@
                         if(employee_id.length && confirm("Are you sure want to delete?")) {
                             $.ajax({
                                 type:'POST',
-                                url:'judge/deletebyselection',
+                                url:'points/deletebyselection',
                                 data:{
-                                    employeeIdArray: employee_id
+                                    ids: employee_id
                                 },
                                 success:function(data){
                                     alert(data);

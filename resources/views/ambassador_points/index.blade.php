@@ -12,10 +12,10 @@
         <div class="card">
             <div class="card-header">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h2>Ambassador Points</h2>
+                    <h3>{{ trans('file.Ambassador Points') }}</h3>
 
                     @if(in_array('ambassador_point_add', $all_permission))
-                        <a href="{{ route('ambassador_points.create') }}" class="btn btn-primary">Add Points</a>
+                        <a href="{{ route('ambassador_points.create') }}" class="btn btn-primary">{{ trans('file.Grade Candidate') }}</a>
                     @endif
                 </div>
             </div>
@@ -38,7 +38,7 @@
             </thead>
             <tbody>
             @foreach($points as $point)
-                <tr>
+                <tr data-id="{{ $point->id }}">
                     <td>{{ $point->id }}</td>
                     <td>{{ $point->ambassador->name }}</td>
                     <td>{{ $point->contestant->name }}</td>
@@ -109,11 +109,11 @@
         "order": [],
         'language': {
             'lengthMenu': '_MENU_ {{trans("file.records per page")}}',
-             "info":      '<small>{{trans("file.Showing")}} _START_ - _END_ (_TOTAL_)</small>',
+            "info":      '<small>{{trans("file.Showing")}} _START_ - _END_ (_TOTAL_)</small>',
             "search":  '{{trans("file.Search")}}',
             'paginate': {
-                    'previous': '<i class="dripicons-chevron-left"></i>',
-                    'next': '<i class="dripicons-chevron-right"></i>'
+                'previous': '<i class="dripicons-chevron-left"></i>',
+                'next': '<i class="dripicons-chevron-right"></i>'
             }
         },
         'columnDefs': [
@@ -127,11 +127,11 @@
                         data = '<div class="checkbox"><input type="checkbox" class="dt-checkboxes"><label></label></div>';
                     }
 
-                   return data;
+                    return data;
                 },
                 'checkboxes': {
-                   'selectRow': true,
-                   'selectAllRender': '<div class="checkbox"><input type="checkbox" class="dt-checkboxes"><label></label></div>'
+                    'selectRow': true,
+                    'selectAllRender': '<div class="checkbox"><input type="checkbox" class="dt-checkboxes"><label></label></div>'
                 },
                 'targets': [0]
             }
@@ -209,9 +209,9 @@
                         if(employee_id.length && confirm("Are you sure want to delete?")) {
                             $.ajax({
                                 type:'POST',
-                                url:'judge/deletebyselection',
+                                url:'ambassador_points/deletebyselection',
                                 data:{
-                                    employeeIdArray: employee_id
+                                    ids: employee_id
                                 },
                                 success:function(data){
                                     alert(data);
@@ -234,5 +234,6 @@
             },
         ],
     } );
+
 </script>
 @endsection

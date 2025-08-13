@@ -74,15 +74,15 @@ class PointController extends Controller
         $data = $request->validated();
         $point = Point::where('id', $id)->update([
             'depth' => $data['depth'],
-            'diction' => $data['diction'],
+//            'diction' => $data['diction'],
             'accuracy' => $data['accuracy'],
             'interpretation' => $data['interpretation'],
-            'technique' => $data['technique'],
-            'stage_presence' => $data['stage_presence'],
+//            'technique' => $data['technique'],
+//            'stage_presence' => $data['stage_presence'],
             'song_choice' => $data['song_choice'],
             'overall_presentation' => $data['overall_presentation'],
-            'adaptability' => $data['adaptability'],
-            'audience_interaction' => $data['audience_interaction'],
+//            'adaptability' => $data['adaptability'],
+//            'audience_interaction' => $data['audience_interaction'],
         ]);
         $point = Point::where('id', $id)->first();
         $point->calculateTotal();
@@ -136,6 +136,20 @@ class PointController extends Controller
             $awaiting_candidates = [];
         }
         return view('points.awaiting_candidates', compact('awaiting_candidates'));
+    }
+
+    public function deleteBySelection(Request $request)
+    {
+        $role = Role::find(Auth::user()->role_id);
+        if($role->hasPermissionTo('points_delete')) {
+            $ids = array_filter($request->ids);
+            if ($ids) {
+                Point::whereIn('id', $ids)->delete();
+            }
+            return 'Grading deleted successfully!';
+        } else {
+            return 'You do not have permission to delete this!';
+        }
     }
 
 }

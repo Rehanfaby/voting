@@ -278,10 +278,12 @@ Route::group(['middleware' => ['auth', 'active']], function() {
 
     Route::get('points/awaiting_candidates', 'PointController@awaitingCandidates')->name('points.awaiting_candidates');
     Route::get('points/create/{candidate_id?}', 'PointController@create')->name('points.create');
+    Route::post('points/deletebyselection', 'PointController@deleteBySelection');
     Route::resource('points', 'PointController');
     Route::get('/contestants/{judgeId}/rated', 'PointController@getRatedContestants')->name('contestants.rated');
     Route::get('ambassador_points/awaiting_candidates', 'AmbassadorPointController@awaitingCandidates')->name('ambassador_points.awaiting_candidates');
     Route::get('ambassador_points/create/{candidate_id?}', 'AmbassadorPointController@create')->name('ambassador_points.create');
+    Route::post('ambassador_points/deletebyselection', 'AmbassadorPointController@deleteBySelection');
     Route::resource('ambassador_points', 'AmbassadorPointController');
 
 

@@ -61,28 +61,28 @@
 @php
 
     $fields = [
-        ['key'=>'depth', 'label'=>__('file.Depth and atmosphere / Spiritual impact')],
-        ['key'=>'diction', 'label'=>__('file.Diction and articulation')],
-        ['key'=>'accuracy', 'label'=>__('file.Accuracy and precision')],
-        ['key'=>'interpretation', 'label'=>__('file.Interpretation, emotion, and heartfelt engagement / Originality and style')],
-        ['key'=>'technique', 'label'=>__('file.Vocal technique / Microphone technique')],
-        ['key'=>'stage_presence', 'label'=>__('file.Stage presence / Timing')],
-        ['key'=>'song_choice', 'label'=>__('file.Choice of song / Key')],
-        ['key'=>'overall_presentation', 'label'=>__('file.Overall presentation')],
-        ['key'=>'adaptability', 'label'=>__('file.Adaptability and flexibility')],
-        ['key'=>'audience_interaction', 'label'=>__('file.Audience interaction')],
+        ['key'=>'accuracy', 'label'=>__('file.Accuracy and precision') . ' - 30'],
+        ['key'=>'song_choice', 'label'=>__('file.Choice of song / Key') . ' - 10'],
+        ['key'=>'depth', 'label'=>__('file.Depth and atmosphere / Spiritual impact') . ' - 20'],
+        ['key'=>'interpretation', 'label'=>__('file.Interpretation, emotion, and heartfelt engagement / Originality and style') . ' - 20'],
+        ['key'=>'overall_presentation', 'label'=>__('file.Overall presentation') . ' - 20'],
+//        ['key'=>'diction', 'label'=>__('file.Diction and articulation')],
+//        ['key'=>'technique', 'label'=>__('file.Vocal technique / Microphone technique')],
+//        ['key'=>'stage_presence', 'label'=>__('file.Stage presence / Timing')],
+//        ['key'=>'adaptability', 'label'=>__('file.Adaptability and flexibility')],
+//        ['key'=>'audience_interaction', 'label'=>__('file.Audience interaction')],
     ];
 @endphp
 
 @foreach($fields as $f)
-    <div class="col-md-4">
+    <div class="col-md-6">
         <div class="form-group mb-3">
             <label for="{{ $f['key'] }}">{{ $f['label'] }}</label>
             <input
                 type="number"
                 id="{{ $f['key'] }}"
                 name="{{ $f['key'] }}"
-                class="form-control"
+                class="form-control points-input"
                 value="{{ old($f['key'], $point->{$f['key']} ?? '') }}"
                 required>
             @error($f['key'])

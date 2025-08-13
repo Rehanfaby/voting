@@ -7,7 +7,11 @@
   <div class="alert alert-danger alert-dismissible text-center"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>{{ session()->get('not_permitted') }}</div>
 @endif
 <section>
-
+    <style>
+        tr{
+            cursor: pointer;
+        }
+    </style>
     <div class="container-fluid">
         <div class="card">
             <div class="card-header">
@@ -33,7 +37,7 @@
             </thead>
             <tbody>
             @foreach($awaiting_candidates as $awaiting_candidate)
-                <tr>
+                <tr data-id="{{$awaiting_candidate->id}}" class="clickable-row" data-href="{{ route('ambassador_points.create', ['candidate_id' => $awaiting_candidate->id]) }}">
                     <td>{{ $awaiting_candidate->id }}</td>
                     <td>{{ $awaiting_candidate->name }}</td>
                     <td>{{ $awaiting_candidate->phone_number }}</td>
@@ -60,6 +64,12 @@
     $("ul#ambassador-point").siblings('a').attr('aria-expanded','true');
     $("ul#ambassador-point").addClass("show");
     $("ul#ambassador-point #ambassador-point-awaiting-list").addClass("active");
+
+    $(document).ready(function($) {
+        $('.clickable-row td:not(:first-child)').click(function () {
+            window.location = $(this).closest('tr').data("href");
+        });
+    });
 
     var employee_id = [];
     var user_verified = <?php echo json_encode(env('USER_VERIFIED')) ?>;
@@ -92,7 +102,7 @@
         'columnDefs': [
             {
                 "orderable": false,
-                'targets': [0, 1, 4]
+                'targets': [0, 4]
             },
             {
                 'render': function(data, type, row, meta){

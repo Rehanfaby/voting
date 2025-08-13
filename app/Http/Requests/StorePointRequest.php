@@ -34,15 +34,15 @@ class StorePointRequest extends FormRequest
             ],
             'candidate_id' => 'required|exists:employees,id',
             'depth' => 'required|integer|min:0|max:20',
-            'diction' => 'required|integer|min:0|max:10',
-            'accuracy' => 'required|integer|min:0|max:10',
-            'interpretation' => 'required|integer|min:0|max:10',
-            'technique' => 'required|integer|min:0|max:10',
-            'stage_presence' => 'required|integer|min:0|max:10',
+//            'diction' => 'required|integer|min:0|max:10',
+            'accuracy' => 'required|integer|min:0|max:30',
+            'interpretation' => 'required|integer|min:0|max:20',
+//            'technique' => 'required|integer|min:0|max:10',
+//            'stage_presence' => 'required|integer|min:0|max:10',
             'song_choice' => 'required|integer|min:0|max:10',
-            'overall_presentation' => 'required|integer|min:0|max:10',
-            'adaptability' => 'required|integer|min:0|max:5',
-            'audience_interaction' => 'required|integer|min:0|max:5',
+            'overall_presentation' => 'required|integer|min:0|max:20',
+//            'adaptability' => 'required|integer|min:0|max:5',
+//            'audience_interaction' => 'required|integer|min:0|max:5',
         ];
     }
 
