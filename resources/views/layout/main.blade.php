@@ -184,6 +184,15 @@
                         </ul>
                     </li>
                 @endif
+                @if(in_array('grading_setting', $all_permission) || in_array('eliminated_candidate', $all_permission) || in_array('qualified_candidate', $all_permission))
+                    <li><a href="#grading-setting" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-gear"></i><span>{{trans('file.Grading Setting')}}</span></a>
+                        <ul id="grading-setting" class="collapse list-unstyled ">
+                            <li id="grading-setting-menu"><a href="{{route('setting.grading')}}">{{trans('file.Grading Setting')}}</a></li>
+                            <li id="ambassador-point-menu-create"><a href="{{route('ambassador_points.create')}}">{{trans('file.Grade Candidate')}}</a></li>
+                            <li id="ambassador-point-menu-list"><a href="{{route('ambassador_points.index')}}">{{trans('file.Grade Listing')}}</a></li>
+                        </ul>
+                    </li>
+                @endif
                 <?php
                 $index_permission = DB::table('permissions')->where('name', 'coins-index')->first();
                 $index_permission_active = DB::table('role_has_permissions')->where([

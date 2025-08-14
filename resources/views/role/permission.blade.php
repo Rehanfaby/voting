@@ -587,6 +587,42 @@
 								                </div>
 								            </div>
 						                </span>
+                                        <span>
+						                    <div aria-checked="false" aria-disabled="false">
+								                <div class="checkbox">
+							                    	@if(in_array("grading_setting", $all_permission))
+                                                        <input type="checkbox" value="1" id="grading_setting" name="grading_setting" checked>
+                                                    @else
+                                                        <input type="checkbox" value="1" id="grading_setting" name="grading_setting">
+                                                    @endif
+								                    <label for="grading_setting" class="padding05">Grading Setting &nbsp;&nbsp;</label>
+								                </div>
+								            </div>
+						                </span>
+                                        <span>
+						                    <div aria-checked="false" aria-disabled="false">
+								                <div class="checkbox">
+							                    	@if(in_array("eliminated_candidate", $all_permission))
+                                                        <input type="checkbox" value="1" id="eliminated_candidate" name="eliminated_candidate" checked>
+                                                    @else
+                                                        <input type="checkbox" value="1" id="eliminated_candidate" name="eliminated_candidate">
+                                                    @endif
+								                    <label for="eliminated_candidate" class="padding05">Eliminated Contestant &nbsp;&nbsp;</label>
+								                </div>
+								            </div>
+						                </span>
+                                        <span>
+						                    <div aria-checked="false" aria-disabled="false">
+								                <div class="checkbox">
+							                    	@if(in_array("qualified_candidate", $all_permission))
+                                                        <input type="checkbox" value="1" id="qualified_candidate" name="qualified_candidate" checked>
+                                                    @else
+                                                        <input type="checkbox" value="1" id="qualified_candidate" name="qualified_candidate">
+                                                    @endif
+								                    <label for="qualified_candidate" class="padding05">Qualified Contestant &nbsp;&nbsp;</label>
+								                </div>
+								            </div>
+						                </span>
 {{--						                <span>--}}
 {{--						                    <div aria-checked="false" aria-disabled="false">--}}
 {{--								                <div class="checkbox">--}}

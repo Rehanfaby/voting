@@ -946,5 +946,12 @@ return [
     "Overall presentation" => "General presentation",
     "Adaptability and flexibility" => "Adaptability and flexibility",
     "Audience interaction" => "Audience interaction",
+
+    "Grading Setting" => "Grading Setting",
+    "Voting Start" => "Voting Start",
+    "Vote Percentage" => "Vote Percentage",
+    "Number of Elimination" => "Number of Elimination",
+    "Ambassador Percentage" => "Ambassador Percentage",
+    "Judge Percentage" => "Judge Percentage",
 ];
 ?>

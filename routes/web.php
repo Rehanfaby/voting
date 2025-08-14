@@ -187,7 +187,9 @@ Route::group(['middleware' => ['auth', 'active']], function() {
 	Route::resource('user','UserController');
 
 	Route::get('setting/general_setting', 'SettingController@generalSetting')->name('setting.general');
+    Route::get('setting/grading_setting', 'SettingController@gradingSetting')->name('setting.grading');
 	Route::post('setting/general_setting_store', 'SettingController@generalSettingStore')->name('setting.generalStore');
+	Route::post('setting/grading_setting_store', 'SettingController@gradingSettingStore')->name('setting.gradingStore');
 	Route::get('setting/general_setting/change-theme/{theme}', 'SettingController@changeTheme');
 	Route::get('setting/sms_setting', 'SettingController@smsSetting')->name('setting.sms');
 	Route::get('setting/createsms', 'SettingController@createSms')->name('setting.createSms');

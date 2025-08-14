@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Booking;
 use App\BookingProduct;
 use App\Category;
+use App\GeneralSetting;
 use App\Judge;
 use App\Ticket;
 use Illuminate\Http\Request;
@@ -111,6 +112,11 @@ class ReportController extends Controller
 
     public function contestantRanking() {
 
+        $general_setting = GeneralSetting::latest()->first();
+        $judges_percentage = $general_setting->judge_percentage;
+        $ambassadors_percentage = $general_setting->ambassador_percentage;
+        $vote_percentage = $general_setting->vote_percentage;
+
         $maxVotes = DB::table('votes')
             ->where('status', 1)
             ->selectRaw('SUM(vote) as total_votes, musician_id')
@@ -137,10 +143,10 @@ class ReportController extends Controller
             )
             ->groupBy('employees.id', 'employees.name', 'p.total_points', 'ap.total_ambassador_points')
             ->get()
-            ->map(function ($row) use ($maxVotes, $judges_count) {
-                $score_points = ($row->total_points/$judges_count * 0.60);
+            ->map(function ($row) use ($maxVotes, $judges_count, $judges_percentage, $vote_percentage) {
+                $score_points = ($row->total_points/$judges_count * $judges_percentage/100);
                 $score_ambassador = $row->total_ambassador_points;
-                $score_votes = $maxVotes > 0 ? (($row->total_votes / $maxVotes) * 10) : 0;
+                $score_votes = $maxVotes > 0 ? (($row->total_votes / $maxVotes) * $vote_percentage) : 0;
 
                 $row->final_score = $score_points + $score_ambassador + $score_votes;
                 return $row;
