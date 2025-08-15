@@ -184,12 +184,21 @@
                         </ul>
                     </li>
                 @endif
-                @if(in_array('grading_setting', $all_permission) || in_array('eliminated_candidate', $all_permission) || in_array('qualified_candidate', $all_permission))
-                    <li><a href="#grading-setting" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-gear"></i><span>{{trans('file.Grading Setting')}}</span></a>
+                @if(in_array('contestant_ranking', $all_permission) || in_array('grading_setting', $all_permission) || in_array('eliminated_candidate', $all_permission) || in_array('qualified_candidate', $all_permission))
+                    <li><a href="#grading-setting" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-gear"></i><span>{{trans('file.Grading')}}</span></a>
                         <ul id="grading-setting" class="collapse list-unstyled ">
+                            @if(in_array('grading_setting', $all_permission))
                             <li id="grading-setting-menu"><a href="{{route('setting.grading')}}">{{trans('file.Grading Setting')}}</a></li>
-                            <li id="ambassador-point-menu-create"><a href="{{route('ambassador_points.create')}}">{{trans('file.Grade Candidate')}}</a></li>
-                            <li id="ambassador-point-menu-list"><a href="{{route('ambassador_points.index')}}">{{trans('file.Grade Listing')}}</a></li>
+                            @endif
+                            @if(in_array('eliminated_candidate', $all_permission))
+                            <li id="grading-eliminated"><a href="{{route('report.contestant.eliminated')}}">{{trans('file.Eliminated Contestants')}}</a></li>
+                            @endif
+                            @if(in_array('qualified_candidate', $all_permission))
+                            <li id="grading-qualified"><a href="{{route('report.contestant.qualified')}}">{{trans('file.Qualified Contestants')}}</a></li>
+                            @endif
+                            @if(in_array('contestant_ranking', $all_permission))
+                                <li id="contestant-ranking"><a href="{{url('report/contestant/ranking')}}">{{trans('file.Contestant Grading')}}</a></li>
+                            @endif
                         </ul>
                     </li>
                 @endif
@@ -312,7 +321,7 @@
                         ['permissions.name', 'vote-report'],
                         ['role_id', $role->id] ])->first();
                 ?>
-                @if($voting_report_active || in_array('contestant_ranking', $all_permission))
+                @if($voting_report_active)
                     <li><a href="#report" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-document-remove"></i><span>{{trans('file.Reports')}}</span></a>
                         <ul id="report" class="collapse list-unstyled ">
                             @if($voting_report_active)
@@ -322,11 +331,6 @@
                                 <li id="ticket-report-menu">
                                     <a href="{{url('report/ticket/purchase')}}">{{trans('file.Total Purchase Tickets')}}</a>
                                 </li>
-                            @endif
-                            @if(in_array('contestant_ranking', $all_permission))
-                                    <li id="contestant-ranking">
-                                        <a href="{{url('report/contestant/ranking')}}">{{trans('file.Contestant Ranking')}}</a>
-                                    </li>
                             @endif
                         </ul>
                     </li>

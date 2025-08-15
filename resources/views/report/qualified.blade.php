@@ -4,7 +4,7 @@
         <div class="container-fluid">
             <div class="card">
                 <div class="card-header mt-2">
-                    <h3 class="text-center">Contestant Ranking Report</h3>
+                    <h3 class="text-center">{{ trans('file.Qualified Contestants') }}</h3>
                 </div>
             </div>
         </div>
@@ -63,7 +63,7 @@
 
         $("ul#grading-setting").siblings('a').attr('aria-expanded','true');
         $("ul#grading-setting").addClass("show");
-        $("ul#grading-setting #contestant-ranking").addClass("active");
+        $("ul#grading-setting #grading-qualified").addClass("active");
 
         $(".daterangepicker-field").daterangepicker({
             callback: function(startDate, endDate, period){

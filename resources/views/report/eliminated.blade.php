@@ -1,10 +1,23 @@
 @extends('layout.main') @section('content')
     <section>
-
+        @if($errors->has('image'))
+            <div class="alert alert-danger alert-dismissible text-center">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>{{ $errors->first('image') }}</div>
+        @endif
+        @if($errors->has('email'))
+            <div class="alert alert-danger alert-dismissible text-center">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>{{ $errors->first('email') }}</div>
+        @endif
+        @if(session()->has('message'))
+            <div class="alert alert-success alert-dismissible text-center"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>{!! session()->get('message') !!}</div>
+        @endif
+        @if(session()->has('not_permitted'))
+            <div class="alert alert-danger alert-dismissible text-center"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>{{ session()->get('not_permitted') }}</div>
+        @endif
         <div class="container-fluid">
             <div class="card">
                 <div class="card-header mt-2">
-                    <h3 class="text-center">Contestant Ranking Report</h3>
+                    <h3 class="text-center">{{ trans('file.Eliminated Contestants') }}</h3>
                 </div>
             </div>
         </div>
@@ -20,6 +33,7 @@
                     <th>{{trans('file.Ambassador Points')}}</th>
                     <th>{{trans('file.Total')}}</th>
                     <th>{{trans('file.Position')}}</th>
+                    <th class="not-exported">{{trans('file.Eliminate')}}</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -28,7 +42,7 @@
                 @endphp
                 @foreach($contestants as $key=>$employee)
                     @php $contestant = \App\Employee::find($employee->id); @endphp
-                    <tr>
+                    <tr  data-id="{{ $employee->id }}">
                         <td>{{$key}}</td>
                         @if($contestant->image)
                             <td> <img src="{{url('public/images/employee',$contestant->image)}}" height="80" width="80"></td>
@@ -41,6 +55,13 @@
                         <td>{{ $employee->total_ambassador_points }}</td>
                         <td class="text text-danger">{{ round($employee->final_score, 2) }}</td>
                         <td class="badge badge-info">{{ $key + 1}}</td>
+                        <td>
+                            @if(in_array("employees-delete", $all_permission))
+                                {{ Form::open(['route' => ['musician.destroy', $employee->id], 'method' => 'DELETE'] ) }}
+                                    <button type="submit" class="btn btn-link" onclick="return confirmDelete()"><i class="dripicons-trash"></i> {{trans('file.Eliminate')}}</button>
+                                {{ Form::close() }}
+                            @endif
+                        </td>
                     </tr>
                 @endforeach
                 </tbody>
@@ -63,7 +84,7 @@
 
         $("ul#grading-setting").siblings('a').attr('aria-expanded','true');
         $("ul#grading-setting").addClass("show");
-        $("ul#grading-setting #contestant-ranking").addClass("active");
+        $("ul#grading-setting #grading-eliminated").addClass("active");
 
         $(".daterangepicker-field").daterangepicker({
             callback: function(startDate, endDate, period){
@@ -82,6 +103,12 @@
             });
         });
 
+        var employee_id = [];
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
 
         $('#employee-table').DataTable( {
             "order": [],
@@ -172,6 +199,33 @@
                         rows: ':visible',
                         stripHtml: false
                     },
+                },
+                {
+                    text: '<i title="delete" class="dripicons-cross"></i>',
+                    className: 'buttons-delete',
+                    action: function ( e, dt, node, config ) {
+                        employee_id.length = 0;
+                        $(':checkbox:checked').each(function (i) {
+                            if (i) {
+                                employee_id[i - 1] = $(this).closest('tr').data('id');
+                            }
+                        });
+                        if (employee_id.length && confirm("Are you sure want to delete?")) {
+                            $.ajax({
+                                type: 'POST',
+                                url: '/musician/deletebyselection',
+                                data: {
+                                    ids: employee_id
+                                },
+                                success: function (data) {
+                                    alert(data);
+                                    location.reload();
+                                }
+                            });
+                            dt.rows({page: 'current', selected: true}).remove().draw(false);
+                        } else if (!employee_id.length)
+                            alert('No employee is selected!');
+                    }
                 },
                 {
                     extend: 'colvis',

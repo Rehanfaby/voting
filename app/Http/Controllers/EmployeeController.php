@@ -219,7 +219,7 @@ class EmployeeController extends Controller
 
     public function deleteBySelection(Request $request)
     {
-        $employee_id = $request['employeeIdArray'];
+        $employee_id = $request['ids'];
         foreach ($employee_id as $id) {
             if($id == null) {
                 continue;
@@ -228,14 +228,14 @@ class EmployeeController extends Controller
             $lims_employee_data->is_active = false;
             $lims_employee_data->save();
         }
-        return 'Musician deleted successfully!';
+        return 'Contestant deleted successfully!';
     }
     public function destroy($id)
     {
         $lims_employee_data = Employee::find($id);
         $lims_employee_data->is_active = false;
         $lims_employee_data->save();
-        return redirect('musician')->with('not_permitted', 'Contestant deleted successfully');
+        return redirect()->back()->with('not_permitted', 'Contestant deleted successfully');
     }
 
     public function gallery($id)

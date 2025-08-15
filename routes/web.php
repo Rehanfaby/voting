@@ -277,6 +277,8 @@ Route::group(['middleware' => ['auth', 'active']], function() {
     Route::get('report/voting', 'ReportController@votingReport')->name('voting.report');
     Route::get('report/ticket/purchase', 'ReportController@ticketPurchaseReport')->name('report.ticket.purchase');
     Route::get('report/contestant/ranking', 'ReportController@contestantRanking')->name('report.contestant.ranking');
+    Route::get('report/contestant/qualified', 'ReportController@qualifiedContestantRanking')->name('report.contestant.qualified');
+    Route::get('report/contestant/eliminated', 'ReportController@eliminatedContestantRanking')->name('report.contestant.eliminated');
 
     Route::get('points/awaiting_candidates', 'PointController@awaitingCandidates')->name('points.awaiting_candidates');
     Route::get('points/create/{candidate_id?}', 'PointController@create')->name('points.create');

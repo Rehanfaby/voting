@@ -953,5 +953,10 @@ return [
     "Number of Elimination" => "Number of Elimination",
     "Ambassador Percentage" => "Ambassador Percentage",
     "Judge Percentage" => "Judge Percentage",
+    "Eliminated Contestants" => "Eliminated Contestants",
+    "Qualified Contestants" => "Qualified Contestants",
+    "Eliminate" => "Eliminate",
+    "Grading" => "Grading",
+    "Contestant Grading" => "Contestant Grading"
 ];
 ?>
