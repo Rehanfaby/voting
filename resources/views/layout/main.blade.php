@@ -191,7 +191,7 @@
                             <li id="grading-setting-menu"><a href="{{route('setting.grading')}}">{{trans('file.Grading Setting')}}</a></li>
                             @endif
                             @if(in_array('eliminated_candidate', $all_permission))
-                            <li id="grading-eliminated"><a href="{{route('report.contestant.eliminated')}}">{{trans('file.Eliminated Contestants')}}</a></li>
+                            <li id="grading-eliminated"><a href="{{route('report.contestant.eliminated')}}">{{trans('file.Elimination list')}}</a></li>
                             @endif
                             @if(in_array('qualified_candidate', $all_permission))
                             <li id="grading-qualified"><a href="{{route('report.contestant.qualified')}}">{{trans('file.Qualified Contestants')}}</a></li>

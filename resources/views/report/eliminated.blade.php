@@ -18,6 +18,7 @@
             <div class="card">
                 <div class="card-header mt-2">
                     <h3 class="text-center">{{ trans('file.Eliminated Contestants') }}</h3>
+                    <a class="pull-right btn btn-primary" href="{{ route('eliminate.contestants') }}">{{ trans('file.Generate Elimination List') }}</a>
                 </div>
             </div>
         </div>
@@ -67,6 +68,8 @@
                 </tbody>
                 <tfoot>
                 <tr>
+                    <th></th>
+                    <th></th>
                     <th></th>
                     <th></th>
                     <th></th>

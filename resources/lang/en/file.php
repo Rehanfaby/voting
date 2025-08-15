@@ -957,6 +957,8 @@ return [
     "Qualified Contestants" => "Qualified Contestants",
     "Eliminate" => "Eliminate",
     "Grading" => "Grading",
-    "Contestant Grading" => "Contestant Grading"
+    "Contestant Grading" => "Contestant Grading",
+    "Generate Elimination List" => "Generate Elimination List",
+    "Elimination list" => "Elimination list",
 ];
 ?>

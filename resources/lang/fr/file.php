@@ -826,5 +826,19 @@ return [
     "Overall presentation" => "Présentation générale",
     "Adaptability and flexibility" => "Adaptabilité et flexibilité",
     "Audience interaction" => "Intéraction du public",
+
+    "Grading Setting" => "Paramètres de notation",
+    "Voting Start" => "Début du vote",
+    "Vote Percentage" => "Pourcentage de vote",
+    "Number of Elimination" => "Nombre d’éliminations",
+    "Ambassador Percentage" => "Pourcentage d’ambassadeurs",
+    "Judge Percentage" => "Pourcentage de juges",
+    "Eliminated Contestants" => "Candidats éliminés",
+    "Qualified Contestants" => "Candidats qualifiés",
+    "Eliminate" => "Éliminer",
+    "Grading" => "Notation",
+    "Contestant Grading" => "Notation des candidats",
+    "Generate Elimination List" => "Générer la liste d’élimination",
+    "Elimination list" => "Liste d’élimination",
 ];
 ?>
