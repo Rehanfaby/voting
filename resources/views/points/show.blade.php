@@ -8,16 +8,16 @@
                 <p><strong>Judge:</strong> {{ $point->judge->name }}</p>
                 <p><strong>Candidate:</strong> {{ $point->contestant->name }}</p>
                 <ul>
-                    <li>Depth: {{ $point->depth }}</li>
-                    <li>Diction: {{ $point->diction }}</li>
-                    <li>Accuracy: {{ $point->accuracy }}</li>
-                    <li>Interpretation: {{ $point->interpretation }}</li>
-                    <li>Technique: {{ $point->technique }}</li>
-                    <li>Stage presence: {{ $point->stage_presence }}</li>
-                    <li>Song choice: {{ $point->song_choice }}</li>
-                    <li>Overall presentation: {{ $point->overall_presentation }}</li>
-                    <li>Adaptability: {{ $point->adaptability }}</li>
-                    <li>Audience interaction: {{ $point->audience_interaction }}</li>
+                    <li>{{ trans('file.Depth and atmosphere / Spiritual impact') }}: {{ $point->depth }}</li>
+{{--                    <li>Diction: {{ $point->diction }}</li>--}}
+                    <li>{{ trans('file.Accuracy and precision') }}: {{ $point->accuracy }}</li>
+                    <li>{{ trans('file.Interpretation, emotion, and heartfelt engagement / Originality and style') }}: {{ $point->interpretation }}</li>
+{{--                    <li>Technique: {{ $point->technique }}</li>--}}
+{{--                    <li>Stage presence: {{ $point->stage_presence }}</li>--}}
+                    <li>{{ trans('file.file.Choice of song / Key') }}: {{ $point->song_choice }}</li>
+                    <li>{{ trans('file.Overall presentation') }}: {{ $point->overall_presentation }}</li>
+{{--                    <li>Adaptability: {{ $point->adaptability }}</li>--}}
+{{--                    <li>Audience interaction: {{ $point->audience_interaction }}</li>--}}
                 </ul>
                 <p><strong>Total:</strong> {{ $point->total }}</p>
                 <a href="{{ route('points.index') }}" class="btn btn-secondary">Back</a>
