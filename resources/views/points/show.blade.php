@@ -2,7 +2,7 @@
     <div class="container-fluid p-5">
         <div class="card">
             <div class="card-header">
-                <h3>Point #{{ $point->id }}</h3>
+                <h3>{{ trans('file.Grading') }} #{{ $point->id }}</h3>
             </div>
             <div class="card-body">
                 <p><strong>Judge:</strong> {{ $point->judge->name }}</p>
@@ -14,7 +14,7 @@
                     <li>{{ trans('file.Interpretation, emotion, and heartfelt engagement / Originality and style') }}: {{ $point->interpretation }}</li>
 {{--                    <li>Technique: {{ $point->technique }}</li>--}}
 {{--                    <li>Stage presence: {{ $point->stage_presence }}</li>--}}
-                    <li>{{ trans('file.file.Choice of song / Key') }}: {{ $point->song_choice }}</li>
+                    <li>{{ trans('file.Choice of song / Key') }}: {{ $point->song_choice }}</li>
                     <li>{{ trans('file.Overall presentation') }}: {{ $point->overall_presentation }}</li>
 {{--                    <li>Adaptability: {{ $point->adaptability }}</li>--}}
 {{--                    <li>Audience interaction: {{ $point->audience_interaction }}</li>--}}

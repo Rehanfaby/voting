@@ -44,7 +44,7 @@
                             <span class="badge bg-warning text-dark">Not Used</span>
                         @endif
                     </td>
-                    <td>{{ \Carbon\Carbon::parse($ticket->created_at)->format('Y-m-d H:i') }}</td>
+                    <td>{{ \Carbon\Carbon::parse($ticket->ticket->created_at)->format('Y-m-d H:i') }}</td>
                     <td>{{ optional($ticket->product)->name }}</td>
                     <td>{{ $ticket->seat_number }}</td>
                 </tr>

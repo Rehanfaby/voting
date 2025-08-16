@@ -384,7 +384,7 @@ class HomeController extends Controller
 
         if ($session->payment_status !== 'paid') {
             Vote::where('id', $session->metadata->vote_id)->delete();
-            return redirect()->back()->with('not_permitted', 'payment failed.');
+            return redirect()->route('home')->with('not_permitted', 'payment failed.');
         }
 
         $vote = Vote::where('id', $session->metadata->vote_id)->first();
@@ -479,7 +479,7 @@ class HomeController extends Controller
 
         if ($session->payment_status !== 'paid') {
             Ticket::where('id', $session->metadata->ticket_id)->delete();
-            return redirect()->back()->with('not_permitted', 'payment failed.');
+            return redirect()->route('home')->with('not_permitted', 'payment failed.');
         }
 
         $ticket = Ticket::where('id', $session->metadata->ticket_id)->first();
@@ -556,7 +556,7 @@ class HomeController extends Controller
             $link = $this->mobileMoneyRequestLink($token, $amount, $route, $ticket->id, $mtn_number);
             if ($link == false) {
                 $message = 'Phone Number is incorrect or There is any other issue in payment method';
-                return redirect()->route('tickets')->with('not_permitted', $message);
+                return redirect()->route('home')->with('not_permitted', $message);
             }
             header("Location: $link");
             die();
@@ -569,7 +569,7 @@ class HomeController extends Controller
     {
         if($request->status != 'SUCCESSFUL'){
             Ticket::where('id', $request->external_reference)->delete();
-            return redirect()->route('tickets')->with('not_permitted', 'payment failed.');
+            return redirect()->route('home')->with('not_permitted', 'payment failed.');
         }
 
         $ticket = Ticket::where('id', $request->external_reference)->first();
@@ -581,7 +581,7 @@ class HomeController extends Controller
         }
 
         $message = 'There is any issue, please contact the system administrator';
-        return redirect()->back()->with('not_permitted', $message);
+        return redirect()->route('home')->with('not_permitted', $message);
 
     }
 
@@ -615,7 +615,7 @@ class HomeController extends Controller
     {
         if($request->status != 'SUCCESSFUL'){
             Vote::where('id', $request->external_reference)->delete();
-            return redirect()->back()->with('not_permitted', 'payment failed.');
+            return redirect()->route('home')->with('not_permitted', 'payment failed.');
         }
 
         $vote = Vote::where('id', $request->external_reference)->first();
@@ -626,11 +626,11 @@ class HomeController extends Controller
         if($vote) {
             $this->sendWhatsappMsgVoteMomoSuccess($vote->voters, $vote->vote, $vote->musician_id, $vote);
             $message = 'Thank you for your voting';
-            return redirect()->back()->with('message', $message);
+            return redirect()->route('home')->with('message', $message);
         }
 
         $message = 'There is any issue, please contact the system administrator';
-        return redirect()->back()->with('not_permitted', $message);
+        return redirect()->route('home')->with('not_permitted', $message);
 
     }
 
