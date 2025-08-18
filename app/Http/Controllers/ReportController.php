@@ -129,7 +129,7 @@ class ReportController extends Controller
         $judges_count = Judge::where('is_active', true)->count();
 
         $contestants = DB::table('employees')->where('is_active', true)
-            ->join('votes', function($join) {
+            ->leftJoin('votes', function($join) {
                 $join->on('votes.musician_id', '=', 'employees.id')
                     ->where('votes.status', 1);
             })
@@ -176,7 +176,7 @@ class ReportController extends Controller
         $judges_count = Judge::where('is_active', true)->count();
 
         $contestants = DB::table('employees')->where('is_active', true)->where('is_eliminate', false)
-            ->join('votes', function($join) {
+            ->leftJoin('votes', function($join) {
                 $join->on('votes.musician_id', '=', 'employees.id')
                     ->where('votes.status', 1);
             })
@@ -225,7 +225,7 @@ class ReportController extends Controller
         $judges_count = Judge::where('is_active', true)->count();
 
         $contestants = DB::table('employees')->where('is_active', true)->where('is_eliminate', true)
-            ->join('votes', function($join) {
+            ->leftJoin('votes', function($join) {
                 $join->on('votes.musician_id', '=', 'employees.id')
                     ->where('votes.status', 1);
             })
@@ -274,7 +274,7 @@ class ReportController extends Controller
         $judges_count = Judge::where('is_active', true)->count();
 
         $contestants = DB::table('employees')->where('is_active', true)
-            ->join('votes', function($join) {
+            ->leftJoin('votes', function($join) {
                 $join->on('votes.musician_id', '=', 'employees.id')
                     ->where('votes.status', 1);
             })
