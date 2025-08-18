@@ -301,7 +301,7 @@ class ReportController extends Controller
             ->values();
 
         $contestants = $contestants->slice(-$general_setting->number_of_elimination);
-
+        Employee::where('id', '>', 0)->update(['is_eliminate' => false]);
         if (!$contestants->isEmpty()) {
             foreach ($contestants as $contestant) {
                 Employee::where('id', $contestant->id)->update(['is_eliminate' => true]);
