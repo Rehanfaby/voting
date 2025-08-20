@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Employee;
+use App\GeneralSetting;
 use App\Http\Requests\StorePointRequest;
 use App\Judge;
 use App\Point;
@@ -20,11 +21,16 @@ class PointController extends Controller
 
     public function index()
     {
-        if(Auth::user()->role_id == $this->getJudgeRoleId()) {
-            $points = Point::with(['judge','contestant'])->where('judge_id', Auth::user()->id)->latest()->get();
+        if ($this->isGradingAvailable()) {
+            if(Auth::user()->role_id == $this->getJudgeRoleId()) {
+                $points = Point::with(['judge','contestant'])->where('judge_id', Auth::user()->id)->latest()->get();
+            } else {
+                $points = Point::with(['judge','contestant'])->latest()->get();
+            }
         } else {
-            $points = Point::with(['judge','contestant'])->latest()->get();
+            $points = [];
         }
+
 
         return view('points.index', compact('points'));
     }
@@ -39,8 +45,11 @@ class PointController extends Controller
 
         $judge_role_id = Role::where('name', 'judge')->first()->id;
         $judges = User::where('is_deleted', false)->where('role_id', $judge_role_id)->get();
-//        $judges = Judge::orderBy('name')->where('is_active', true)->get();
-        $candidates = Employee::orderBy('name')->where('is_active', true)->where('is_approve', true)->get();
+        if ($this->isGradingAvailable()) {
+            $candidates = Employee::orderBy('name')->where('is_active', true)->where('is_approve', true)->get();
+        } else {
+            $candidates = [];
+        }
         return view('points.create', compact('judges','candidates', 'candidate_id', 'candidate_name'));
     }
 
@@ -101,6 +110,10 @@ class PointController extends Controller
     {
 
         // Example: contestants the judge has already rated
+
+        if ($this->isGradingAvailable() == false) {
+            return response()->json([]);
+        }
         $ratedContestants = Point::where('judge_id', $judgeId)
             ->pluck('candidate_id')
             ->toArray();
@@ -123,7 +136,7 @@ class PointController extends Controller
         $user_role = Auth::user()->role_id;
         $judge_role_id = Role::where('name', 'judge')->first()->id;
 
-        if ($user_role == $judge_role_id) {
+        if ($user_role == $judge_role_id && $this->isGradingAvailable()) {
             $awaiting_candidates = Employee::where('is_active', true)
                 ->where('is_approve', true)
                 ->whereNotIn('id', function($query) use ($user_id) {
@@ -149,6 +162,14 @@ class PointController extends Controller
             return 'Grading deleted successfully!';
         } else {
             return 'You do not have permission to delete this!';
+        }
+    }
+
+    private function isGradingAvailable()
+    {
+        $setting = GeneralSetting::first();
+        if ($setting->available_grading) {
+            return true;
         }
     }
 

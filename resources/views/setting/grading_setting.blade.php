@@ -73,6 +73,17 @@
                                         </label>
                                     </div>
                                 </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>{{trans('file.Available for Grading')}} *</label><br>
+                                        <input type="hidden" name="available_grading" value="0">
+                                        <label class="checkbox-inline">
+                                            <input type="checkbox" name="available_grading" value="1"
+                                                {{ $lims_general_setting_data->available_grading ? 'checked' : '' }}>
+                                            {{ trans('file.Available for Grading') }}
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
                             <div class="form-group">
                                 <input type="submit" value="{{trans('file.submit')}}" class="btn btn-primary">

@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 use App\Ambassador;
 use App\AmbassadorPoint;
 use App\Employee;
+use App\GeneralSetting;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,11 +20,15 @@ class AmbassadorPointController extends Controller
 
     public function index()
     {
-        $role = Auth::user()->role_id;
-        if(Auth::user()->role_id == $this->getJudgeRoleId()) {
-            $points = AmbassadorPoint::with(['ambassador', 'contestant'])->where('ambassador_id', Auth::user()->id)->get();;
+        if ($this->isGradingAvailable()) {
+            $role = Auth::user()->role_id;
+            if (Auth::user()->role_id == $this->getJudgeRoleId()) {
+                $points = AmbassadorPoint::with(['ambassador', 'contestant'])->where('ambassador_id', Auth::user()->id)->get();;
+            } else {
+                $points = AmbassadorPoint::with(['ambassador', 'contestant'])->get();
+            }
         } else {
-            $points = AmbassadorPoint::with(['ambassador', 'contestant'])->get();
+            $points = [];
         }
         return view('ambassador_points.index', compact('points'));
     }
@@ -38,7 +43,11 @@ class AmbassadorPointController extends Controller
         $judge_role_id = Role::where('name', 'ambassador')->first()->id;
         $ambassadors = User::where('is_deleted', false)->where('role_id', $judge_role_id)->get();
 //        $ambassadors = Ambassador::where('is_active', true)->orderBy('name')->get();
-        $candidates = Employee::orderBy('name')->where('is_active', true)->where('is_approve', true)->get();
+        if ($this->isGradingAvailable()) {
+            $candidates = Employee::orderBy('name')->where('is_active', true)->where('is_approve', true)->get();
+        } else {
+            $candidates = [];
+        }
         return view('ambassador_points.create', compact('candidates', 'ambassadors', 'candidate_id', 'candidate_name'));
     }
 
@@ -104,7 +113,7 @@ class AmbassadorPointController extends Controller
         $user_role = Auth::user()->role_id;
         $ambassador_role_id = Role::where('name', 'ambassador')->first()->id;
 
-        if ($user_role == $ambassador_role_id) {
+        if ($user_role == $ambassador_role_id && $this->isGradingAvailable()) {
             $awaiting_candidates = Employee::where('is_active', true)
                 ->where('is_approve', true)
                 ->whereNotIn('id', function($query) use ($user_id) {
@@ -131,6 +140,15 @@ class AmbassadorPointController extends Controller
             return 'Grading deleted successfully!';
         } else {
             return 'You do not have permission to delete this!';
+        }
+    }
+
+
+    private function isGradingAvailable()
+    {
+        $setting = GeneralSetting::first();
+        if ($setting->available_grading) {
+            return true;
         }
     }
 }

@@ -960,5 +960,6 @@ return [
     "Contestant Grading" => "Contestant Grading",
     "Generate Elimination List" => "Generate Elimination List",
     "Elimination list" => "Elimination list",
+    "Available for Grading" => "Available for Grading"
 ];
 ?>

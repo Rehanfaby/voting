@@ -129,6 +129,7 @@ class SettingController extends Controller
         $general_setting->ambassador_percentage = $request->ambassador_percentage;
         $general_setting->number_of_elimination = $request->number_of_elimination;
         $general_setting->is_voting_start = $request->is_voting_start;
+        $general_setting->available_grading = $request->available_grading;
 
         $general_setting->save();
         return redirect()->back()->with('message', 'Data updated successfully');

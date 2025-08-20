@@ -30,8 +30,8 @@
             <tr>
                 <th class="not-exported">#</th>
                 <th>Name</th>
-                <th>Phone</th>
-                <th>Email</th>
+{{--                <th>Phone</th>--}}
+{{--                <th>Email</th>--}}
                 <th class="not-exported">Actions</th>
             </tr>
             </thead>
@@ -40,8 +40,8 @@
                 <tr data-id="{{$awaiting_candidate->id}}" class="clickable-row" data-href="{{ route('points.create', ['candidate_id' => $awaiting_candidate->id]) }}">
                     <td>{{ $awaiting_candidate->id }}</td>
                     <td>{{ $awaiting_candidate->name }}</td>
-                    <td>{{ $awaiting_candidate->phone_number }}</td>
-                    <td>{{ $awaiting_candidate->email }}</td>
+{{--                    <td>{{ $awaiting_candidate->phone_number }}</td>--}}
+{{--                    <td>{{ $awaiting_candidate->email }}</td>--}}
                     <td>
                         <a href="{{ route('points.create', ['candidate_id' => $awaiting_candidate->id]) }}">
                             <i class="fa fa-pencil"></i> Give Point
@@ -102,7 +102,7 @@
         'columnDefs': [
             {
                 "orderable": false,
-                'targets': [0, 4]
+                'targets': [0, 2]
             },
             {
                 'render': function(data, type, row, meta){
