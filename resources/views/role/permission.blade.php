@@ -297,6 +297,58 @@
 						            </td>
 						        </tr>
 
+                                <tr>
+                                    <td>{{trans('file.Announcement')}}</td>
+                                    <td class="text-center">
+                                        <div class="icheckbox_square-blue checked" aria-checked="false" aria-disabled="false">
+                                            <div class="checkbox">
+                                                @if(in_array("announcement_index", $all_permission))
+                                                    <input type="checkbox" value="1" id="announcement_index" name="announcement_index" checked>
+                                                @else
+                                                    <input type="checkbox" value="1" id="announcement_index" name="announcement_index">
+                                                @endif
+                                                <label for="announcement_index"></label>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="icheckbox_square-blue checked" aria-checked="false" aria-disabled="false">
+                                            <div class="checkbox">
+                                                @if(in_array("announcement_add", $all_permission))
+                                                    <input type="checkbox" value="1" id="announcement_add" name="announcement_add" checked>
+                                                @else
+                                                    <input type="checkbox" value="1" id="announcement_add" name="announcement_add">
+                                                @endif
+                                                <label for="announcement_add"></label>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="icheckbox_square-blue checked" aria-checked="false" aria-disabled="false">
+                                            <div class="checkbox">
+                                                @if(in_array("announcement_edit", $all_permission))
+                                                    <input type="checkbox" value="1" id="announcement_edit" name="announcement_edit" checked>
+                                                @else
+                                                    <input type="checkbox" value="1" id="announcement_edit" name="announcement_edit">
+                                                @endif
+                                                <label for="announcement_edit"></label>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="icheckbox_square-blue" aria-checked="false" aria-disabled="false">
+                                            <div class="checkbox">
+                                                @if(in_array("announcement_delete", $all_permission))
+                                                    <input type="checkbox" value="1" id="announcement_delete" name="announcement_delete" checked>
+                                                @else
+                                                    <input type="checkbox" value="1" id="announcement_delete" name="announcement_delete">
+                                                @endif
+                                                <label for="announcement_delete"></label>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
 						        <tr>
 						            <td>{{trans('file.Accounting')}}</td>
 						            <td class="report-permissions" colspan="5">
@@ -404,6 +456,18 @@
                                                         <input type="checkbox" value="1" id="see-votes" name="see-votes">
                                                     @endif
 								                    <label for="see-votes" class="padding05">Anyone can See Votes &nbsp;&nbsp;</label>
+								                </div>
+								            </div>
+						                </span>
+                                        <span>
+						                    <div aria-checked="false" aria-disabled="false">
+								                <div class="checkbox">
+							                    	@if(in_array("scan-ticket", $all_permission))
+                                                        <input type="checkbox" value="1" id="scan-ticket" name="scan-ticket" checked>
+                                                    @else
+                                                        <input type="checkbox" value="1" id="scan-ticket" name="scan-ticket">
+                                                    @endif
+								                    <label for="scan-ticket" class="padding05">Scan Ticket &nbsp;&nbsp;</label>
 								                </div>
 								            </div>
 						                </span>

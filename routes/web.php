@@ -46,11 +46,123 @@ Route::group(['middleware' => 'checkOtp'], function() {
     Route::post('musician/vote/payment/Stripe', 'HomeController@musicianVotePaymentStripe')->name('musician.vote.payment.stripe');
     Route::get('/musician/vote/payment/check/Stripe', 'HomeController@musicianVotePaymentCheckStripe')->name('musician.vote.payment.check.stripe');
 
+    Route::get('/campay/webhook', 'HomeController@handleCampayWebhook')->name('campay.webhook');
+
+
+
+    Route::get('/events', 'HomeController@events')->name('events');
+
+	Route::get('/tickets/{id}', 'HomeController@tickets')->name('tickets');
+	Route::get('/ticket/data/{id}', 'HomeController@ticket')->name('ticket.data');
+	Route::post('/purchase/ticket', 'HomeController@purchaseTicket')->name('purchase.ticket');
+
+	Route::post('/ticket/payment', 'HomeController@ticketPayment')->name('ticket.payment');
+    Route::get('/ticket/payment/check', 'HomeController@ticketPaymentCheck')->name('ticket.payment.check');
+    Route::post('/ticket/payment/Stripe', 'HomeController@ticketPaymentStripe')->name('ticket.payment.stripe');
+    Route::get('/ticket/payment/check/Stripe', 'HomeController@ticketPaymentCheckStripe')->name('ticket.payment.check.stripe');
+
+
+	Route::get('/ticket/scan/{token}', 'HomeController@ticketScan')->name('ticket.scan');
+    Route::get('/ticket/scan/used/{token}', 'HomeController@ticketScanUsed')->name('ticket.scan.used');
+
+	Route::get('user/events', 'HomeController@userEvents')->name('user.events');
+
 });
 
 //end frontend
 
 Route::group(['middleware' => ['auth', 'active']], function() {
+
+
+	Route::post('importunit', 'UnitController@importUnit')->name('unit.import');
+	Route::post('unit/deletebyselection', 'UnitController@deleteBySelection');
+	Route::get('unit/lims_unit_search', 'UnitController@limsUnitSearch')->name('unit.search');
+	Route::resource('unit', 'UnitController');
+
+	Route::post('category/import', 'CategoryController@import')->name('category.import');
+	Route::post('category/deletebyselection', 'CategoryController@deleteBySelection');
+	Route::post('category/category-data', 'CategoryController@categoryData');
+    Route::get('/categoryStats/{id}', 'CategoryController@categoryStats');
+	Route::resource('category', 'CategoryController');
+
+	Route::post('importtax', 'TaxController@importTax')->name('tax.import');
+	Route::post('tax/deletebyselection', 'TaxController@deleteBySelection');
+	Route::get('tax/lims_tax_search', 'TaxController@limsTaxSearch')->name('tax.search');
+	Route::resource('tax', 'TaxController');
+
+
+	Route::resource('stock-count', 'StockCountController');
+	Route::post('stock-count/finalize', 'StockCountController@finalize')->name('stock-count.finalize');
+	Route::get('stock-count/stockdif/{id}', 'StockCountController@stockDif');
+	Route::get('stock-count/{id}/qty_adjustment', 'StockCountController@qtyAdjustment')->name('stock-count.adjustment');
+
+	Route::get('qty_adjustment/getproduct/{id}', 'AdjustmentController@getProduct')->name('adjustment.getproduct');
+	Route::get('qty_adjustment/lims_product_search', 'AdjustmentController@limsProductSearch')->name('product_adjustment.search');
+	Route::post('qty_adjustment/deletebyselection', 'AdjustmentController@deleteBySelection');
+	Route::resource('qty_adjustment', 'AdjustmentController');
+
+	//Route::get('products/getbarcode', 'ProductController@getBarcode');
+	Route::get('productsStats/{id}', 'ProductController@productsStats');
+	Route::post('products/product-data', 'ProductController@productData');
+	Route::post('products/product-data/vendor', 'ProductController@productDataVendor');
+	Route::get('products/gencode', 'ProductController@generateCode');
+	Route::get('products/search', 'ProductController@search');
+	Route::get('products/saleunit/{id}', 'ProductController@saleUnit');
+	Route::get('products/getdata/{id}', 'ProductController@getData');
+	Route::get('products/product_warehouse/{id}', 'ProductController@productWarehouseData');
+	Route::post('importproduct', 'ProductController@importProduct')->name('product.import');
+	Route::post('exportproduct', 'ProductController@exportProduct')->name('product.export');
+	Route::get('products/print_barcode','ProductController@printBarcode')->name('product.printBarcode');
+
+	Route::get('products/lims_product_search', 'ProductController@limsProductSearch')->name('product.search');
+	Route::post('products/deletebyselection', 'ProductController@deleteBySelection');
+    Route::get('/editbyselection/warehouse/products', 'ProductController@warehouseProducts')->name('edit.by.selection.warehouse.products');
+	Route::get('products/editbyselection', 'ProductController@editBySelection')->name('product.edit.by.selection');
+    Route::get('products/editbyselection/page', 'ProductController@editBySelectionPage')->name('product.edit.by.selection.page');
+	Route::post('products/updatebyselection', 'ProductController@updateBySelection')->name('product.update.by.selection');
+	Route::post('products/update', 'ProductController@updateProduct');
+	Route::get('products/store/model', 'SaleController@storeModel')->name('product.store.model');
+	Route::resource('products', 'ProductController');
+
+    Route::get('/admin/tickets/index', 'TicketController@index')->name('admin.ticket.index');
+
+    Route::get('/admin/ticket/scan/screen', 'ProductController@ticketScanScreen')->name('admin.ticket.scan.screen');
+    Route::post('/admin/ticket/scan', 'ProductController@ticketScan')->name('admin.ticket.scan');
+    Route::get('/admin/ticket/scan/used/{token}', 'ProductController@ticketScanUsed')->name('admin.ticket.scan.used');
+
+	Route::post('importcustomer_group', 'CustomerGroupController@importCustomerGroup')->name('customer_group.import');
+	Route::post('customer_group/deletebyselection', 'CustomerGroupController@deleteBySelection');
+	Route::get('customer_group/lims_customer_group_search', 'CustomerGroupController@limsCustomerGroupSearch')->name('customer_group.search');
+	Route::resource('customer_group', 'CustomerGroupController');
+
+	  Route::get('customer/payment_check', 'CustomerController@CustomerPayemntCheck')->name('customer.payment_check');
+	Route::post('importcustomer', 'CustomerController@importCustomer')->name('customer.import');
+	Route::get('customer/getDeposit/{id}', 'CustomerController@getDeposit');
+	Route::post('customer/add_deposit', 'CustomerController@addDeposit')->name('customer.addDeposit');
+	Route::post('customer/update_deposit', 'CustomerController@updateDeposit')->name('customer.updateDeposit');
+	Route::post('customer/deleteDeposit', 'CustomerController@deleteDeposit')->name('customer.deleteDeposit');
+	Route::post('customer/deletebyselection', 'CustomerController@deleteBySelection');
+	Route::get('customer/lims_customer_search', 'CustomerController@limsCustomerSearch')->name('customer.search');
+	Route::resource('customer', 'CustomerController');
+    Route::get('/customer/gen_payment_invoice/{id}', 'CustomerController@genInvoice')->name('customer.gen_payment_invoice');
+    Route::get('/customer_group/gen_payment_invoice/{id}', 'CustomerGroupController@genInvoice')->name('customer_group.gen_payment_invoice');
+    Route::get('customer_group/customers/{id}', 'CustomerController@CustomerGroupCustomers')->name('customer_group.customers');
+    Route::get('customer_group/deposits/{id}', 'CustomerGroupController@Deposits')->name('customer_group.deposits');
+    Route::get('customer_group/payments/{id}', 'CustomerGroupController@Payments')->name('customer_group.payments');
+    Route::post('customer_group/add_deposit', 'CustomerGroupController@addDeposit')->name('customer_group.addDeposit');
+
+	Route::post('purchases/purchase-data', 'PurchaseController@purchaseData')->name('purchases.data');
+	Route::get('purchases/product_purchase/{id}','PurchaseController@productPurchaseData');
+	Route::get('purchases/lims_product_search', 'PurchaseController@limsProductSearch')->name('product_purchase.search');
+	Route::post('purchases/add_payment', 'PurchaseController@addPayment')->name('purchase.add-payment');
+	Route::get('purchases/getpayment/{id}', 'PurchaseController@getPayment')->name('purchase.get-payment');
+	Route::post('purchases/updatepayment', 'PurchaseController@updatePayment')->name('purchase.update-payment');
+	Route::post('purchases/deletepayment', 'PurchaseController@deletePayment')->name('purchase.delete-payment');
+	Route::get('purchases/purchase_by_csv', 'PurchaseController@purchaseByCsv');
+	Route::post('importpurchase', 'PurchaseController@importPurchase')->name('purchase.import');
+	Route::post('purchases/deletebyselection', 'PurchaseController@deleteBySelection');
+	Route::resource('purchases', 'PurchaseController');
+
 
     Route::post('/logout', 'HomeController@logout')->name('logout');
 	Route::get('/otp/screen', 'HomeController@otpCheck')->name('check.otp');
@@ -87,7 +199,17 @@ Route::group(['middleware' => ['auth', 'active']], function() {
 	Route::post('expense_categories/deletebyselection', 'ExpenseCategoryController@deleteBySelection');
 	Route::resource('expense_categories', 'ExpenseCategoryController');
 
-	Route::post('expenses/deletebyselection', 'ExpenseController@deleteBySelection');
+    Route::post('importbrand', 'BrandController@importBrand')->name('brand.import');
+    Route::post('brand/deletebyselection', 'BrandController@deleteBySelection');
+    Route::get('brand/lims_brand_search', 'BrandController@limsBrandSearch')->name('brand.search');
+    Route::resource('brand', 'BrandController');
+
+    Route::post('importwarehouse', 'WarehouseController@importWarehouse')->name('warehouse.import');
+    Route::post('warehouse/deletebyselection', 'WarehouseController@deleteBySelection');
+    Route::get('warehouse/lims_warehouse_search', 'WarehouseController@limsWarehouseSearch')->name('warehouse.search');
+    Route::resource('warehouse', 'WarehouseController');
+
+    Route::post('expenses/deletebyselection', 'ExpenseController@deleteBySelection');
 	Route::resource('expenses', 'ExpenseController');
 	Route::get('/expense/asset', 'ExpenseController@asset')->name('asset.expense');
 	//accounting routes
@@ -127,12 +249,36 @@ Route::group(['middleware' => ['auth', 'active']], function() {
     Route::resource('coins', 'CoinController');
     Route::post('coins/deletebyselection', 'CoinController@deleteBySelection');
 
+    Route::get('/announcement/index', 'AnnouncementController@index')->name('announcement.index');
+    Route::get('/announcement/create', 'AnnouncementController@create')->name('announcement.create');
+    Route::get('/announcement/show/{id}', 'AnnouncementController@show')->name('announcement.show');
+    Route::post('/announcement/store', 'AnnouncementController@store')->name('announcement.store');
+    Route::get('/announcement/{announcement}/edit', 'AnnouncementController@edit')->name('announcement.edit');
+    Route::put('/announcement/{announcement}', 'AnnouncementController@update')->name('announcement.update');
+    Route::post('/announcement/update/{id}', 'AnnouncementController@update')->name('announcement.update');
+    Route::get('/announcement/delete/{id}', 'AnnouncementController@destroy')->name('announcement.destroy');
+
+    Route::post('/announcement/upload/image', 'AnnouncementController@imageUpload')->name('announcement.upload.image');
+    Route::get('/announcement/{id}/send', 'AnnouncementController@send')->name('announcement.send');
+    Route::get('/announcement/{id}/send/whatsapp', 'AnnouncementController@sendWhatsapp')->name('announcement.send.whatsapp');
+    Route::get('/announcement/{id}/send/mail', 'AnnouncementController@sendEmail')->name('announcement.send.mail');
+    Route::get('/announcement/{id}/download', 'AnnouncementController@download')->name('announcement.send.download');
+    Route::get('/announcement/{id}/print', 'AnnouncementController@print')->name('announcement.send.print');
+    Route::get('/announcement/attachment/delete/{id}', 'AnnouncementController@announcementAttachmentDelete')->name('announcement.attachment.delete');
+    Route::get('/announcement/attachment/delete/first/{id}', 'AnnouncementController@announcementAttachmentDeleteFirst')->name('announcement.attachment.delete.first');
+
+
 
     Route::get('admin/user', 'UserController@admin')->name('admin.index');
     Route::get('voter/user', 'UserController@voter')->name('voter.index');
 
     Route::get('report/voting', 'ReportController@votingReport')->name('voting.report');
+    Route::get('report/ticket/purchase', 'ReportController@ticketPurchaseReport')->name('report.ticket.purchase');
 
 
 });
+
+
+Route::get('/qr', 'QRController@show');
+Route::get('/scan/{token}', 'QRController@scan');
 
