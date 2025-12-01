@@ -70,20 +70,20 @@ class HomeController extends Controller
         return view("frontend.contact");
     }
 
-     public function contactMessage(Request $request){
+    public function contactMessage(Request $request){
         $query = $request->message;
-         $msg = "*Message:* ".$query . "\n\n";
-         $msg .= "*Thanks for contacting " . getenv("APP_NAME") . ".* " . "\n\n";
-         $msg .= "We will contact you seen. \n\n";
+        $msg = "*Message:* ".$query . "\n\n";
+        $msg .= "*Thanks for contacting " . getenv("APP_NAME") . ".* " . "\n\n";
+        $msg .= "We will contact you seen. \n\n";
 
-         try{
-             $this->wpMessage($request->number, $msg);
-         }
-         catch(\Exception $e){
+        try{
+            $this->wpMessage($request->number, $msg);
+        }
+        catch(\Exception $e){
 
-         }
-         return back()->with("message", "Your message has been delivered, We will contact you ASAP..!");
-     }
+        }
+        return back()->with("message", "Your message has been delivered, We will contact you ASAP..!");
+    }
 
     public function admin() {
 
@@ -289,15 +289,15 @@ class HomeController extends Controller
 
         $general_setting = GeneralSetting::pluck("vote_price")->first();
         $vote = vote::create([
-                    "user_id" => $user->id,
-                    "musician_id" => $request->musician_id,
-                    "vote" => $request->vote,
-                    "status" => false,
-                    "reference" => "abc",
-                    "price" => $general_setting,
-                    "grand_total" => $general_setting * $request->vote,
-                    "whatsapp_number" => $data["whatsapp_number"]
-                ]);
+            "user_id" => $user->id,
+            "musician_id" => $request->musician_id,
+            "vote" => $request->vote,
+            "status" => false,
+            "reference" => "abc",
+            "price" => $general_setting,
+            "grand_total" => $general_setting * $request->vote,
+            "whatsapp_number" => $data["whatsapp_number"]
+        ]);
         $token = getenv("MOMO_TOKEN");
         if($token && $vote) {
             $route = route("musician.vote.payment.check");
@@ -552,7 +552,6 @@ class HomeController extends Controller
         if($ticket && $ticket->price == 0) {
             $this->processTicketSuccessfulPayment($ticket, $ticket->reference);
             $message = "Thank you for your Purchasing Ticket";
-            dd('done');
             return redirect()->route("home")->with("message", $message);
         }
 
@@ -1007,7 +1006,7 @@ class HomeController extends Controller
         $ticketSeats = TicketSeat::where("ticket_id", $ticket->id)->get();
 
         $path = public_path("public/images/customer/docs/");
-        $wa_path = rtrim(env('APP_URL'), '/') . '/public/images/customer/docs/';
+        $wa_path = rtrim(env('APP_URL'), '/') . '/public/public/images/customer/docs/';
         if (!File::exists($path)) {
             File::makeDirectory($path, 0755, true);
         }
@@ -1036,7 +1035,6 @@ class HomeController extends Controller
                 $this->wpAttachMessage($path.$filename, $user->whatsapp_number ?? $user->phone, $filename, $wa_path.$filename);
             } catch (\Exception $e) {
             }
-            dd('done');
             // Delete the QR code file after sending
             if (file_exists($path . $filename)) {
                 unlink($path . $filename);
