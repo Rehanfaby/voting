@@ -75,6 +75,7 @@
                         <div class="ms-maxw-510">
                                 <div class="ms-login-wrap text-center ms-login-space ms-bg-2">
                                     <h3 class="ms-title4 mb-50">{{trans("file.Pay By MOMO or OM")}}</h3>
+                                    <sub>{{ trans('file.For free tickets use MOMO or OM method') }}</sub>
                                     <div class="text-center message-status"></div>
                                     <form id="" method="post" action="{{ route('ticket.payment') }}">
                                         @csrf
