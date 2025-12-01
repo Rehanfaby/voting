@@ -82,7 +82,7 @@
                                                 <i class="far fa-plus"></i>
                                             </button>
                                         </div>
-                                        <button type="submit" class="ms-addto-cart-btn"><span>{{trans('file.Vote')}}</span></button>
+                                        @if($general_setting->is_voting_start == true)  <button type="submit" class="ms-addto-cart-btn"><span>{{ trans('file.Vote') }}</span></button> @endif
                                     </div>
                                 </div>
                             </form>

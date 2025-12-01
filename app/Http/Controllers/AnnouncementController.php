@@ -194,7 +194,7 @@ class AnnouncementController extends Controller
                     $lims_customer_data = (object) $data;
                     $lims_customer_data->name = $data[0];
                     $lims_customer_data->phone = $data[1];
-                    $lims_customer_data->email = $data[2];
+                    $lims_customer_data->email = $data[2] ?? '';
 
                     $this->sendAnnouncementMsg($announcement, $lims_customer_data);
                 }

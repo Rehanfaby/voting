@@ -27,4 +27,10 @@ class User extends Authenticatable
     public function holiday() {
         return $this->hasMany('App\Holiday');
     }
+
+    public function points()
+    {
+        return $this->hasMany(Point::class, 'judge_id', 'id');
+    }
+
 }

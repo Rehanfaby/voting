@@ -49,6 +49,12 @@ class SettingController extends Controller
         return view('setting.general_setting', compact('lims_general_setting_data', 'lims_account_list', 'zones_array', 'lims_currency_list'));
     }
 
+    public function gradingSetting()
+    {
+        $lims_general_setting_data = GeneralSetting::latest()->first();
+        return view('setting.grading_setting', compact('lims_general_setting_data', ));
+    }
+
     public function generalSettingStore(Request $request)
     {
         if(!env('USER_VERIFIED'))
@@ -110,6 +116,21 @@ class SettingController extends Controller
             $email_water_mark->move('public/logo', $waterMarkName);
             $general_setting->email_water_mark = $waterMarkName;
         }
+        $general_setting->save();
+        return redirect()->back()->with('message', 'Data updated successfully');
+    }
+
+    public function gradingSettingStore(Request $request)
+    {
+        $general_setting = GeneralSetting::latest()->first();
+        $general_setting->id = 1;
+        $general_setting->vote_percentage = $request->vote_percentage;
+        $general_setting->judge_percentage = $request->judge_percentage;
+        $general_setting->ambassador_percentage = $request->ambassador_percentage;
+        $general_setting->number_of_elimination = $request->number_of_elimination;
+        $general_setting->is_voting_start = $request->is_voting_start;
+        $general_setting->available_grading = $request->available_grading;
+
         $general_setting->save();
         return redirect()->back()->with('message', 'Data updated successfully');
     }

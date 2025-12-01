@@ -187,7 +187,9 @@ Route::group(['middleware' => ['auth', 'active']], function() {
 	Route::resource('user','UserController');
 
 	Route::get('setting/general_setting', 'SettingController@generalSetting')->name('setting.general');
+    Route::get('setting/grading_setting', 'SettingController@gradingSetting')->name('setting.grading');
 	Route::post('setting/general_setting_store', 'SettingController@generalSettingStore')->name('setting.generalStore');
+	Route::post('setting/grading_setting_store', 'SettingController@gradingSettingStore')->name('setting.gradingStore');
 	Route::get('setting/general_setting/change-theme/{theme}', 'SettingController@changeTheme');
 	Route::get('setting/sms_setting', 'SettingController@smsSetting')->name('setting.sms');
 	Route::get('setting/createsms', 'SettingController@createSms')->name('setting.createSms');
@@ -274,6 +276,20 @@ Route::group(['middleware' => ['auth', 'active']], function() {
 
     Route::get('report/voting', 'ReportController@votingReport')->name('voting.report');
     Route::get('report/ticket/purchase', 'ReportController@ticketPurchaseReport')->name('report.ticket.purchase');
+    Route::get('report/contestant/ranking', 'ReportController@contestantRanking')->name('report.contestant.ranking');
+    Route::get('report/contestant/qualified', 'ReportController@qualifiedContestantRanking')->name('report.contestant.qualified');
+    Route::get('report/contestant/eliminated', 'ReportController@eliminatedContestantRanking')->name('report.contestant.eliminated');
+    Route::get('/eliminate/contestants', 'ReportController@eliminateContestants')->name('eliminate.contestants');
+
+    Route::get('points/awaiting_candidates', 'PointController@awaitingCandidates')->name('points.awaiting_candidates');
+    Route::get('points/create/{candidate_id?}', 'PointController@create')->name('points.create');
+    Route::post('points/deletebyselection', 'PointController@deleteBySelection');
+    Route::resource('points', 'PointController');
+    Route::get('/contestants/{judgeId}/rated', 'PointController@getRatedContestants')->name('contestants.rated');
+    Route::get('ambassador_points/awaiting_candidates', 'AmbassadorPointController@awaitingCandidates')->name('ambassador_points.awaiting_candidates');
+    Route::get('ambassador_points/create/{candidate_id?}', 'AmbassadorPointController@create')->name('ambassador_points.create');
+    Route::post('ambassador_points/deletebyselection', 'AmbassadorPointController@deleteBySelection');
+    Route::resource('ambassador_points', 'AmbassadorPointController');
 
 
 });

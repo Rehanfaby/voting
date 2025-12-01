@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Booking;
 use App\BookingProduct;
 use App\Category;
+use App\Employee;
+use App\GeneralSetting;
+use App\Judge;
 use App\Ticket;
 use Illuminate\Http\Request;
 use App\Product;
@@ -106,6 +109,206 @@ class ReportController extends Controller
         }
         else
             return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
+    }
+
+    public function contestantRanking() {
+
+        $general_setting = GeneralSetting::latest()->first();
+        $judges_percentage = $general_setting->judge_percentage;
+        $ambassadors_percentage = $general_setting->ambassador_percentage;
+        $vote_percentage = $general_setting->vote_percentage;
+
+        $maxVotes = DB::table('votes')
+            ->where('status', 1)
+            ->selectRaw('SUM(vote) as total_votes, musician_id')
+            ->groupBy('musician_id')
+            ->orderByDesc('total_votes')
+            ->limit(1)
+            ->value('total_votes');
+
+        $judges_count = Judge::where('is_active', true)->count();
+
+        $contestants = DB::table('employees')->where('is_active', true)->where('is_approve', true)
+            ->leftJoin('votes', function($join) {
+                $join->on('votes.musician_id', '=', 'employees.id')
+                    ->where('votes.status', 1);
+            })
+            ->leftJoin(DB::raw('(SELECT candidate_id, SUM(total) as total_points FROM points GROUP BY candidate_id) as p'), 'employees.id', '=', 'p.candidate_id')
+            ->leftJoin(DB::raw('(SELECT candidate_id, SUM(points) as total_ambassador_points FROM ambassador_points GROUP BY candidate_id) as ap'), 'employees.id', '=', 'ap.candidate_id')
+            ->select(
+                'employees.id',
+                'employees.name',
+                DB::raw('COALESCE(p.total_points, 0) as total_points'),
+                DB::raw('COALESCE(ap.total_ambassador_points, 0) as total_ambassador_points'),
+                DB::raw('SUM(votes.vote) as total_votes')
+            )
+            ->groupBy('employees.id', 'employees.name', 'p.total_points', 'ap.total_ambassador_points')
+            ->get()
+            ->map(function ($row) use ($maxVotes, $judges_count, $judges_percentage, $vote_percentage) {
+                $score_points = ($row->total_points/$judges_count * $judges_percentage/100);
+                $score_ambassador = $row->total_ambassador_points;
+                $score_votes = $maxVotes > 0 ? (($row->total_votes / $maxVotes) * $vote_percentage) : 0;
+
+                $row->final_score = $score_points + $score_ambassador + $score_votes;
+                return $row;
+            })
+            ->sortByDesc('final_score')
+            ->values();
+
+        return view('report.ranking', compact('contestants'));
+    }
+
+    public function qualifiedContestantRanking() {
+
+        $general_setting = GeneralSetting::latest()->first();
+        $judges_percentage = $general_setting->judge_percentage;
+        $ambassadors_percentage = $general_setting->ambassador_percentage;
+        $vote_percentage = $general_setting->vote_percentage;
+
+        $maxVotes = DB::table('votes')
+            ->where('status', 1)
+            ->selectRaw('SUM(vote) as total_votes, musician_id')
+            ->groupBy('musician_id')
+            ->orderByDesc('total_votes')
+            ->limit(1)
+            ->value('total_votes');
+
+        $judges_count = Judge::where('is_active', true)->count();
+
+        $contestants = DB::table('employees')->where('is_active', true)->where('is_approve', true)->where('is_eliminate', false)
+            ->leftJoin('votes', function($join) {
+                $join->on('votes.musician_id', '=', 'employees.id')
+                    ->where('votes.status', 1);
+            })
+            ->leftJoin(DB::raw('(SELECT candidate_id, SUM(total) as total_points FROM points GROUP BY candidate_id) as p'), 'employees.id', '=', 'p.candidate_id')
+            ->leftJoin(DB::raw('(SELECT candidate_id, SUM(points) as total_ambassador_points FROM ambassador_points GROUP BY candidate_id) as ap'), 'employees.id', '=', 'ap.candidate_id')
+            ->select(
+                'employees.id',
+                'employees.name',
+                DB::raw('COALESCE(p.total_points, 0) as total_points'),
+                DB::raw('COALESCE(ap.total_ambassador_points, 0) as total_ambassador_points'),
+                DB::raw('SUM(votes.vote) as total_votes')
+            )
+            ->groupBy('employees.id', 'employees.name', 'p.total_points', 'ap.total_ambassador_points')
+            ->get()
+            ->map(function ($row) use ($maxVotes, $judges_count, $judges_percentage, $vote_percentage) {
+                $score_points = ($row->total_points/$judges_count * $judges_percentage/100);
+                $score_ambassador = $row->total_ambassador_points;
+                $score_votes = $maxVotes > 0 ? (($row->total_votes / $maxVotes) * $vote_percentage) : 0;
+
+                $row->final_score = $score_points + $score_ambassador + $score_votes;
+                return $row;
+            })
+            ->sortByDesc('final_score')
+            ->values();
+
+//        $contestants = $contestants->slice(0, $contestants->count() - $general_setting->number_of_elimination);
+
+        return view('report.qualified', compact('contestants'));
+    }
+
+    public function eliminatedContestantRanking() {
+
+        $general_setting = GeneralSetting::latest()->first();
+        $judges_percentage = $general_setting->judge_percentage;
+        $ambassadors_percentage = $general_setting->ambassador_percentage;
+        $vote_percentage = $general_setting->vote_percentage;
+
+        $maxVotes = DB::table('votes')
+            ->where('status', 1)
+            ->selectRaw('SUM(vote) as total_votes, musician_id')
+            ->groupBy('musician_id')
+            ->orderByDesc('total_votes')
+            ->limit(1)
+            ->value('total_votes');
+
+        $judges_count = Judge::where('is_active', true)->count();
+
+        $contestants = DB::table('employees')->where('is_active', true)->where('is_approve', true)->where('is_eliminate', true)
+            ->leftJoin('votes', function($join) {
+                $join->on('votes.musician_id', '=', 'employees.id')
+                    ->where('votes.status', 1);
+            })
+            ->leftJoin(DB::raw('(SELECT candidate_id, SUM(total) as total_points FROM points GROUP BY candidate_id) as p'), 'employees.id', '=', 'p.candidate_id')
+            ->leftJoin(DB::raw('(SELECT candidate_id, SUM(points) as total_ambassador_points FROM ambassador_points GROUP BY candidate_id) as ap'), 'employees.id', '=', 'ap.candidate_id')
+            ->select(
+                'employees.id',
+                'employees.name',
+                DB::raw('COALESCE(p.total_points, 0) as total_points'),
+                DB::raw('COALESCE(ap.total_ambassador_points, 0) as total_ambassador_points'),
+                DB::raw('SUM(votes.vote) as total_votes')
+            )
+            ->groupBy('employees.id', 'employees.name', 'p.total_points', 'ap.total_ambassador_points')
+            ->get()
+            ->map(function ($row) use ($maxVotes, $judges_count, $judges_percentage, $vote_percentage) {
+                $score_points = ($row->total_points/$judges_count * $judges_percentage/100);
+                $score_ambassador = $row->total_ambassador_points;
+                $score_votes = $maxVotes > 0 ? (($row->total_votes / $maxVotes) * $vote_percentage) : 0;
+
+                $row->final_score = $score_points + $score_ambassador + $score_votes;
+                return $row;
+            })
+            ->sortByDesc('final_score')
+            ->values();
+
+//        $contestants = $contestants->slice(-$general_setting->number_of_elimination);
+
+        return view('report.eliminated', compact('contestants'));
+    }
+
+    public function eliminateContestants()
+    {
+        $general_setting = GeneralSetting::latest()->first();
+        $judges_percentage = $general_setting->judge_percentage;
+        $ambassadors_percentage = $general_setting->ambassador_percentage;
+        $vote_percentage = $general_setting->vote_percentage;
+
+        $maxVotes = DB::table('votes')
+            ->where('status', 1)
+            ->selectRaw('SUM(vote) as total_votes, musician_id')
+            ->groupBy('musician_id')
+            ->orderByDesc('total_votes')
+            ->limit(1)
+            ->value('total_votes');
+
+        $judges_count = Judge::where('is_active', true)->count();
+
+        $contestants = DB::table('employees')->where('is_active', true)->where('is_approve', true)
+            ->leftJoin('votes', function($join) {
+                $join->on('votes.musician_id', '=', 'employees.id')
+                    ->where('votes.status', 1);
+            })
+            ->leftJoin(DB::raw('(SELECT candidate_id, SUM(total) as total_points FROM points GROUP BY candidate_id) as p'), 'employees.id', '=', 'p.candidate_id')
+            ->leftJoin(DB::raw('(SELECT candidate_id, SUM(points) as total_ambassador_points FROM ambassador_points GROUP BY candidate_id) as ap'), 'employees.id', '=', 'ap.candidate_id')
+            ->select(
+                'employees.id',
+                'employees.name',
+                DB::raw('COALESCE(p.total_points, 0) as total_points'),
+                DB::raw('COALESCE(ap.total_ambassador_points, 0) as total_ambassador_points'),
+                DB::raw('SUM(votes.vote) as total_votes')
+            )
+            ->groupBy('employees.id', 'employees.name', 'p.total_points', 'ap.total_ambassador_points')
+            ->get()
+            ->map(function ($row) use ($maxVotes, $judges_count, $judges_percentage, $vote_percentage) {
+                $score_points = ($row->total_points/$judges_count * $judges_percentage/100);
+                $score_ambassador = $row->total_ambassador_points;
+                $score_votes = $maxVotes > 0 ? (($row->total_votes / $maxVotes) * $vote_percentage) : 0;
+
+                $row->final_score = $score_points + $score_ambassador + $score_votes;
+                return $row;
+            })
+            ->sortByDesc('final_score')
+            ->values();
+
+        $contestants = $contestants->slice(-$general_setting->number_of_elimination);
+        Employee::where('id', '>', 0)->update(['is_eliminate' => false]);
+        if (!$contestants->isEmpty()) {
+            foreach ($contestants as $contestant) {
+                Employee::where('id', $contestant->id)->update(['is_eliminate' => true]);
+            }
+        };
+
+        return redirect()->route('report.contestant.eliminated')->with('message', 'Eliminated contestant list is ready');
     }
 
 }
