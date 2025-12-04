@@ -530,6 +530,17 @@ class HomeController extends Controller
         if($product == null) {
             return "Ticket not found";
         }
+
+        if ($product->price == 0) {
+            $alreadyFree = Ticket::where('user_id', $user->id)
+                ->where('product_id', $request->ticket_id)
+                ->where('price', 0)
+                ->exists();
+
+            if ($alreadyFree) {
+                return redirect()->route("home")->with("not_permitted", 'You have already purchased this free ticket');
+            }
+        }
         $ticket = Ticket::create([
                     "user_id" => $user->id,
                     "product_id" => $request->ticket_id,
@@ -611,6 +622,13 @@ class HomeController extends Controller
                 "seat_number" => $lastSeat,
                 "token" => Str::random(6)
             ]);
+        }
+
+        // 🔻 Reduce quantity in Products table
+        $product = Product::find($ticket->product_id);
+        if ($product) {
+            $product->qty = max(0, $product->qty - $qty); // avoid negative values
+            $product->save();
         }
 
         $this->sendWhatsappMsgTicketMomoSuccess($ticket);
@@ -1036,9 +1054,9 @@ class HomeController extends Controller
             } catch (\Exception $e) {
             }
             // Delete the QR code file after sending
-            if (file_exists($path . $filename)) {
-                unlink($path . $filename);
-            }
+            // if (file_exists($path . $filename)) {
+            //     unlink($path . $filename);
+            // }
         }
         return true;
     }
