@@ -514,7 +514,7 @@ class HomeController extends Controller
             return "Phone cannot be null";
         }
 
-        if ($user_check = User::where("phone", $request->phone)->first()) {
+        if ($user_check = User::where("phone", $request->phone)->where('is_active', 1)->where('is_deleted', 0)->first()) {
             if($user_check->whatsapp_number !== $request->whatsapp_number) {
                 $user_check->whatsapp_number = $request->whatsapp_number;
                 $user_check->save();
@@ -523,6 +523,14 @@ class HomeController extends Controller
         }
 
         if($user == null) {
+            $usernameExists = User::where("username", $request->username)
+                ->where('is_active', 1)
+                ->where('is_deleted', 0)
+                ->first();
+
+            if ($usernameExists) {
+                return "This username is already taken, please choose another.";
+            }
             $user = User::create($data);
             $this->sendWhatsappMsg($user, $password);
         }

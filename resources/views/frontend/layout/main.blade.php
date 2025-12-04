@@ -243,11 +243,11 @@
                                             <div class="ms-browse-act-item-wrap p-absolute">
                                                 <div class="ms-song-item">
                                                     <div class="ms-song-content">
-                                                        <h3 class="ms-song-title">
-                                                            <a href="{{ route('user.contentant') }}">
-                                                                <span class="text">{{trans('file.My Votes')}}</span>
-                                                            </a>
-                                                        </h3>
+{{--                                                        <h3 class="ms-song-title">--}}
+{{--                                                            <a href="{{ route('user.contentant') }}">--}}
+{{--                                                                <span class="text">{{trans('file.My Votes')}}</span>--}}
+{{--                                                            </a>--}}
+{{--                                                        </h3>--}}
                                                         <hr>
                                                         <h3 class="ms-song-title">
                                                             <a href="{{ route('user.events') }}">
