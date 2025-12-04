@@ -125,6 +125,7 @@ Route::group(['middleware' => ['auth', 'active']], function() {
 	Route::resource('products', 'ProductController');
 
     Route::get('/admin/tickets/index', 'TicketController@index')->name('admin.ticket.index');
+    Route::post('/tickets/deletebyselection', 'TicketController@deleteBySelection')->name('tickets.deleteBySelection');
 
     Route::get('/admin/ticket/scan/screen', 'ProductController@ticketScanScreen')->name('admin.ticket.scan.screen');
     Route::post('/admin/ticket/scan', 'ProductController@ticketScan')->name('admin.ticket.scan');

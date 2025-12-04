@@ -31,7 +31,7 @@
             </thead>
             <tbody>
             @foreach($ticketSeat as $index => $ticket)
-                <tr class="text-center">
+                <tr class="text-center" data-id="{{$ticket->ticket_id}}">
                     <td>{{ $index + 1 }}</td>
                     <td>{{ @$ticket->ticket->name }}</td>
                     <td>{{ @$ticket->ticket->phone }}</td>
@@ -58,6 +58,15 @@
     $("ul#product").siblings('a').attr('aria-expanded','true');
     $("ul#product").addClass("show");
     $("ul#product #ticket-index").addClass("active");
+
+    var expense_id = [];
+    var user_verified = <?php echo json_encode(env('USER_VERIFIED')) ?>;
+
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
 
     $('#expense-table').DataTable( {
         "order": [],
@@ -135,7 +144,7 @@
                         if(expense_id.length && confirm("Are you sure want to delete?")) {
                             $.ajax({
                                 type:'POST',
-                                url:'votes/deletebyselection',
+                                url:'/tickets/deletebyselection',
                                 data:{
                                     expenseIdArray: expense_id
                                 },
