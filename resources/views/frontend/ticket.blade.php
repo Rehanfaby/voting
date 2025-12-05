@@ -82,13 +82,17 @@
                                 <div class="product__modal-form">
                                     <div class="product-quantity-cart ms-product-quantity-flex mb-30">
                                         <div class="product-quantity-form">
-                                            <button class="cart-minus">
-                                                <i class="far fa-minus"></i>
-                                            </button>
-                                            <input class="cart-input" name="vote" type="text" value="1">
-                                            <button class="cart-plus">
-                                                <i class="far fa-plus"></i>
-                                            </button>
+                                            @if($ticket->price == 0)
+                                                <input class="cart-input" name="vote" type="text" value="1" readonly>
+                                            @else
+                                                <button class="cart-minus">
+                                                    <i class="far fa-minus"></i>
+                                                </button>
+                                                <input class="cart-input" name="vote" type="text" value="1">
+                                                <button class="cart-plus">
+                                                    <i class="far fa-plus"></i>
+                                                </button>
+                                            @endif
                                         </div>
                                         <button type="submit" class="ms-addto-cart-btn"><span>{{trans('file.Purchase')}}</span></button>
                                     </div>
