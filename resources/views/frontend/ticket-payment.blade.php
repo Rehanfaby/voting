@@ -85,37 +85,37 @@
                                         <div class="ms-input2-box mb-25">
                                             @if(!$user)
                                                 <input type="text" name="name" required placeholder="{{trans('file.Name')}}" >
-                                                <input type="text" name="email" required placeholder="email">
-                                                <select class="select-identity" name="identity_type" id="identity_type" required>
-                                                    <option value="1">{{ __('NIC') }}</option>
-                                                    <option value="2">{{ __('Student ID') }}</option>
-                                                    <option value="3">{{ __('Passport') }}</option>
-                                                    <option value="4">{{ __('Others') }}</option>
-                                                </select>
-                                                <input type="text" name="identity_number" id="identity_number" class="mt-2" placeholder="{{ __('Identity Number') }}">
-                                                <input type="text" name="student_number" id="student_number" class="mt-2" placeholder="{{ __('Student Number') }}" style="display:none;">
-                                                <input type="text" name="passport_number" id="passport_number" class="mt-2" placeholder="{{ __('Passport Number') }}" style="display:none;">
-                                                <input type="text" name="identity_number" id="other_number" class="mt-2" placeholder="{{ __('Others') }}" style="display:none;">
+{{--                                                <input type="text" name="email" required placeholder="email">--}}
+{{--                                                <select class="select-identity" name="identity_type" id="identity_type" required>--}}
+{{--                                                    <option value="1">{{ __('NIC') }}</option>--}}
+{{--                                                    <option value="2">{{ __('Student ID') }}</option>--}}
+{{--                                                    <option value="3">{{ __('Passport') }}</option>--}}
+{{--                                                    <option value="4">{{ __('Others') }}</option>--}}
+{{--                                                </select>--}}
+{{--                                                <input type="text" name="identity_number" id="identity_number" class="mt-2" placeholder="{{ __('Identity Number') }}">--}}
+{{--                                                <input type="text" name="student_number" id="student_number" class="mt-2" placeholder="{{ __('Student Number') }}" style="display:none;">--}}
+{{--                                                <input type="text" name="passport_number" id="passport_number" class="mt-2" placeholder="{{ __('Passport Number') }}" style="display:none;">--}}
+{{--                                                <input type="text" name="identity_number" id="other_number" class="mt-2" placeholder="{{ __('Others') }}" style="display:none;">--}}
 
-                                                <input type="text" name="phone" required placeholder="{{trans('file.Momo Number')}}" id="inputField">
-                                                <input type="text" name="whatsapp_number" required placeholder="{{trans('file.Whatsapp number')}}">
+                                                <input type="text" name="phone" required placeholder="{{trans('file.Momo Number')}}: +237675321739" id="inputField">
+                                                <input type="text" name="whatsapp_number" required placeholder="{{trans('file.Whatsapp number')}}: +237675321739">
                                             @else
 
                                                 <input type="text" name="name" required placeholder="{{trans('file.Name')}}" value="{{ $user->name }}">
-                                                <input type="text" name="email" required placeholder="email" value="{{ $user->email }}">
-                                                <select class="select-identity" name="identity_type" id="identity_type" required>
-                                                    <option value="1">{{ __('NIC') }}</option>
-                                                    <option value="2">{{ __('Student ID') }}</option>
-                                                    <option value="3">{{ __('Passport') }}</option>
-                                                    <option value="4">{{ __('Others') }}</option>
-                                                </select>
-                                                <input type="text" name="identity_number" id="identity_number" class="mt-2" placeholder="{{ __('Identity Number') }}">
-                                                <input type="text" name="student_number" id="student_number" class="mt-2" placeholder="{{ __('Student Number') }}" style="display:none;">
-                                                <input type="text" name="passport_number" id="passport_number" class="mt-2" placeholder="{{ __('Passport Number') }}" style="display:none;">
-                                                <input type="text" name="identity_number" id="other_number" class="mt-2" placeholder="{{ __('Others') }}" style="display:none;">
+{{--                                                <input type="text" name="email" required placeholder="email" value="{{ $user->email }}">--}}
+{{--                                                <select class="select-identity" name="identity_type" id="identity_type" required>--}}
+{{--                                                    <option value="1">{{ __('NIC') }}</option>--}}
+{{--                                                    <option value="2">{{ __('Student ID') }}</option>--}}
+{{--                                                    <option value="3">{{ __('Passport') }}</option>--}}
+{{--                                                    <option value="4">{{ __('Others') }}</option>--}}
+{{--                                                </select>--}}
+{{--                                                <input type="text" name="identity_number" id="identity_number" class="mt-2" placeholder="{{ __('Identity Number') }}">--}}
+{{--                                                <input type="text" name="student_number" id="student_number" class="mt-2" placeholder="{{ __('Student Number') }}" style="display:none;">--}}
+{{--                                                <input type="text" name="passport_number" id="passport_number" class="mt-2" placeholder="{{ __('Passport Number') }}" style="display:none;">--}}
+{{--                                                <input type="text" name="identity_number" id="other_number" class="mt-2" placeholder="{{ __('Others') }}" style="display:none;">--}}
 
-                                                <input type="text" name="phone" required placeholder="{{trans('file.Momo Number')}}" id="inputField">
-                                                <input type="text" name="whatsapp_number" required placeholder="{{trans('file.Whatsapp number')}}">
+                                                <input type="text" name="phone" required placeholder="{{trans('file.Momo Number')}}: +237675321739" id="inputField" value="{{ $user->phone }}">
+                                                <input type="text" name="whatsapp_number" required placeholder="{{trans('file.Whatsapp number')}}: +237675321739" value="{{ $user->whatsapp_number ?? $user->phone }}">
                                             @endif
                                             <input type="hidden" name="ticket_id" value="{{ $ticket->id }}">
                                             <input type="hidden" name="qty" value="{{ $data['vote'] }}">
@@ -139,36 +139,36 @@
                                     <div class="ms-input2-box mb-25">
                                         @if(!$user)
                                                 <input type="text" name="name" required placeholder="{{trans('file.Name')}}" >
-                                                <input type="text" name="email" required placeholder="email">
-                                                <select class="select-identity" name="identity_type" id="identity_type" required>
-                                                    <option value="1">{{ __('ID') }}</option>
-                                                    <option value="2">{{ __('Student No.') }}</option>
-                                                    <option value="3">{{ __('Passport') }}</option>
-                                                    <option value="4">{{ __('Others') }}</option>
-                                                </select>
-                                                <input type="text" name="identity_number" id="identity_number" class="mt-2" placeholder="{{ __('Identity Number') }}">
-                                                <input type="text" name="student_number" id="student_number" class="mt-2" placeholder="{{ __('Student Number') }}" style="display:none;">
-                                                <input type="text" name="passport_number" id="passport_number" class="mt-2" placeholder="{{ __('Passport Number') }}" style="display:none;">
-                                                <input type="text" name="identity_number" id="other_number" class="mt-2" placeholder="{{ __('Others') }}" style="display:none;">
+{{--                                                <input type="text" name="email" required placeholder="email">--}}
+{{--                                                <select class="select-identity" name="identity_type" id="identity_type" required>--}}
+{{--                                                    <option value="1">{{ __('ID') }}</option>--}}
+{{--                                                    <option value="2">{{ __('Student No.') }}</option>--}}
+{{--                                                    <option value="3">{{ __('Passport') }}</option>--}}
+{{--                                                    <option value="4">{{ __('Others') }}</option>--}}
+{{--                                                </select>--}}
+{{--                                                <input type="text" name="identity_number" id="identity_number" class="mt-2" placeholder="{{ __('Identity Number') }}">--}}
+{{--                                                <input type="text" name="student_number" id="student_number" class="mt-2" placeholder="{{ __('Student Number') }}" style="display:none;">--}}
+{{--                                                <input type="text" name="passport_number" id="passport_number" class="mt-2" placeholder="{{ __('Passport Number') }}" style="display:none;">--}}
+{{--                                                <input type="text" name="identity_number" id="other_number" class="mt-2" placeholder="{{ __('Others') }}" style="display:none;">--}}
 
-                                                <input type="text" name="phone" required placeholder="{{trans('file.Phone number')}}" value="+237" id="inputField">
+                                                <input type="text" name="phone" required placeholder="{{trans('file.Phone number')}}: +237675321739" value="+237" id="inputField">
                                             @else
 
                                                 <input type="text" name="name" required placeholder="{{trans('file.Name')}}" value="{{ $user->name }}">
-                                                <input type="text" name="email" required placeholder="email" value="{{ $user->email }}">
-                                                <select class="select-identity" name="identity_type" id="identity_type" required>
-                                                    <option value="1">{{ __('ID') }}</option>
-                                                    <option value="2">{{ __('Student No.') }}</option>
-                                                    <option value="3">{{ __('Passport') }}</option>
-                                                    <option value="4">{{ __('Others') }}</option>
-                                                </select>
-                                                <input type="text" name="identity_number" id="identity_number" class="mt-2" placeholder="{{ __('Identity Number') }}">
-                                                <input type="text" name="student_number" id="student_number" class="mt-2" placeholder="{{ __('Student Number') }}" style="display:none;">
-                                                <input type="text" name="passport_number" id="passport_number" class="mt-2" placeholder="{{ __('Passport Number') }}" style="display:none;">
-                                                <input type="text" name="identity_number" id="other_number" class="mt-2" placeholder="{{ __('Others') }}" style="display:none;">
+{{--                                                <input type="text" name="email" required placeholder="email" value="{{ $user->email }}">--}}
+{{--                                                <select class="select-identity" name="identity_type" id="identity_type" required>--}}
+{{--                                                    <option value="1">{{ __('ID') }}</option>--}}
+{{--                                                    <option value="2">{{ __('Student No.') }}</option>--}}
+{{--                                                    <option value="3">{{ __('Passport') }}</option>--}}
+{{--                                                    <option value="4">{{ __('Others') }}</option>--}}
+{{--                                                </select>--}}
+{{--                                                <input type="text" name="identity_number" id="identity_number" class="mt-2" placeholder="{{ __('Identity Number') }}">--}}
+{{--                                                <input type="text" name="student_number" id="student_number" class="mt-2" placeholder="{{ __('Student Number') }}" style="display:none;">--}}
+{{--                                                <input type="text" name="passport_number" id="passport_number" class="mt-2" placeholder="{{ __('Passport Number') }}" style="display:none;">--}}
+{{--                                                <input type="text" name="identity_number" id="other_number" class="mt-2" placeholder="{{ __('Others') }}" style="display:none;">--}}
 
 
-                                                <input type="text" name="phone" required placeholder="{{trans('file.Phone number')}}" value="{{ $user->phone }}" id="inputField">
+                                                <input type="text" name="phone" required placeholder="{{trans('file.Phone number')}}: +237675321739" value="{{ $user->phone }}" id="inputField">
                                             @endif
                                         <input type="hidden" name="ticket_id" value="{{ $ticket->id }}">
                                         <input type="hidden" name="qty" value="{{ $data['vote'] }}">

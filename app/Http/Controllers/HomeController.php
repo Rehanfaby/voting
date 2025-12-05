@@ -100,7 +100,7 @@ class HomeController extends Controller
     public function index()
     {
 
-        $this->events();
+        return $this->events();
 
         $ambassador_role_id = Role::where("name", "ambassador")->first()->id;
         $judge_role_id = Role::where("name", "judge")->first()->id;
@@ -410,27 +410,39 @@ class HomeController extends Controller
         $data["is_active"] = true;
         $data["is_deleted"] = false;
         $data["password"] = bcrypt($password);
-        $data["name"] = $request->phone;
+        $data["name"] = $request->name;
         $data["phone"] = $request->phone;
         $data["email"] = "user@gmail.com";
         $data["role_id"] = 3;
 
         if($data["phone"] == null) {
-            return "Phone cannot be null";
+            return redirect()->route("events")->with("not_permitted", 'Phone cannot be null');
         }
 
-        if ($user_check = User::where("phone", $request->phone)->first()) {
+        if ($user_check = User::where("phone", $request->phone)->where('is_active', 1)->where('is_deleted', 0)->first()) {
+            if($user_check->whatsapp_number !== $request->whatsapp_number) {
+                $user_check->whatsapp_number = $request->whatsapp_number;
+                $user_check->save();
+            }
             $user = $user_check;
         }
 
         if($user == null) {
+            $usernameExists = User::where("name", $request->name)
+                ->where('is_active', 1)
+                ->where('is_deleted', 0)
+                ->first();
+
+            if ($usernameExists) {
+                return redirect()->route("events")->with("not_permitted", 'This username is already taken, please choose another.');
+            }
             $user = User::create($data);
             $this->sendWhatsappMsg($user, $password);
         }
 
         $product = Product::where("id", $request->ticket_id)->select("price")->first();
         if($product == null) {
-            return "Ticket not found";
+            return redirect()->route("events")->with("not_permitted", 'Ticket not found.');
         }
         $ticket = Ticket::create([
             "user_id" => $user->id,
@@ -479,7 +491,7 @@ class HomeController extends Controller
 
         if ($session->payment_status !== "paid") {
             Ticket::where("id", $session->metadata->ticket_id)->delete();
-            return redirect()->route("home")->with("not_permitted", "payment failed.");
+            return redirect()->route("events")->with("not_permitted", "payment failed.");
         }
 
         $ticket = Ticket::where("id", $session->metadata->ticket_id)->first();
@@ -488,11 +500,11 @@ class HomeController extends Controller
             $this->processTicketSuccessfulPayment($ticket, $session->payment_intent);
 
             $message = "Thank you for your Purchasing Ticket";
-            return redirect()->route("home")->with("message", $message);
+            return redirect()->route("events")->with("message", $message);
         }
 
         $message = "There is any issue, please contact the system administrator";
-        return redirect()->route("home")->with("not_permitted", $message);
+        return redirect()->route("events")->with("not_permitted", $message);
 
     }
 
@@ -523,13 +535,13 @@ class HomeController extends Controller
         }
 
         if($user == null) {
-            $usernameExists = User::where("username", $request->username)
+            $usernameExists = User::where("name", $request->name)
                 ->where('is_active', 1)
                 ->where('is_deleted', 0)
                 ->first();
 
             if ($usernameExists) {
-                return "This username is already taken, please choose another.";
+                return redirect()->route("events")->with("not_permitted", 'This username is already taken, please choose another.');
             }
             $user = User::create($data);
             $this->sendWhatsappMsg($user, $password);
@@ -546,7 +558,7 @@ class HomeController extends Controller
                 ->exists();
 
             if ($alreadyFree) {
-                return redirect()->route("home")->with("not_permitted", 'You have already purchased this free ticket');
+                return redirect()->route("events")->with("not_permitted", 'You have already purchased this free ticket');
             }
         }
         $ticket = Ticket::create([
@@ -571,7 +583,7 @@ class HomeController extends Controller
         if($ticket && $ticket->price == 0) {
             $this->processTicketSuccessfulPayment($ticket, $ticket->reference);
             $message = "Thank you for your Purchasing Ticket";
-            return redirect()->route("home")->with("message", $message);
+            return redirect()->route("events")->with("message", $message);
         }
 
         $token = getenv("MOMO_TOKEN");
@@ -582,7 +594,7 @@ class HomeController extends Controller
             $link = $this->mobileMoneyRequestLink($token, $amount, $route, $ticket->id, $mtn_number);
             if ($link == false) {
                 $message = "Phone Number is incorrect or There is any other issue in payment method";
-                return redirect()->route("home")->with("not_permitted", $message);
+                return redirect()->route("events")->with("not_permitted", $message);
             }
             header("Location: $link");
             die();
@@ -595,7 +607,7 @@ class HomeController extends Controller
     {
         if($request->status != "SUCCESSFUL"){
             Ticket::where("id", $request->external_reference)->delete();
-            return redirect()->route("home")->with("not_permitted", "payment failed.");
+            return redirect()->route("events")->with("not_permitted", "payment failed.");
         }
 
         $ticket = Ticket::where("id", $request->external_reference)->first();
@@ -603,11 +615,11 @@ class HomeController extends Controller
             $this->processTicketSuccessfulPayment($ticket, $request->reference);
 
             $message = "Thank you for your Purchasing Ticket";
-            return redirect()->route("home")->with("message", $message);
+            return redirect()->route("events")->with("message", $message);
         }
 
         $message = "There is any issue, please contact the system administrator";
-        return redirect()->route("home")->with("not_permitted", $message);
+        return redirect()->route("events")->with("not_permitted", $message);
 
     }
 
