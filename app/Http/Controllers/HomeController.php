@@ -100,7 +100,7 @@ class HomeController extends Controller
     public function index()
     {
 
-//        $this->checkVotePayment();
+        $this->events();
 
         $ambassador_role_id = Role::where("name", "ambassador")->first()->id;
         $judge_role_id = Role::where("name", "judge")->first()->id;
