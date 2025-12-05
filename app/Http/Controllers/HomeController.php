@@ -670,7 +670,7 @@ class HomeController extends Controller
     {
         $ticket = Ticket::where('id', $id)->first();
         $this->sendWhatsappMsgTicketMomoSuccess($ticket);
-        return back('success', 'Notification sent to your mobile number');
+        return back()->with('message', 'Notification sent to your mobile number');
     }
 
     public function musicianVotePaymentCheck(Request $request)
