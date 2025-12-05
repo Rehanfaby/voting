@@ -666,6 +666,13 @@ class HomeController extends Controller
 
     }
 
+    public function sendNotification($id)
+    {
+        $ticket = Ticket::where('id', $id)->first();
+        $this->sendWhatsappMsgTicketMomoSuccess($ticket);
+        return back('success', 'Notification sent to your mobile number');
+    }
+
     public function musicianVotePaymentCheck(Request $request)
     {
         if($request->status != "SUCCESSFUL"){

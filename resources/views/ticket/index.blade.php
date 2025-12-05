@@ -27,6 +27,7 @@
                 <th>Purchase Date</th>
                 <th>Ticket Name</th>
                 <th>Seat Numbers</th>
+                <th>Send Message</th>
             </tr>
             </thead>
             <tbody>
@@ -47,6 +48,7 @@
                     <td>{{ \Carbon\Carbon::parse($ticket->ticket->created_at)->format('Y-m-d H:i') }}</td>
                     <td>{{ optional($ticket->product)->name }}</td>
                     <td>{{ $ticket->seat_number }}</td>
+                    <td><a href="{{ route('ticket.send-message', ['id' => @$ticket->ticket->id]) }}"><span class="fa fa-mail-forward"></span> Send Message</a></td>
                 </tr>
             @endforeach
             </tbody>
