@@ -111,29 +111,29 @@
                 <div class="offcanvas__btn mb-30">
                     <a class="user__name" href="{{ route('user.signup') }}"><i class="fa-solid fa-plus"></i> {{trans('file.Registration')}}</a>
                 </div>
-                <div class="offcanvas__btn mb-30">
-                    <a class="user__name" href="{{ route('about') }}"><i class="fa-solid fa-plus"></i> {{trans('file.About Us')}}</a>
-                </div>
+{{--                <div class="offcanvas__btn mb-30">--}}
+{{--                    <a class="user__name" href="{{ route('about') }}"><i class="fa-solid fa-plus"></i> {{trans('file.About Us')}}</a>--}}
+{{--                </div>--}}
                 <div class="offcanvas__btn mb-30">
                     <a class="user__name" href="{{ route('contact') }}"><i class="fa-solid fa-plus"></i> {{trans('file.Contact Us')}}</a>
                 </div>
 
                 @if($user)
                 <div class="hr-1 mt-30 mb-30 d-xl-none"></div>
-                <div class="offcanvas__btn mb-30">
-                    <a class="user__name" href="{{ route('user.contentant') }}"><i class="fa-solid fa-plus"></i> {{trans('file.My Votes')}}</a>
-                </div>
-                <div class="offcanvas__btn mb-30">
-                    <a class="user__name" href="{{ route('user.contentant') }}"><i class="fa-solid fa-plus"></i> {{trans('file.My Contestants')}}</a>
-                </div>
+{{--                <div class="offcanvas__btn mb-30">--}}
+{{--                    <a class="user__name" href="{{ route('user.contentant') }}"><i class="fa-solid fa-plus"></i> {{trans('file.My Votes')}}</a>--}}
+{{--                </div>--}}
+{{--                <div class="offcanvas__btn mb-30">--}}
+{{--                    <a class="user__name" href="{{ route('user.contentant') }}"><i class="fa-solid fa-plus"></i> {{trans('file.My Contestants')}}</a>--}}
+{{--                </div>--}}
                 <div class="offcanvas__btn mb-30">
                     <a class="user__name" href="{{ route('user.events') }}"><i class="fa-solid fa-plus"></i> {{trans('file.My Events')}}</a>
                 </div>
                 @endif
-                <div class="hr-1 mt-30 mb-30 d-xl-none"></div>
-                <div class="offcanvas__btn mb-30">
-                    <a class="ms-border-btn" href="{{ route('team') }}"><i class="fa-solid fa-plus"></i> {{trans('file.Vote your Candidate')}}</a>
-                </div>
+{{--                <div class="hr-1 mt-30 mb-30 d-xl-none"></div>--}}
+{{--                <div class="offcanvas__btn mb-30">--}}
+{{--                    <a class="ms-border-btn" href="{{ route('team') }}"><i class="fa-solid fa-plus"></i> {{trans('file.Vote your Candidate')}}</a>--}}
+{{--                </div>--}}
                 <div class="enquiry__list ml-10 mr-10 ms-browse-act-wrap p-relative">
                     <div class="ms-enquiry-box p-relative">
                         <a href="#"><span class="text">Switch Language <sup>({{ \App::getLocale() }})</sup></span></a></a>
@@ -185,9 +185,9 @@
                                                 <li>
                                                     <a href="{{ route('user.signup') }}">{{trans('file.Registration')}}</a>
                                                 </li>
-                                                <li>
-                                                    <a href="{{ route('about') }}">{{trans('file.About Us')}}</a>
-                                                </li>
+{{--                                                <li>--}}
+{{--                                                    <a href="{{ route('about') }}">{{trans('file.About Us')}}</a>--}}
+{{--                                                </li>--}}
                                                 <li>
                                                     <a href="{{ route('contact') }}">{{trans('file.Contact Us')}}</a>
                                                 </li>
@@ -203,30 +203,30 @@
                                                     <span class="text">{{trans('file.My Votes')}}</span></a>
                                             </div>
                                         </div> -->
-                                        <div class="enquiry__list ml-10 mr-10 ms-browse-act-wrap p-relative">
-                                            <div class="ms-enquiry-box p-relative d-none d-xl-inline-flex">
-                                                <a href="{{ route('user.contentant') }}"><i class="flaticon-star icon"></i>
-                                                    <span class="text">{{trans('file.My Contestants')}}</span> <span class="number">{{ count($contestents) }}</span></a>
-                                            </div>
-                                            <div class="ms-browse-act-item-wrap p-absolute">
-                                                @foreach($contestents as $contestent)
-                                                <div class="ms-song-item">
-                                                    <div class="ms-song-img p-relative">
-                                                        <a href="{{ route('musician.data', $contestent->id) }}"><img src="{{url('public/images/employee',$contestent->image)}}" alt="{{trans('file.Contestants name')}}"></a>
-                                                    </div>
-                                                    <div class="ms-song-content">
-                                                        <h3 class="ms-song-title">
-                                                            <a href="{{ route('musician.data', $contestent->id) }}">{{ $contestent->name }}</a>
-                                                        </h3>
-                                                    </div>
-                                                </div>
-                                                @endforeach
-                                            </div>
-                                        </div>
+{{--                                        <div class="enquiry__list ml-10 mr-10 ms-browse-act-wrap p-relative">--}}
+{{--                                            <div class="ms-enquiry-box p-relative d-none d-xl-inline-flex">--}}
+{{--                                                <a href="{{ route('user.contentant') }}"><i class="flaticon-star icon"></i>--}}
+{{--                                                    <span class="text">{{trans('file.My Contestants')}}</span> <span class="number">{{ count($contestents) }}</span></a>--}}
+{{--                                            </div>--}}
+{{--                                            <div class="ms-browse-act-item-wrap p-absolute">--}}
+{{--                                                @foreach($contestents as $contestent)--}}
+{{--                                                <div class="ms-song-item">--}}
+{{--                                                    <div class="ms-song-img p-relative">--}}
+{{--                                                        <a href="{{ route('musician.data', $contestent->id) }}"><img src="{{url('public/images/employee',$contestent->image)}}" alt="{{trans('file.Contestants name')}}"></a>--}}
+{{--                                                    </div>--}}
+{{--                                                    <div class="ms-song-content">--}}
+{{--                                                        <h3 class="ms-song-title">--}}
+{{--                                                            <a href="{{ route('musician.data', $contestent->id) }}">{{ $contestent->name }}</a>--}}
+{{--                                                        </h3>--}}
+{{--                                                    </div>--}}
+{{--                                                </div>--}}
+{{--                                                @endforeach--}}
+{{--                                            </div>--}}
+{{--                                        </div>--}}
                                     @endif
-                                    <div class="header__btn">
-                                        <a href="{{ route('team') }}" class="ms-border-btn"><i class="fa-regular fa-plus"></i>{{trans('file.Vote your Candidate')}}</a>
-                                    </div>
+{{--                                    <div class="header__btn">--}}
+{{--                                        <a href="{{ route('team') }}" class="ms-border-btn"><i class="fa-regular fa-plus"></i>{{trans('file.Vote your Candidate')}}</a>--}}
+{{--                                    </div>--}}
                                     @if(!$user)
                                     <div class="user__acount d-none d-xxl-inline-flex">
                                             <span>
@@ -243,11 +243,11 @@
                                             <div class="ms-browse-act-item-wrap p-absolute">
                                                 <div class="ms-song-item">
                                                     <div class="ms-song-content">
-                                                        <h3 class="ms-song-title">
-                                                            <a href="{{ route('user.contentant') }}">
-                                                                <span class="text">{{trans('file.My Votes')}}</span>
-                                                            </a>
-                                                        </h3>
+{{--                                                        <h3 class="ms-song-title">--}}
+{{--                                                            <a href="{{ route('user.contentant') }}">--}}
+{{--                                                                <span class="text">{{trans('file.My Votes')}}</span>--}}
+{{--                                                            </a>--}}
+{{--                                                        </h3>--}}
                                                         <hr>
                                                         <h3 class="ms-song-title">
                                                             <a href="{{ route('user.events') }}">

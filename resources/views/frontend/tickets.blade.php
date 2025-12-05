@@ -47,21 +47,33 @@
                             <div class="ms-team-item-wrap">
                                 <div class="ms-team-item p-relative">
                                     <div class="ms-team-img mb-3">
-                                        <a href="{{ route('ticket.data', $ticket->id) }}">
-                                                <?php $images = explode(",", $ticket->image)?>
-                                            <img src="{{ url('public/images/product', $images[0]) }}" alt="ticket image">
-                                        </a>
+                                        @if($ticket && $ticket->qty < 1)
+                                            <a href="#">
+                                                    <?php $images = explode(",", $ticket->image)?>
+                                                <img src="{{ url('public/images/product', $images[0]) }}" alt="ticket image">
+                                            </a>
+                                        @else
+                                            <a href="{{ route('ticket.data', $ticket->id) }}">
+                                                    <?php $images = explode(",", $ticket->image)?>
+                                                <img src="{{ url('public/images/product', $images[0]) }}" alt="ticket image">
+                                            </a>
+                                        @endif
+
                                     </div>
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <h3 class="ms-team-title mb-0">
-                                            <a href="{{ route('ticket.data', $ticket->id) }}">{{ $ticket->name }}</a>
+                                            @if($ticket && $ticket->qty < 1)
+                                            <a href="#">{{ $ticket->name }}</a>
+                                            @else
+                                                <a href="{{ route('ticket.data', $ticket->id) }}">{{ $ticket->name }}</a>
+                                            @endif
                                         </h3>
                                         <span class="badge bg-success ms-team-price fs-6">
                                             {{trans("file.Ticket Price")}}: {{ number_format($ticket->price, 2) }}
                                         </span>
-{{--                                        <span class="badge bg-primary ms-team-price fs-6">--}}
-{{--                                            {{trans("file.Remaining Seats")}}: {{ @$ticket->remaining_qty }}--}}
-{{--                                        </span>--}}
+                                        <span class="badge bg-primary ms-team-price fs-6">
+                                            {{trans("file.Remaining Seats")}}: {{ @$ticket->qty }}
+                                        </span>
                                     </div>
                                 </div>
                             </div>

@@ -881,6 +881,7 @@ return [
     "Top Five Contestants" => "Top Five Contestants",
     "Pay By Visa or Master Card" => "Pay By Visa or Master Card",
     "Minimum amount for stripe is" => "Minimum amount for stripe is",
+    "For free tickets use MOMO or OM method" => "For free tickets use MOMO or OM method",
 
 	"Buy Tickets" => "Buy Tickets",
 	"Ticket" => "Ticket",
