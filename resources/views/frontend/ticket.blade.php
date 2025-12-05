@@ -88,7 +88,7 @@
                                                 <button class="cart-minus">
                                                     <i class="far fa-minus"></i>
                                                 </button>
-                                                <input class="cart-input" name="vote" type="text" value="1">
+                                                <input class="cart-input" name="vote" type="text" value="1" max="{{ $ticket->qty }}" step="1">
                                                 <button class="cart-plus">
                                                     <i class="far fa-plus"></i>
                                                 </button>
@@ -146,55 +146,63 @@
             /*======================================
              Cart Quantity Js
             ========================================*/
-            $(".cart-minus").on("click",function () {
+            var maxQty = parseInt("{{ $ticket->qty }}"); // product max quantity
+            var minQty = 1;
+
+            // MINUS BUTTON
+            $(".cart-minus").on("click", function () {
                 var $input = $(this).parent().find("input");
-                var count = parseInt($input.val()) - 1;
-                count = count < 1 ? 1 : count;
-                if (count == undefined) {
-                    return false;
-                }
-                var price = count * $('.ms-product-price').text().replace(/[^0-9.-]+/g,"");
-                $("#payable-amount").html(price);
-                // var coin = count * {{ $general_setting->vote_coin }};
-                // $("#payable-coin").html(coin);
-                $input.val(count);
-                $input.change();
+                var current = parseInt($input.val());
+
+                if (isNaN(current) || current < minQty) current = minQty;
+
+                var count = current - 1;
+                if (count < minQty) count = minQty;
+
+                updatePrice(count);
+                $input.val(count).change();
+
                 return false;
             });
 
-            $(".cart-plus").on("click",function () {
+            // PLUS BUTTON
+            $(".cart-plus").on("click", function () {
                 var $input = $(this).parent().find("input");
-                var count = parseInt($input.val()) + 1;
-                count = count < 1 ? 1 : count;
-                count = count < 1 ? 1 : count;
-                if (count == undefined) {
-                    return false;
-                }
-                var price = count * $('.ms-product-price').text().replace(/[^0-9.-]+/g,"");
-                console.log(price);
-                $("#payable-amount").html(price);
-                // var coin = count * {{ $general_setting->vote_coin }};
-                // $("#payable-coin").html(coin);
-                $input.val(count);
-                $input.change();
+                var current = parseInt($input.val());
+
+                if (isNaN(current) || current < minQty) current = minQty;
+
+                var count = current + 1;
+                if (count > maxQty) count = maxQty;
+
+                updatePrice(count);
+                $input.val(count).change();
+
                 return false;
             });
 
-            $(".cart-input").on("change keyup input",function () {
+            // DIRECT INPUT (typing)
+            $(".cart-input").on("change keyup input", function () {
                 var $input = $(this);
-                var count = $(this).val();
-                count = count < 1 ? 0 : count;
-                if (count == 0) {
-                    return false;
-                }
-                var price = count * $('.ms-product-price').text().replace(/[^0-9.-]+/g,"");
-                $("#payable-amount").html(price);
-                // var coin = count * {{ $general_setting->vote_coin }};
-                // $("#payable-coin").html(coin);
-                $input.val(count);
-                $input.change();
+                var current = parseInt($input.val());
+
+                if (isNaN(current)) current = minQty;
+
+                if (current < minQty) current = minQty;
+                if (current > maxQty) current = maxQty;
+
+                updatePrice(current);
+                $input.val(current);
+
                 return false;
             });
+
+            // Update price function
+            function updatePrice(count) {
+                var price = count * $('.ms-product-price').text().replace(/[^0-9.-]+/g,"");
+                $("#payable-amount").html(price);
+            }
+
 
         </script>
 

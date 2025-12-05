@@ -207,13 +207,12 @@
                                         </div>
                                     </div>
                                 @endif -->
-                                <input type="hidden" name="alert_quantity" class="form-control" value="0" step="any">
-                                <!-- <div id="alert-qty" class="col-md-4">
+                                <div id="alert-qty" class="col-md-4">
                                     <div class="form-group">
-                                        <label>{{trans('file.Alert Quantity')}}</strong> </label>
-                                        <input type="number" name="alert_quantity" class="form-control" step="any">
+                                        <label>{{trans('file.Seat No. Start From')}}</strong> </label>
+                                        <input type="number" name="alert_quantity" class="form-control" step="any" value="0">
                                     </div>
-                                </div> -->
+                                </div>
                                 <div class="col-md-4 tax_id">
                                     <div class="form-group">
                                         <label>{{trans('file.Product Tax')}}</strong> </label>

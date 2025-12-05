@@ -625,7 +625,17 @@ class HomeController extends Controller
 
     private function processTicketSuccessfulPayment($ticket, $reference)
     {
-        $lastSeat = TicketSeat::where("product_id", $ticket->product_id)->orderBy("id", "desc")->first()->seat_number ?? 0;
+        // Get product to access seat_start
+        $product = Product::find($ticket->product_id);
+
+        // Determine last seat
+        $lastSeatRecord = TicketSeat::where("product_id", $ticket->product_id)->orderBy("id", "desc")->first();
+
+        if ($lastSeatRecord) {
+            $lastSeat = $lastSeatRecord->seat_number;
+        } else {
+            $lastSeat = ($product->alert_quantity ?? 1) - 1;
+        }
         $qty = (int) $ticket->qty;
         $seatNumbers = range($lastSeat + 1, $lastSeat + $qty);
 
@@ -634,13 +644,13 @@ class HomeController extends Controller
         $ticket->seat_numbers = json_encode($seatNumbers);
         $ticket->save();
 
-        for ($i = 1; $i <= $qty; $i++) {
-            $lastSeat++;
+        // Insert new seats
+        foreach ($seatNumbers as $seat) {
             TicketSeat::create([
-                "ticket_id" => $ticket->id,
-                "product_id" => $ticket->product_id,
-                "seat_number" => $lastSeat,
-                "token" => Str::random(6)
+                "ticket_id"   => $ticket->id,
+                "product_id"  => $ticket->product_id,
+                "seat_number" => $seat,
+                "token"       => Str::random(6),
             ]);
         }
 
