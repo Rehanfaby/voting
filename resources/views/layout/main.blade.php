@@ -88,6 +88,8 @@
 
     <!-- Custom stylesheet - for your changes-->
     <link rel="stylesheet" href="<?php echo asset('public/css/custom-'.$general_setting->theme) ?>" type="text/css" id="custom-style">
+    <!-- Modern admin theme overlay (Alpha Bridge inspired) -->
+    <link rel="stylesheet" href="<?php echo asset('public/css/admin-modern.css') ?>" type="text/css" id="admin-modern-style">
 </head>
 
 <body onload="myFunction()">

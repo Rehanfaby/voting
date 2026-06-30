@@ -96,17 +96,7 @@
                                             <img src="{{url('public/images/employee',$musician->image)}}" alt="{{trans('file.Contestants name')}}">
                                         </a>
                                         @if($see_votes)
-                                            @php
-                                                //                                                $start_date = date('Y-m-d', strtotime('last monday'));
-                                                //                                                $end_date = date('Y-m-d');
-
-                                                                                                $vote_count[] = \App\vote::where('status', true)
-                                                                                                ->where('musician_id', $musician->id)
-                                                //                                                ->whereDate('votes.created_at', '>=', $start_date)
-                                                //                                                ->whereDate('votes.created_at', '<=', $end_date)
-                                                                                                ->sum('vote');
-                                            @endphp
-                                            <span class="ms-song-num">{{ $vote_count[$key] }}</span>
+                                            <span class="ms-song-num">{{ $vote_counts[$musician->id] ?? 0 }}</span>
                                         @endif
                                     </div>
                                     <div class="ms-song-content">
@@ -198,7 +188,7 @@
                                     </div>
                                     @if($see_votes)
                                         <div class="ms-fun-brand-rating">
-                                            <span style="color: yellow">{{ $vote_count[$key] }}</span>
+                                            <span style="color: yellow">{{ $vote_counts[$musician->id] ?? 0 }}</span>
                                         </div>
                                     @endif
                                 </div>
@@ -377,83 +367,172 @@
 
 
         <!-- Special Events Area Start -->
-        <section class="ms-event-area pt-130 pb-70">
-        <div class="row bdFadeUp">
-    <div class="col-xl-12">
-        <div class="ms-event-bg p-relative mb-60" style="background-color: #f8f9fa; padding: 20px; border-radius: 10px;">
-            <h2 style="color: #ff4500; text-align: center; font-weight: bold;">Provincial Casting Calendar 2025</h2>
-            <p style="text-align: center; font-size: 16px; color: #333;">Here's a draft schedule for the Mulema Gospel casting by province in March and April.</p>
-            <table style="width: 100%; border-collapse: collapse; font-size: 16px;">
-                <thead>
-                    <tr style="background-color: #ff4500; color: white;">
-                        <th style="padding: 10px; border: 1px solid #ddd;">Province</th>
-                        <th style="padding: 10px; border: 1px solid #ddd;">City/Venue</th>
-                        <th style="padding: 10px; border: 1px solid #ddd;">Date</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr style="background-color: #ffe5b4;">
-                        <td style="padding: 10px; border: 1px solid #ddd;">Far North</td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">Maroua</td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">March 15-16, 2025</td>
-                    </tr>
-                    <tr style="background-color: #fff5e1;">
-                        <td style="padding: 10px; border: 1px solid #ddd;">North</td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">Garoua</td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">March 22-23, 2025</td>
-                    </tr>
-                    <tr style="background-color: #ffe5b4;">
-                        <td style="padding: 10px; border: 1px solid #ddd;">Adamawa</td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">Ngaoundéré</td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">March 29-30, 2025</td>
-                    </tr>
-                    <tr style="background-color: #fff5e1;">
-                        <td style="padding: 10px; border: 1px solid #ddd;">East</td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">Bertoua</td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">April 5-6, 2025</td>
-                    </tr>
-                    <tr style="background-color: #ffe5b4;">
-                        <td style="padding: 10px; border: 1px solid #ddd;">South West</td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">Buea</td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">April 5-6, 2025</td>
-                    </tr>
-                    <tr style="background-color: #fff5e1;">
-                        <td style="padding: 10px; border: 1px solid #ddd;">North West</td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">Bamenda</td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">April 12-13, 2025</td>
-                    </tr>
-                    <tr style="background-color: #ffe5b4;">
-                        <td style="padding: 10px; border: 1px solid #ddd;">West</td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">Bafoussam</td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">April 19-20, 2025</td>
-                    </tr>
-                    <tr style="background-color: #fff5e1;">
-                        <td style="padding: 10px; border: 1px solid #ddd;">Littoral</td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">Douala</td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">April 12-13, 2025</td>
-                    </tr>
-                    <tr style="background-color: #ffe5b4;">
-                        <td style="padding: 10px; border: 1px solid #ddd;">South</td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">Ebolowa</td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">April 19-20, 2025</td>
-                    </tr>
-                    <tr style="background-color: #fff5e1;">
-                        <td style="padding: 10px; border: 1px solid #ddd;">Centre</td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">Yaoundé</td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">April 26-27, 2025</td>
-                    </tr>
-                </tbody>
-            </table>
-            <h3 style="color: #ff4500; text-align: center; margin-top: 20px;">Finals Schedule</h3>
-            <ul style="list-style: none; padding: 0;">
-                <li style="background-color: #ffe5b4; padding: 10px; border-radius: 5px; margin-bottom: 5px;">August 9: Prime 1</li>
-                <li style="background-color: #fff5e1; padding: 10px; border-radius: 5px; margin-bottom: 5px;">August 17: Prime 2</li>
-                <li style="background-color: #ffe5b4; padding: 10px; border-radius: 5px; margin-bottom: 5px;">August 23: Prime 3</li>
-                <li style="background-color: #fff5e1; padding: 10px; border-radius: 5px; margin-bottom: 5px;">August 30: Final Prime</li>
-            </ul>
-        </div>
-    </div>
-</div>
+        <section class="ms-casting-area pt-130 pb-130">
+            <div class="container">
+                <div class="row justify-content-center bdFadeUp">
+                    <div class="col-lg-8">
+                        <div class="section__title-wrapper mb-60 text-center bd-title-anim">
+                            <span class="section__subtitle">{{ trans('file.Casting Tour') ?? 'Casting Tour' }}</span>
+                            <h2 class="section__title">Provincial Casting
+                                <span class="animated-underline active">Calendar</span> 2025
+                            </h2>
+                            <p class="casting-lead">Here's the draft schedule for the Mulema Gospel casting by province across March and April.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row bdFadeUp">
+                    @php
+                        $castingSchedule = [
+                            ['province' => 'Far North',   'city' => 'Maroua',     'date' => 'March 15–16, 2025'],
+                            ['province' => 'North',        'city' => 'Garoua',     'date' => 'March 22–23, 2025'],
+                            ['province' => 'Adamawa',      'city' => 'Ngaoundéré', 'date' => 'March 29–30, 2025'],
+                            ['province' => 'East',         'city' => 'Bertoua',    'date' => 'April 5–6, 2025'],
+                            ['province' => 'South West',   'city' => 'Buea',       'date' => 'April 5–6, 2025'],
+                            ['province' => 'North West',   'city' => 'Bamenda',    'date' => 'April 12–13, 2025'],
+                            ['province' => 'West',         'city' => 'Bafoussam',  'date' => 'April 19–20, 2025'],
+                            ['province' => 'Littoral',     'city' => 'Douala',     'date' => 'April 12–13, 2025'],
+                            ['province' => 'South',        'city' => 'Ebolowa',    'date' => 'April 19–20, 2025'],
+                            ['province' => 'Centre',       'city' => 'Yaoundé',    'date' => 'April 26–27, 2025'],
+                        ];
+                    @endphp
+
+                    @foreach($castingSchedule as $stop)
+                        <div class="col-xl-4 col-lg-4 col-md-6">
+                            <div class="casting-card">
+                                <div class="casting-card__icon">
+                                    <i class="fa-solid fa-location-dot"></i>
+                                </div>
+                                <div class="casting-card__body">
+                                    <span class="casting-card__province">{{ $stop['province'] }}</span>
+                                    <h4 class="casting-card__city"><i class="fa-solid fa-city"></i> {{ $stop['city'] }}</h4>
+                                    <span class="casting-card__date"><i class="fa-regular fa-calendar-days"></i> {{ $stop['date'] }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+
+                <div class="row justify-content-center bdFadeUp mt-50">
+                    <div class="col-lg-8">
+                        <div class="section__title-wrapper mb-40 text-center bd-title-anim">
+                            <span class="section__subtitle"><i class="fa-solid fa-trophy"></i> Grand Finale</span>
+                            <h2 class="section__title">Finals <span class="animated-underline active">Schedule</span></h2>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row justify-content-center bdFadeUp">
+                    <div class="col-xl-10">
+                        <div class="casting-timeline">
+                            @php
+                                $finals = [
+                                    ['label' => 'Prime 1',     'date' => 'August 9',  'icon' => 'fa-microphone-lines'],
+                                    ['label' => 'Prime 2',     'date' => 'August 17', 'icon' => 'fa-music'],
+                                    ['label' => 'Prime 3',     'date' => 'August 23', 'icon' => 'fa-star'],
+                                    ['label' => 'Final Prime', 'date' => 'August 30', 'icon' => 'fa-crown'],
+                                ];
+                            @endphp
+                            @foreach($finals as $i => $final)
+                                <div class="casting-timeline__item {{ $loop->last ? 'is-final' : '' }}">
+                                    <div class="casting-timeline__dot"><i class="fa-solid {{ $final['icon'] }}"></i></div>
+                                    <div class="casting-timeline__content">
+                                        <span class="casting-timeline__date">{{ $final['date'] }}</span>
+                                        <h5 class="casting-timeline__label">{{ $final['label'] }}</h5>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <style>
+                .ms-casting-area { background: radial-gradient(1200px 600px at 50% -10%, rgba(240,169,59,.10), transparent 60%); }
+                .ms-casting-area .casting-lead { color: rgba(255,255,255,.7); font-size: 16px; margin-top: 15px; }
+
+                .casting-card {
+                    position: relative;
+                    display: flex;
+                    align-items: center;
+                    gap: 18px;
+                    margin-bottom: 30px;
+                    padding: 26px 24px;
+                    border-radius: 18px;
+                    background: rgba(255,255,255,.04);
+                    border: 1px solid rgba(255,255,255,.08);
+                    backdrop-filter: blur(6px);
+                    transition: transform .35s ease, border-color .35s ease, box-shadow .35s ease;
+                    overflow: hidden;
+                }
+                .casting-card::before {
+                    content: "";
+                    position: absolute; inset: 0;
+                    background: linear-gradient(135deg, rgba(240,169,59,.14), rgba(226,86,42,.12));
+                    opacity: 0; transition: opacity .35s ease;
+                }
+                .casting-card:hover {
+                    transform: translateY(-6px);
+                    border-color: rgba(240,169,59,.5);
+                    box-shadow: 0 18px 40px rgba(0,0,0,.45);
+                }
+                .casting-card:hover::before { opacity: 1; }
+                .casting-card > * { position: relative; z-index: 1; }
+                .casting-card__icon {
+                    flex: 0 0 auto;
+                    width: 58px; height: 58px;
+                    display: flex; align-items: center; justify-content: center;
+                    border-radius: 14px;
+                    font-size: 22px; color: #1a1208;
+                    background: linear-gradient(135deg, #e2562a, #f0a93b);
+                    box-shadow: 0 8px 20px rgba(226,86,42,.35);
+                }
+                .casting-card__province {
+                    display: inline-block;
+                    font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase;
+                    color: #f0a93b; font-weight: 700; margin-bottom: 4px;
+                }
+                .casting-card__city { color: #fff; font-size: 20px; margin: 0 0 8px; font-weight: 700; }
+                .casting-card__city i { color: #e2562a; font-size: 15px; margin-right: 4px; }
+                .casting-card__date { display: inline-flex; align-items: center; gap: 7px; color: rgba(255,255,255,.7); font-size: 14px; }
+                .casting-card__date i { color: #f6c453; }
+
+                .casting-timeline { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
+                .casting-timeline__item {
+                    position: relative;
+                    flex: 1 1 200px; max-width: 240px;
+                    text-align: center;
+                    padding: 30px 18px 24px;
+                    border-radius: 18px;
+                    background: rgba(255,255,255,.04);
+                    border: 1px solid rgba(255,255,255,.08);
+                    transition: transform .35s ease, border-color .35s ease;
+                }
+                .casting-timeline__item:hover { transform: translateY(-6px); border-color: rgba(246,196,83,.5); }
+                .casting-timeline__item.is-final {
+                    background: linear-gradient(135deg, rgba(246,196,83,.16), rgba(226,86,42,.12));
+                    border-color: rgba(246,196,83,.45);
+                }
+                .casting-timeline__dot {
+                    width: 64px; height: 64px; margin: 0 auto 16px;
+                    display: flex; align-items: center; justify-content: center;
+                    border-radius: 50%;
+                    font-size: 24px; color: #1a1208;
+                    background: linear-gradient(135deg, #e2562a, #f0a93b);
+                    box-shadow: 0 10px 24px rgba(0,0,0,.4);
+                }
+                .casting-timeline__item.is-final .casting-timeline__dot {
+                    background: linear-gradient(135deg, #f6c453, #e2562a);
+                }
+                .casting-timeline__date { display: block; color: #f0a93b; font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+                .casting-timeline__label { color: #fff; font-size: 18px; margin: 6px 0 0; font-weight: 700; }
+                .mt-50 { margin-top: 50px; }
+
+                @media (max-width: 575px) {
+                    .casting-card { padding: 20px; }
+                    .casting-timeline__item { max-width: 100%; }
+                }
+            </style>
         </section>
         <!-- Special Events Area End -->
 

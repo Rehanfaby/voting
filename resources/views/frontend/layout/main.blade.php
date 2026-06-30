@@ -21,7 +21,8 @@
     <link rel="stylesheet" href="{{ asset('public/frontend/css/css-fontawesome-pro.css') }}">
     <link rel="stylesheet" href="{{ asset('public/frontend/css/css-spacing.css') }}">
     <link rel="stylesheet" href="{{ asset('public/frontend/css/css-main.css') }}">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Modern brand layer -->
+    <link rel="stylesheet" href="{{ asset('public/css/frontend-modern.css') }}">
 </head>
 
 <body>

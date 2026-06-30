@@ -20,6 +20,36 @@
     RewriteRule ^ index.php [L]
 </IfModule>
 
+# Gzip compression
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss image/svg+xml
+</IfModule>
+
+# Browser caching for static assets
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType image/x-icon "access plus 1 year"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType application/font-woff2 "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>
+
+# Protect sensitive files and directories
+<Files .env>
+    Require all denied
+</Files>
+
+<IfModule mod_authz_core.c>
+    RedirectMatch 403 ^/storage/.*$
+    RedirectMatch 403 ^/vendor/.*$
+</IfModule>
+
 # php -- BEGIN cPanel-generated handler, do not edit
 # Set the “ea-php74” package as the default “PHP” programming language.
 <IfModule mime_module>

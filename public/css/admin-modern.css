@@ -1,0 +1,321 @@
+/* =====================================================================
+   Mulema Admin — Modern theme overlay (Alpha Bridge inspired)
+   Loaded after style.default.css to restyle the whole admin panel.
+   Only overrides colors/spacing/radius/shadows — never layout widths,
+   positioning, or the sidebar `.shrink` toggle behavior.
+   ===================================================================== */
+
+:root {
+    /* Unified Mulema brand palette (from the logo: warm orange -> gold on dark) */
+    --ma-navy-1: #1c140d;   /* deep warm charcoal (sidebar top) */
+    --ma-navy-2: #2a1d12;   /* warm charcoal (sidebar bottom) */
+    --ma-navy-3: #6b4a23;   /* muted bronze for focus rings */
+    --ma-orange: #e2562a;   /* brand orange-red */
+    --ma-gold: #f0a93b;     /* brand gold/amber */
+    --ma-gold-2: #f6c453;   /* light gold */
+    --ma-grad: linear-gradient(135deg, #e2562a 0%, #f0a93b 100%);
+    --ma-gold-soft: rgba(240, 169, 59, .16);
+    --ma-text-muted: rgba(255, 255, 255, .60);
+    --ma-radius: 14px;
+    --ma-radius-sm: 10px;
+    --ma-shadow: 0 10px 30px rgba(40, 24, 10, .08);
+    --ma-shadow-hover: 0 16px 40px rgba(40, 24, 10, .16);
+    --ma-ink: #2b2018;
+    --ma-bg: #f6f2ec;
+}
+
+body {
+    background-color: var(--ma-bg) !important;
+    font-family: 'Nunito', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: var(--ma-ink);
+}
+
+/* ---------------------------------------------------------------------
+   Sidebar
+   --------------------------------------------------------------------- */
+nav.side-navbar {
+    background: linear-gradient(185deg, var(--ma-navy-1) 0%, var(--ma-navy-2) 100%) !important;
+    box-shadow: 4px 0 24px rgba(11, 37, 69, .18);
+    border: none !important;
+}
+
+nav.side-navbar .side-navbar-wrapper {
+    background: transparent !important;
+}
+
+/* Menu items */
+.side-navbar .side-menu li a,
+nav.side-navbar ul.side-menu li a {
+    color: var(--ma-text-muted) !important;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: var(--ma-radius-sm);
+    margin: 3px 12px;
+    padding: 11px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: background .25s ease, color .25s ease, box-shadow .25s ease;
+    border-left: none !important;
+}
+
+.side-navbar .side-menu li a span {
+    display: inline;
+}
+
+/* Icons in menu */
+.side-navbar .side-menu li a i {
+    color: var(--ma-gold);
+    font-size: 17px;
+    width: 22px;
+    text-align: center;
+    transition: transform .25s ease;
+}
+
+/* Hover */
+.side-navbar .side-menu li a:hover {
+    background: rgba(255, 255, 255, .06) !important;
+    color: #fff !important;
+}
+.side-navbar .side-menu li a:hover i {
+    transform: translateX(2px);
+}
+
+/* Active */
+.side-navbar .side-menu li.active > a,
+.side-navbar .side-menu li a.active,
+.side-navbar .side-menu li.open > a {
+    background: linear-gradient(90deg, var(--ma-gold-soft), rgba(255, 255, 255, .02)) !important;
+    color: #fff !important;
+    box-shadow: inset 3px 0 0 var(--ma-gold);
+}
+.side-navbar .side-menu li.active > a i,
+.side-navbar .side-menu li a.active i {
+    color: var(--ma-gold);
+}
+
+/* Submenus */
+.side-navbar .side-menu ul.collapse,
+.side-navbar .side-menu ul.list-unstyled {
+    background: rgba(0, 0, 0, .18) !important;
+    border-radius: var(--ma-radius-sm);
+    margin: 2px 12px 6px;
+    padding: 4px 0;
+}
+.side-navbar .side-menu ul.collapse li a {
+    font-size: 13px;
+    font-weight: 500;
+    padding: 9px 14px 9px 42px;
+    margin: 1px 6px;
+    color: rgba(255, 255, 255, .55) !important;
+}
+.side-navbar .side-menu ul.collapse li a:hover,
+.side-navbar .side-menu ul.collapse li.active a {
+    color: #fff !important;
+    background: rgba(233, 185, 73, .12) !important;
+}
+
+/* Custom scrollbar in sidebar */
+.side-navbar .side-navbar-wrapper::-webkit-scrollbar { width: 6px; }
+.side-navbar .side-navbar-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, .18); border-radius: 10px;
+}
+
+/* ---------------------------------------------------------------------
+   Top header
+   --------------------------------------------------------------------- */
+header.header .navbar,
+.header .navbar {
+    background: #ffffff !important;
+    box-shadow: 0 2px 14px rgba(16, 35, 67, .06);
+    border-bottom: 1px solid #e7edf5;
+}
+
+.header .nav-menu .nav-item > a,
+.header .navbar .nav-link {
+    color: var(--ma-navy-2) !important;
+    border-radius: var(--ma-radius-sm);
+    transition: background .2s ease;
+}
+.header .nav-menu .nav-item > a:hover {
+    background: #f0f4f9 !important;
+}
+.header .nav-menu .nav-item > a i,
+.header .navbar .nav-link i {
+    color: var(--ma-navy-2);
+}
+
+.header .menu-btn,
+#toggle-btn {
+    color: var(--ma-navy-2) !important;
+}
+
+/* Right dropdown menus */
+.header .right-sidebar {
+    border-radius: var(--ma-radius-sm);
+    box-shadow: var(--ma-shadow);
+    border: 1px solid #e7edf5;
+    overflow: hidden;
+}
+.header .right-sidebar li a {
+    color: var(--ma-ink) !important;
+}
+.header .right-sidebar li a:hover {
+    background: #f0f4f9 !important;
+    color: var(--ma-navy-1) !important;
+}
+
+/* ---------------------------------------------------------------------
+   Cards
+   --------------------------------------------------------------------- */
+.card {
+    border: 1px solid #e7edf5 !important;
+    border-radius: var(--ma-radius) !important;
+    box-shadow: var(--ma-shadow);
+    transition: box-shadow .3s ease, transform .3s ease;
+    overflow: hidden;
+}
+.card:hover {
+    box-shadow: var(--ma-shadow-hover);
+}
+.card .card-header {
+    background: #fff !important;
+    border-bottom: 1px solid #eef2f7 !important;
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--ma-navy-1);
+    padding: 18px 22px;
+}
+.card .card-body {
+    padding: 22px;
+}
+
+/* Dashboard stat tiles often use bg utility classes — soften them */
+.card.bg-primary, .card.bg-success, .card.bg-info, .card.bg-warning, .card.bg-danger {
+    border: none !important;
+    color: #fff;
+}
+
+/* ---------------------------------------------------------------------
+   Buttons
+   --------------------------------------------------------------------- */
+.btn {
+    border-radius: 10px !important;
+    font-weight: 600;
+    padding: 9px 18px;
+    transition: transform .15s ease, box-shadow .2s ease, filter .2s ease;
+    box-shadow: none;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+
+.btn-primary {
+    background: var(--ma-grad) !important;
+    border: none !important;
+    color: #fff !important;
+}
+.btn-primary:hover {
+    filter: brightness(1.06);
+    box-shadow: 0 8px 22px rgba(226, 86, 42, .35);
+    color: #fff !important;
+}
+.btn-warning {
+    background: var(--ma-gold) !important;
+    border-color: var(--ma-gold) !important;
+    color: #3a2c00 !important;
+}
+.btn-success { box-shadow: 0 8px 20px rgba(40, 167, 69, .18); }
+.btn-info    { box-shadow: 0 8px 20px rgba(23, 162, 184, .18); }
+.btn-danger  { box-shadow: 0 8px 20px rgba(220, 53, 69, .18); }
+
+/* ---------------------------------------------------------------------
+   Tables
+   --------------------------------------------------------------------- */
+.table {
+    color: var(--ma-ink);
+}
+.table thead th,
+table.dataTable thead th {
+    background: #f6f9fc;
+    color: var(--ma-navy-1) !important;
+    font-weight: 700;
+    font-size: 12.5px;
+    letter-spacing: .4px;
+    text-transform: uppercase;
+    border-bottom: 1px solid #e7edf5 !important;
+    border-top: none !important;
+    padding: 14px 12px;
+}
+.table tbody tr {
+    transition: background .15s ease;
+}
+.table tbody tr:hover {
+    background: #f6f9fc !important;
+}
+.table td {
+    vertical-align: middle;
+    border-top: 1px solid #f0f3f7 !important;
+}
+
+/* ---------------------------------------------------------------------
+   Forms
+   --------------------------------------------------------------------- */
+.form-control,
+.bootstrap-select .dropdown-toggle.btn,
+.selectpicker + .dropdown-toggle {
+    border-radius: 10px !important;
+    border: 1px solid #dce4ee !important;
+    padding: 10px 14px;
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+.form-control:focus {
+    border-color: var(--ma-navy-3) !important;
+    box-shadow: 0 0 0 3px rgba(27, 59, 102, .12) !important;
+}
+label {
+    font-weight: 600;
+    color: #41506b;
+    font-size: 13.5px;
+}
+
+/* ---------------------------------------------------------------------
+   Modals, badges, misc
+   --------------------------------------------------------------------- */
+.modal-content {
+    border: none;
+    border-radius: var(--ma-radius) !important;
+    box-shadow: 0 24px 60px rgba(11, 37, 69, .25);
+    overflow: hidden;
+}
+.modal-header {
+    background: var(--ma-navy-1);
+    color: #fff;
+    border-bottom: none;
+}
+.modal-header .modal-title { color: #fff; }
+.modal-header .close,
+.modal-header .close span { color: #fff; opacity: .9; }
+
+.badge { border-radius: 8px; padding: 5px 10px; }
+
+.page-title h2,
+.page-header h1 {
+    color: var(--ma-navy-1);
+    font-weight: 800;
+}
+
+/* Loader bar accent */
+#loader { border-top-color: var(--ma-gold) !important; }
+
+/* Pagination */
+.pagination .page-item.active .page-link {
+    background: var(--ma-grad);
+    border-color: transparent;
+    color: #fff;
+}
+.pagination .page-link {
+    color: var(--ma-orange);
+    border-radius: 8px !important;
+    margin: 0 2px;
+    border: 1px solid #ecdfce;
+}

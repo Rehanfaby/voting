@@ -26,6 +26,14 @@ Route::post('/forgot/password','HomeController@forgotPasswordStore')->name('forg
 Route::post('/forgot/password/verify','HomeController@forgotPasswordCheck')->name('otp.verify.password');
 Route::post('/shop/password/change', 'HomeController@forgotPasswordCheckStore')->name('shop.password.change');
 
+// Admin / staff password reset via WhatsApp OTP
+Route::get('/admin/forgot-password', 'HomeController@adminForgotPassword')->name('admin.password.request');
+Route::post('/admin/forgot-password', 'HomeController@adminForgotPasswordStore')->name('admin.password.send');
+Route::get('/admin/forgot-password/verify', 'HomeController@adminForgotPasswordVerifyForm')->name('admin.password.verify');
+Route::post('/admin/forgot-password/verify', 'HomeController@adminForgotPasswordVerify')->name('admin.password.verify.submit');
+Route::get('/admin/forgot-password/reset', 'HomeController@adminForgotPasswordResetForm')->name('admin.password.reset.form');
+Route::post('/admin/forgot-password/reset', 'HomeController@adminForgotPasswordReset')->name('admin.password.reset');
+
 Route::get('language_switch/{locale}', 'LanguageController@switchLanguage');
 Route::get('/payment-cancel', [StripePaymentController::class, 'paymentCancel'])->name('payment.cancel');
 
@@ -298,4 +306,20 @@ Route::group(['middleware' => ['auth', 'active']], function() {
 
 Route::get('/qr', 'QRController@show');
 Route::get('/scan/{token}', 'QRController@scan');
+
+/*
+| Local-only fallback: serve uploaded media from production when the file
+| does not exist locally. Only active when APP_ENV=local, so it has no effect
+| on the live site. Set LOCAL_MEDIA_FALLBACK_URL in .env to override the host.
+*/
+if (app()->environment('local')) {
+    Route::get('public/{path}', function ($path) {
+        $localFile = base_path('public/' . $path);
+        if (is_file($localFile)) {
+            return response()->file($localFile);
+        }
+        $base = rtrim(env('LOCAL_MEDIA_FALLBACK_URL', 'https://mulemagc.com'), '/');
+        return redirect($base . '/public/' . $path);
+    })->where('path', '.*');
+}
 

@@ -16,3 +16,11 @@ npm-debug.log
 yarn-error.log
 .idea/php.xml
 server.php
+
+# Local-only DB dumps (contain user data — never commit)
+*.sql
+u152889834_voting.sql
+u152889834_voting_ticket.sql
+
+# Local dev tooling that holds server/SSH/DB credentials
+/scripts/sync-media.sh

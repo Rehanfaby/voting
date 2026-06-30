@@ -173,8 +173,15 @@ class HomeController extends Controller
             $see_votes = true;
         }
 
+        // Pre-aggregate all vote totals in ONE query (keyed by musician_id) to avoid
+        // running a separate SUM() query per musician inside the view (N+1 fix).
+        $vote_counts = DB::table("votes")
+            ->where("status", true)
+            ->select("musician_id", DB::raw("SUM(vote) as total"))
+            ->groupBy("musician_id")
+            ->pluck("total", "musician_id");
 
-        return view("frontend.home", compact("musicians", "judges", "best_musician", "see_votes", "ambassadors", "best_musicians", "best_musician_data"));
+        return view("frontend.home", compact("musicians", "judges", "best_musician", "see_votes", "ambassadors", "best_musicians", "best_musician_data", "vote_counts"));
     }
 
     public function signup()
@@ -1249,6 +1256,97 @@ class HomeController extends Controller
         return redirect()->route("user.login")->with("message", "Congratulaton: Your password has been updated");
     }
 
+    /* ------------------------------------------------------------------
+     | Admin / staff password reset via WhatsApp OTP
+     | ----------------------------------------------------------------- */
+    public function adminForgotPassword()
+    {
+        return view("auth.forgot-password");
+    }
 
+    public function adminForgotPasswordStore(Request $request)
+    {
+        $request->validate(['phone' => 'required']);
 
+        $user = User::where("phone", $request->phone)
+            ->where("is_active", true)
+            ->first();
+
+        if (!$user) {
+            return back()->with("not_permitted", "No active account found with that WhatsApp number.");
+        }
+
+        $otp = $this->sendOTP($user);
+        Session::put("reset_otp", $otp);
+        Session::put("reset_user_id", $user->id);
+
+        return redirect()->route('admin.password.verify')
+            ->with("message", "An OTP has been sent to your WhatsApp number.");
+    }
+
+    public function adminForgotPasswordVerifyForm()
+    {
+        if (!Session::has("reset_user_id")) {
+            return redirect()->route('admin.password.request');
+        }
+        return view("auth.verify-otp");
+    }
+
+    public function adminForgotPasswordVerify(Request $request)
+    {
+        $request->validate(['otp' => 'required']);
+
+        if ($request->otp == Session::get("reset_otp")) {
+            Session::put("reset_otp_verified", true);
+            return redirect()->route('admin.password.reset.form');
+        }
+
+        return back()->with("not_permitted", "The OTP you entered is incorrect or has expired.");
+    }
+
+    public function adminForgotPasswordResetForm()
+    {
+        if (!Session::get("reset_otp_verified")) {
+            return redirect()->route('admin.password.request');
+        }
+        return view("auth.reset-password");
+    }
+
+    public function adminForgotPasswordReset(Request $request)
+    {
+        $request->validate([
+            'password' => 'required|min:6',
+            'confirm_password' => 'required',
+        ]);
+
+        if (!Session::get("reset_otp_verified") || !Session::has("reset_user_id")) {
+            return redirect()->route('admin.password.request')
+                ->with("not_permitted", "Your reset session expired. Please try again.");
+        }
+
+        if ($request->password !== $request->confirm_password) {
+            return back()->with("not_permitted", "Password and confirm password do not match.");
+        }
+
+        $user = User::find(Session::get("reset_user_id"));
+        if (!$user) {
+            return redirect()->route('admin.password.request')
+                ->with("not_permitted", "Account not found.");
+        }
+
+        $user->update(["password" => bcrypt($request->password)]);
+
+        Session::forget(["reset_otp", "reset_user_id", "reset_otp_verified"]);
+
+        $msg = "*Dear* " . $user->name . " \n\n";
+        $msg .= "Your dashboard password has just been reset successfully. \n\n";
+        $msg .= "If this wasn't you, please contact the administrator immediately. \n\n";
+        $msg .= request()->getHost();
+        try {
+            $this->wpMessage($user->phone, $msg);
+        } catch (\Exception $e) {
+        }
+
+        return redirect()->route("login")->with("message", "Your password has been reset. Please sign in.");
+    }
 }

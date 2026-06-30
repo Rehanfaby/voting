@@ -17,6 +17,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Application Version
+    |--------------------------------------------------------------------------
+    | Bump this on each release. Displayed on the login screen and footer.
+    */
+
+    'version' => env('APP_VERSION', '2.1.1'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Login OTP
+    |--------------------------------------------------------------------------
+    | When enabled, users must verify a WhatsApp OTP after login. Disabled by
+    | default; flip LOGIN_OTP_ENABLED=true in .env to turn it back on.
+    */
+    'login_otp_enabled' => env('LOGIN_OTP_ENABLED', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Environment
     |--------------------------------------------------------------------------
     |

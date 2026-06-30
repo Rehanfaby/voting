@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
+use App\Helpers\AppCache;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Cache;
 use DB;
 use Illuminate\Support\Facades\URL;
 
@@ -37,15 +39,39 @@ class AppServiceProvider extends ServiceProvider
         } else {
             \App::setLocale('en');
         }
-        //get general setting value
-        $general_setting = DB::table('general_settings')->latest()->first();
-        $currency = \App\Currency::find($general_setting->currency) ?? '';
-        View::share('general_setting', $general_setting);
-        View::share('currency', $currency);
-        config(['staff_access' => $general_setting->staff_access, 'date_format' => $general_setting->date_format, 'currency' => $currency->code, 'currency_position' => $general_setting->currency_position]);
-
-        $alert_product = DB::table('products')->where('is_active', true)->whereColumn('alert_quantity', '>', 'qty')->count();
-        View::share('alert_product', $alert_product);
         Schema::defaultStringLength(191);
+
+        try {
+            $this->shareApplicationData();
+        } catch (\Exception $e) {
+            View::share('alert_product', 0);
+        }
+    }
+
+    protected function shareApplicationData()
+    {
+        $general_setting = Cache::remember(AppCache::GENERAL_SETTING, 3600, function () {
+            return DB::table('general_settings')->latest()->first();
+        });
+
+        if ($general_setting) {
+            $currency = Cache::remember(AppCache::currencyKey($general_setting->currency), 3600, function () use ($general_setting) {
+                return \App\Currency::find($general_setting->currency) ?? '';
+            });
+
+            View::share('general_setting', $general_setting);
+            View::share('currency', $currency);
+            config([
+                'staff_access' => $general_setting->staff_access,
+                'date_format' => $general_setting->date_format,
+                'currency' => $currency->code ?? '',
+                'currency_position' => $general_setting->currency_position,
+            ]);
+        }
+
+        $alert_product = Cache::remember(AppCache::ALERT_PRODUCT_COUNT, 300, function () {
+            return DB::table('products')->where('is_active', true)->whereColumn('alert_quantity', '>', 'qty')->count();
+        });
+        View::share('alert_product', $alert_product);
     }
 }

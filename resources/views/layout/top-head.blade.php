@@ -34,6 +34,8 @@
     <link rel="stylesheet" type="text/css" href="<?php echo asset('public/vendor/datatable/dataTables.bootstrap4.min.css') ?>">
     <link rel="stylesheet" href="<?php echo asset('public/css/style.default.css') ?>" id="theme-stylesheet" type="text/css">
     <link rel="stylesheet" href="<?php echo asset('public/css/style.css') ?>">
+    <!-- Modern admin theme overlay (Alpha Bridge inspired) -->
+    <link rel="stylesheet" href="<?php echo asset('public/css/admin-modern.css') ?>" type="text/css" id="admin-modern-style">
 
 
     <script type="text/javascript" src="<?php echo asset('public/vendor/jquery/jquery.min.js') ?>"></script>

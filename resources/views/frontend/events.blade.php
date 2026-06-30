@@ -30,31 +30,39 @@
         </section>
         <!-- page title area end  -->
 
-        <!-- team area start here  -->
+        <!-- event list area start  -->
         <section class="ms-team-area ms-bg-2 pt-125 pb-110">
             <div class="container">
                 <div class="row justify-content-center">
-                    <div class="col-xl-6">
-                        <div class="section__title-wrapper text-center mb-80">
+                    <div class="col-xl-7">
+                        <div class="section__title-wrapper text-center mb-60">
+                            <span class="section__subtitle">{{trans("file.Events")}}</span>
                             <h2 class="section__title">{{trans("file.Event List")}}</h2>
-                            <input type="text" id="ticket-search" class="form-control mt-3" placeholder="Search tickets...">
+                            <div class="mg-search">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" id="ticket-search" placeholder="Search events...">
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="row ms-team-inner" id="ticket-list">
+                <div class="row" id="ticket-list">
                     @foreach($events as $ticket)
                         <div class="col-xl-4 col-md-6 ticket-item">
-                            <div class="ms-team-item-wrap">
-                                <div class="ms-team-item p-relative">
-                                    <div class="ms-team-img mb-3">
-                                        <a href="{{ route('tickets', $ticket->id) }}">
-                                            <img src="{{ url('public/images/category', $ticket->image) }}" alt="ticket image">
+                            <div class="mg-card">
+                                <div class="mg-card__media">
+                                    <span class="mg-card__badge"><i class="fa-solid fa-ticket"></i> Event</span>
+                                    <a href="{{ route('tickets', $ticket->id) }}">
+                                        <img src="{{ url('public/images/category', $ticket->image) }}" alt="{{ $ticket->name }}">
+                                    </a>
+                                </div>
+                                <div class="mg-card__body">
+                                    <h3 class="mg-card__title">
+                                        <a href="{{ route('tickets', $ticket->id) }}">{{ $ticket->name }}</a>
+                                    </h3>
+                                    <div class="mg-card__cta">
+                                        <a href="{{ route('tickets', $ticket->id) }}" class="mg-btn">
+                                            <i class="fa-solid fa-ticket"></i> {{trans("file.Buy Tickets")}}
                                         </a>
-                                    </div>
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <h3 class="ms-team-title mb-0">
-                                            <a href="{{ route('tickets', $ticket->id) }}">{{ $ticket->name }}</a>
-                                        </h3>
                                     </div>
                                 </div>
                             </div>
@@ -64,7 +72,7 @@
                 {{ $events->links() }}
             </div>
         </section>
-        <!-- team area end here  -->
+        <!-- event list area end  -->
 
     </main>
     <script>

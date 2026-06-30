@@ -13,6 +13,7 @@ use App\PosSetting;
 use App\GeneralSetting;
 use App\HrmSetting;
 use App\RewardPointSetting;
+use App\Helpers\AppCache;
 use DB;
 use ZipArchive;
 use Twilio\Rest\Client;
@@ -117,6 +118,8 @@ class SettingController extends Controller
             $general_setting->email_water_mark = $waterMarkName;
         }
         $general_setting->save();
+        AppCache::forgetSharedData();
+
         return redirect()->back()->with('message', 'Data updated successfully');
     }
 
@@ -132,6 +135,8 @@ class SettingController extends Controller
         $general_setting->available_grading = $request->available_grading;
 
         $general_setting->save();
+        AppCache::forgetSharedData();
+
         return redirect()->back()->with('message', 'Data updated successfully');
     }
 

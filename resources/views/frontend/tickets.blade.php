@@ -30,50 +30,58 @@
         </section>
         <!-- page title area end  -->
 
-        <!-- team area start here  -->
+        <!-- ticket list area start  -->
         <section class="ms-team-area ms-bg-2 pt-125 pb-110">
             <div class="container">
                 <div class="row justify-content-center">
-                    <div class="col-xl-6">
-                        <div class="section__title-wrapper text-center mb-80">
+                    <div class="col-xl-7">
+                        <div class="section__title-wrapper text-center mb-60">
+                            <span class="section__subtitle">{{trans("file.Purchase Ticket")}}</span>
                             <h2 class="section__title">{{trans("file.Ticket List")}}</h2>
-                            <input type="text" id="ticket-search" class="form-control mt-3" placeholder="Search tickets...">
+                            <div class="mg-search">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" id="ticket-search" placeholder="Search tickets...">
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="row ms-team-inner" id="ticket-list">
+                <div class="row" id="ticket-list">
                     @foreach($tickets as $ticket)
+                        @php
+                            $images = explode(",", $ticket->image);
+                            $soldOut = $ticket && $ticket->qty < 1;
+                            $ticketUrl = $soldOut ? '#' : route('ticket.data', $ticket->id);
+                        @endphp
                         <div class="col-xl-4 col-md-6 ticket-item">
-                            <div class="ms-team-item-wrap">
-                                <div class="ms-team-item p-relative">
-                                    <div class="ms-team-img mb-3">
-                                        @if($ticket && $ticket->qty < 1)
-                                            <a href="#">
-                                                    <?php $images = explode(",", $ticket->image)?>
-                                                <img src="{{ url('public/images/product', $images[0]) }}" alt="ticket image">
-                                            </a>
-                                        @else
-                                            <a href="{{ route('ticket.data', $ticket->id) }}">
-                                                    <?php $images = explode(",", $ticket->image)?>
-                                                <img src="{{ url('public/images/product', $images[0]) }}" alt="ticket image">
-                                            </a>
-                                        @endif
-
+                            <div class="mg-card">
+                                <div class="mg-card__media">
+                                    @if($soldOut)
+                                        <span class="mg-card__badge mg-card__badge--soldout"><i class="fa-solid fa-ban"></i> Sold Out</span>
+                                    @else
+                                        <span class="mg-card__badge"><i class="fa-solid fa-ticket"></i> Available</span>
+                                    @endif
+                                    <a href="{{ $ticketUrl }}">
+                                        <img src="{{ url('public/images/product', $images[0]) }}" alt="{{ $ticket->name }}">
+                                    </a>
+                                </div>
+                                <div class="mg-card__body">
+                                    <h3 class="mg-card__title">
+                                        <a href="{{ $ticketUrl }}">{{ $ticket->name }}</a>
+                                    </h3>
+                                    <div class="mg-card__meta">
+                                        <span class="mg-chip mg-chip--price">
+                                            <i class="fa-solid fa-tag"></i> {{ number_format($ticket->price, 2) }}
+                                        </span>
+                                        <span class="mg-chip">
+                                            <i class="fa-solid fa-chair"></i> {{ @$ticket->qty }} {{trans("file.Remaining Seats")}}
+                                        </span>
                                     </div>
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <h3 class="ms-team-title mb-0">
-                                            @if($ticket && $ticket->qty < 1)
-                                            <a href="#">{{ $ticket->name }}</a>
-                                            @else
-                                                <a href="{{ route('ticket.data', $ticket->id) }}">{{ $ticket->name }}</a>
-                                            @endif
-                                        </h3>
-                                        <span class="badge bg-success ms-team-price fs-6">
-                                            {{trans("file.Ticket Price")}}: {{ number_format($ticket->price, 2) }}
-                                        </span>
-                                        <span class="badge bg-primary ms-team-price fs-6">
-                                            {{trans("file.Remaining Seats")}}: {{ @$ticket->qty }}
-                                        </span>
+                                    <div class="mg-card__cta">
+                                        @if($soldOut)
+                                            <span class="mg-btn mg-btn--ghost" style="cursor:not-allowed;"><i class="fa-solid fa-ban"></i> Sold Out</span>
+                                        @else
+                                            <a href="{{ $ticketUrl }}" class="mg-btn"><i class="fa-solid fa-cart-shopping"></i> {{trans("file.Buy Tickets")}}</a>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -83,7 +91,7 @@
                 {{ $tickets->links() }}
             </div>
         </section>
-        <!-- team area end here  -->
+        <!-- ticket list area end  -->
 
     </main>
     <script>
