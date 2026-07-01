@@ -20,7 +20,7 @@
 <section>
     @if(in_array("employees-add", $all_permission))
     <div class="container-fluid">
-        <a href="{{route('musician.create')}}" class="btn btn-info"><i class="dripicons-plus"></i>Add Contestant</a>
+        <button type="button" class="btn btn-info" data-toggle="modal" data-target="#addModal"><i class="dripicons-plus"></i>Add Contestant</button>
     </div>
     @endif
     <div class="table-responsive">
@@ -43,7 +43,8 @@
                 <tr data-id="{{$employee->id}}">
                     <td>{{$key}}</td>
                     @if($employee->image)
-                    <td> <img src="{{url('public/images/employee',$employee->image)}}" height="80" width="80">
+                    @php $__thumb = public_path('images/employee/thumbs/' . $employee->image); @endphp
+                    <td> <img src="{{ is_file($__thumb) ? url('public/images/employee/thumbs', $employee->image) : url('public/images/employee', $employee->image) }}" height="80" width="80" loading="lazy" decoding="async">
                     </td>
                     @else
                     <td>No Image</td>
@@ -104,6 +105,71 @@
     </div>
 </section>
 
+@php
+    $cmr_regions_add = ['Adamawa','Centre','East','Far North','Littoral','North','North-West','South','South-West','West'];
+@endphp
+<div id="addModal" tabindex="-1" role="dialog" aria-hidden="true" class="modal fade text-left">
+    <div role="document" class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Contestant</h5>
+                <button type="button" data-dismiss="modal" aria-label="Close" class="close"><span aria-hidden="true"><i class="dripicons-cross"></i></span></button>
+            </div>
+            <div class="modal-body">
+                <p class="italic"><small>{{trans('file.The field labels marked with * are required input fields')}}.</small></p>
+                {!! Form::open(['route' => 'musician.store', 'method' => 'post', 'files' => true]) !!}
+                <div class="row">
+                    <div class="col-md-6 form-group">
+                        <label>{{trans('file.name')}} *</label>
+                        <input type="text" name="employee_name" required class="form-control">
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label>{{trans('file.Image')}}</label>
+                        <input type="file" name="image" class="form-control">
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label>{{trans('file.Department')}} *</label>
+                        <select class="form-control selectpicker" name="department_id" required>
+                            @foreach($lims_department_list as $department)
+                            <option value="{{$department->id}}">{{$department->name}}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label>{{trans('file.Email')}} *</label>
+                        <input type="email" name="email" required class="form-control">
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label>{{trans('file.Phone Number')}} *</label>
+                        <input type="text" name="phone_number" required class="form-control">
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label>{{trans('file.Address')}}</label>
+                        <input type="text" name="address" class="form-control">
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label>Region *</label>
+                        <select class="form-control" name="city" required>
+                            <option value="">-- Select region --</option>
+                            @foreach($cmr_regions_add as $region)
+                            <option value="{{ $region }}">{{ $region }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label>{{trans('file.Country')}}</label>
+                        <input type="text" name="country" class="form-control" value="Cameroon" readonly>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">{{trans('file.submit')}}</button>
+                </div>
+                {{ Form::close() }}
+            </div>
+        </div>
+    </div>
+</div>
+
 <div id="editModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" class="modal fade text-left">
     <div role="document" class="modal-dialog">
         <div class="modal-content">
@@ -144,13 +210,21 @@
                         <label>{{trans('file.Address')}}</label>
                         <input type="text" name="address" class="form-control">
                     </div>
+                    @php
+                        $cmr_regions = ['Adamawa','Centre','East','Far North','Littoral','North','North-West','South','South-West','West'];
+                    @endphp
                     <div class="col-md-6 form-group">
-                        <label>{{trans('file.City')}}</label>
-                        <input type="text" name="city" class="form-control">
+                        <label>Region *</label>
+                        <select class="form-control" name="city" required>
+                            <option value="">-- Select region --</option>
+                            @foreach($cmr_regions as $region)
+                            <option value="{{ $region }}">{{ $region }}</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div class="col-md-6 form-group">
                         <label>{{trans('file.Country')}}</label>
-                        <input type="text" name="country" class="form-control">
+                        <input type="text" name="country" class="form-control" value="Cameroon" readonly>
                     </div>
                 </div>
                 <div class="form-group">
@@ -188,6 +262,25 @@
         return false;
     }
 
+    // Collect ids of all selected rows (across the whole table, not just the current page).
+    function collectSelectedIds() {
+        var ids = [];
+        var table = $('#employee-table').DataTable();
+        table.rows({ selected: true }).every(function () {
+            var id = $(this.node()).data('id');
+            if (id) ids.push(id);
+        });
+        if (!ids.length) {
+            $('#employee-table tbody tr').each(function () {
+                if ($(this).find('input[type="checkbox"]').is(':checked')) {
+                    var id = $(this).data('id');
+                    if (id) ids.push(id);
+                }
+            });
+        }
+        return ids;
+    }
+
     $(document).on('click', '.edit-btn', function() {
         $("#editModal input[name='employee_id']").val( $(this).data('id') );
         $("#editModal input[name='name']").val( $(this).data('name') );
@@ -195,9 +288,9 @@
         $("#editModal input[name='email']").val( $(this).data('email') );
         $("#editModal input[name='phone_number']").val( $(this).data('phone_number') );
         $("#editModal input[name='address']").val( $(this).data('address') );
-        $("#editModal input[name='city']").val( $(this).data('city') );
-        $("#editModal input[name='country']").val( $(this).data('country') );
-        $('.selectpicker').selectpicker('refresh');
+        $("#editModal select[name='city']").val( $(this).data('city') );
+        $("#editModal input[name='country']").val( 'Cameroon' );
+        $('#editModal .selectpicker').selectpicker('refresh');
     });
 
     $('#employee-table').DataTable( {
@@ -290,23 +383,37 @@
                     stripHtml: false
                 },
             },
+            @if($pending == 1)
             {
-                text: '<i title="delete" class="dripicons-cross"></i>',
+                text: '<i class="fa fa-check"></i> Approve Selected',
+                className: 'buttons-approve btn-approve-selected',
+                action: function ( e, dt, node, config ) {
+                    var ids = collectSelectedIds();
+                    if(ids.length && confirm("Approve the selected contestant(s)?")) {
+                        $.ajax({
+                            type:'POST',
+                            url:'{{ url("musician/approvebyselection") }}',
+                            data:{ employeeIdArray: ids },
+                            success:function(data){ alert(data); location.reload(); }
+                        });
+                    }
+                    else if(!ids.length)
+                        alert('No contestant is selected!');
+                }
+            },
+            @endif
+            {
+                text: '<i title="delete" class="dripicons-cross"></i> Delete Selected',
                 className: 'buttons-delete',
                 action: function ( e, dt, node, config ) {
                     if(user_verified == '1') {
-                        employee_id.length = 0;
-                        $(':checkbox:checked').each(function(i){
-                            if(i){
-                                employee_id[i-1] = $(this).closest('tr').data('id');
-                            }
-                        });
-                        if(employee_id.length && confirm("Are you sure want to delete?")) {
+                        var ids = collectSelectedIds();
+                        if(ids.length && confirm("Are you sure want to delete?")) {
                             $.ajax({
                                 type:'POST',
-                                url:'musician/deletebyselection',
+                                url:'{{ url("musician/deletebyselection") }}',
                                 data:{
-                                    employeeIdArray: employee_id
+                                    employeeIdArray: ids
                                 },
                                 success:function(data){
                                     alert(data);
@@ -315,8 +422,8 @@
                             });
                             dt.rows({ page: 'current', selected: true }).remove().draw(false);
                         }
-                        else if(!employee_id.length)
-                            alert('No employee is selected!');
+                        else if(!ids.length)
+                            alert('No contestant is selected!');
                     }
                     else
                         alert('This feature is disable for demo!');

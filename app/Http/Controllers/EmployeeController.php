@@ -87,6 +87,42 @@ class EmployeeController extends Controller
         return redirect()->back()->with('not_permitted', 'Contestant has been rejected successfully');
     }
 
+    public function show($id)
+    {
+        // No dedicated detail page; the resource "show" route would otherwise 500.
+        return redirect()->route('musician.index');
+    }
+
+    /**
+     * Normalize a Cameroon phone number: strip spaces/formatting and ensure the
+     * +237 country code is present.
+     */
+    public static function normalizePhone($phone)
+    {
+        if ($phone === null) {
+            return $phone;
+        }
+        // Remove spaces and common separators.
+        $phone = preg_replace('/[\s\-\.\(\)]/', '', (string) $phone);
+        if ($phone === '') {
+            return $phone;
+        }
+        // Already has a "+" country code – leave as is.
+        if (strpos($phone, '+') === 0) {
+            return $phone;
+        }
+        // International prefix written as 00 -> convert to +.
+        if (strpos($phone, '00') === 0) {
+            return '+' . substr($phone, 2);
+        }
+        // Starts with the Cameroon code without the plus.
+        if (strpos($phone, '237') === 0) {
+            return '+' . $phone;
+        }
+        // Local number – prepend the Cameroon country code.
+        return '+237' . $phone;
+    }
+
     public function create()
     {
         $role = Role::find(Auth::user()->role_id);
@@ -103,49 +139,14 @@ class EmployeeController extends Controller
     public function store(Request $request)
     {
         $data = $request->except('image');
+        if (!empty($data['phone_number'])) {
+            $data['phone_number'] = self::normalizePhone($data['phone_number']);
+        }
+        $data['country'] = 'Cameroon';
         $message = 'Contestant created successfully';
 
-        $this->validate($request, [
-            'name' => [
-                'max:255',
-                Rule::unique('users')->where(function ($query) {
-                    return $query->where('is_deleted', false);
-                }),
-            ],
-            'email' => [
-                'email',
-                'max:255',
-                Rule::unique('users')->where(function ($query) {
-                    return $query->where('is_deleted', false);
-                }),
-            ],
-        ]);
-
-        $password = rand(1, 999999);
-        $data['is_active'] = true;
-        $data['is_deleted'] = false;
-        $data['password'] = bcrypt($password);
-        $data['phone'] = $data['phone_number'];
-        $data['name'] = $data['employee_name'];
-        $data['role_id'] = 2;
-        User::create($data);
-        $user = User::latest()->first();
-        $data['user_id'] = $user->id;
-        $message = 'Contestant created successfully';
-
-        $msg = '*Congrats:* Your account has been created \n\n';
-        $msg .= '*User name:* '. $user->name . '\n\n';
-        $msg .= '*Phone number:* '. $user->phone . '\n\n';
-        $msg .= '*Password:* '. $password . '\n\n';
-
-        try{
-            $this->wpMessage($user->phone, $msg);
-        }
-        catch(\Exception $e){
-
-        }
-
-        //validation in employee table
+        // Validate the contestant (employees) uniqueness first so a failed
+        // submission never leaves behind an orphan user account.
         $this->validate($request, [
             'email' => [
                 'max:255',
@@ -156,12 +157,51 @@ class EmployeeController extends Controller
             'image' => 'image|mimes:jpg,jpeg,png,gif|max:100000',
         ]);
 
+        // A contestant and a voter (or judge/jury/user) can be the SAME person,
+        // so we do NOT block on the users table. If an account already exists for
+        // this email we reuse it; otherwise we create a dedicated contestant
+        // account. This lets a single person exist as multiple roles at once.
+        $existingUser = null;
+        if (!empty($request['email'])) {
+            $existingUser = User::whereRaw('LOWER(email) = ?', [strtolower($request['email'])])
+                ->where('is_deleted', false)
+                ->first();
+        }
+
+        if ($existingUser) {
+            $user = $existingUser;
+        } else {
+            $password = rand(1, 999999);
+            $user = User::create([
+                'name'       => $data['employee_name'] ?? '',
+                'email'      => $request['email'],
+                'phone'      => $data['phone_number'] ?? null,
+                'password'   => bcrypt($password),
+                'role_id'    => 2, // contestant role (voters stay role 3)
+                'is_active'  => true,
+                'is_deleted' => false,
+            ]);
+
+            $msg  = '*Congrats:* Your account has been created \n\n';
+            $msg .= '*User name:* '. $user->name . '\n\n';
+            $msg .= '*Phone number:* '. $user->phone . '\n\n';
+            $msg .= '*Password:* '. $password . '\n\n';
+            try {
+                $this->wpMessage($user->phone, $msg);
+            } catch (\Exception $e) {
+            }
+        }
+
+        $data['user_id'] = $user->id;
+        $data['name'] = $data['employee_name'] ?? ($data['name'] ?? '');
+
         $image = $request->image;
         if ($image) {
             $ext = pathinfo($image->getClientOriginalName(), PATHINFO_EXTENSION);
             $imageName = preg_replace('/[^a-zA-Z0-9]/', '', $request['email']);
             $imageName = $imageName . '.' . $ext;
             $image->move('public/images/employee', $imageName);
+            \App\Helpers\ImageOptimizer::process(public_path('images/employee/' . $imageName));
             $data['image'] = $imageName;
         }
 
@@ -174,23 +214,8 @@ class EmployeeController extends Controller
     public function update(Request $request, $id)
     {
         $lims_employee_data = Employee::find($request['employee_id']);
-        if($lims_employee_data->user_id){
-            $this->validate($request, [
-                'name' => [
-                    'max:255',
-                    Rule::unique('users')->ignore($lims_employee_data->user_id)->where(function ($query) {
-                        return $query->where('is_deleted', false);
-                    }),
-                ],
-                'email' => [
-                    'email',
-                    'max:255',
-                    Rule::unique('users')->ignore($lims_employee_data->user_id)->where(function ($query) {
-                        return $query->where('is_deleted', false);
-                    }),
-                ],
-            ]);
-        }
+        // Contestants may share an email with a voter/judge account, so we only
+        // validate uniqueness within the contestant (employees) table below.
         //validation in employee table
         $this->validate($request, [
             'email' => [
@@ -204,12 +229,17 @@ class EmployeeController extends Controller
         ]);
 
         $data = $request->except('image');
+        if (!empty($data['phone_number'])) {
+            $data['phone_number'] = self::normalizePhone($data['phone_number']);
+        }
+        $data['country'] = 'Cameroon';
         $image = $request->image;
         if ($image) {
             $ext = pathinfo($image->getClientOriginalName(), PATHINFO_EXTENSION);
             $imageName = preg_replace('/[^a-zA-Z0-9]/', '', $request['email']);
             $imageName = $imageName . '.' . $ext;
             $image->move('public/images/employee', $imageName);
+            \App\Helpers\ImageOptimizer::process(public_path('images/employee/' . $imageName));
             $data['image'] = $imageName;
         }
 
@@ -219,22 +249,46 @@ class EmployeeController extends Controller
 
     public function deleteBySelection(Request $request)
     {
-        $employee_id = $request['ids'];
+        $employee_id = $request['employeeIdArray'] ?? $request['ids'] ?? [];
         foreach ($employee_id as $id) {
             if($id == null) {
                 continue;
             }
             $lims_employee_data = Employee::find($id);
+            if(!$lims_employee_data) {
+                continue;
+            }
+            // Only deactivate the contestant profile. The linked user account is
+            // left intact because the same person may also be a voter/judge.
             $lims_employee_data->is_active = false;
             $lims_employee_data->save();
         }
         return 'Contestant deleted successfully!';
     }
+
+    public function approveBySelection(Request $request)
+    {
+        $employee_id = $request['employeeIdArray'] ?? $request['ids'] ?? [];
+        $count = 0;
+        foreach ($employee_id as $id) {
+            if($id == null) {
+                continue;
+            }
+            if(Employee::where('id', $id)->update(['is_approve' => true])) {
+                $count++;
+            }
+        }
+        return $count . ' contestant(s) approved successfully!';
+    }
     public function destroy($id)
     {
         $lims_employee_data = Employee::find($id);
-        $lims_employee_data->is_active = false;
-        $lims_employee_data->save();
+        if($lims_employee_data) {
+            // Only deactivate the contestant profile; keep the linked user account
+            // (the same person may also be a voter/judge/jury).
+            $lims_employee_data->is_active = false;
+            $lims_employee_data->save();
+        }
         return redirect()->back()->with('not_permitted', 'Contestant deleted successfully');
     }
 
@@ -282,6 +336,9 @@ class EmployeeController extends Controller
                 $imageName = preg_replace('/[^a-zA-Z0-9]/', '', $request['file']);
                 $imageName = $imageName . '.' . $ext;
                 $file->move('public/employee/data', $imageName);
+                if (in_array(strtolower($ext), ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+                    \App\Helpers\ImageOptimizer::optimize(public_path('employee/data/' . $imageName), 1280, 80);
+                }
 
                 $data['file'] = $imageName;
             }

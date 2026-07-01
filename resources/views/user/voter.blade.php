@@ -164,27 +164,35 @@
                 className: 'buttons-delete',
                 action: function ( e, dt, node, config ) {
                     if(user_verified == '1') {
-                        user_id.length = 0;
-                        $(':checkbox:checked').each(function(i){
-                            if(i){
-                                user_id[i-1] = $(this).closest('tr').data('id');
-                            }
+                        user_id = [];
+                        dt.rows({ selected: true }).every(function () {
+                            var id = $(this.node()).data('id');
+                            if (id) user_id.push(id);
                         });
+                        if (!user_id.length) {
+                            $('#user-table tbody tr').each(function () {
+                                if ($(this).find('input[type="checkbox"]').is(':checked')) {
+                                    var id = $(this).data('id');
+                                    if (id) user_id.push(id);
+                                }
+                            });
+                        }
                         if(user_id.length && confirm("Are you sure want to delete?")) {
                             $.ajax({
                                 type:'POST',
-                                url:'user/deletebyselection',
+                                url:'{{ url("user/deletebyselection") }}',
                                 data:{
                                     userIdArray: user_id
                                 },
                                 success:function(data){
                                     alert(data);
+                                    location.reload();
                                 }
                             });
                             dt.rows({ page: 'current', selected: true }).remove().draw(false);
                         }
                         else if(!user_id.length)
-                            alert('No user is selected!');
+                            alert('No voter is selected!');
                     }
                     else
                         alert('This feature is disable for demo!');

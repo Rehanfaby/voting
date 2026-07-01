@@ -195,6 +195,8 @@ Route::group(['middleware' => ['auth', 'active']], function() {
 	Route::post('user/deletebyselection', 'UserController@deleteBySelection');
 	Route::resource('user','UserController');
 
+	Route::get('setting/site_content', 'SettingController@siteContent')->name('setting.site_content');
+	Route::post('setting/site_content_store', 'SettingController@siteContentStore')->name('setting.site_content.store');
 	Route::get('setting/general_setting', 'SettingController@generalSetting')->name('setting.general');
     Route::get('setting/grading_setting', 'SettingController@gradingSetting')->name('setting.grading');
 	Route::post('setting/general_setting_store', 'SettingController@generalSettingStore')->name('setting.generalStore');
@@ -231,6 +233,7 @@ Route::group(['middleware' => ['auth', 'active']], function() {
 	Route::resource('departments', 'DepartmentController');
 
 	Route::post('musician/deletebyselection', 'EmployeeController@deleteBySelection');
+	Route::post('musician/approvebyselection', 'EmployeeController@approveBySelection')->name('musician.approveBySelection');
 	Route::resource('musician', 'EmployeeController');
     Route::get('musician/gallery/{id}', 'EmployeeController@gallery')->name('musician.gallery');
     Route::get('musician/gallery/delete/{id}', 'EmployeeController@galleryDestroy')->name('musician.gallery.delete');

@@ -119,12 +119,15 @@ class VoteController extends Controller
 
     public function deleteBySelection(Request $request)
     {
-        $vote_id = $request['expenseIdArray'];
+        $vote_id = $request['expenseIdArray'] ?? $request['ids'] ?? [];
         foreach ($vote_id as $id) {
             if($id == null) {
                 continue;
             }
-            vote::find($id)->delete();
+            $vote = vote::find($id);
+            if($vote) {
+                $vote->delete();
+            }
         }
         return 'Votes deleted successfully!';
     }

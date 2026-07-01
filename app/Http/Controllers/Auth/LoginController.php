@@ -79,6 +79,12 @@ class LoginController extends Controller
 
         {
 
+            // Admins / staff / judges / ambassadors land on the admin dashboard;
+            // voters (role 3) go to the public website.
+            $user = Auth::user();
+            if($user && $user->role_id != 3) {
+                return redirect('/admin');
+            }
             return redirect('/');
 
         }else{

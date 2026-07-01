@@ -89,7 +89,19 @@
     <!-- Custom stylesheet - for your changes-->
     <link rel="stylesheet" href="<?php echo asset('public/css/custom-'.$general_setting->theme) ?>" type="text/css" id="custom-style">
     <!-- Modern admin theme overlay (Alpha Bridge inspired) -->
-    <link rel="stylesheet" href="<?php echo asset('public/css/admin-modern.css') ?>" type="text/css" id="admin-modern-style">
+    <link rel="stylesheet" href="<?php echo asset('public/css/admin-modern.css') ?>?v=20260701-v4" type="text/css" id="admin-modern-style">
+    <style>
+        /* Header layout guarantee: logo top-left ALONE, fullscreen + language top-right.
+           Inline so it always wins over any cached copy of the base theme / admin-modern.css. */
+        .header .navbar-holder { display: flex !important; align-items: center !important; justify-content: space-between !important; width: 100%; position: relative; }
+        .header .navbar-holder .brand-big {
+            position: static !important; left: auto !important; right: auto !important; top: auto !important;
+            transform: none !important; margin: 0 auto 0 8px !important; order: -1 !important;
+            display: inline-flex !important; align-items: center !important;
+        }
+        @media all and (max-width: 1024px) { .header .navbar-holder .brand-big { display: inline-flex !important; } }
+        .header .navbar-holder .nav-menu { margin-left: auto !important; margin-right: 8px !important; order: 9 !important; }
+    </style>
 </head>
 
 <body onload="myFunction()">
@@ -121,10 +133,10 @@
                 ])->first();
                 ?>
                 @if(in_array('dashboard', $all_permission))
-                    <li><a href="{{url('/')}}"> <i class="dripicons-meter"></i><span>{{ __('file.dashboard') }}</span></a></li>
+                    <li data-menu-key="dashboard"><a href="{{url('/')}}"> <i class="dripicons-meter"></i><span>{{ __('file.dashboard') }}</span></a></li>
                 @endif
                     @if($category_permission_active || $index_permission_active )
-                        <li><a href="#product" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-list"></i><span>{{__('file.product')}}</span><span></a>
+                        <li data-menu-key="product"><a href="#product" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-list"></i><span>{{__('file.product')}}</span><span></a>
                             <ul id="product" class="collapse list-unstyled ">
                                 @if($category_permission_active)
                                     <li id="category-menu"><a href="{{route('category.index')}}">{{__('file.category')}}</a></li>
@@ -160,7 +172,7 @@
                 ])->first();
                 ?>
                 @if($index_permission_active)
-                    <li><a href="#vote" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-mail"></i><span>{{trans('file.Vote')}}</span></a>
+                    <li data-menu-key="vote"><a href="#vote" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-mail"></i><span>{{trans('file.Vote')}}</span></a>
                         <ul id="vote" class="collapse list-unstyled ">
                             <li id="vote-menu"><a href="{{route('votes.index')}}">{{trans('file.Votes List')}}</a></li>
                             <li id="vote-menu-create"><a id="add-vote" href="">{{trans('file.Create Vote')}}</a></li>
@@ -169,7 +181,7 @@
                 <li>
                 @endif
                 @if(in_array('points_index', $all_permission))
-                    <li><a href="#point" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-podcast"></i><span>{{trans('file.Points')}}</span></a>
+                    <li data-menu-key="point"><a href="#point" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-podcast"></i><span>{{trans('file.Points')}}</span></a>
                         <ul id="point" class="collapse list-unstyled ">
                             <li id="point-awaiting-list"><a href="{{route('points.awaiting_candidates')}}">{{trans('file.Awaiting Candidate')}}</a></li>
                             <li id="point-menu-create"><a href="{{route('points.create')}}">{{trans('file.Grade Candidate')}}</a></li>
@@ -178,7 +190,7 @@
                     </li>
                 @endif
                 @if(in_array('ambassador_point_index', $all_permission))
-                    <li><a href="#ambassador-point" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-podcast"></i><span>{{trans('file.Ambassador Points')}}</span></a>
+                    <li data-menu-key="ambassador-point"><a href="#ambassador-point" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-podcast"></i><span>{{trans('file.Ambassador Points')}}</span></a>
                         <ul id="ambassador-point" class="collapse list-unstyled ">
                             <li id="ambassador-point-awaiting-list"><a href="{{route('ambassador_points.awaiting_candidates')}}">{{trans('file.Awaiting Candidate')}}</a></li>
                             <li id="ambassador-point-menu-create"><a href="{{route('ambassador_points.create')}}">{{trans('file.Grade Candidate')}}</a></li>
@@ -187,7 +199,7 @@
                     </li>
                 @endif
                 @if(in_array('contestant_ranking', $all_permission) || in_array('grading_setting', $all_permission) || in_array('eliminated_candidate', $all_permission) || in_array('qualified_candidate', $all_permission))
-                    <li><a href="#grading-setting" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-gear"></i><span>{{trans('file.Grading')}}</span></a>
+                    <li data-menu-key="grading-setting"><a href="#grading-setting" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-gear"></i><span>{{trans('file.Grading')}}</span></a>
                         <ul id="grading-setting" class="collapse list-unstyled ">
                             @if(in_array('grading_setting', $all_permission))
                             <li id="grading-setting-menu"><a href="{{route('setting.grading')}}">{{trans('file.Grading Setting')}}</a></li>
@@ -212,7 +224,7 @@
                 ])->first();
                 ?>
                 @if($index_permission_active)
-                    <li><a href="#coin" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-usd"></i><span>{{trans('file.Coins')}}</span></a>
+                    <li data-menu-key="coin"><a href="#coin" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-usd"></i><span>{{trans('file.Coins')}}</span></a>
                         <ul id="coin" class="collapse list-unstyled ">
                             <li id="coin-menu"><a href="{{route('coins.index')}}">{{trans('file.Coins List')}}</a></li>
                             <li id="coin-menu-create"><a id="add-coin" href="">{{trans('file.Create Coins')}}</a></li>
@@ -229,7 +241,7 @@
                 ?>
 
                 @if($index_permission_active)
-                    <li><a href="#expense" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-wallet"></i><span>{{trans('file.Expense')}}</span></a>
+                    <li data-menu-key="expense"><a href="#expense" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-wallet"></i><span>{{trans('file.Expense')}}</span></a>
                         <ul id="expense" class="collapse list-unstyled ">
                             <li id="exp-cat-menu"><a href="{{route('expense_categories.index')}}">{{trans('file.Expense Category')}}</a></li>
                             @if(Auth::user()->role_id != 7)
@@ -264,7 +276,7 @@
                 ])->first();
                 ?>
                 @if($user_index_permission_active || $index_employee_active)
-                    <li><a href="#people" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-user"></i><span>{{trans('file.People')}}</span></a>
+                    <li data-menu-key="people"><a href="#people" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-user"></i><span>{{trans('file.People')}}</span></a>
                         <ul id="people" class="collapse list-unstyled ">
 
                                     <?php $user_add_permission_active = DB::table('permissions')
@@ -281,12 +293,26 @@
                                     <li id="ambassador-menu"><a href="{{route('ambassador.index')}}">{{trans('file.Ambassadors')}}</a></li>
                                     <li id="voter-menu"><a href="{{route('voter.index')}}">{{trans('file.Voters')}}</a></li>
                             @endif
-                                @if($index_employee_active)
+                        </ul>
+                    </li>
+                @endif
+
+                {{-- Dedicated Contestants menu --}}
+                @if($index_employee_active || in_array('qualified_candidate', $all_permission) || in_array('contestant_ranking', $all_permission))
+                    <li data-menu-key="contestants"><a href="#contestants" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-microphone"></i><span>{{trans('file.Contestants')}}</span></a>
+                        <ul id="contestants" class="collapse list-unstyled ">
+                            @if($index_employee_active)
                                 <li id="employee-menu"><a href="{{route('musician.index')}}">{{trans('file.Contestants')}}</a></li>
                                 @if($role->id == 1)
                                     <li id="employee-pending-menu"><a href="{{route('musician.pending.index')}}">{{trans('file.Pending Contestants')}}</a></li>
                                 @endif
-                                @endif
+                            @endif
+                            @if(in_array('qualified_candidate', $all_permission))
+                                <li id="contestants-qualified"><a href="{{route('report.contestant.qualified')}}">{{trans('file.Qualified Contestants')}}</a></li>
+                            @endif
+                            @if(in_array('contestant_ranking', $all_permission))
+                                <li id="contestants-ranking"><a href="{{url('report/contestant/ranking')}}">{{trans('file.Contestant Grading')}}</a></li>
+                            @endif
                         </ul>
                     </li>
                 @endif
@@ -304,7 +330,7 @@
 
                 ?>
                 @if($index_permission_active)
-                    <li class=""><a href="#account" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-briefcase"></i><span>{{trans('file.Accounting')}}</span></a>
+                    <li class="" data-menu-key="account"><a href="#account" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-briefcase"></i><span>{{trans('file.Accounting')}}</span></a>
                         <ul id="account" class="collapse list-unstyled ">
                             @if($index_permission_active)
                                 <li id="account-list-menu"><a href="{{route('accounts.index')}}">{{trans('file.Account List')}}</a></li>
@@ -324,7 +350,7 @@
                         ['role_id', $role->id] ])->first();
                 ?>
                 @if($voting_report_active)
-                    <li><a href="#report" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-document-remove"></i><span>{{trans('file.Reports')}}</span></a>
+                    <li data-menu-key="report"><a href="#report" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-document-remove"></i><span>{{trans('file.Reports')}}</span></a>
                         <ul id="report" class="collapse list-unstyled ">
                             @if($voting_report_active)
                                 <li id="vote-report-menu">
@@ -337,7 +363,7 @@
                         </ul>
                     </li>
                 @endif
-                <li><a href="#setting" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-gear"></i><span>{{trans('file.settings')}}</span></a>
+                <li data-menu-key="setting"><a href="#setting" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-gear"></i><span>{{trans('file.settings')}}</span></a>
                     <ul id="setting" class="collapse list-unstyled ">
                         <?php
                         $send_notification_permission = DB::table('permissions')->where('name', 'send_notification')->first();
@@ -413,6 +439,7 @@
                         {{--                      @endif--}}
                         @if($general_setting_permission_active)
                             <li id="general-setting-menu"><a href="{{route('setting.general')}}">{{trans('file.General Setting')}}</a></li>
+                            <li id="site-content-menu"><a href="{{route('setting.site_content')}}">Site Content &amp; Sections</a></li>
                         @endif
 {{--                        @if($customer_group_permission_active)--}}
 {{--                            <li id="customer-group-menu"><a href="{{route('customer_group.index')}}">{{trans('file.Customer Group')}}</a></li>--}}
@@ -437,9 +464,43 @@
                 </li>
             </ul>
         </div>
+
+        @php $sabRoleName = $role->name ?? 'Staff'; @endphp
+        <div class="side-admin-block">
+            <div class="sab-user">
+                <div class="sab-avatar">{{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}</div>
+                <div class="sab-info">
+                    <div class="sab-name">{{ Auth::user()->name }}</div>
+                    <span class="sab-role">{{ ucwords(str_replace('_', ' ', $sabRoleName)) }}</span>
+                </div>
+            </div>
+            <div class="sab-links">
+                <a href="{{ route('user.profile', Auth::user()->id) }}"><i class="dripicons-user"></i> <span>{{trans('file.profile')}}</span></a>
+                <a href="#" class="sab-signout" onclick="event.preventDefault(); document.getElementById('sab-logout-form').submit();"><i class="dripicons-export"></i> <span>{{trans('file.logout')}}</span></a>
+                <form id="sab-logout-form" action="{{ route('logout') }}" method="POST" style="display:none">@csrf</form>
+            </div>
+        </div>
     </div>
 </nav>
 <!-- End Side Navbar -->
+<script type="text/javascript">
+    /* Apply the admin-configured side-menu order (Settings > Site Content > Side Menu). */
+    (function () {
+        var order = {!! json_encode(\App\Helpers\SiteContent::menuOrder()) !!};
+        var menu = document.getElementById('side-main-menu');
+        if (!menu || !order || !order.length) { return; }
+        order.forEach(function (key) {
+            var children = menu.children;
+            for (var i = 0; i < children.length; i++) {
+                var li = children[i];
+                if (li.tagName === 'LI' && li.getAttribute('data-menu-key') === key) {
+                    menu.appendChild(li);
+                    break;
+                }
+            }
+        });
+    })();
+</script>
 <header class="header">
     <nav class="navbar">
         <div class="container-fluid">
@@ -456,8 +517,12 @@
                 <ul class="nav-menu list-unstyled d-flex flex-md-row align-items-md-center">
                     <li class="nav-item"><a id="btnFullscreen" data-toggle="tooltip" title="{{trans('file.Full Screen')}}"><i class="dripicons-expand"></i></a></li>
 
+                    <li class="nav-item ms-lang-switch">
+                        <a href="{{ url('language_switch/en') }}" class="ms-lang {{ app()->getLocale() == 'en' ? 'active' : '' }}">EN</a>
+                        <a href="{{ url('language_switch/fr') }}" class="ms-lang {{ app()->getLocale() == 'fr' ? 'active' : '' }}">FR</a>
+                    </li>
 
-                    <li class="nav-item">
+                    <li class="nav-item" style="display:none">
                         <a rel="nofollow" data-toggle="tooltip" class="nav-link dropdown-item"><i class="dripicons-web"></i></a>
                         <ul class="right-sidebar">
                             <li>
@@ -507,7 +572,7 @@
 {{--                            </li>--}}
                         </ul>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item" style="display:none">
                         <a rel="nofollow" data-target="#" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="nav-link dropdown-item"><i class="dripicons-user"></i> <span>{{ucfirst(Auth::user()->name)}}</span> <i class="fa fa-angle-down"></i>
                         </a>
                         <ul class="right-sidebar">
@@ -785,6 +850,7 @@
 
 
     <div style="display:none" id="content" class="animate-bottom">
+        <nav id="ms-section-tabs" class="ms-section-tabs" aria-label="Section navigation" style="display:none"></nav>
         @yield('content')
     </div>
 
@@ -811,6 +877,79 @@
             });
         });
     }
+</script>
+<script type="text/javascript">
+    /* Build colorful page-level tabs from the active sidebar submenu group. */
+    (function () {
+        function buildSectionTabs() {
+            var host = document.getElementById('ms-section-tabs');
+            if (!host) return;
+            var path = (window.location.pathname || '/').replace(/\/+$/, '') || '/';
+            var groups = document.querySelectorAll('nav.side-navbar .side-menu ul.collapse');
+            var activeGroup = null, activeLink = null, bestLen = -1;
+            groups.forEach(function (ul) {
+                ul.querySelectorAll('a').forEach(function (a) {
+                    var href = a.getAttribute('href');
+                    if (!href || href === '#' || href === '') return;
+                    var lp;
+                    try { lp = (new URL(a.href, window.location.origin).pathname || '').replace(/\/+$/, '') || '/'; } catch (e) { return; }
+                    if (lp === '/') return;
+                    if (path === lp || path.indexOf(lp + '/') === 0) {
+                        if (lp.length > bestLen) { bestLen = lp.length; activeGroup = ul; activeLink = a; }
+                    }
+                });
+            });
+            if (!activeGroup) { host.style.display = 'none'; return; }
+            var palette = ['#3b82f6', '#22c55e', '#f59e0b', '#a855f7', '#ec4899', '#14b8a6', '#ef4444', '#6366f1', '#0ea5e9', '#84cc16'];
+            var frag = document.createDocumentFragment(), i = 0;
+            activeGroup.querySelectorAll('a').forEach(function (a) {
+                var href = a.getAttribute('href');
+                if (!href || href === '#' || href === '') return;
+                var color = palette[i % palette.length]; i++;
+                var pill = document.createElement('a');
+                pill.href = a.href;
+                pill.className = 'ms-tab';
+                pill.textContent = (a.textContent || '').trim();
+                pill.style.setProperty('--tab-color', color);
+                if (a === activeLink) pill.classList.add('is-active');
+                frag.appendChild(pill);
+            });
+            if (!frag.childNodes.length) { host.style.display = 'none'; return; }
+            host.innerHTML = '';
+            host.appendChild(frag);
+            host.style.display = 'flex';
+        }
+        if (document.readyState !== 'loading') buildSectionTabs();
+        else document.addEventListener('DOMContentLoaded', buildSectionTabs);
+    })();
+</script>
+<script type="text/javascript">
+    /* No dropdowns: turn every collapsible sidebar parent into a direct link
+       that opens its first real sub-page. Sub-navigation lives in the page tabs. */
+    (function () {
+        function flattenSidebar() {
+            var toggles = document.querySelectorAll('nav.side-navbar .side-menu > li > a[data-toggle="collapse"]');
+            toggles.forEach(function (a) {
+                var li = a.parentElement;
+                var submenu = li ? li.querySelector('ul') : null;
+                if (!submenu) return;
+                var target = null;
+                submenu.querySelectorAll('a').forEach(function (s) {
+                    if (target) return;
+                    var href = (s.getAttribute('href') || '').trim();
+                    if (!href || href === '#' || href.indexOf('javascript') === 0) return;
+                    target = s.href;
+                });
+                if (!target) return;
+                a.setAttribute('href', target);
+                a.removeAttribute('data-toggle');
+                a.removeAttribute('aria-expanded');
+                a.classList.add('ms-direct');
+            });
+        }
+        if (document.readyState !== 'loading') flattenSidebar();
+        else document.addEventListener('DOMContentLoaded', flattenSidebar);
+    })();
 </script>
 <script type="text/javascript">
 
@@ -891,6 +1030,112 @@
     function numberWithCommas(x) {
         return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     }
+</script>
+
+<script type="text/javascript">
+/* Paste-an-image support for photo upload fields (Contestant / Jury / Ambassador).
+   Crop/copy an image anywhere, click the form, then press Ctrl/Cmd+V and it is
+   attached to that record's photo field with a live preview. */
+(function () {
+    var IMG_SELECTOR = 'input[type="file"][name="image"]';
+    var lastTarget = null;
+
+    function enhance(input) {
+        if (input.dataset.pasteReady === '1') { return; }
+        input.dataset.pasteReady = '1';
+
+        var hint = document.createElement('div');
+        hint.className = 'paste-image-hint';
+        hint.style.cssText = 'font-size:12px;color:#3b5bdb;margin-top:4px;';
+        hint.innerHTML = '<i class="dripicons-clipboard"></i> Tip: click here, then paste a copied/cropped image (Ctrl+V / \u2318V).';
+        input.insertAdjacentElement('afterend', hint);
+
+        var preview = document.createElement('div');
+        preview.className = 'paste-image-preview';
+        preview.style.cssText = 'margin-top:6px;display:none;';
+        preview.innerHTML = '<img alt="preview" style="max-height:90px;border-radius:6px;border:1px solid #d0d7de;">' +
+                            '<span class="paste-image-name" style="display:block;font-size:11px;color:#6b7280;margin-top:2px;"></span>';
+        hint.insertAdjacentElement('afterend', preview);
+
+        var mark = function () { lastTarget = input; };
+        input.addEventListener('focus', mark);
+        input.addEventListener('click', mark);
+        var group = input.closest('.form-group') || input.parentElement;
+        if (group) { group.addEventListener('click', mark); }
+    }
+
+    function showPreview(input, file) {
+        var wrap = input.parentElement.querySelector('.paste-image-preview');
+        if (!wrap) { return; }
+        var img = wrap.querySelector('img');
+        var name = wrap.querySelector('.paste-image-name');
+        var reader = new FileReader();
+        reader.onload = function (ev) {
+            img.src = ev.target.result;
+            if (name) { name.textContent = file.name + ' (' + Math.round(file.size / 1024) + ' KB)'; }
+            wrap.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function pickTarget() {
+        var openModal = document.querySelector('.modal.show ' + IMG_SELECTOR + ', .modal.in ' + IMG_SELECTOR);
+        if (openModal && openModal.offsetParent !== null) { return openModal; }
+        if (lastTarget && document.body.contains(lastTarget) && lastTarget.offsetParent !== null) { return lastTarget; }
+        var all = Array.prototype.slice.call(document.querySelectorAll(IMG_SELECTOR));
+        for (var i = 0; i < all.length; i++) { if (all[i].offsetParent !== null) { return all[i]; } }
+        return null;
+    }
+
+    function attach(input, blob) {
+        var ext = (blob.type && blob.type.split('/')[1]) ? blob.type.split('/')[1] : 'png';
+        var file = new File([blob], 'pasted-' + Date.now() + '.' + ext, { type: blob.type || 'image/png' });
+        try {
+            var dt = new DataTransfer();
+            dt.items.add(file);
+            input.files = dt.files;
+        } catch (err) {
+            return false;
+        }
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+        showPreview(input, file);
+        return true;
+    }
+
+    function init() {
+        Array.prototype.slice.call(document.querySelectorAll(IMG_SELECTOR)).forEach(enhance);
+    }
+
+    document.addEventListener('paste', function (e) {
+        var items = (e.clipboardData || window.clipboardData) ? (e.clipboardData || window.clipboardData).items : null;
+        if (!items) { return; }
+        var blob = null;
+        for (var i = 0; i < items.length; i++) {
+            if (items[i].type && items[i].type.indexOf('image') === 0) {
+                blob = items[i].getAsFile();
+                break;
+            }
+        }
+        if (!blob) { return; }
+        var target = pickTarget();
+        if (!target) { return; }
+        e.preventDefault();
+        if (attach(target, blob)) {
+            var group = target.closest('.form-group') || target.parentElement;
+            if (group) {
+                group.style.transition = 'box-shadow .3s';
+                group.style.boxShadow = '0 0 0 3px rgba(59,91,219,.35)';
+                setTimeout(function () { group.style.boxShadow = 'none'; }, 900);
+            }
+        }
+    });
+
+    if (document.readyState !== 'loading') { init(); } else { document.addEventListener('DOMContentLoaded', init); }
+    // Re-scan when Bootstrap modals open (edit dialogs inject their inputs then).
+    if (window.jQuery) {
+        jQuery(document).on('shown.bs.modal', init);
+    }
+})();
 </script>
 </body>
 </html>

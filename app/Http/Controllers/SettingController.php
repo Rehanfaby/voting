@@ -14,6 +14,7 @@ use App\GeneralSetting;
 use App\HrmSetting;
 use App\RewardPointSetting;
 use App\Helpers\AppCache;
+use App\Helpers\SiteContent;
 use DB;
 use ZipArchive;
 use Twilio\Rest\Client;
@@ -138,6 +139,90 @@ class SettingController extends Controller
         AppCache::forgetSharedData();
 
         return redirect()->back()->with('message', 'Data updated successfully');
+    }
+
+    public function siteContent()
+    {
+        $content = SiteContent::all();
+        $section_labels = SiteContent::sectionKeys();
+        $menu_labels = SiteContent::menuKeys();
+        $menu_order = SiteContent::menuOrder();
+        return view('setting.site_content', compact('content', 'section_labels', 'menu_labels', 'menu_order'));
+    }
+
+    public function siteContentStore(Request $request)
+    {
+        $data = SiteContent::all();
+
+        // Section toggles (unchecked checkboxes are absent from the request)
+        $posted = (array) $request->input('sections', []);
+        $sections = [];
+        foreach (array_keys(SiteContent::sectionKeys()) as $key) {
+            $sections[$key] = !empty($posted[$key]);
+        }
+        $data['sections'] = $sections;
+
+        $data['casting_title']    = $request->input('casting_title', $data['casting_title'] ?? '');
+        $data['casting_subtitle'] = $request->input('casting_subtitle', $data['casting_subtitle'] ?? '');
+        $data['primes_title']     = $request->input('primes_title', $data['primes_title'] ?? 'Finals Schedule');
+
+        // Countdown enable checkboxes (absent when unchecked)
+        $data['casting_countdown'] = $request->has('casting_countdown');
+        $data['primes_countdown']  = $request->has('primes_countdown');
+
+        // Casting rows
+        $rows = [];
+        $provinces = $request->input('province', []);
+        $venues    = $request->input('venue', []);
+        $dates     = $request->input('cast_date', []);
+        foreach ($provinces as $i => $province) {
+            $province = trim($province);
+            if ($province === '' && trim($venues[$i] ?? '') === '' && trim($dates[$i] ?? '') === '') {
+                continue;
+            }
+            $rows[] = [
+                'province' => $province,
+                'venue'    => trim($venues[$i] ?? ''),
+                'date'     => trim($dates[$i] ?? ''),
+            ];
+        }
+        $data['casting_rows'] = $rows;
+
+        // Prime dates
+        $primes = [];
+        $labels     = $request->input('prime_label', []);
+        $primeDates = $request->input('prime_date', []);
+        foreach ($labels as $i => $label) {
+            $label = trim($label);
+            $date  = trim($primeDates[$i] ?? '');
+            if ($label === '' && $date === '') {
+                continue;
+            }
+            $primes[] = ['label' => $label, 'date' => $date];
+        }
+        $data['primes'] = $primes;
+
+        // Side-menu order (list of known menu keys in the chosen order)
+        $postedOrder = (array) $request->input('menu_order', []);
+        $validKeys = array_keys(SiteContent::menuKeys());
+        $order = [];
+        foreach ($postedOrder as $key) {
+            if (in_array($key, $validKeys, true) && !in_array($key, $order, true)) {
+                $order[] = $key;
+            }
+        }
+        foreach ($validKeys as $key) {
+            if (!in_array($key, $order, true)) {
+                $order[] = $key;
+            }
+        }
+        if (!empty($order)) {
+            $data['menu_order'] = $order;
+        }
+
+        SiteContent::save($data);
+
+        return redirect()->back()->with('message', 'Site content updated successfully');
     }
 
     public function rewardPointSetting()

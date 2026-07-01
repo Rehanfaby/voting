@@ -24,3 +24,6 @@ u152889834_voting_ticket.sql
 
 # Local dev tooling that holds server/SSH/DB credentials
 /scripts/sync-media.sh
+
+# Local deploy bundles
+/deploy/

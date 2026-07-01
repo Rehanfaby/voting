@@ -212,9 +212,15 @@ class UserController extends Controller
 
     public function deleteBySelection(Request $request)
     {
-        $user_id = $request['userIdArray'];
+        $user_id = $request['userIdArray'] ?? $request['ids'] ?? [];
         foreach ($user_id as $id) {
+            if($id == null) {
+                continue;
+            }
             $lims_user_data = User::find($id);
+            if(!$lims_user_data) {
+                continue;
+            }
             $lims_user_data->is_deleted = true;
             $lims_user_data->is_active = false;
             $lims_user_data->save();

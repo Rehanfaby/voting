@@ -135,16 +135,23 @@
                 className: 'buttons-delete',
                 action: function ( e, dt, node, config ) {
                     if(user_verified == '1') {
-                        expense_id.length = 0;
-                        $(':checkbox:checked').each(function(i){
-                            if(i){
-                                expense_id[i-1] = $(this).closest('tr').data('id');
-                            }
+                        expense_id = [];
+                        dt.rows({ selected: true }).every(function () {
+                            var id = $(this.node()).data('id');
+                            if (id) expense_id.push(id);
                         });
+                        if (!expense_id.length) {
+                            $('#expense-table tbody tr').each(function () {
+                                if ($(this).find('input[type="checkbox"]').is(':checked')) {
+                                    var id = $(this).data('id');
+                                    if (id) expense_id.push(id);
+                                }
+                            });
+                        }
                         if(expense_id.length && confirm("Are you sure want to delete?")) {
                             $.ajax({
                                 type:'POST',
-                                url:'/tickets/deletebyselection',
+                                url:'{{ url("tickets/deletebyselection") }}',
                                 data:{
                                     expenseIdArray: expense_id
                                 },
@@ -156,7 +163,7 @@
                             dt.rows({ page: 'current', selected: true }).remove().draw(false);
                         }
                         else if(!expense_id.length)
-                            alert('No expense is selected!');
+                            alert('No ticket is selected!');
                     }
                     else
                         alert('This feature is disable for demo!');

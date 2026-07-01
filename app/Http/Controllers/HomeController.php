@@ -102,16 +102,8 @@ class HomeController extends Controller
 
 //        $this->checkVotePayment();
 
-        $ambassador_role_id = Role::where("name", "ambassador")->first()->id;
-        $judge_role_id = Role::where("name", "judge")->first()->id;
-        if(Auth::user()) {
-            $role = Auth::user()->role_id;
-            if($role == 1 || $role == 2 || $role == $ambassador_role_id || $role == $judge_role_id) {
-                return $this->admin();
-            }
-        }
-
-
+        // Note: "/" always renders the public website, even for logged-in admins.
+        // Admins reach the dashboard via "/admin" (see HomeController@admin).
 
         $musicians = Employee::where("is_active", true)->where("is_approve", true)->get();
         $judges = Judge::where("is_active", true)->get();
@@ -148,6 +140,8 @@ class HomeController extends Controller
             ->groupBy("votes.musician_id")
             ->limit(5)
             ->get();
+
+        $best_musician = null;
 
         if($best_musician_data != null) {
             $best_musician  = Employee::find($best_musician_data->musician_id);

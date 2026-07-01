@@ -155,6 +155,7 @@
         <!-- Banner Area End Here  -->
 
         <!-- Function Brand Area Start Here  -->
+        @if(\App\Helpers\SiteContent::enabled('weekly_contestants'))
         <section class="ms-fun-brand ms-bg-2 pb-130 pt-125">
             <div class="container">
                 <div class="row justify-content-center bdFadeUp">
@@ -198,7 +199,80 @@
                 </div>
             </div>
         </section>
+        @endif
         <!-- Function Brand Area End Here  -->
+
+        <!-- Our Winners Area Start Here (shown only when enabled at the end of the competition) -->
+        @if(\App\Helpers\SiteContent::enabled('our_winners'))
+        <section class="ms-winners-area ms-bg-2 pb-130 pt-90">
+            <div class="container">
+                <div class="row justify-content-center bdFadeUp">
+                    <div class="col-xl-8">
+                        <div class="section__title-wrapper mb-65 text-center bd-title-anim">
+                            <span class="section__subtitle"><i class="fa-solid fa-trophy"></i> {{ trans('file.Grand Champions') ?? 'Grand Champions' }}</span>
+                            <h2 class="section__title">
+                                {{ trans('file.Our') ?? 'Our' }} <span class="animated-underline active">{{ trans('file.Winners') ?? 'Winners' }}!</span>
+                            </h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="ms-winners-podium bdFadeUp">
+                    @foreach($best_musicians as $key => $winner_data)
+                        @php $winner = \App\Employee::find($winner_data->musician_id); @endphp
+                        @if($winner && $key < 3)
+                            <div class="ms-winner-card ms-winner-rank-{{ $key + 1 }}">
+                                <div class="ms-winner-badge">
+                                    @if($key == 0)
+                                        <i class="fa-solid fa-crown"></i>
+                                    @else
+                                        <i class="fa-solid fa-medal"></i>
+                                    @endif
+                                </div>
+                                <div class="ms-winner-thumb">
+                                    <img src="{{ url('public/images/employee', $winner->image) }}" alt="{{ $winner->name }}" loading="lazy" decoding="async">
+                                </div>
+                                <div class="ms-winner-place">
+                                    @if($key == 0) 1st @elseif($key == 1) 2nd @else 3rd @endif
+                                </div>
+                                <h4 class="ms-winner-name">{{ $winner->name }}</h4>
+                                <span class="ms-winner-votes"><i class="fa fa-vote-yea"></i> {{ $winner_data->total_vote }} {{ trans('file.Votes') }}</span>
+                            </div>
+                        @endif
+                    @endforeach
+                </div>
+            </div>
+
+            <style>
+                .ms-winners-area { background: radial-gradient(1200px 600px at 50% -10%, rgba(240,169,59,.12), transparent 60%); }
+                .ms-winners-podium { display: flex; flex-wrap: wrap; gap: 26px; justify-content: center; align-items: flex-end; }
+                .ms-winner-card {
+                    position: relative; text-align: center; width: 260px; padding: 30px 22px 26px;
+                    border-radius: 18px; background: rgba(255,255,255,.04);
+                    border: 1px solid rgba(246,196,83,.28); box-shadow: 0 18px 45px rgba(0,0,0,.35);
+                    transition: transform .3s ease, border-color .3s ease;
+                }
+                .ms-winner-card:hover { transform: translateY(-8px); border-color: rgba(246,196,83,.7); }
+                .ms-winner-rank-1 { order: 2; width: 290px; padding-top: 40px; background: linear-gradient(180deg, rgba(240,169,59,.16), rgba(255,255,255,.04)); border-color: rgba(240,169,59,.6); }
+                .ms-winner-rank-2 { order: 1; }
+                .ms-winner-rank-3 { order: 3; }
+                .ms-winner-badge {
+                    position: absolute; top: -22px; left: 50%; transform: translateX(-50%);
+                    width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+                    background: linear-gradient(135deg, #f0a93b, #e2562a); color: #fff; font-size: 20px; box-shadow: 0 6px 16px rgba(226,86,42,.5);
+                }
+                .ms-winner-rank-1 .ms-winner-badge { background: linear-gradient(135deg, #ffd76a, #f0a93b); box-shadow: 0 6px 18px rgba(240,169,59,.6); }
+                .ms-winner-thumb { width: 130px; height: 130px; margin: 8px auto 14px; border-radius: 50%; overflow: hidden; border: 3px solid rgba(246,196,83,.6); }
+                .ms-winner-rank-1 .ms-winner-thumb { width: 150px; height: 150px; }
+                .ms-winner-thumb img { width: 100%; height: 100%; object-fit: cover; }
+                .ms-winner-place { display: inline-block; margin-bottom: 8px; color: #f0a93b; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; font-size: 13px; }
+                .ms-winner-name { color: #fff; font-size: 20px; font-weight: 700; margin: 0 0 8px; }
+                .ms-winner-votes { display: inline-flex; align-items: center; gap: 7px; color: rgba(255,255,255,.75); font-size: 14px; }
+                .ms-winner-votes i { color: #f6c453; }
+                @media (max-width: 767px) { .ms-winner-card, .ms-winner-rank-1 { width: 100%; order: 0 !important; } }
+            </style>
+        </section>
+        @endif
+        <!-- Our Winners Area End Here  -->
 
 
 
@@ -421,6 +495,55 @@
                         </div>
                     </div>
                 </div>
+
+                @php $sc_next_prime = \App\Helpers\SiteContent::nextPrime(); @endphp
+                @if(\App\Helpers\SiteContent::get('primes_countdown', true) && $sc_next_prime && !empty($sc_next_prime['date']))
+                <div class="row justify-content-center bdFadeUp mb-50">
+                    <div class="col-xl-8">
+                        <div class="ms-countdown" data-deadline="{{ $sc_next_prime['date'] }}">
+                            <p class="ms-countdown__label"><i class="fa-regular fa-clock"></i> {{ $sc_next_prime['label'] ?? 'Next Prime' }} {{ trans('file.starts in') ?? 'starts in' }}</p>
+                            <div class="ms-countdown__grid">
+                                <div class="ms-countdown__cell"><span class="cd-days">00</span><small>Days</small></div>
+                                <div class="ms-countdown__cell"><span class="cd-hours">00</span><small>Hrs</small></div>
+                                <div class="ms-countdown__cell"><span class="cd-mins">00</span><small>Min</small></div>
+                                <div class="ms-countdown__cell"><span class="cd-secs">00</span><small>Sec</small></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <style>
+                    .ms-countdown { text-align: center; padding: 24px 20px; border-radius: 16px; background: rgba(255,255,255,.04); border: 1px solid rgba(246,196,83,.3); }
+                    .ms-countdown__label { color: rgba(255,255,255,.8); font-size: 15px; margin: 0 0 14px; letter-spacing: .5px; }
+                    .ms-countdown__label i { color: #f6c453; margin-right: 6px; }
+                    .ms-countdown__grid { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+                    .ms-countdown__cell { min-width: 78px; padding: 14px 10px; border-radius: 12px; background: linear-gradient(180deg, rgba(240,169,59,.15), rgba(255,255,255,.03)); border: 1px solid rgba(240,169,59,.35); }
+                    .ms-countdown__cell span { display: block; font-size: 30px; font-weight: 800; color: #f0a93b; line-height: 1; }
+                    .ms-countdown__cell small { display: block; margin-top: 6px; color: rgba(255,255,255,.65); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+                </style>
+                <script>
+                    (function () {
+                        var el = document.querySelector('.ms-countdown');
+                        if (!el) { return; }
+                        var deadline = new Date((el.getAttribute('data-deadline') || '').replace(' ', 'T')).getTime();
+                        if (isNaN(deadline)) { return; }
+                        function pad(n) { return (n < 10 ? '0' : '') + n; }
+                        function tick() {
+                            var diff = deadline - Date.now();
+                            if (diff < 0) { diff = 0; }
+                            var d = Math.floor(diff / 86400000);
+                            var h = Math.floor((diff % 86400000) / 3600000);
+                            var m = Math.floor((diff % 3600000) / 60000);
+                            var s = Math.floor((diff % 60000) / 1000);
+                            el.querySelector('.cd-days').textContent = pad(d);
+                            el.querySelector('.cd-hours').textContent = pad(h);
+                            el.querySelector('.cd-mins').textContent = pad(m);
+                            el.querySelector('.cd-secs').textContent = pad(s);
+                        }
+                        tick();
+                        setInterval(tick, 1000);
+                    })();
+                </script>
+                @endif
 
                 <div class="row justify-content-center bdFadeUp">
                     <div class="col-xl-10">
