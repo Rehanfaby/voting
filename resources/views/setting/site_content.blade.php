@@ -9,7 +9,7 @@
 
 <section class="forms">
     <div class="container-fluid">
-        {!! Form::open(['route' => 'setting.site_content.store', 'method' => 'post']) !!}
+        {!! Form::open(['route' => 'setting.site_content.store', 'method' => 'post', 'files' => true]) !!}
 
         {{-- Section visibility --}}
         <div class="row">
@@ -32,6 +32,32 @@
                                     </div>
                                 </div>
                             @endforeach
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Homepage popup image --}}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h4><i class="dripicons-photo"></i> Homepage Popup</h4>
+                    </div>
+                    <div class="card-body">
+                        <p class="italic"><small>Upload a flyer / announcement image, then enable the <strong>Homepage Popup</strong> toggle above to show it. It appears once when a visitor opens the site.</small></p>
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Popup image (JPG / PNG / GIF, up to 8&nbsp;MB)</label>
+                                    <input type="file" name="popup_image" accept="image/*" class="form-control-file">
+                                </div>
+                            </div>
+                            <div class="col-md-6 text-center">
+                                <label class="d-block">Current popup</label>
+                                <img src="{{ \App\Helpers\SiteContent::popupImageUrl() }}?v={{ time() }}" alt="Current popup" style="max-height:160px; max-width:100%; border:1px solid #e5e7eb; border-radius:8px; padding:4px; background:#fff;">
+                            </div>
                         </div>
                     </div>
                 </div>

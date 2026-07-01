@@ -76,13 +76,15 @@
 
     <main>
 
-        <!-- Popup Overlay -->
-        <div class="popup-overlay" id="popup">
+        <!-- Popup Overlay (managed from Settings > Site Content > Homepage Popup) -->
+        @if(\App\Helpers\SiteContent::enabled('popup'))
+        <div class="popup-overlay" id="popup" data-autoshow="1">
             <div class="popup-content">
                 <span class="close-btn" id="closeBtn">&times;</span>
-                <img src="{{ asset('public/img/flayer.jpeg') }}" alt="Newscaster Image" class="popup-image" />
+                <img src="{{ \App\Helpers\SiteContent::popupImageUrl() }}" alt="Announcement" class="popup-image" />
             </div>
         </div>
+        @endif
         <!-- Brand Song Area Start Here  -->
         <section class="ms-song-area pt-40 pb-40">
             <div class="container-fluid ms-maw-1710">
@@ -93,11 +95,9 @@
                                 <div class="ms-song-item">
                                     <div class="ms-song-img p-relative">
                                         <a href="{{ route('musician.data', $musician->id) }}">
-                                            <img src="{{url('public/images/employee',$musician->image)}}" alt="{{trans('file.Contestants name')}}">
+                                            <img src="{{url('public/images/employee',$musician->image)}}" alt="{{ $musician->name }}" loading="lazy" decoding="async">
                                         </a>
-                                        @if($see_votes)
-                                            <span class="ms-song-num">{{ $vote_counts[$musician->id] ?? 0 }}</span>
-                                        @endif
+                                        <span class="ms-song-num" title="{{ trans('file.Votes') }}"><i class="fa fa-vote-yea"></i> {{ $vote_counts[$musician->id] ?? 0 }}</span>
                                     </div>
                                     <div class="ms-song-content">
                                         <h3 class="ms-song-title"><a href="{{ route('musician.data', $musician->id) }}">{{ $musician->name }}</a>
@@ -118,9 +118,9 @@
             <a class="ms-scroll-down" href="#">{{trans('file.SCROLL DOWN')}}</a>
             <div class="container-fluid ms-maw-1710">
                 @if(\App::getLocale() == 'en')
-                <div class="ms-br-30 mx-auto include__bg z-index-1 ms-overlay-1 p-relative" data-background="{{ url('public/frontend/images/top-banner-en.jpeg') }}">
+                <div class="ms-br-30 mx-auto include__bg z-index-1 ms-overlay-1 p-relative" data-background="{{ url('public/frontend/images/top-banner2-en.jpg') }}">
                 @else
-                <div class="ms-br-30 mx-auto include__bg z-index-1 ms-overlay-1 p-relative" data-background="{{ url('public/frontend/images/top-banner-fr.jpeg') }}">
+                <div class="ms-br-30 mx-auto include__bg z-index-1 ms-overlay-1 p-relative" data-background="{{ url('public/frontend/images/top-banner2-fr.jpg') }}">
                 @endif
                     <div class="container">
                         <div class="row justify-content-center">
@@ -760,14 +760,17 @@
     window.addEventListener('load', () => {
         const popup = document.getElementById('popup');
         const closeBtn = document.getElementById('closeBtn');
+        if (!popup) { return; } // popup disabled from settings
 
         // Show popup
         popup.classList.add('active');
 
         // Close on click
-        closeBtn.addEventListener('click', () => {
-            popup.classList.remove('active');
-        });
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                popup.classList.remove('active');
+            });
+        }
 
         // Optional: Close when clicking outside the popup
         popup.addEventListener('click', (e) => {

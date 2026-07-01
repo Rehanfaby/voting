@@ -11,6 +11,24 @@
         <div class="alert alert-danger alert-dismissible text-center"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>{{ session()->get('not_permitted') }}</div>
     @endif
     <main>
+        <style>
+            .ms-vote-modern { background: radial-gradient(1100px 500px at 50% -10%, rgba(240,169,59,.10), transparent 60%); }
+            .ms-vote-modern .tab-content.ms-bg-2 { background: rgba(255,255,255,.04) !important; border:1px solid rgba(246,196,83,.28); border-radius:18px; box-shadow:0 18px 45px rgba(0,0,0,.35); overflow:hidden; padding:14px; }
+            .ms-vote-modern .product__modal-img img { border-radius:14px; width:100%; object-fit:cover; }
+            .ms-vote-modern .ms-product-modal-content { background: rgba(255,255,255,.04); border:1px solid rgba(246,196,83,.28); border-radius:18px; padding:34px 30px; box-shadow:0 18px 45px rgba(0,0,0,.35); }
+            .ms-vote-modern .ms-product-price { display:inline-block; background:linear-gradient(135deg,#f0a93b,#e2562a); color:#fff !important; font-size:15px; font-weight:700; padding:8px 16px; border-radius:30px; margin:0; }
+            .ms-vote-modern .ms-product-title2 a, .ms-vote-modern h2.ms-product-title2 { color:#fff !important; }
+            .ms-vote-modern .ms-is-product-stock { color:rgba(255,255,255,.82); }
+            .ms-vote-modern .ms-is-product-stock span { color:#f6c453; }
+            .ms-vote-modern .product-quantity-form { display:inline-flex; align-items:center; border:1px solid rgba(246,196,83,.5); border-radius:30px; overflow:hidden; background:rgba(0,0,0,.2); }
+            .ms-vote-modern .product-quantity-form .cart-minus, .ms-vote-modern .product-quantity-form .cart-plus { background:transparent; border:0; color:#f0a93b; width:44px; height:48px; font-size:15px; cursor:pointer; }
+            .ms-vote-modern .product-quantity-form .cart-input { width:64px; height:48px; text-align:center; border:0; background:transparent; color:#fff; font-size:18px; font-weight:700; }
+            .ms-vote-modern .ms-addto-cart-btn { background:linear-gradient(135deg,#f0a93b,#e2562a) !important; color:#fff !important; border:0; border-radius:30px; padding:14px 34px; font-weight:700; margin-left:16px; box-shadow:0 10px 24px rgba(226,86,42,.4); transition:transform .2s ease; }
+            .ms-vote-modern .ms-addto-cart-btn:hover { transform:translateY(-2px); }
+            .ms-vote-modern #payable-amount, .ms-vote-modern #payable-coin { color:#f0a93b !important; font-weight:800; }
+            .ms-vote-modern .nav-tabs .nav-link { color:rgba(255,255,255,.7); }
+            .ms-vote-modern .nav-tabs .nav-link.active { color:#f0a93b; border-color:transparent transparent #f0a93b; background:transparent; }
+        </style>
         <!-- page title area start  -->
         <section class="page-title-area page-title-spacing p-relative zindex-1" data-background="assets/img/shop/shop-page-title.jpg">
             <div class="ms-overlay ms-overlay9 p-absolute zindex--1"></div>
@@ -25,7 +43,7 @@
         <!-- page title area end  -->
 
         <!-- Products Area Start  -->
-        <div class="ms-product-area pt-130 pb-110 p-relative">
+        <div class="ms-product-area ms-vote-modern pt-130 pb-110 p-relative">
 
             <div class="container">
                 <div class="row mb-30">
@@ -36,7 +54,7 @@
                             <div class="tab-content br-15 ms-bg-2 d-flex align-items-center" id="modalTabContent">
                                 <div class="tab-pane fade active show" id="nav1" role="tabpanel" aria-labelledby="nav1-tab">
                                     <div class="product__modal-img w-img">
-                                        <img src="{{url('public/images/employee',$musician->image)}}" alt="product image">
+                                        <img src="{{url('public/images/employee',$musician->image)}}" alt="{{ $musician->name }}" loading="lazy" decoding="async">
                                     </div>
                                 </div>
                             </div>

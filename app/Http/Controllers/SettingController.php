@@ -170,6 +170,21 @@ class SettingController extends Controller
         $data['casting_countdown'] = $request->has('casting_countdown');
         $data['primes_countdown']  = $request->has('primes_countdown');
 
+        // Popup image upload (optional). Stored under public/uploads/popup.
+        if ($request->hasFile('popup_image')) {
+            $request->validate([
+                'popup_image' => 'image|mimes:jpg,jpeg,png,gif|max:8192',
+            ]);
+            $dir = public_path('uploads/popup');
+            if (!is_dir($dir)) {
+                @mkdir($dir, 0755, true);
+            }
+            $file = $request->file('popup_image');
+            $name = 'popup-' . time() . '.' . $file->getClientOriginalExtension();
+            $file->move($dir, $name);
+            $data['popup_image'] = 'uploads/popup/' . $name;
+        }
+
         // Casting rows
         $rows = [];
         $provinces = $request->input('province', []);

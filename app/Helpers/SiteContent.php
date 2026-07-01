@@ -58,6 +58,7 @@ class SiteContent
     public static function sectionKeys()
     {
         return [
+            'popup'              => 'Homepage Popup (flyer / announcement)',
             'weekly_contestants' => 'Qualified Contestants for the Week',
             'our_winners'        => 'Our Winners (show at end of competition)',
             'judges'             => 'Judges Section',
@@ -73,6 +74,7 @@ class SiteContent
     {
         return [
             'sections' => [
+                'popup'              => false, // enable when there's a flyer/announcement to show
                 'weekly_contestants' => true,
                 'our_winners'        => false, // only turned on at the end of the competition
                 'judges'             => true,
@@ -82,6 +84,8 @@ class SiteContent
                 'most_voted'         => true,
                 'top_five'           => true,
             ],
+            // Uploaded popup image (relative to public/), null = fall back to default flyer.
+            'popup_image' => null,
             // Countdown toggles (checkboxes in Settings > Site Content).
             'casting_countdown' => true,
             'primes_countdown'  => true,
@@ -162,6 +166,19 @@ class SiteContent
     {
         $all = self::all();
         return $all[$key] ?? $default;
+    }
+
+    /**
+     * Public URL of the popup image. Uses the admin-uploaded image when present,
+     * otherwise falls back to the bundled default flyer.
+     */
+    public static function popupImageUrl()
+    {
+        $img = self::get('popup_image');
+        if (!empty($img) && file_exists(public_path($img))) {
+            return url($img);
+        }
+        return asset('public/img/flayer.jpeg');
     }
 
     /** The next upcoming prime (for the countdown), or null. */
