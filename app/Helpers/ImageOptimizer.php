@@ -77,4 +77,21 @@ class ImageOptimizer
         self::optimize($path, $maxEdge, $quality);
         self::thumbnail($path, $thumbSize, 70);
     }
+
+    /**
+     * Public URL for a contestant photo, preferring the small /thumbs version
+     * (a few KB) when it exists so listings and carousels load fast. Falls back
+     * to the full-size original if no thumbnail has been generated yet.
+     */
+    public static function employeeImageUrl($filename, $preferThumb = true)
+    {
+        $filename = (string) $filename;
+        if ($preferThumb && $filename !== '') {
+            $thumbRel = 'public/images/employee/thumbs/' . $filename;
+            if (is_file(base_path($thumbRel))) {
+                return url($thumbRel);
+            }
+        }
+        return url('public/images/employee/' . $filename);
+    }
 }

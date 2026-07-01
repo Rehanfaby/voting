@@ -86,23 +86,28 @@
         </div>
         @endif
         <!-- Brand Song Area Start Here  -->
-        <section class="ms-song-area pt-40 pb-40">
+        <section class="ms-song-area ms-rank-area pt-40 pb-40">
             <div class="container-fluid ms-maw-1710">
+                @php
+                    // Rank contestants by their total votes (highest first).
+                    $ranked = $musicians->sortByDesc(function ($m) use ($vote_counts) {
+                        return $vote_counts[$m->id] ?? 0;
+                    })->values();
+                @endphp
                 <div class="swiper-container ms-song-active fix">
                     <div class="swiper-wrapper">
-                        @foreach($musicians as $key=>$musician)
+                        @foreach($ranked as $key=>$musician)
                             <div class="swiper-slide">
-                                <div class="ms-song-item">
-                                    <div class="ms-song-img p-relative">
+                                <div class="ms-rank-item">
+                                    <div class="ms-rank-avatar">
+                                        <span class="ms-rank-badge">{{ $key + 1 }}</span>
                                         <a href="{{ route('musician.data', $musician->id) }}">
-                                            <img src="{{url('public/images/employee',$musician->image)}}" alt="{{ $musician->name }}" loading="lazy" decoding="async">
+                                            <img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($musician->image) }}" alt="{{ $musician->name }}" width="180" height="180" loading="lazy" decoding="async">
                                         </a>
-                                        <span class="ms-song-num" title="{{ trans('file.Votes') }}"><i class="fa fa-vote-yea"></i> {{ number_format($vote_counts[$musician->id] ?? 0) }} {{ trans('file.Votes') }}</span>
                                     </div>
-                                    <div class="ms-song-content">
-                                        <h3 class="ms-song-title"><a href="{{ route('musician.data', $musician->id) }}">{{ $musician->name }}</a>
-                                        </h3>
-                                        <span class="ms-song-text"></span>
+                                    <div class="ms-rank-info">
+                                        <h3 class="ms-rank-name"><a href="{{ route('musician.data', $musician->id) }}">{{ $musician->name }}</a></h3>
+                                        <span class="ms-rank-votes"><i class="fa fa-vote-yea"></i> {{ number_format($vote_counts[$musician->id] ?? 0) }} {{ trans('file.Votes') }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -110,6 +115,23 @@
                     </div>
                 </div>
             </div>
+            <style>
+                .ms-rank-area { background: radial-gradient(900px 400px at 50% -30%, rgba(246,196,83,.08), transparent 60%); }
+                .ms-rank-item { text-align:center; padding:12px 6px 18px; }
+                .ms-rank-avatar { position:relative; width:180px; height:180px; margin:0 auto 16px; border-radius:50%; padding:6px;
+                    background:linear-gradient(145deg,#f6c453,#e0a021);
+                    box-shadow:0 0 0 6px #12294d, 0 0 30px rgba(246,196,83,.5); }
+                .ms-rank-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; display:block; border:3px solid #12294d; background:#0d1f3c; }
+                .ms-rank-badge { position:absolute; top:2px; left:2px; z-index:2; min-width:34px; height:34px; line-height:30px; padding:0 8px;
+                    border-radius:20px; background:#12294d; color:#f6c453; font-weight:800; font-size:15px; text-align:center;
+                    border:2px solid #f6c453; box-shadow:0 3px 8px rgba(0,0,0,.35); }
+                .ms-rank-name { font-size:18px; font-weight:700; margin:0 0 5px; line-height:1.25; }
+                .ms-rank-name a { color:#fff; }
+                .ms-rank-name a:hover { color:#f6c453; }
+                .ms-rank-votes { display:inline-block; color:#f6c453; font-weight:700; font-size:13px; letter-spacing:.6px; text-transform:uppercase; }
+                .ms-rank-votes i { margin-right:4px; }
+                @media (max-width:575px){ .ms-rank-avatar { width:140px; height:140px; } .ms-rank-name { font-size:16px; } }
+            </style>
         </section>
         <!-- Brand Song Area End Here  -->
 
@@ -117,11 +139,8 @@
         <section class="ms-banner-area p-relative">
             <a class="ms-scroll-down" href="#">{{trans('file.SCROLL DOWN')}}</a>
             <div class="container-fluid ms-maw-1710">
-                @if(\App::getLocale() == 'en')
-                <div class="ms-br-30 mx-auto include__bg z-index-1 ms-overlay-1 p-relative" data-background="{{ url('public/frontend/images/top-banner2-en.jpg') }}">
-                @else
-                <div class="ms-br-30 mx-auto include__bg z-index-1 ms-overlay-1 p-relative" data-background="{{ url('public/frontend/images/top-banner2-fr.jpg') }}">
-                @endif
+                @php $sc_hero = \App::getLocale() == 'en' ? url('public/frontend/images/top-banner2-en.jpg') : url('public/frontend/images/top-banner2-fr.jpg'); @endphp
+                <div class="ms-br-30 mx-auto include__bg z-index-1 ms-overlay-1 p-relative" data-background="{{ $sc_hero }}" style="background-image:url('{{ $sc_hero }}'); background-size:cover; background-position:center;">
                     <div class="container">
                         <div class="row justify-content-center">
                             <div class="col-xl-11">
@@ -175,7 +194,7 @@
                             <div class="ms-fun-brand-item ms-fun-border" style="cursor: pointer">
                                 <div class="ms-fun-brand-top mb-20">
                                     <div class="ms-fun-brand-thumb">
-                                        <img src="{{url('public/images/employee',$musician->image)}}">
+                                        <img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($musician->image) }}" loading="lazy" decoding="async">
                                     </div>
                                     <div class="ms-fun-brand-content">
                                         <h3 class="ms-fun-brand-title">
@@ -229,7 +248,7 @@
                                     @endif
                                 </div>
                                 <div class="ms-winner-thumb">
-                                    <img src="{{ url('public/images/employee', $winner->image) }}" alt="{{ $winner->name }}" loading="lazy" decoding="async">
+                                    <img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($winner->image) }}" alt="{{ $winner->name }}" loading="lazy" decoding="async">
                                 </div>
                                 <div class="ms-winner-place">
                                     @if($key == 0) 1st @elseif($key == 1) 2nd @else 3rd @endif
@@ -303,7 +322,7 @@
                                                 <div class="ms-popular__item p-relative mb-30">
                                                     <div class="ms-popular__thumb">
                                                         <div class="ms-popular-overlay"></div>
-                                                        <a ><img src="{{url('public/images/employee',$contentant->image)}}" ></a>
+                                                        <a ><img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($contentant->image) }}" loading="lazy" decoding="async"></a>
                                                         <a class="ms-popular__link">
                                                             <span class="ms-popular-icon"><i class="fa-regular fa-arrow-right-long"></i></span>
                                                         </a>
@@ -420,7 +439,7 @@
                                                 <div class="ms-popular__item p-relative mb-30">
                                                     <div class="ms-popular__thumb" style="border-radius: 10%;">
                                                         <div class="ms-popular-overlay"></div>
-                                                        <a ><img src="{{url('public/images/employee',$ambassador->image)}}" ></a>
+                                                        <a ><img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($ambassador->image) }}" loading="lazy" decoding="async"></a>
                                                         <a class="ms-popular__link">
                                                             <span class="ms-popular-icon"><i class="fa-regular fa-arrow-right-long"></i></span>
                                                         </a>
@@ -858,7 +877,7 @@
                             <div class="ms-cta-item">
                                 <div class="ms-cta-img ms-popular__thumb">
                                     @if($best_musician)
-                                        <img src="{{url('public/images/employee',$best_musician->image)}}">
+                                        <img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($best_musician->image) }}" loading="lazy" decoding="async">
                                     @endif
                                 </div>
                             </div>
@@ -901,7 +920,7 @@
                                                     <div class="ms-popular__thumb" style="border-radius: 10%;">
                                                         <div class="ms-popular-overlay"></div>
 
-                                                        <a ><img src="{{url('public/images/employee',$best_musician->image)}}" ></a>
+                                                        <a ><img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($best_musician->image) }}" loading="lazy" decoding="async"></a>
                                                         <a class="ms-popular__link" href="{{ route('musician.data', $best_musician->id) }}">
                                                             <span class="ms-popular-icon"><i class="fa-regular fa-arrow-right-long"></i></span>
                                                         </a>

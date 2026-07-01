@@ -54,7 +54,7 @@
                             <div class="ms-team-item p-relative">
                                 <div class="ms-team-img">
                                     <a href="{{ route('musician.data', $musician->id) }}">
-                                        <img src="{{url('public/images/employee',$musician->image)}}" alt="team image">
+                                        <img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($musician->image) }}" alt="team image" loading="lazy" decoding="async">
                                     </a>
                                 </div>
                                 <h3 class="ms-team-title"><a href="{{ route('musician.data', $musician->id) }}">{{ $musician->name }}</a>

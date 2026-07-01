@@ -243,7 +243,7 @@
                                             <div class="ms-popular__item p-relative mb-30">
                                                 <div class="ms-popular__thumb">
                                                     <div class="ms-popular-overlay"></div>
-                                                    <a href="{{ route('musician.data', $contentant->id) }}"><img src="{{url('public/images/employee',$contentant->image)}}" alt="popular band"></a>
+                                                    <a href="{{ route('musician.data', $contentant->id) }}"><img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($contentant->image) }}" alt="popular band" loading="lazy" decoding="async"></a>
                                                     <a href="{{ route('musician.data', $contentant->id) }}" class="ms-popular__link">
                                                         <span class="ms-popular-icon"><i class="fa-regular fa-arrow-right-long"></i></span>
                                                     </a>

@@ -45,7 +45,7 @@
                                     @foreach($votes as $vote)
                                         <tr>
                                             <td class="ms-product-name-flex">
-                                                <img src="{{ url('public/images/employee', $vote->musicians->image) }}" alt="{{trans("file.Contestant")}}" style="width: 100px">
+                                                <img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($vote->musicians->image) }}" alt="{{trans("file.Contestant")}}" style="width: 100px" loading="lazy" decoding="async">
                                                 <span>{{ $vote->musicians->name }}</span>
                                             </td>
                                             <td>{{ $vote->vote }}</td>

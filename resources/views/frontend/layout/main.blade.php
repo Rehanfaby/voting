@@ -216,7 +216,7 @@
                                                 @foreach($contestents as $contestent)
                                                 <div class="ms-song-item">
                                                     <div class="ms-song-img p-relative">
-                                                        <a href="{{ route('musician.data', $contestent->id) }}"><img src="{{url('public/images/employee',$contestent->image)}}" alt="{{trans('file.Contestants name')}}"></a>
+                                                        <a href="{{ route('musician.data', $contestent->id) }}"><img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($contestent->image) }}" alt="{{trans('file.Contestants name')}}" loading="lazy" decoding="async"></a>
                                                     </div>
                                                     <div class="ms-song-content">
                                                         <h3 class="ms-song-title">
