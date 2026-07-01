@@ -66,7 +66,7 @@
                         <div class="ms-product-modal-content mb-60">
                             <div class="d-flex align-items-center justify-content-between mb-35 mr-40">
                                 <h3 class="ms-product-price">{{trans("file.Ticket Price")}}: {{ number_format($ticket->price, 2) }}</h3>
-                                <h3 class="ms-product-date">{{trans("file.Event Day")}}: {{ $ticket->event_day }}</h3>
+                                <h3 class="ms-product-date">{{trans("file.Deadline")}}: {{ $ticket->event_day }}</h3>
                             </div>
                             <h2 class="ms-product-title2 mb-30">
                                 <a href="$">{{ $ticket->name }}</a>

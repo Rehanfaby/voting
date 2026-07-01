@@ -11632,4 +11632,14 @@ Animate Underline
   }
 }
 
+.register-attention-btn i {
+    animation: bounceIcon 1s infinite;
+}
+
+@keyframes bounceIcon {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+}
+
+
 /*# sourceMappingURL=main.css.map */

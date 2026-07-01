@@ -1,7 +1,6 @@
 <?php
 return [
 	"dashboard" => "Tableau de bord",
-
 	"language" => "La langue",
 	"revenue" => "Revenu",
 	"product" => "Produit",
@@ -194,6 +193,8 @@ return [
 	"Forgot Password?" => "Mot de passe oublié?",
 	"Do not have an account?" => "Vous n'avez pas de compte?",
 	"Register" => "registre",
+	"Register Now!" => "Inscrivez-vous maintenant !",
+	"Our Winners" => "Nos gagnants",
 	"Expense Category" => "Catégorie de dépenses",
 	"Expense" => "Frais",
 	"Gift Card" => "Carte cadeau",
@@ -446,6 +447,8 @@ return [
 	"Role Permission" => "Permission de rôle",
 	"Exclusive: Poduct price = Actual product price + Tax. Inclusive: Actual product price = Product price - Tax" => "Exclusif: Prix du produit = Prix du produit réel + taxes. Inclus: Prix du produit réel = Prix du produit - Taxes.",
 	"Accounting" => "Comptabilité",
+	"Provincial Casting Calendar 2025" => "Calendrier provincial des castings 2025",
+    "Here's A Draft Schedule For The Mulema Gospel Casting By Province In March And April." => "Projet de planning des auditions gospel Mulema par province – mars et avril.",
 	"Account" => "Compte",
 	"Account List" => "Liste de compte",
 	"Add Account" => "Ajouter un compte",
@@ -716,7 +719,7 @@ return [
 	"Vote for your favourite Contestant" => "Votez pour votre candidat préféré",
 	"Discover Talents" => "Découvrez des talents",
 	"Mulema The Gospel Show" => "Mulema Le Spectacle Gospel",
-	"Mumela the" => "Mumela le",
+	"Mulema the" => "Mulema le",
 	"Gospel" => "Évangile",
 	"Mulema" => "Mulema",
 	"Gospel Show" => "Spectacle Gospel",
@@ -840,5 +843,6 @@ return [
     "Contestant Grading" => "Notation des candidats",
     "Generate Elimination List" => "Générer la liste d’élimination",
     "Elimination list" => "Liste d’élimination",
+   
 ];
 ?>

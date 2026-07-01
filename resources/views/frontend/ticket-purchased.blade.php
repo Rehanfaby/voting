@@ -54,7 +54,7 @@
                                             <td>{{ $ticket->status == 0 ? 'pending' : 'complete' }}</td>
                                             <td>{{ $ticket->seat_numbers }}</td>
                                             <td>{{ $ticket->created_at }}</td>
-                                            <td>{{ $ticket->product->event_day }}</td>
+                                            <td>{{ $ticket->product->Deadline }}</td>
                                         </tr>
                                     @endforeach
                                     </tbody>

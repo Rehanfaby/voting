@@ -206,37 +206,6 @@ class Controller extends BaseController
     }
 
     public function wpMessage($number, $msg){
-
-        if (env('WHATSAPP_SERVICE') == 'WASENDER') {
-            $apiUrl = "https://wasenderapi.com/api/send-message";
-            $apiKey = env('WASENDER_API_KEY');
-
-            $payload = [
-                "to" => $number,
-                "text" => $msg
-            ];
-
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $apiUrl);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-            curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                "Authorization: Bearer " . $apiKey,
-                "Content-Type: application/json",
-                "Accept: application/json"
-            ]);
-
-            $response = curl_exec($ch);
-
-            if (curl_errno($ch)) {
-                return response()->json(['error' => curl_error($ch)], 500);
-            }
-
-            curl_close($ch);
-            return $response;
-        }
-
         $params= [
             'token' => getenv('ULTRAMSG_TOKEN'),
             'to' => $number,
@@ -266,62 +235,7 @@ class Controller extends BaseController
     }
 
 
-    public function wpAttachMessage($path, $number, $filename='compile_result.pdf', $wa_path = null){
-        if (env('WHATSAPP_SERVICE') == 'WASENDER') {
-            $apiKey = env('WASENDER_API_KEY'); // store key in .env
-            $apiUrl = 'https://www.wasenderapi.com/api/send-message';
-
-            // Detect file type automatically
-            $type = $this->detectFileType($path);
-
-            $payload = [
-                'to' => $number
-            ];
-
-            if ($wa_path) {
-                switch ($type) {
-                    case 'image':
-                        $payload['imageUrl'] = $wa_path;
-                        break;
-                    case 'video':
-                        $payload['videoUrl'] = $wa_path;
-                        break;
-                    case 'audio':
-                        $payload['audioUrl'] = $wa_path;
-                        break;
-                    case 'sticker':
-                        $payload['stickerUrl'] = $wa_path;
-                        break;
-                    default:
-                        $payload['documentUrl'] = $wa_path;
-                        break;
-                }
-
-                // Send request via cURL
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, $apiUrl);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_POST, true);
-                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-                curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                    'Authorization: Bearer ' . $apiKey,
-                    'Content-Type: application/json',
-                    'Accept: application/json'
-                ]);
-
-                $response = curl_exec($ch);
-
-                if (curl_errno($ch)) {
-                    return ['status' => 'error', 'message' => curl_error($ch)];
-                }
-
-                curl_close($ch);
-
-                $result = json_decode($response, true);
-                return $result;
-            }
-            return false;
-        }
+    public function wpAttachMessage($path, $number, $filename='compile_result.pdf'){
         $instance=getenv('ULTRAMSG_INSTANCE');
         $token=getenv('ULTRAMSG_TOKEN');
         $to=$number;
@@ -356,24 +270,6 @@ class Controller extends BaseController
         return true;
     }
 
-    public function detectFileType($fileUrl)
-    {
-        $ext = strtolower(pathinfo(parse_url($fileUrl, PHP_URL_PATH), PATHINFO_EXTENSION));
-
-        $imageExts = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
-        $videoExts = ['mp4', 'mov', 'avi', 'mkv'];
-        $audioExts = ['mp3', 'ogg', 'wav', 'aac'];
-        $stickerExts = ['webp'];
-        $docExts = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt'];
-
-        if (in_array($ext, $imageExts)) return 'image';
-        if (in_array($ext, $videoExts)) return 'video';
-        if (in_array($ext, $audioExts)) return 'audio';
-        if (in_array($ext, $stickerExts)) return 'sticker';
-        if (in_array($ext, $docExts)) return 'document';
-
-        return 'document'; // default fallback
-    }
 
     public function wpPDFMessage($path, $lims_customer_data, $filename='invoice.pdf'){
         $instance=getenv('ULTRAMSG_INSTANCE');

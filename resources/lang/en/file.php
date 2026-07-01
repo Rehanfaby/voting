@@ -507,6 +507,9 @@ return [
 	'Ordered' => 'Ordered',
 	'No Tax' => 'No Tax',
 	'Sent' => 'Sent',
+	'Our Winners' => 'Our Winners',
+	'.' => '.',
+	
 	"Draft" => "Draft",
 	"Stock Value by Price" => "Stock Value by Price",
 	"Stock Value by Cost" => "Stock Value by Cost",
@@ -695,12 +698,12 @@ return [
 	"Station Code" => "Station Code",
 	"Initial page" => "Initial page",
 
-
     "Drag" => "Drag",
     "Home" => "Home",
     "My Votes" => "My Votes",
     "My Contestants" => "My Contestants",
     "Vote your Candidate" => "Vote your Candidate",
+    'Register Now!' => "Register Now!",
     "Contact Us" => "Contact Us",
     "About Us" => "About Us",
     "Vote your favourite candidate" => "Vote your favourite candidate",
@@ -826,7 +829,7 @@ return [
 	"Vote for your favourite Contestant" => "Vote for your favourite Contestant",
 	"Discover Talents" => "Discover Talents",
 	"Mulema The Gospel Show" => "Mulema The Gospel Show",
-	"Mumela the" => "Mumela the",
+	"Mulema the" => "Mulema the",
 	"Gospel" => "Gospel",
 	"Mulema" => "Mulema",
 	"Gospel Show" => "Gospel Show",
@@ -881,7 +884,6 @@ return [
     "Top Five Contestants" => "Top Five Contestants",
     "Pay By Visa or Master Card" => "Pay By Visa or Master Card",
     "Minimum amount for stripe is" => "Minimum amount for stripe is",
-    "For free tickets use MOMO or OM method" => "For free tickets use MOMO or OM method",
 
 	"Buy Tickets" => "Buy Tickets",
 	"Ticket" => "Ticket",

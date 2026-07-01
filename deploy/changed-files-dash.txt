@@ -1,0 +1,4 @@
+public/css/admin-modern.css
+resources/views/layout/main.blade.php
+resources/views/layout/top-head.blade.php
+resources/views/index.blade.php

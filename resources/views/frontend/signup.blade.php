@@ -121,7 +121,7 @@
     <!-- login Area End Here  -->
 
     <!-- Partner Area Start Here  -->
-    <div class="ms-partner-area fix pt-80 pb-130">
+    <!--div class="ms-partner-area fix pt-80 pb-130">
         <div class="container">
             <div class="swiper-container ms-partner-active">
                 <div class="swiper-wrapper">
