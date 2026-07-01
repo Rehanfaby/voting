@@ -19,16 +19,16 @@
                         <h4><i class="dripicons-view-list"></i> Homepage Sections</h4>
                     </div>
                     <div class="card-body">
-                        <p class="italic"><small>Turn homepage sections on or off. Disabled sections are hidden from visitors.</small></p>
+                        <p class="italic"><small>Turn homepage sections on or off. Disabled sections are hidden from visitors. <strong>Changes save instantly</strong> as soon as you flip a switch.</small></p>
                         <div class="row">
                             @foreach($section_labels as $key => $label)
                                 <div class="col-md-6 col-lg-4">
                                     <div class="sc-toggle">
                                         <label class="sc-switch">
-                                            <input type="checkbox" name="sections[{{ $key }}]" value="1" {{ !empty($content['sections'][$key]) ? 'checked' : '' }}>
+                                            <input type="checkbox" name="sections[{{ $key }}]" value="1" data-section-toggle="{{ $key }}" {{ !empty($content['sections'][$key]) ? 'checked' : '' }}>
                                             <span class="sc-slider"></span>
                                         </label>
-                                        <span class="sc-toggle-label">{{ $label }}</span>
+                                        <span class="sc-toggle-label">{{ $label }} <small class="sc-toggle-status"></small></span>
                                     </div>
                                 </div>
                             @endforeach
@@ -207,6 +207,10 @@
     .sc-menu-item { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 14px; margin-bottom:8px; background:#f3f6fc; border:1px solid #dbe4f3; border-radius:8px; }
     .sc-menu-label { font-weight:600; color:#14223f; }
     .sc-menu-actions .btn { padding:2px 8px; }
+    .sc-toggle-status { margin-left:6px; font-weight:600; opacity:0; transition:opacity .2s; }
+    .sc-toggle-status.show { opacity:1; }
+    .sc-toggle-status.ok { color:#16a34a; }
+    .sc-toggle-status.err { color:#dc2626; }
 </style>
 
 <script type="text/javascript">
@@ -244,6 +248,36 @@
             var item = $(this).closest('.sc-menu-item');
             var next = item.next('.sc-menu-item');
             if (next.length) { item.insertAfter(next); }
+        });
+
+        // Instantly persist section on/off toggles (no need to press Submit).
+        var toggleUrl = "{{ route('setting.site_content.toggle') }}";
+        var csrf = $('input[name=_token]').first().val();
+        $(document).on('change', 'input[data-section-toggle]', function () {
+            var $input  = $(this);
+            var key     = $input.data('section-toggle');
+            var enabled = $input.is(':checked') ? 1 : 0;
+            var $status = $input.closest('.sc-toggle').find('.sc-toggle-status');
+            $input.prop('disabled', true);
+            $status.removeClass('ok err').addClass('show').text('Saving…');
+            $.ajax({
+                url: toggleUrl,
+                type: 'POST',
+                data: { _token: csrf, key: key, enabled: enabled }
+            }).done(function (res) {
+                if (res && res.ok) {
+                    $status.addClass('ok').text(enabled ? 'Enabled ✓' : 'Disabled ✓');
+                } else {
+                    $input.prop('checked', !enabled);
+                    $status.addClass('err').text('Not saved');
+                }
+            }).fail(function () {
+                $input.prop('checked', !enabled);
+                $status.addClass('err').text('Not saved');
+            }).always(function () {
+                $input.prop('disabled', false);
+                setTimeout(function () { $status.removeClass('show'); }, 2500);
+            });
         });
     })();
 </script>

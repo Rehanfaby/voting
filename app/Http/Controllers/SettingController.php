@@ -240,6 +240,30 @@ class SettingController extends Controller
         return redirect()->back()->with('message', 'Site content updated successfully');
     }
 
+    /**
+     * Instantly persist a single homepage section on/off toggle (AJAX).
+     * Lets the switches take effect the moment they are flipped, without
+     * requiring the user to scroll down and press Submit.
+     */
+    public function siteContentToggle(Request $request)
+    {
+        $key = (string) $request->input('key');
+        $enabled = filter_var($request->input('enabled'), FILTER_VALIDATE_BOOLEAN);
+
+        if (!array_key_exists($key, SiteContent::sectionKeys())) {
+            return response()->json(['ok' => false, 'message' => 'Unknown section'], 422);
+        }
+
+        $data = SiteContent::all();
+        if (!isset($data['sections']) || !is_array($data['sections'])) {
+            $data['sections'] = [];
+        }
+        $data['sections'][$key] = $enabled;
+        SiteContent::save($data);
+
+        return response()->json(['ok' => true, 'key' => $key, 'enabled' => $enabled]);
+    }
+
     public function rewardPointSetting()
     {
         $lims_reward_point_setting_data = RewardPointSetting::latest()->first();

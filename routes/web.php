@@ -197,6 +197,7 @@ Route::group(['middleware' => ['auth', 'active']], function() {
 
 	Route::get('setting/site_content', 'SettingController@siteContent')->name('setting.site_content');
 	Route::post('setting/site_content_store', 'SettingController@siteContentStore')->name('setting.site_content.store');
+	Route::post('setting/site_content_toggle', 'SettingController@siteContentToggle')->name('setting.site_content.toggle');
 	Route::get('setting/general_setting', 'SettingController@generalSetting')->name('setting.general');
     Route::get('setting/grading_setting', 'SettingController@gradingSetting')->name('setting.grading');
 	Route::post('setting/general_setting_store', 'SettingController@generalSettingStore')->name('setting.generalStore');
