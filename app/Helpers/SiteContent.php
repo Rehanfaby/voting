@@ -62,7 +62,8 @@ class SiteContent
             'weekly_contestants' => 'Qualified Contestants for the Week',
             'our_winners'        => 'Our Winners (show at end of competition)',
             'judges'             => 'Judges Section',
-            'casting'            => 'Provincial Casting Calendar & Finals',
+            'casting'            => 'Provincial Casting Calendar',
+            'finals'             => 'Finals Schedule (Primes)',
             'ambassadors'        => 'Meet Our Ambassadors',
             'partners'           => 'Partners / Sponsors',
             'most_voted'         => 'Most Voted Contestant of the Week',
@@ -79,6 +80,7 @@ class SiteContent
                 'our_winners'        => false, // only turned on at the end of the competition
                 'judges'             => true,
                 'casting'            => true,
+                'finals'             => true,
                 'ambassadors'        => true,
                 'partners'           => true,
                 'most_voted'         => true,

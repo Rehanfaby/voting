@@ -167,8 +167,16 @@ class HomeController extends Controller
             $see_votes = true;
         }
 
+        // Total valid (paid) votes per contestant, keyed by musician id, for the
+        // top carousel. Without this the view falls back to 0 for everyone.
+        $vote_counts = DB::table('votes')
+            ->select('musician_id', DB::raw('SUM(vote) as total_vote'))
+            ->where('status', true)
+            ->groupBy('musician_id')
+            ->pluck('total_vote', 'musician_id')
+            ->toArray();
 
-        return view('frontend.home', compact('musicians', 'judges', 'best_musician', 'see_votes', 'ambassadors', 'best_musicians', 'best_musician_data'));
+        return view('frontend.home', compact('musicians', 'judges', 'best_musician', 'see_votes', 'ambassadors', 'best_musicians', 'best_musician_data', 'vote_counts'));
     }
 
     public function signup()

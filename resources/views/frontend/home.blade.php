@@ -97,7 +97,7 @@
                                         <a href="{{ route('musician.data', $musician->id) }}">
                                             <img src="{{url('public/images/employee',$musician->image)}}" alt="{{ $musician->name }}" loading="lazy" decoding="async">
                                         </a>
-                                        <span class="ms-song-num" title="{{ trans('file.Votes') }}"><i class="fa fa-vote-yea"></i> {{ $vote_counts[$musician->id] ?? 0 }}</span>
+                                        <span class="ms-song-num" title="{{ trans('file.Votes') }}"><i class="fa fa-vote-yea"></i> {{ number_format($vote_counts[$musician->id] ?? 0) }} {{ trans('file.Votes') }}</span>
                                     </div>
                                     <div class="ms-song-content">
                                         <h3 class="ms-song-title"><a href="{{ route('musician.data', $musician->id) }}">{{ $musician->name }}</a>
@@ -445,23 +445,41 @@
 
 
         <!-- Special Events Area Start -->
-        @if(\App\Helpers\SiteContent::enabled('casting'))
+        @php
+            $sc_casting_on       = \App\Helpers\SiteContent::enabled('casting');
+            $sc_finals_on        = \App\Helpers\SiteContent::enabled('finals');
+            $sc_casting_title    = \App\Helpers\SiteContent::get('casting_title', 'Provincial Casting Calendar');
+            $sc_casting_subtitle = \App\Helpers\SiteContent::get('casting_subtitle', "Here's the draft schedule for the Mulema Gospel casting by province.");
+            $sc_casting_rows     = \App\Helpers\SiteContent::get('casting_rows', []);
+        @endphp
+        @if($sc_casting_on || $sc_finals_on)
         <section class="ms-casting-area pt-130 pb-130">
             <div class="container">
+                @if($sc_casting_on)
                 <div class="row justify-content-center bdFadeUp">
                     <div class="col-lg-8">
                         <div class="section__title-wrapper mb-60 text-center bd-title-anim">
                             <span class="section__subtitle">{{ trans('file.Casting Tour') ?? 'Casting Tour' }}</span>
-                            <h2 class="section__title">Provincial Casting
-                                <span class="animated-underline active">Calendar</span> 2025
-                            </h2>
-                            <p class="casting-lead">Here's the draft schedule for the Mulema Gospel casting by province across March and April.</p>
+                            <h2 class="section__title"><span class="animated-underline active">{{ $sc_casting_title }}</span></h2>
+                            @if(!empty($sc_casting_subtitle))
+                            <p class="casting-lead">{{ $sc_casting_subtitle }}</p>
+                            @endif
                         </div>
                     </div>
                 </div>
 
-                <div class="row bdFadeUp">
-                    @php
+                @php
+                    $castingSchedule = [];
+                    if (!empty($sc_casting_rows) && is_array($sc_casting_rows)) {
+                        foreach ($sc_casting_rows as $r) {
+                            $castingSchedule[] = [
+                                'province' => $r['province'] ?? '',
+                                'city'     => $r['venue'] ?? ($r['city'] ?? ''),
+                                'date'     => $r['date'] ?? '',
+                            ];
+                        }
+                    }
+                    if (empty($castingSchedule)) {
                         $castingSchedule = [
                             ['province' => 'Far North',   'city' => 'Maroua',     'date' => 'March 15–16, 2025'],
                             ['province' => 'North',        'city' => 'Garoua',     'date' => 'March 22–23, 2025'],
@@ -474,8 +492,10 @@
                             ['province' => 'South',        'city' => 'Ebolowa',    'date' => 'April 19–20, 2025'],
                             ['province' => 'Centre',       'city' => 'Yaoundé',    'date' => 'April 26–27, 2025'],
                         ];
-                    @endphp
+                    }
+                @endphp
 
+                <div class="row bdFadeUp">
                     @foreach($castingSchedule as $stop)
                         <div class="col-xl-4 col-lg-4 col-md-6">
                             <div class="casting-card">
@@ -491,7 +511,10 @@
                         </div>
                     @endforeach
                 </div>
+                @endif
+                {{-- End Provincial Casting Calendar --}}
 
+                @if($sc_finals_on)
                 <div class="row justify-content-center bdFadeUp mt-50">
                     <div class="col-lg-8">
                         <div class="section__title-wrapper mb-40 text-center bd-title-anim">
@@ -573,6 +596,8 @@
                         </div>
                     </div>
                 </div>
+                @endif
+                {{-- End Finals Schedule --}}
             </div>
 
             <style>
