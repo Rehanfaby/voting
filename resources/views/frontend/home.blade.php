@@ -278,6 +278,7 @@
 
 
         <!-- judge  area start -->
+        @if(\App\Helpers\SiteContent::enabled('judges'))
         <section class="ms-fun-brand ms-bg-2 pb-130 pt-125">
             <div class="container">
                 <div class="row align-items-end mb-25 bdFadeUp">
@@ -322,6 +323,7 @@
                 </div>
             </div>
         </section>
+        @endif
         <!-- judge  area end -->
 
 
@@ -393,6 +395,7 @@
         <!-- Text scroll area end -->
 
         <!-- Ambassador  area start -->
+        @if(\App\Helpers\SiteContent::enabled('ambassadors'))
         <section class="ms-fun-brand ms-bg-2 pb-130 pt-125">
             <div class="container">
                 <div class="row align-items-end mb-25 bdFadeUp">
@@ -437,10 +440,12 @@
                 </div>
             </div>
         </section>
+        @endif
         <!-- Ambassador  area end -->
 
 
         <!-- Special Events Area Start -->
+        @if(\App\Helpers\SiteContent::enabled('casting'))
         <section class="ms-casting-area pt-130 pb-130">
             <div class="container">
                 <div class="row justify-content-center bdFadeUp">
@@ -550,10 +555,10 @@
                         <div class="casting-timeline">
                             @php
                                 $finals = [
-                                    ['label' => 'Prime 1',     'date' => 'August 9',  'icon' => 'fa-microphone-lines'],
-                                    ['label' => 'Prime 2',     'date' => 'August 17', 'icon' => 'fa-music'],
-                                    ['label' => 'Prime 3',     'date' => 'August 23', 'icon' => 'fa-star'],
-                                    ['label' => 'Final Prime', 'date' => 'August 30', 'icon' => 'fa-crown'],
+                                    ['label' => 'Prime 1',     'date' => 'August 9, 2026',  'icon' => 'fa-microphone-lines'],
+                                    ['label' => 'Prime 2',     'date' => 'August 17, 2026', 'icon' => 'fa-music'],
+                                    ['label' => 'Prime 3',     'date' => 'August 23, 2026', 'icon' => 'fa-star'],
+                                    ['label' => 'Final Prime', 'date' => 'August 30, 2026', 'icon' => 'fa-crown'],
                                 ];
                             @endphp
                             @foreach($finals as $i => $final)
@@ -657,9 +662,11 @@
                 }
             </style>
         </section>
+        @endif
         <!-- Special Events Area End -->
 
         <!-- Partner Area Start Here  -->
+        @if(\App\Helpers\SiteContent::enabled('partners'))
         <section class="ms-partner-area fix pb-130">
     <div class="container">
         <div class="row justify-content-center bdFadeUp">
@@ -800,9 +807,11 @@
 }
 </style>
 
+        @endif
         <!-- Partner Area End Here  -->
 
         <!-- CTA Area Start Here  -->
+        @if(\App\Helpers\SiteContent::enabled('most_voted'))
         <section class="ms-cta-area ms-cta--120 p-relative zindex-10">
             <div class="container">
                 <div class="ms-cta-bg include__bg ms-cta-overlay zindex-1 fix"  data-background="{{ url('public/frontend/images/sound-bg.png') }}">
@@ -835,8 +844,10 @@
                 </div>
             </div>
         </section>
+        @endif
 
         <!-- Ambassador  area start -->
+        @if(\App\Helpers\SiteContent::enabled('top_five'))
         <section class="ms-fun-brand ms-bg-2 pb-130 pt-125">
             <div class="container">
                 <div class="row align-items-end mb-25 bdFadeUp">
@@ -896,6 +907,7 @@
                 </div>
             </div>
         </section>
+        @endif
         <!-- Ambassador  area end -->
         <!-- CTA Area End Here  -->
 
