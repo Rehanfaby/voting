@@ -228,9 +228,9 @@
                 <div class="row justify-content-center bdFadeUp">
                     <div class="col-xl-8">
                         <div class="section__title-wrapper mb-65 text-center bd-title-anim">
-                            <span class="section__subtitle"><i class="fa-solid fa-trophy"></i> {{ trans('file.Grand Champions') ?? 'Grand Champions' }}</span>
+                            <span class="section__subtitle"><i class="fa-solid fa-trophy"></i> {{ trans('file.Grand Champions') }}</span>
                             <h2 class="section__title">
-                                {{ trans('file.Our') ?? 'Our' }} <span class="animated-underline active">{{ trans('file.Winners') ?? 'Winners' }}!</span>
+                                {{ trans('file.Our') }} <span class="animated-underline active">{{ trans('file.Winners') }}!</span>
                             </h2>
                         </div>
                     </div>
@@ -298,58 +298,73 @@
 
         <!-- judge  area start -->
         @if(\App\Helpers\SiteContent::enabled('judges'))
-        <section class="ms-judges-area pb-130 pt-125">
+        <section class="ms-fun-brand ms-bg-2 ms-judges-section pb-130 pt-125">
             <div class="container">
                 <div class="row align-items-end mb-25 bdFadeUp">
-                    <div class="col-xl-8 col-lg-8 mx-auto text-center">
+                    <div class="col-xl-6 col-lg-6">
                         <div class="section__title-wrapper mb-40 bd-title-anim">
                             <span class="section__subtitle">{{trans('file.Our Seasoned Judges')}}</span>
                             <h2 class="section__title msg_title">
-                                <span class="animated-underline active"></span>
+                                <span class="animated-underline active"></span> <br>
+
                             </h2>
                         </div>
                     </div>
                 </div>
-                <div class="row justify-content-center bdFadeUp">
-                    @foreach($judges as $judge)
-                        @php $flagUrl = \App\Helpers\CountryFlag::url($judge->country, 28); @endphp
-                        <div class="col-6 col-md-4 col-lg-3 mb-4">
-                            <div class="ms-judge-card text-center">
-                                <div class="ms-judge-avatar mx-auto">
-                                    @if($judge->image)
-                                        <img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($judge->image) }}" alt="{{ $judge->name }}" width="160" height="160" loading="lazy" decoding="async">
-                                    @else
-                                        <span class="ms-judge-placeholder"><i class="fa fa-user"></i></span>
-                                    @endif
+                <div class="row bdFadeUp">
+                    <div class="col-xxl-12">
+                        <div class="tab-content" id="nav-tabContent">
+                            <div class="tab-pane fade show active" id="nav-popular-1" role="tabpanel" aria-labelledby="nav-popular-1-tab" tabindex="0">
+                                <div class="swiper-container ms-popular-active fix">
+                                    <div class="swiper-wrapper">
+                                        @foreach($judges as $contentant)
+                                            @php $flagUrl = \App\Helpers\CountryFlag::url($contentant->country, 24); @endphp
+                                            <div class="swiper-slide">
+                                                <div class="ms-popular__item p-relative mb-30">
+                                                    <div class="ms-popular__thumb ms-judge-glow">
+                                                        <div class="ms-popular-overlay"></div>
+                                                        <a><img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($contentant->image) }}" alt="{{ $contentant->name }}" loading="lazy" decoding="async"></a>
+                                                        <a class="ms-popular__link">
+                                                            <span class="ms-popular-icon"><i class="fa-regular fa-arrow-right-long"></i></span>
+                                                        </a>
+                                                    </div>
+                                                    <h4 class="ms-popular__title">
+                                                        <a>
+                                                            {{ $contentant->name }}
+                                                            @if($flagUrl)
+                                                                <img src="{{ $flagUrl }}" alt="{{ \App\Helpers\CountryFlag::label($contentant->country) }}" width="20" height="15" style="display:inline-block;vertical-align:middle;margin-left:6px;border-radius:2px;" loading="lazy">
+                                                            @endif
+                                                        </a>
+                                                    </h4>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
                                 </div>
-                                <h3 class="ms-judge-name">
-                                    {{ $judge->name }}
-                                    @if($flagUrl)
-                                        <img src="{{ $flagUrl }}" alt="{{ \App\Helpers\CountryFlag::label($judge->country) }}" class="ms-judge-flag" width="22" height="16" loading="lazy">
-                                    @endif
-                                </h3>
-                                @if($judge->city)
-                                    <span class="ms-judge-meta">{{ $judge->city }}</span>
-                                @elseif($judge->country)
-                                    <span class="ms-judge-meta">{{ \App\Helpers\CountryFlag::label($judge->country) }}</span>
-                                @endif
                             </div>
                         </div>
-                    @endforeach
+                    </div>
                 </div>
             </div>
             <style>
-                .ms-judges-area { background: radial-gradient(900px 420px at 50% 0%, rgba(246,196,83,.07), transparent 65%); }
-                .ms-judge-card { padding: 10px 8px 18px; }
-                .ms-judge-avatar { position:relative; width:160px; height:160px; border-radius:50%; padding:5px;
-                    background:linear-gradient(145deg,#f6c453,#e0a021);
-                    box-shadow:0 0 0 5px #12294d, 0 0 28px rgba(246,196,83,.45); margin-bottom:14px; }
-                .ms-judge-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; display:block; border:3px solid #12294d; background:#0d1f3c; }
-                .ms-judge-placeholder { display:flex; align-items:center; justify-content:center; width:100%; height:100%; border-radius:50%; background:#1a3058; color:#f6c453; font-size:42px; border:3px solid #12294d; }
-                .ms-judge-name { font-size:17px; font-weight:700; color:#f6c453; margin:0 0 4px; line-height:1.3; }
-                .ms-judge-flag { display:inline-block; vertical-align:middle; margin-left:6px; border-radius:2px; box-shadow:0 1px 3px rgba(0,0,0,.35); }
-                .ms-judge-meta { display:block; color:rgba(255,255,255,.75); font-size:12px; letter-spacing:.5px; text-transform:uppercase; }
-                @media (max-width:575px){ .ms-judge-avatar { width:130px; height:130px; } .ms-judge-name { font-size:15px; } }
+                .ms-judges-section .ms-judge-glow {
+                    border: 2px solid rgba(246, 196, 83, 0.55);
+                    box-shadow:
+                        0 0 18px rgba(246, 196, 83, 0.45),
+                        0 0 36px rgba(246, 196, 83, 0.2),
+                        inset 0 0 12px rgba(246, 196, 83, 0.08);
+                }
+                .ms-judges-section .ms-popular__title a {
+                    color: #f6c453;
+                    background: #12294d;
+                    border: 1px solid rgba(246, 196, 83, 0.45);
+                    font-weight: 600;
+                }
+                .ms-judges-section .ms-popular__title a:hover {
+                    color: #ffffff;
+                    background: #1a3a6b;
+                    border-color: #f6c453;
+                }
             </style>
         </section>
         @endif
@@ -488,7 +503,7 @@
                 <div class="row justify-content-center bdFadeUp">
                     <div class="col-lg-8">
                         <div class="section__title-wrapper mb-60 text-center bd-title-anim">
-                            <span class="section__subtitle">{{ trans('file.Casting Tour') ?? 'Casting Tour' }}</span>
+                            <span class="section__subtitle">{{ trans('file.Casting Tour') }}</span>
                             <h2 class="section__title"><span class="animated-underline active">{{ $sc_casting_title }}</span></h2>
                             @if(!empty($sc_casting_subtitle))
                             <p class="casting-lead">{{ $sc_casting_subtitle }}</p>
@@ -558,7 +573,7 @@
                 <div class="row justify-content-center bdFadeUp mb-50">
                     <div class="col-xl-8">
                         <div class="ms-countdown" data-deadline="{{ $sc_next_prime['date'] }}">
-                            <p class="ms-countdown__label"><i class="fa-regular fa-clock"></i> {{ $sc_next_prime['label'] ?? 'Next Prime' }} {{ trans('file.starts in') ?? 'starts in' }}</p>
+                            <p class="ms-countdown__label"><i class="fa-regular fa-clock"></i> {{ $sc_next_prime['label'] ?? trans('file.Finals Schedule') }} {{ trans('file.starts in') }}</p>
                             <div class="ms-countdown__grid">
                                 <div class="ms-countdown__cell"><span class="cd-days">00</span><small>Days</small></div>
                                 <div class="ms-countdown__cell"><span class="cd-hours">00</span><small>Hrs</small></div>

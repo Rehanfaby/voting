@@ -33,12 +33,12 @@ class AppServiceProvider extends ServiceProvider
         /*if( (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443) {
             URL::forceScheme('https');
         }*/
-        //setting language
-        if(isset($_COOKIE['language'])) {
-            \App::setLocale($_COOKIE['language']);
-        } else {
-            \App::setLocale('en');
+        // Site language: English or French only (cookie set by language_switch route).
+        $locale = isset($_COOKIE['language']) ? (string) $_COOKIE['language'] : 'en';
+        if (!in_array($locale, ['en', 'fr'], true)) {
+            $locale = 'en';
         }
+        \App::setLocale($locale);
         Schema::defaultStringLength(191);
 
         try {

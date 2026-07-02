@@ -21,7 +21,7 @@
     <link rel="stylesheet" href="{{ asset('public/frontend/css/css-fontawesome-pro.css') }}">
     <link rel="stylesheet" href="{{ asset('public/frontend/css/css-spacing.css') }}">
     <link rel="stylesheet" href="{{ asset('public/frontend/css/css-main.css') }}">
-    <link rel="stylesheet" href="{{ asset('public/css/frontend-modern.css') }}?v=20260630-beyond" type="text/css" id="frontend-modern-style">
+    <link rel="stylesheet" href="{{ asset('public/css/frontend-modern.css') }}?v=20260702-lang" type="text/css" id="frontend-modern-style">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 
@@ -111,7 +111,7 @@
                 </div>
                                <div class="offcanvas__btn mb-30">
                     <a class="user__name" href="https://mulemagospeltalent.com/audition-now/" target="_blank" rel="noopener">
-                        <i class="fa-solid fa-plus"></i> Register Now
+                        <i class="fa-solid fa-plus"></i> {{ trans('file.Register Now!') }}
                     </a>
                 </div>
 
@@ -138,18 +138,8 @@
                 <div class="offcanvas__btn mb-30">
                     <a class="ms-border-btn" href="{{ route('team') }}"><i class="fa-solid fa-plus"></i> {{trans('file.Vote your Candidate')}}</a>
                 </div>
-                <div class="enquiry__list ml-10 mr-10 ms-browse-act-wrap p-relative">
-                    <div class="ms-enquiry-box p-relative">
-                        <a href="#"><span class="text">Switch Language <sup>({{ \App::getLocale() }})</sup></span></a></a>
-                    </div>
-                    <div class="ms-browse-act-item-wrap p-absolute">
-                        <div class="ms-song-item">
-                            <div class="ms-song-content">
-                                <h3 class="ms-song-title"><a href="{{ url('language_switch/en') }}">English</a></h3>
-                                <h3 class="ms-song-title"><a href="{{ url('language_switch/fr') }}">Français</a></h3>
-                            </div>
-                        </div>
-                    </div>
+                <div class="offcanvas__btn mb-30 offcanvas__lang">
+                    @include('partials.lang_switch')
                 </div>
             </div>
         </div>
@@ -200,6 +190,7 @@
                                     </div>
                                 </div>
                                 <div class="header__action-inner d-flex align-items-center">
+                                    @include('partials.lang_switch')
                                     @if($user)
                                         <!-- <div class="enquiry__list ml-10 mr-10 ms-browse-act-wrap p-relative">
                                             <div class="ms-enquiry-box p-relative d-none d-xl-inline-flex">
@@ -281,19 +272,6 @@
                                             </div>
                                         </div>
                                     @endif
-                                </div>
-                                <div class="enquiry__list ml-10 mr-10 ms-browse-act-wrap p-relative">
-                                    <div class="ms-enquiry-box p-relative d-none d-xl-inline-flex">
-                                        <a href="#"><span class="text"><span class="fa fa-language"></span> <sup>({{ \App::getLocale() }})</sup></span></a></a>
-                                    </div>
-                                    <div class="ms-browse-act-item-wrap p-absolute">
-                                        <div class="ms-song-item">
-                                            <div class="ms-song-content">
-                                                <h3 class="ms-song-title"><a href="{{ url('language_switch/en') }}">English</a></h3>
-                                                <h3 class="ms-song-title"><a href="{{ url('language_switch/fr') }}">Français</a></h3>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
                                 <div class="header__hamburger">
                                     <div class="sidebar__toggle">
