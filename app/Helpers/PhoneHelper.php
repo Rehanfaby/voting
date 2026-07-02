@@ -43,4 +43,16 @@ class PhoneHelper
 
         return '+237' . $digits;
     }
+
+    /** True when a stored "name" is really just a phone number. */
+    public static function looksLikePhone($value)
+    {
+        if ($value === null || $value === '') {
+            return true;
+        }
+
+        $digits = preg_replace('/\D/', '', (string) $value);
+
+        return strlen($digits) >= 9 && preg_match('/^[\+\d\s\-\(\)\.]+$/', trim((string) $value));
+    }
 }

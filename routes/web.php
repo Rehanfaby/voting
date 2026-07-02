@@ -51,6 +51,8 @@ Route::group(['middleware' => 'checkOtp'], function() {
     Route::post('musician/vote/payment', 'HomeController@musicianVotePayment')->name('musician.vote.payment');
     Route::get('musician/vote/payment/coin', 'HomeController@musicianVotePaymentCoin')->name('musician.vote.payment.coin');
     Route::get('/musician/vote/payment/check', 'HomeController@musicianVotePaymentCheck')->name('musician.vote.payment.check');
+    Route::get('/musician/vote/payment/pending/{id}', 'HomeController@musicianVotePaymentPending')->name('musician.vote.payment.pending');
+    Route::get('/musician/vote/payment/poll', 'HomeController@musicianVotePaymentPoll')->name('musician.vote.payment.poll');
     Route::post('musician/vote/payment/Stripe', 'HomeController@musicianVotePaymentStripe')->name('musician.vote.payment.stripe');
     Route::get('/musician/vote/payment/check/Stripe', 'HomeController@musicianVotePaymentCheckStripe')->name('musician.vote.payment.check.stripe');
 
@@ -262,6 +264,10 @@ Route::group(['middleware' => ['auth', 'active']], function() {
     Route::post('judge/deletebyselection', 'JudgeController@deleteBySelection');
     Route::resource('ambassador', 'AmbassadorController');
     Route::post('ambassador/deletebyselection', 'AmbassadorController@deleteBySelection');
+    Route::get('about-us', 'AboutUsController@index')->name('about_us.index');
+    Route::post('about-us', 'AboutUsController@store')->name('about_us.store');
+    Route::post('about-us/update', 'AboutUsController@update')->name('about_us.update');
+    Route::delete('about-us/{id}', 'AboutUsController@destroy')->name('about_us.destroy');
     Route::resource('coins', 'CoinController');
     Route::post('coins/deletebyselection', 'CoinController@deleteBySelection');
 

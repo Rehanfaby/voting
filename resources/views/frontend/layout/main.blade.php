@@ -21,7 +21,7 @@
     <link rel="stylesheet" href="{{ asset('public/frontend/css/css-fontawesome-pro.css') }}">
     <link rel="stylesheet" href="{{ asset('public/frontend/css/css-spacing.css') }}">
     <link rel="stylesheet" href="{{ asset('public/frontend/css/css-main.css') }}">
-    <link rel="stylesheet" href="{{ asset('public/css/frontend-modern.css') }}?v=20260702-brand" type="text/css" id="frontend-modern-style">
+    <link rel="stylesheet" href="{{ asset('public/css/frontend-modern.css') }}?v=20260702-pay" type="text/css" id="frontend-modern-style">
     @yield('styles')
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
@@ -116,12 +116,18 @@
 
                 @if($user)
                 <div class="hr-1 mt-30 mb-30 d-xl-none"></div>
+                @if($user->role_id == 3)
                 <div class="offcanvas__btn mb-30">
                     <a class="user__name" href="{{ route('user.contentant') }}"><i class="fa-solid fa-plus"></i> {{trans('file.My Votes')}}</a>
                 </div>
                 <div class="offcanvas__btn mb-30">
                     <a class="user__name" href="{{ route('user.events') }}"><i class="fa-solid fa-plus"></i> {{trans('file.My Events')}}</a>
                 </div>
+                @else
+                <div class="offcanvas__btn mb-30">
+                    <a class="user__name" href="{{ url('/admin') }}"><i class="fa-solid fa-plus"></i> {{trans('file.Admin Dashboard')}}</a>
+                </div>
+                @endif
                 @endif
                 <div class="hr-1 mt-30 mb-30 d-xl-none"></div>
                 <div class="offcanvas__btn mb-30">
@@ -183,6 +189,7 @@
                                             </span>
                                     </div>
                                     @else
+                                        @if($user->role_id == 3)
                                         <div class="enquiry__list ml-10 mr-10 ms-browse-act-wrap p-relative">
                                             <div class="ms-enquiry-box p-relative d-none d-xl-inline-flex">
                                                 <a href="#"><i class="flaticon-star icon"></i>
@@ -218,43 +225,31 @@
                                                 </div>
                                             </div>
                                         </div>
-                                    @endif
-                                    @if($user && $user->role_id != 3)
-                                        <div class="enquiry__list ml-10 mr-10 ms-browse-act-wrap p-relative">
-                                            <div class="ms-enquiry-box p-relative d-none d-xl-inline-flex">
-                                                <a href="#"><i class="flaticon-star icon"></i>
-                                                    <span class="text">{{ trans('file.Admin') }}</span>
+                                        @else
+                                        @php $headerRoleName = optional($user->role)->name ?? 'Staff'; @endphp
+                                        <div class="mg-fe-user-dropdown ml-10 mr-10">
+                                            <button type="button" class="mg-fe-user-toggle" aria-haspopup="true" aria-expanded="false">
+                                                <span class="mg-fe-user-avatar">{{ strtoupper(substr($user->name ?? 'A', 0, 1)) }}</span>
+                                                <span class="mg-fe-user-meta d-none d-xl-inline-flex">
+                                                    <span class="mg-fe-user-name">{{ $user->name }}</span>
+                                                    <span class="mg-fe-user-role">{{ strtoupper(str_replace('_', ' ', $headerRoleName)) }}</span>
+                                                </span>
+                                                <i class="fa fa-angle-down"></i>
+                                            </button>
+                                            <div class="mg-fe-user-menu">
+                                                <div class="mg-fe-user-menu__head">{{ trans('file.My Account') }}</div>
+                                                <a href="{{ url('/admin') }}"><i class="fa fa-th-large"></i> {{ trans('file.Admin Dashboard') }}</a>
+                                                <a href="{{ route('user.profile', $user->id) }}"><i class="fa fa-user"></i> {{ trans('file.profile') }}</a>
+                                                <hr>
+                                                <a href="#" class="mg-fe-user-logout" onclick="event.preventDefault(); document.getElementById('frontend-admin-logout-form').submit();">
+                                                    <i class="fa fa-sign-out"></i> {{ trans('file.logout') }}
                                                 </a>
-                                            </div>
-                                            <div class="ms-browse-act-item-wrap p-absolute">
-                                                <div class="ms-song-item">
-                                                    <div class="ms-song-content">
-                                                        <h3 class="ms-song-title">
-                                                            <a href="{{ url('/admin') }}">
-                                                                <span class="text">{{ trans('file.Admin Dashboard') }}</span>
-                                                            </a>
-                                                        </h3>
-                                                        <hr>
-                                                        <h3 class="ms-song-title">
-                                                            <a href="{{ route('user.profile', $user->id) }}">
-                                                                <span class="text">{{ trans('file.profile') }}</span>
-                                                            </a>
-                                                        </h3>
-                                                        <hr>
-                                                        <h3 class="ms-song-title" style="margin-bottom: 10px;">
-                                                            <a href="{{ route('logout') }}"
-                                                            onclick="event.preventDefault();
-                                                                document.getElementById('frontend-admin-logout-form').submit();">
-                                                                <i class="dripicons-power"></i> {{ trans('file.logout') }}
-                                                            </a>
-                                                            <form id="frontend-admin-logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                                                                @csrf
-                                                            </form>
-                                                        </h3>
-                                                    </div>
-                                                </div>
+                                                <form id="frontend-admin-logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                                                    @csrf
+                                                </form>
                                             </div>
                                         </div>
+                                        @endif
                                     @endif
                                     <div class="ms-header-lang ms-header-lang--end">
                                         @include('partials.lang_switch')
@@ -417,6 +412,26 @@
             <script src="{{ asset('public/frontend/js/js-jplayer.playlist.js') }}"></script>
 {{--            <script src="{{ asset('public/frontend/js/js-settings.js') }}"></script>--}}
             <script src="{{ asset('public/frontend/js/js-main.js') }}"></script>
+            <script>
+            (function () {
+                document.querySelectorAll('.mg-fe-user-dropdown').forEach(function (wrap) {
+                    var btn = wrap.querySelector('.mg-fe-user-toggle');
+                    if (!btn) { return; }
+                    btn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        wrap.classList.toggle('is-open');
+                        btn.setAttribute('aria-expanded', wrap.classList.contains('is-open') ? 'true' : 'false');
+                    });
+                });
+                document.addEventListener('click', function () {
+                    document.querySelectorAll('.mg-fe-user-dropdown.is-open').forEach(function (wrap) {
+                        wrap.classList.remove('is-open');
+                        var btn = wrap.querySelector('.mg-fe-user-toggle');
+                        if (btn) { btn.setAttribute('aria-expanded', 'false'); }
+                    });
+                });
+            })();
+            </script>
             @yield('scripts')
       </body>
 

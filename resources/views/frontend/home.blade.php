@@ -322,7 +322,6 @@
                                 <div class="swiper-container ms-popular-active fix">
                                     <div class="swiper-wrapper">
                                         @foreach($judges as $contentant)
-                                            @php $flagUrl = \App\Helpers\CountryFlag::url($contentant->country, 24); @endphp
                                             <div class="swiper-slide">
                                                 <div class="ms-popular__item p-relative mb-30">
                                                     <div class="ms-popular__thumb ms-judge-glow">
@@ -335,9 +334,7 @@
                                                     <h4 class="ms-popular__title">
                                                         <a>
                                                             {{ $contentant->name }}
-                                                            @if($flagUrl)
-                                                                <img src="{{ $flagUrl }}" alt="{{ \App\Helpers\CountryFlag::label($contentant->country) }}" width="20" height="15" style="display:inline-block;vertical-align:middle;margin-left:6px;border-radius:2px;" loading="lazy">
-                                                            @endif
+                                                            @include('partials.country_flag', ['country' => $contentant->country, 'size' => 20, 'class' => 'mg-judge-flag-inline'])
                                                         </a>
                                                     </h4>
                                                 </div>
@@ -369,6 +366,9 @@
                     background: #1a3a6b;
                     border-color: #f6c453;
                 }
+                .ms-judges-section .mg-country-flag { display:inline-flex; align-items:center; margin-left:6px; vertical-align:middle; }
+                .ms-judges-section .mg-country-flag img { border-radius:2px; }
+                .ms-judges-section .mg-country-flag__emoji { font-size:1.1em; line-height:1; }
             </style>
         </section>
         @endif

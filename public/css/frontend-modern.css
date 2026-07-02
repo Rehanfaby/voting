@@ -301,3 +301,96 @@ footer .ms-footer-bg { background-color: transparent !important; }
 .header__area .bar-icon span {
     background: #fff;
 }
+
+/* Compact staff account menu on public site (mulemagc.com) */
+.mg-fe-user-dropdown {
+    position: relative;
+    z-index: 120;
+}
+.mg-fe-user-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 0;
+    background: rgba(255, 255, 255, .08);
+    border-radius: 999px;
+    padding: 4px 10px 4px 4px;
+    color: #fff;
+    cursor: pointer;
+}
+.mg-fe-user-toggle:focus { outline: none; }
+.mg-fe-user-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #fff;
+    color: var(--mg-cosmic);
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0 2px rgba(232, 119, 34, .55);
+}
+.mg-fe-user-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1.15;
+    text-align: left;
+}
+.mg-fe-user-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    max-width: 120px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.mg-fe-user-role {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .4px;
+    color: var(--mg-cosmic-2, #ff9533);
+    text-transform: uppercase;
+}
+.mg-fe-user-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 210px;
+    background: #fff;
+    border: 1px solid #e7edf5;
+    border-radius: 12px;
+    box-shadow: 0 16px 40px rgba(3, 12, 28, .18);
+    padding: 4px 0 2px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(6px);
+    transition: opacity .18s, transform .18s, visibility .18s;
+}
+.mg-fe-user-dropdown.is-open .mg-fe-user-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+.mg-fe-user-menu__head {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--mg-navy);
+    padding: 6px 14px 4px;
+}
+.mg-fe-user-menu a {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 14px;
+    color: var(--mg-navy) !important;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+}
+.mg-fe-user-menu a i { width: 16px; text-align: center; color: var(--mg-blue); }
+.mg-fe-user-menu a:hover { background: #f0f4f9; }
+.mg-fe-user-menu hr { margin: 4px 0; border-color: #eef2f8; }
+.mg-fe-user-logout,
+.mg-fe-user-logout i { color: #dc3545 !important; }

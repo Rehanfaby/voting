@@ -32,6 +32,11 @@ class CountryFlag
             'CF' => 'Central African Republic',
             'TD' => 'Chad',
             'GQ' => 'Equatorial Guinea',
+            'RW' => 'Rwanda',
+            'IT' => 'Italy',
+            'ES' => 'Spain',
+            'PT' => 'Portugal',
+            'NL' => 'Netherlands',
         ];
     }
 
@@ -77,5 +82,18 @@ class CountryFlag
         }
         $width = max(16, min(80, (int) $width));
         return 'https://flagcdn.com/w' . $width . '/' . strtolower($code) . '.png';
+    }
+
+    /** Regional-indicator emoji flag (e.g. CM → 🇨🇲). */
+    public static function emoji($value)
+    {
+        $code = self::code($value);
+        if (!$code || strlen($code) !== 2) {
+            return '';
+        }
+        $code = strtoupper($code);
+        $base = 0x1F1E6;
+
+        return mb_chr($base + ord($code[0]) - 65) . mb_chr($base + ord($code[1]) - 65);
     }
 }

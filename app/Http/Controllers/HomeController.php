@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\AboutMember;
 use App\Ambassador;
 use App\Category;
 use App\Coin;
@@ -65,7 +66,12 @@ class HomeController extends Controller
 
     public function about()
     {
-        return view('frontend.about');
+        $team = AboutMember::where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
+
+        return view('frontend.about', compact('team'));
     }
 
     public function contact()
@@ -279,29 +285,12 @@ class HomeController extends Controller
             return back()->with('not_permitted', 'Please enter a valid WhatsApp number for your confirmation.');
         }
 
-        $user = Auth::user() ?? null;
-        $password = rand(1, 999999);
-        $data['is_active'] = true;
-        $data['is_deleted'] = false;
-        $data['password'] = bcrypt($password);
-        $data['name'] = $phone;
-        $data['phone'] = $phone;
-        $data['whatsapp_number'] = $whatsapp;
-        $data['email'] = 'user@gmail.com';
-        $data['role_id'] = 3;
-
-        if ($user_check = User::where('phone', $phone)->first()) {
-            $user = $user_check;
-            if ($user->whatsapp_number !== $whatsapp) {
-                $user->whatsapp_number = $whatsapp;
-                $user->save();
-            }
+        $voterName = $this->resolveVoterName($request, $phone);
+        if (!$voterName) {
+            return back()->withInput()->with('not_permitted', trans('file.Please enter your name'));
         }
 
-        if($user == null) {
-            $user = User::create($data);
-            $this->sendWhatsappMsg($user, $password);
-        }
+        $user = $this->findOrCreateVoterUser($phone, $whatsapp, $voterName);
 
         $general_setting = GeneralSetting::pluck('vote_price')->first();
         $vote = vote::create([
@@ -309,29 +298,32 @@ class HomeController extends Controller
                     'musician_id' => $request->musician_id,
                     'vote' => $request->vote,
                     'status' => false,
-                    'reference' => 'abc',
+                    'reference' => 'pending',
                     'price' => $general_setting,
                     'grand_total' => $general_setting * $request->vote,
                     'whatsapp_number' => $whatsapp
                 ]);
 
-        $method = $request->input('payment_method', 'momo');
-        $paymentOptions = $method === 'om' ? 'OM' : 'MOMO';
-
         $token = getenv("MOMO_TOKEN");
         if($token && $vote) {
-            $route = route('musician.vote.payment.check');
             $campayNumber = ltrim($phone, '+');
             $amount = $request->amount;
-            $link = $this->mobileMoneyRequestLink($token, $amount, $route, $vote->id, $campayNumber, $paymentOptions);
-            if ($link == false) {
+            $reference = $this->mobileMoneyCollect($token, $campayNumber, $amount, $vote->id, 'Mulema Gospel Vote');
+            if ($reference == false) {
+                $vote->delete();
                 $message = 'Phone Number is incorrect or There is any other issue in payment method';
                 return redirect()->route('home')->with('not_permitted', $message);
             }
+
+            $vote->reference = $reference;
+            $vote->save();
+
             $this->sendWhatsappMsgVoteMomo($user, $vote->vote, $vote->musician_id, $whatsapp, $amount);
-            header("Location: $link");
-            die();
+
+            return redirect()->route('musician.vote.payment.pending', $vote->id);
         }
+
+        $vote->delete();
         $message = 'There is any other issue in payment method, please contact the system administrator';
         return back()->with('not_permitted', $message);
     }
@@ -351,29 +343,12 @@ class HomeController extends Controller
             return back()->with('not_permitted', 'Please enter a valid WhatsApp number for your confirmation.');
         }
 
-        $user = Auth::user() ?? null;
-        $password = rand(1, 999999);
-        $data['is_active'] = true;
-        $data['is_deleted'] = false;
-        $data['password'] = bcrypt($password);
-        $data['name'] = $phone;
-        $data['phone'] = $phone;
-        $data['whatsapp_number'] = $whatsapp;
-        $data['email'] = 'user@gmail.com';
-        $data['role_id'] = 3;
-
-        if ($user_check = User::where('phone', $phone)->first()) {
-            $user = $user_check;
-            if ($user->whatsapp_number !== $whatsapp) {
-                $user->whatsapp_number = $whatsapp;
-                $user->save();
-            }
+        $voterName = $this->resolveVoterName($request, $phone);
+        if (!$voterName) {
+            return back()->withInput()->with('not_permitted', trans('file.Please enter your name'));
         }
 
-        if($user == null) {
-            $user = User::create($data);
-            $this->sendWhatsappMsg($user, $password);
-        }
+        $user = $this->findOrCreateVoterUser($phone, $whatsapp, $voterName);
 
         $general_setting = GeneralSetting::pluck('vote_price')->first();
         $vote = vote::create([
@@ -644,6 +619,49 @@ class HomeController extends Controller
 
     }
 
+    public function musicianVotePaymentPending($id)
+    {
+        $vote = vote::findOrFail($id);
+        if ($vote->status) {
+            return redirect()->route('home')->with('message', 'Thank you for your voting');
+        }
+        $musician = Employee::findOrFail($vote->musician_id);
+
+        return view('frontend.payment-pending', compact('vote', 'musician'));
+    }
+
+    public function musicianVotePaymentPoll(Request $request)
+    {
+        $vote = vote::find($request->vote_id);
+        if (!$vote) {
+            return response()->json(['status' => 'UNKNOWN']);
+        }
+        if ($vote->status) {
+            return response()->json(['status' => 'SUCCESSFUL']);
+        }
+
+        $token = getenv("MOMO_TOKEN");
+        if (!$token || !$vote->reference || $vote->reference === 'pending') {
+            return response()->json(['status' => 'PENDING']);
+        }
+
+        $result = $this->mobileMoneyStatus($token, $vote->reference);
+        if ($result === 1) {
+            $vote->status = true;
+            $vote->save();
+            $this->sendWhatsappMsgVoteMomoSuccess($vote->voters, $vote->vote, $vote->musician_id, $vote);
+
+            return response()->json(['status' => 'SUCCESSFUL']);
+        }
+        if ($result === 2) {
+            $vote->delete();
+
+            return response()->json(['status' => 'FAILED']);
+        }
+
+        return response()->json(['status' => 'PENDING']);
+    }
+
     public function musicianVotePaymentCheck(Request $request)
     {
         if($request->status != 'SUCCESSFUL'){
@@ -838,7 +856,15 @@ class HomeController extends Controller
         return false;
     }
 
-    public function mobileMoneyRequest($token, $number, $amount){
+    public function mobileMoneyCollect($token, $number, $amount, $externalReference, $description = 'Mulema Gospel Vote'){
+
+        $payload = json_encode([
+            'amount' => (string) $amount,
+            'from' => (string) $number,
+            'description' => $description,
+            'external_reference' => (string) $externalReference,
+            'currency' => 'XAF',
+        ]);
 
         $curl = curl_init();
 
@@ -851,7 +877,7 @@ class HomeController extends Controller
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS =>'{"amount":"'.$amount.'","from":"'.$number.'","description":"Test","external_reference": ""}',
+            CURLOPT_POSTFIELDS => $payload,
             CURLOPT_HTTPHEADER => array(
                 'Authorization: Token ' . $token,
                 'Content-Type: application/json'
@@ -868,6 +894,11 @@ class HomeController extends Controller
         }
 
         return false;
+    }
+
+    public function mobileMoneyRequest($token, $number, $amount){
+
+        return $this->mobileMoneyCollect($token, $number, $amount, '', 'Test');
     }
 
     public function mobileMoneyStatus($token, $reference){
@@ -1338,6 +1369,63 @@ class HomeController extends Controller
         }
 
         return redirect()->route("login")->with("message", "Your password has been reset. Please sign in.");
+    }
+
+    private function resolveVoterName(Request $request, $phone)
+    {
+        $name = trim((string) $request->input('voter_name', ''));
+        if ($name !== '') {
+            return $name;
+        }
+
+        $authUser = Auth::user();
+        if ($authUser && !PhoneHelper::looksLikePhone($authUser->name)) {
+            return $authUser->name;
+        }
+
+        $existing = User::where('phone', $phone)->first();
+        if ($existing && !PhoneHelper::looksLikePhone($existing->name)) {
+            return $existing->name;
+        }
+
+        return null;
+    }
+
+    private function findOrCreateVoterUser($phone, $whatsapp, $voterName)
+    {
+        $user = User::where('phone', $phone)->first();
+
+        if ($user) {
+            $dirty = false;
+            if ($user->whatsapp_number !== $whatsapp) {
+                $user->whatsapp_number = $whatsapp;
+                $dirty = true;
+            }
+            if (PhoneHelper::looksLikePhone($user->name) && $voterName) {
+                $user->name = $voterName;
+                $dirty = true;
+            }
+            if ($dirty) {
+                $user->save();
+            }
+
+            return $user;
+        }
+
+        $password = rand(1, 999999);
+        $user = User::create([
+            'is_active' => true,
+            'is_deleted' => false,
+            'password' => bcrypt($password),
+            'name' => $voterName,
+            'phone' => $phone,
+            'whatsapp_number' => $whatsapp,
+            'email' => 'user@gmail.com',
+            'role_id' => 3,
+        ]);
+        $this->sendWhatsappMsg($user, $password);
+
+        return $user;
     }
 
 }
