@@ -126,7 +126,7 @@ class Controller extends BaseController
         }
     }
 
-    public function mobileMoneyRequestLink($token, $amount, $route, $patient_id, $number){
+    public function mobileMoneyRequestLink($token, $amount, $route, $patient_id, $number, $paymentOptions = 'MOMO,CARD'){
 
         $curl = curl_init();
 
@@ -145,7 +145,7 @@ class Controller extends BaseController
                 "currency": "XAF",
                 "external_reference": "'.$patient_id.'",
                 "redirect_url": "'.$route.'",
-                "payment_options":"MOMO,CARD",
+                "payment_options":"'.$paymentOptions.'",
                 "failure_redirect_url": "'.$route.'"
             }',
             CURLOPT_HTTPHEADER => array(

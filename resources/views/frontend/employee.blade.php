@@ -105,8 +105,6 @@
                                 </div>
                             </form>
                             <div class="ms-is-product-stock mb-25 ms-product-title2">{{trans('file.Your payable amount is')}} : <span id="payable-amount" style="font-size: 30px">{{ $general_setting->vote_price }}</span> {{ $currency->code }}</div>
-                            OR
-                            <div class="ms-is-product-stock mt-25 ms-product-title2">{{trans('file.Your payable coin is')}} : <span id="payable-coin" style="font-size: 30px">{{ $general_setting->vote_coin }}</span> {{trans('file.Beyond Coin')}}</div>
                         </div>
                     </div>
                     <div class="row">
@@ -279,8 +277,6 @@
                 }
                 var price = count * {{ $general_setting->vote_price }};
                 $("#payable-amount").html(price);
-                var coin = count * {{ $general_setting->vote_coin }};
-                $("#payable-coin").html(coin);
                 $input.val(count);
                 $input.change();
                 return false;
@@ -296,8 +292,6 @@
                 }
                 var price = count * {{ $general_setting->vote_price }};
                 $("#payable-amount").html(price);
-                var coin = count * {{ $general_setting->vote_coin }};
-                $("#payable-coin").html(coin);
                 $input.val(count);
                 $input.change();
                 return false;
@@ -323,8 +317,6 @@
                 }
                 var price = count * {{ $general_setting->vote_price }};
                 $("#payable-amount").html(price);
-                var coin = count * {{ $general_setting->vote_coin }};
-                $("#payable-coin").html(coin);
                 $input.val(count);
                 $input.change();
                 return false;

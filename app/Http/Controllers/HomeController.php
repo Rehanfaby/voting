@@ -10,6 +10,8 @@ use App\Gallery;
 use App\GeneralSetting;
 use App\Judge;
 use App\Helpers\SiteContent;
+use App\Helpers\PhoneHelper;
+use App\Helpers\WhatsAppFormatter;
 use App\TicketSeat;
 use App\User;
 use App\vote;
@@ -261,23 +263,39 @@ class HomeController extends Controller
 
     public function musicianVotePayment(Request $request) {
 
+        if ($request->input('payment_method') === 'card') {
+            return $this->musicianVotePaymentStripe($request);
+        }
+
+        $phone = PhoneHelper::fromLocalDigits($request->input('phone_local'))
+            ?? PhoneHelper::cameroon($request->phone);
+        $whatsapp = PhoneHelper::fromLocalDigits($request->input('whatsapp_local'))
+            ?? PhoneHelper::cameroon($request->whatsapp_number ?? $phone);
+
+        if (!$phone) {
+            return back()->with('not_permitted', 'Please enter a valid mobile money number.');
+        }
+        if (!$whatsapp) {
+            return back()->with('not_permitted', 'Please enter a valid WhatsApp number for your confirmation.');
+        }
+
         $user = Auth::user() ?? null;
         $password = rand(1, 999999);
         $data['is_active'] = true;
         $data['is_deleted'] = false;
         $data['password'] = bcrypt($password);
-        $data['name'] = $request->phone;
-        $data['phone'] = $request->phone;
-        $data['whatsapp_number'] = $request->whatsapp_number ?? $request->phone;
+        $data['name'] = $phone;
+        $data['phone'] = $phone;
+        $data['whatsapp_number'] = $whatsapp;
         $data['email'] = 'user@gmail.com';
         $data['role_id'] = 3;
 
-        if($data['phone'] == null) {
-            return 'Phone cannot be null';
-        }
-
-        if ($user_check = User::where('phone', $request->phone)->first()) {
+        if ($user_check = User::where('phone', $phone)->first()) {
             $user = $user_check;
+            if ($user->whatsapp_number !== $whatsapp) {
+                $user->whatsapp_number = $whatsapp;
+                $user->save();
+            }
         }
 
         if($user == null) {
@@ -294,18 +312,23 @@ class HomeController extends Controller
                     'reference' => 'abc',
                     'price' => $general_setting,
                     'grand_total' => $general_setting * $request->vote,
-                    'whatsapp_number' => $data['whatsapp_number']
+                    'whatsapp_number' => $whatsapp
                 ]);
+
+        $method = $request->input('payment_method', 'momo');
+        $paymentOptions = $method === 'om' ? 'OM' : 'MOMO';
+
         $token = getenv("MOMO_TOKEN");
         if($token && $vote) {
             $route = route('musician.vote.payment.check');
-            $mtn_number = $data['phone'];
+            $campayNumber = ltrim($phone, '+');
             $amount = $request->amount;
-            $link = $this->mobileMoneyRequestLink($token, $amount, $route, $vote->id, $mtn_number);
+            $link = $this->mobileMoneyRequestLink($token, $amount, $route, $vote->id, $campayNumber, $paymentOptions);
             if ($link == false) {
                 $message = 'Phone Number is incorrect or There is any other issue in payment method';
                 return redirect()->route('home')->with('not_permitted', $message);
             }
+            $this->sendWhatsappMsgVoteMomo($user, $vote->vote, $vote->musician_id, $whatsapp, $amount);
             header("Location: $link");
             die();
         }
@@ -315,23 +338,36 @@ class HomeController extends Controller
 
     public function musicianVotePaymentStripe(Request $request) {
 
+        $phone = PhoneHelper::fromLocalDigits($request->input('phone_local'))
+            ?? PhoneHelper::fromLocalDigits($request->input('whatsapp_local'))
+            ?? PhoneHelper::cameroon($request->phone);
+        $whatsapp = PhoneHelper::fromLocalDigits($request->input('whatsapp_local'))
+            ?? PhoneHelper::cameroon($request->whatsapp_number ?? $phone);
+
+        if (!$phone) {
+            return back()->with('not_permitted', 'Please enter a valid phone number.');
+        }
+        if (!$whatsapp) {
+            return back()->with('not_permitted', 'Please enter a valid WhatsApp number for your confirmation.');
+        }
+
         $user = Auth::user() ?? null;
         $password = rand(1, 999999);
         $data['is_active'] = true;
         $data['is_deleted'] = false;
         $data['password'] = bcrypt($password);
-        $data['name'] = $request->phone;
-        $data['phone'] = $request->phone;
-        $data['whatsapp_number'] = $request->whatsapp_number ?? $request->phone;
+        $data['name'] = $phone;
+        $data['phone'] = $phone;
+        $data['whatsapp_number'] = $whatsapp;
         $data['email'] = 'user@gmail.com';
         $data['role_id'] = 3;
 
-        if($data['phone'] == null) {
-            return 'Phone cannot be null';
-        }
-
-        if ($user_check = User::where('phone', $request->phone)->first()) {
+        if ($user_check = User::where('phone', $phone)->first()) {
             $user = $user_check;
+            if ($user->whatsapp_number !== $whatsapp) {
+                $user->whatsapp_number = $whatsapp;
+                $user->save();
+            }
         }
 
         if($user == null) {
@@ -348,13 +384,12 @@ class HomeController extends Controller
             'reference' => 'abc',
             'price' => $general_setting,
             'grand_total' => $general_setting * $request->vote,
-            'whatsapp_number' => $data['whatsapp_number']
+            'whatsapp_number' => $whatsapp
 
         ]);
 
         if($vote) {
             $route = route('musician.vote.payment.check.stripe');
-            $mtn_number = $data['phone'];
             $amount = $request->amount;
 
             $link = $this->createCheckoutSession($amount, $route, $vote->id, $vote);
@@ -965,24 +1000,27 @@ class HomeController extends Controller
     }
 
 
-    public function sendWhatsappMsgVoteMomo($user, $vote, $musician_id)
+    public function sendWhatsappMsgVoteMomo($user, $vote, $musician_id, $whatsapp = null, $amount = null)
     {
         $musician = Employee::select('name', 'id')->find($musician_id);
         $total_votes = vote::where('musician_id', $musician_id)->where('status', true)->sum('vote');
+        $recipient = $whatsapp ?? $user->whatsapp_number ?? $user->phone;
+        $amountLine = $amount ? number_format((float) $amount) . ' CFA' : null;
 
-        $msg = '*Thank you for your vote,* Vote status is pending, please pay your payment in 30 minutes \n\n';
-
-        $msg .= 'You have casted ' . $vote;
-        if ($vote == 1) {
-            $msg .= ' vote ';
-        } else {
-            $msg .= ' votes ';
+        $msg = WhatsAppFormatter::heading('💳', 'VOTE PAYMENT PENDING');
+        $msg .= WhatsAppFormatter::greeting($user->name ?? 'Voter');
+        $msg .= "Please complete your payment within *30 minutes* to confirm your vote.\n\n";
+        $msg .= WhatsAppFormatter::line('Contestant', $musician->name ?? '—');
+        $msg .= WhatsAppFormatter::line('Votes', (string) $vote);
+        if ($amountLine) {
+            $msg .= WhatsAppFormatter::line('Amount', $amountLine);
         }
-        $msg .= 'for ' .$musician->name . '\n\n';
-        $msg .= $musician->name . '`s total votes are  '.$total_votes.'\n\n';
+        $msg .= WhatsAppFormatter::line('Current total votes', (string) $total_votes);
+        $msg .= WhatsAppFormatter::line('Status', 'Pending payment');
+        $msg .= WhatsAppFormatter::footer();
 
         try{
-            $this->wpMessage($user->phone, $msg);
+            $this->wpMessage($recipient, $msg);
         }
         catch(\Exception $e){
 
@@ -1049,19 +1087,15 @@ class HomeController extends Controller
 //        $msg .= $musician->name . '`s total votes are  '.$total_votes.'\n\n';
 
 
-        $msg = "🗳️ Merci pour votre vote ! 🙏 / Thank You for Your Vote! 🙏\n\n";
-        $msg .= "✅ Vous avez voté ".$vote." fois pour 🌟 {$musician->name} !\n";
-        $msg .= "✅ You have successfully cast ".$vote." vote";
-        $msg .= $vote > 1 ? "s" : "";
-        $msg .= " for 🌟 {$musician->name}!\n\n";
-
-        $msg .= "📊 {$musician->name} a maintenant un total de ".$total_votes." votes 🎉👏\n";
-        $msg .= "📊 {$musician->name} now has a total of ".$total_votes." votes 🎉👏\n\n";
-
-        $msg .= "🙌 Continuez à soutenir ! Chaque vote compte ! 💪🔥\n";
-        $msg .= "🙌 Keep the support coming! Every vote counts! 💪🔥\n\n";
-
-        $msg .= "🌐". getenv("APP_NAME");
+        $msg = WhatsAppFormatter::heading('✅', 'VOTE CONFIRMED');
+        $msg .= WhatsAppFormatter::greeting($user->name ?? 'Voter');
+        $msg .= "Thank you! Your vote has been recorded successfully.\n\n";
+        $msg .= WhatsAppFormatter::line('Contestant', $musician->name ?? '—');
+        $msg .= WhatsAppFormatter::line('Votes cast', (string) $vote);
+        $msg .= WhatsAppFormatter::line('New total votes', (string) $total_votes);
+        $msg .= WhatsAppFormatter::line('Status', 'Confirmed ✓');
+        $msg .= "\n🙌 Every vote counts — keep supporting your favourite!\n";
+        $msg .= WhatsAppFormatter::footer();
 
         try{
             $this->wpMessage($vote_data->whatsapp_number ?? $user->phone, $msg);

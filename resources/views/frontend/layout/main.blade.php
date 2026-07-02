@@ -417,6 +417,7 @@
             <script src="{{ asset('public/frontend/js/js-jplayer.playlist.js') }}"></script>
 {{--            <script src="{{ asset('public/frontend/js/js-settings.js') }}"></script>--}}
             <script src="{{ asset('public/frontend/js/js-main.js') }}"></script>
+            @yield('scripts')
       </body>
 
 </html>
