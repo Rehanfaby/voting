@@ -261,6 +261,7 @@ Route::group(['middleware' => ['auth', 'active']], function() {
     Route::resource('judge', 'JudgeController');
     Route::post('judge/deletebyselection', 'JudgeController@deleteBySelection');
     Route::resource('ambassador', 'AmbassadorController');
+    Route::post('ambassador/deletebyselection', 'AmbassadorController@deleteBySelection');
     Route::resource('coins', 'CoinController');
     Route::post('coins/deletebyselection', 'CoinController@deleteBySelection');
 

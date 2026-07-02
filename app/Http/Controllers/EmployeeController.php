@@ -11,7 +11,9 @@ use App\Biller;
 use App\Employee;
 use App\User;
 use App\Department;
+use App\Helpers\ImageOptimizer;
 use Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class EmployeeController extends Controller
@@ -157,56 +159,67 @@ class EmployeeController extends Controller
             'image' => 'image|mimes:jpg,jpeg,png,gif|max:100000',
         ]);
 
-        // A contestant and a voter (or judge/jury/user) can be the SAME person,
-        // so we do NOT block on the users table. If an account already exists for
-        // this email we reuse it; otherwise we create a dedicated contestant
-        // account. This lets a single person exist as multiple roles at once.
-        $existingUser = null;
-        if (!empty($request['email'])) {
-            $existingUser = User::whereRaw('LOWER(email) = ?', [strtolower($request['email'])])
-                ->where('is_deleted', false)
-                ->first();
-        }
-
-        if ($existingUser) {
-            $user = $existingUser;
-        } else {
-            $password = rand(1, 999999);
-            $user = User::create([
-                'name'       => $data['employee_name'] ?? '',
-                'email'      => $request['email'],
-                'phone'      => $data['phone_number'] ?? null,
-                'password'   => bcrypt($password),
-                'role_id'    => 2, // contestant role (voters stay role 3)
-                'is_active'  => true,
-                'is_deleted' => false,
-            ]);
-
-            $msg  = '*Congrats:* Your account has been created \n\n';
-            $msg .= '*User name:* '. $user->name . '\n\n';
-            $msg .= '*Phone number:* '. $user->phone . '\n\n';
-            $msg .= '*Password:* '. $password . '\n\n';
-            try {
-                $this->wpMessage($user->phone, $msg);
-            } catch (\Exception $e) {
-            }
-        }
-
-        $data['user_id'] = $user->id;
-        $data['name'] = $data['employee_name'] ?? ($data['name'] ?? '');
-
+        $imageName = null;
+        $imagePath = null;
         $image = $request->image;
         if ($image) {
             $ext = pathinfo($image->getClientOriginalName(), PATHINFO_EXTENSION);
-            $imageName = preg_replace('/[^a-zA-Z0-9]/', '', $request['email']);
-            $imageName = $imageName . '.' . $ext;
+            $imageName = preg_replace('/[^a-zA-Z0-9]/', '', $request['email']) . '.' . $ext;
             $image->move('public/images/employee', $imageName);
-            ImageOptimizer::afterUpload(public_path('images/employee/' . $imageName), 'portrait');
-            $data['image'] = $imageName;
+            $imagePath = public_path('images/employee/' . $imageName);
+            ImageOptimizer::afterUpload($imagePath, 'portrait');
         }
 
-        $data['is_active'] = true;
-        Employee::create($data);
+        try {
+            DB::transaction(function () use ($request, &$data, $imageName, &$message) {
+                $existingUser = null;
+                if (!empty($request['email'])) {
+                    $existingUser = User::whereRaw('LOWER(email) = ?', [strtolower($request['email'])])
+                        ->where('is_deleted', false)
+                        ->first();
+                }
+
+                $password = null;
+                if ($existingUser) {
+                    $user = $existingUser;
+                } else {
+                    $password = rand(1, 999999);
+                    $user = User::create([
+                        'name'       => $data['employee_name'] ?? '',
+                        'email'      => $request['email'],
+                        'phone'      => $data['phone_number'] ?? null,
+                        'password'   => bcrypt($password),
+                        'role_id'    => 2,
+                        'is_active'  => true,
+                        'is_deleted' => false,
+                    ]);
+                }
+
+                $data['user_id'] = $user->id;
+                $data['name'] = $data['employee_name'] ?? ($data['name'] ?? '');
+                if ($imageName) {
+                    $data['image'] = $imageName;
+                }
+                $data['is_active'] = true;
+                Employee::create($data);
+
+                if ($password !== null) {
+                    $msg  = '*Congrats:* Your account has been created \n\n';
+                    $msg .= '*User name:* '. $user->name . '\n\n';
+                    $msg .= '*Phone number:* '. $user->phone . '\n\n';
+                    $msg .= '*Password:* '. $password . '\n\n';
+                    try {
+                        $this->wpMessage($user->phone, $msg);
+                    } catch (\Exception $e) {
+                    }
+                }
+            });
+        } catch (\Throwable $e) {
+            if ($imagePath && is_file($imagePath)) {
+                @unlink($imagePath);
+            }
+            throw $e;
+        }
 
         return redirect('musician')->with('message', $message);
     }

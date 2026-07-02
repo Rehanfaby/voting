@@ -20,7 +20,7 @@
 <section>
     @if(in_array("employees-add", $all_permission))
     <div class="container-fluid">
-        <a href="{{route('judge.create')}}" class="btn btn-info"><i class="dripicons-plus"></i> Add Judge</a>
+        <button type="button" class="btn btn-info" data-toggle="modal" data-target="#addModal"><i class="dripicons-plus"></i> Add Judge</button>
     </div>
     @endif
     <div class="table-responsive">
@@ -90,6 +90,55 @@
         </table>
     </div>
 </section>
+
+<div id="addModal" tabindex="-1" role="dialog" aria-hidden="true" class="modal fade text-left">
+    <div role="document" class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Judge</h5>
+                <button type="button" data-dismiss="modal" aria-label="Close" class="close"><span aria-hidden="true"><i class="dripicons-cross"></i></span></button>
+            </div>
+            <div class="modal-body">
+                <p class="italic"><small>{{trans('file.The field labels marked with * are required input fields')}}.</small></p>
+                {!! Form::open(['route' => 'judge.store', 'method' => 'post', 'files' => true]) !!}
+                <div class="row">
+                    <div class="col-md-6 form-group">
+                        <label>{{trans('file.name')}} *</label>
+                        <input type="text" name="name" required class="form-control">
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label>{{trans('file.Image')}}</label>
+                        <input type="file" name="image" class="form-control">
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label>{{trans('file.Email')}} *</label>
+                        <input type="email" name="email" required class="form-control" placeholder="example@example.com">
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label>{{trans('file.Phone Number')}} *</label>
+                        <input type="text" name="phone_number" required class="form-control">
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label>{{trans('file.Address')}}</label>
+                        <input type="text" name="address" class="form-control">
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label>{{trans('file.City')}}</label>
+                        <input type="text" name="city" class="form-control">
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label>{{trans('file.Country')}}</label>
+                        @include('partials.country_select', ['selected' => old('country')])
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">{{trans('file.submit')}}</button>
+                </div>
+                {{ Form::close() }}
+            </div>
+        </div>
+    </div>
+</div>
 
 <div id="editModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" class="modal fade text-left">
     <div role="document" class="modal-dialog">
@@ -171,6 +220,13 @@
         $("#editModal input[name='address']").val( $(this).data('address') );
         $("#editModal input[name='city']").val( $(this).data('city') );
         $("#editModal select[name='country']").val( $(this).data('country') || '' );
+        $('.selectpicker').selectpicker('refresh');
+    });
+
+    $('#addModal').on('show.bs.modal', function () {
+        var form = $(this).find('form')[0];
+        if (form) { form.reset(); }
+        $(this).find('.paste-image-preview').hide();
         $('.selectpicker').selectpicker('refresh');
     });
 
@@ -269,12 +325,7 @@
                 className: 'buttons-delete',
                 action: function ( e, dt, node, config ) {
                     if(user_verified == '1') {
-                        employee_id.length = 0;
-                        $(':checkbox:checked').each(function(i){
-                            if(i){
-                                employee_id[i-1] = $(this).closest('tr').data('id');
-                            }
-                        });
+                        var employee_id = collectSelectedTableIds('#employee-table');
                         if(employee_id.length && confirm("Are you sure want to delete?")) {
                             $.ajax({
                                 type:'POST',
@@ -287,10 +338,9 @@
                                     location.reload();
                                 }
                             });
-                            dt.rows({ page: 'current', selected: true }).remove().draw(false);
                         }
                         else if(!employee_id.length)
-                            alert('No employee is selected!');
+                            alert('No judge is selected!');
                     }
                     else
                         alert('This feature is disable for demo!');

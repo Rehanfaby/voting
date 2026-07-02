@@ -26,12 +26,8 @@ class AmbassadorController extends Controller
                 $all_permission[] = $permission->name;
             if(empty($all_permission))
                 $all_permission[] = 'dummy text';
-//            $lims_employee_all = Ambassador::where('is_active', true)->get();
-//            $lims_department_list = Department::where('is_active', true)->get();
-            $judge_role_id = Role::where('name', 'ambassador')->first()->id;
-            $lims_user_list = User::where('is_deleted', false)->where('role_id', $judge_role_id)->get();
-            return view('user.ambassador', compact('lims_user_list', 'all_permission'));
-//            return view('ambassador.index', compact('lims_employee_all', 'lims_department_list', 'all_permission'));
+            $lims_employee_all = Ambassador::where('is_active', true)->get();
+            return view('ambassador.index', compact('lims_employee_all', 'all_permission'));
         }
         else
             return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
@@ -140,9 +136,15 @@ class AmbassadorController extends Controller
 
     public function deleteBySelection(Request $request)
     {
-        $employee_id = $request['employeeIdArray'];
+        $employee_id = $request['employeeIdArray'] ?? $request['ids'] ?? [];
         foreach ($employee_id as $id) {
+            if($id == null) {
+                continue;
+            }
             $lims_employee_data = Ambassador::find($id);
+            if(!$lims_employee_data) {
+                continue;
+            }
             $lims_employee_data->is_active = false;
             $lims_employee_data->save();
         }

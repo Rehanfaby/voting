@@ -164,12 +164,7 @@
                 className: 'buttons-delete',
                 action: function ( e, dt, node, config ) {
                     if(user_verified == '1') {
-                        user_id.length = 0;
-                        $(':checkbox:checked').each(function(i){
-                            if(i){
-                                user_id[i-1] = $(this).closest('tr').data('id');
-                            }
-                        });
+                        var user_id = collectSelectedTableIds('#user-table');
                         if(user_id.length && confirm("Are you sure want to delete?")) {
                             $.ajax({
                                 type:'POST',
@@ -179,9 +174,9 @@
                                 },
                                 success:function(data){
                                     alert(data);
+                                    location.reload();
                                 }
                             });
-                            dt.rows({ page: 'current', selected: true }).remove().draw(false);
                         }
                         else if(!user_id.length)
                             alert('No user is selected!');

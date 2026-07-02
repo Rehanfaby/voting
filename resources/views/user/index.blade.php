@@ -15,7 +15,7 @@
 <section>
     @if(in_array("users-add", $all_permission))
         <div class="container-fluid">
-            <a href="{{route('user.create')}}" class="btn btn-info"><i class="dripicons-plus"></i> {{trans('file.Add User')}}</a>
+            <button type="button" class="btn btn-info" data-toggle="modal" data-target="#addUserModal"><i class="dripicons-plus"></i> {{trans('file.Add User')}}</button>
         </div>
     @endif
     <div class="table-responsive">
@@ -79,6 +79,65 @@
     </div>
 </section>
 
+@if(in_array("users-add", $all_permission))
+<div id="addUserModal" tabindex="-1" role="dialog" aria-hidden="true" class="modal fade text-left">
+    <div role="document" class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{trans('file.Add User')}}</h5>
+                <button type="button" data-dismiss="modal" aria-label="Close" class="close"><span aria-hidden="true"><i class="dripicons-cross"></i></span></button>
+            </div>
+            <div class="modal-body">
+                <p class="italic"><small>{{trans('file.The field labels marked with * are required input fields')}}.</small></p>
+                <form action="{{ route('user.store') }}" method="post">
+                    @csrf
+                    <div class="row">
+                        <div class="col-md-6 form-group">
+                            <label>{{trans('file.UserName')}} *</label>
+                            <input type="text" name="name" required class="form-control">
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label>{{trans('file.Email')}} *</label>
+                            <input type="email" name="email" required class="form-control" placeholder="example@example.com">
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label>{{trans('file.Phone Number')}} *</label>
+                            <input type="text" name="phone_number" required class="form-control">
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label>{{trans('file.Company Name')}}</label>
+                            <input type="text" name="company_name" class="form-control">
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label>{{trans('file.Role')}} *</label>
+                            <select name="role_id" required class="selectpicker form-control" data-live-search="true" title="Select Role...">
+                                @include('partials.role_options', ['lims_role_list' => $lims_role_list])
+                            </select>
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label>{{trans('file.Password')}} *</label>
+                            <div class="input-group">
+                                <input type="password" name="password" required class="form-control">
+                                <div class="input-group-append">
+                                    <button id="genbutton-modal" type="button" class="btn btn-default">{{trans('file.Generate')}}</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12 form-group">
+                            <input type="checkbox" name="is_active" value="1" checked>
+                            <label>{{trans('file.Active')}}</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">{{trans('file.submit')}}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
 <script type="text/javascript">
 
     $("ul#people").siblings('a').attr('aria-expanded','true');
@@ -101,6 +160,18 @@
 	    }
 	    return false;
 	}
+
+    $('#addUserModal').on('show.bs.modal', function () {
+        var form = $(this).find('form')[0];
+        if (form) { form.reset(); }
+        $('.selectpicker').selectpicker('refresh');
+    });
+
+    $('#genbutton-modal').on('click', function () {
+        $.get('genpass', function (data) {
+            $('#addUserModal input[name="password"]').val(data);
+        });
+    });
 
     $('#user-table').DataTable( {
         "order": [],
@@ -166,12 +237,7 @@
                 className: 'buttons-delete',
                 action: function ( e, dt, node, config ) {
                     if(user_verified == '1') {
-                        user_id.length = 0;
-                        $(':checkbox:checked').each(function(i){
-                            if(i){
-                                user_id[i-1] = $(this).closest('tr').data('id');
-                            }
-                        });
+                        var user_id = collectSelectedTableIds('#user-table');
                         if(user_id.length && confirm("Are you sure want to delete?")) {
                             $.ajax({
                                 type:'POST',
@@ -181,9 +247,9 @@
                                 },
                                 success:function(data){
                                     alert(data);
+                                    location.reload();
                                 }
                             });
-                            dt.rows({ page: 'current', selected: true }).remove().draw(false);
                         }
                         else if(!user_id.length)
                             alert('No user is selected!');

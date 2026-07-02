@@ -95,8 +95,8 @@
                         </div>
                         <div class="ms-input2-box mb-50">
                             <select class="select-role" name="role_id">
+                                <option value="2" selected>{{trans("file.Contestant")}}</option>
                                 <option value="3">{{trans("file.Voter")}}</option>
-                                <option value="2">{{trans("file.Contestant")}}</option>
                             </select>
                         </div>
                         <div class="ms-input2-box mb-50 video-file hide">

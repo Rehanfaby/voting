@@ -1030,6 +1030,29 @@
     function numberWithCommas(x) {
         return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     }
+
+    /** Collect row ids from a DataTables listing (selected rows + checked boxes). */
+    function collectSelectedTableIds(tableSelector) {
+        var ids = [];
+        var $table = $(tableSelector);
+        if (!$table.length || !$.fn.DataTable.isDataTable($table)) {
+            return ids;
+        }
+        var table = $table.DataTable();
+        table.rows({ selected: true }).every(function () {
+            var id = $(this.node()).data('id');
+            if (id) { ids.push(id); }
+        });
+        if (!ids.length) {
+            $table.find('tbody tr').each(function () {
+                if ($(this).find('input[type="checkbox"]').is(':checked')) {
+                    var id = $(this).data('id');
+                    if (id) { ids.push(id); }
+                }
+            });
+        }
+        return ids;
+    }
 </script>
 
 <script type="text/javascript">

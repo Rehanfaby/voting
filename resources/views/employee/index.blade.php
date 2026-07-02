@@ -293,6 +293,13 @@
         $('#editModal .selectpicker').selectpicker('refresh');
     });
 
+    $('#addModal').on('show.bs.modal', function () {
+        var form = $(this).find('form')[0];
+        if (form) { form.reset(); }
+        $(this).find('.paste-image-preview').hide();
+        $('#addModal .selectpicker').selectpicker('refresh');
+    });
+
     $('#employee-table').DataTable( {
         "order": [],
         'language': {

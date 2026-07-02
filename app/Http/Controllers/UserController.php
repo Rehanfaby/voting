@@ -29,7 +29,8 @@ class UserController extends Controller
             foreach ($permissions as $permission)
                 $all_permission[] = $permission->name;
             $lims_user_list = User::where('is_deleted', false)->get();
-            return view('user.index', compact('lims_user_list', 'all_permission'));
+            $lims_role_list = self::assignableRoles();
+            return view('user.index', compact('lims_user_list', 'all_permission', 'lims_role_list'));
         }
         else
             return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
@@ -67,7 +68,7 @@ class UserController extends Controller
     {
         $role = Role::find(Auth::user()->role_id);
         if($role->hasPermissionTo('users-add')){
-            $lims_role_list = Roles::where('is_active', true)->get();
+            $lims_role_list = self::assignableRoles();
             return view('user.create', compact('lims_role_list'));
         }
         else
@@ -245,5 +246,28 @@ class UserController extends Controller
         $lims_user_data->save();
 
         return redirect('user')->with('message3', 'Data deleted successfullly');
+    }
+
+    /** Platform roles shown when creating or assigning users. */
+    public static function assignableRoles()
+    {
+        $roles = Roles::where('is_active', true)
+            ->where(function ($query) {
+                $query->whereIn('id', [1, 2, 3])
+                    ->orWhereIn('name', ['judge', 'ambassador', 'admin', 'contestant', 'musician', 'voter']);
+            })
+            ->orderBy('id')
+            ->get()
+            ->unique('id')
+            ->values();
+
+        if (!$roles->pluck('id')->contains(2)) {
+            $roles->push((object) ['id' => 2, 'name' => 'contestant']);
+        }
+        if (!$roles->pluck('id')->contains(3)) {
+            $roles->push((object) ['id' => 3, 'name' => 'voter']);
+        }
+
+        return $roles->sortBy('id')->values();
     }
 }
