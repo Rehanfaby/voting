@@ -210,6 +210,15 @@ class SiteContent
         return max(1, min(20, $n));
     }
 
+    /** Public URL for a prime/finals promo image (optional). */
+    public static function primeImageUrl($path)
+    {
+        if (empty($path) || !file_exists(public_path($path))) {
+            return null;
+        }
+        return url($path);
+    }
+
     /** The next upcoming prime (for the countdown), or null. */
     public static function nextPrime()
     {

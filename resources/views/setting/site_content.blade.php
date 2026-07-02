@@ -171,7 +171,7 @@
                         <h4><i class="dripicons-clock"></i> Prime / Finals Schedule &amp; Countdown</h4>
                     </div>
                     <div class="card-body">
-                        <p class="italic"><small>Pick a date &amp; time for each prime. The homepage shows a live countdown to the next upcoming prime.</small></p>
+                        <p class="italic"><small>Pick a date &amp; time and optional promo image for each prime. The homepage shows a live countdown to the next upcoming prime.</small></p>
                         <div class="form-group col-md-6 px-0">
                             <label>Schedule Title</label>
                             <input type="text" name="primes_title" class="form-control" value="{{ $content['primes_title'] ?? 'Finals Schedule' }}">
@@ -186,13 +186,20 @@
                         <div class="table-responsive">
                             <table class="table" id="primes-table">
                                 <thead>
-                                    <tr><th>Prime Label</th><th>Date &amp; Time</th><th style="width:60px"></th></tr>
+                                    <tr><th>Prime Label</th><th>Date &amp; Time</th><th>Promo Image</th><th style="width:60px"></th></tr>
                                 </thead>
                                 <tbody>
-                                    @foreach(($content['primes'] ?? []) as $p)
+                                    @foreach(($content['primes'] ?? []) as $i => $p)
                                         <tr>
                                             <td><input type="text" name="prime_label[]" class="form-control" value="{{ $p['label'] ?? '' }}"></td>
                                             <td><input type="datetime-local" name="prime_date[]" class="form-control" value="{{ !empty($p['date']) ? \Carbon\Carbon::parse($p['date'])->format('Y-m-d\TH:i') : '' }}"></td>
+                                            <td>
+                                                <input type="hidden" name="prime_image_existing[]" value="{{ $p['image'] ?? '' }}">
+                                                <input type="file" name="prime_image[]" accept="image/*" class="form-control-file">
+                                                @if(!empty($p['image']))
+                                                    <img src="{{ \App\Helpers\SiteContent::primeImageUrl($p['image']) }}?v={{ time() }}" alt="" style="max-height:48px;margin-top:6px;border-radius:6px;">
+                                                @endif
+                                            </td>
                                             <td><button type="button" class="btn btn-danger btn-sm sc-remove-row">&times;</button></td>
                                         </tr>
                                     @endforeach
@@ -277,6 +284,8 @@
             return '<tr>' +
                 '<td><input type="text" name="prime_label[]" class="form-control"></td>' +
                 '<td><input type="datetime-local" name="prime_date[]" class="form-control"></td>' +
+                '<td><input type="hidden" name="prime_image_existing[]" value="">' +
+                '<input type="file" name="prime_image[]" accept="image/*" class="form-control-file"></td>' +
                 '<td><button type="button" class="btn btn-danger btn-sm sc-remove-row">&times;</button></td>' +
                 '</tr>';
         }

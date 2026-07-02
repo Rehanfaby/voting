@@ -238,17 +238,34 @@ class SettingController extends Controller
         }
         $data['casting_rows'] = $rows;
 
-        // Prime dates
+        // Prime dates + optional promo images
         $primes = [];
-        $labels     = $request->input('prime_label', []);
-        $primeDates = $request->input('prime_date', []);
+        $labels          = $request->input('prime_label', []);
+        $primeDates      = $request->input('prime_date', []);
+        $existingImages  = $request->input('prime_image_existing', []);
+        $primeFiles      = $request->file('prime_image', []);
+        $primeDir = public_path('uploads/primes');
+        if (!is_dir($primeDir)) {
+            @mkdir($primeDir, 0755, true);
+        }
         foreach ($labels as $i => $label) {
             $label = trim($label);
             $date  = trim($primeDates[$i] ?? '');
-            if ($label === '' && $date === '') {
+            $image = trim($existingImages[$i] ?? '');
+            if (isset($primeFiles[$i]) && $primeFiles[$i]->isValid()) {
+                $file = $primeFiles[$i];
+                $request->validate([
+                    "prime_image.$i" => 'image|mimes:jpg,jpeg,png,gif|max:8192',
+                ]);
+                $name = 'prime-' . $i . '-' . time() . '.' . $file->getClientOriginalExtension();
+                $file->move($primeDir, $name);
+                ImageOptimizer::afterUpload($primeDir . '/' . $name, 'banner');
+                $image = 'uploads/primes/' . $name;
+            }
+            if ($label === '' && $date === '' && $image === '') {
                 continue;
             }
-            $primes[] = ['label' => $label, 'date' => $date];
+            $primes[] = ['label' => $label, 'date' => $date, 'image' => $image ?: null];
         }
         $data['primes'] = $primes;
 

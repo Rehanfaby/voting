@@ -7,16 +7,19 @@
     --mg-blue: #1d4ed8;     /* primary blue */
     --mg-blue-2: #2563eb;
     --mg-navy: #0a2350;     /* deep navy blue */
-    --mg-yellow: #f5c518;   /* golden yellow accent */
-    --mg-yellow-2: #ffd84d; /* light yellow */
+    --mg-cosmic: #e87722;   /* cosmic / burnt orange accent */
+    --mg-cosmic-2: #ff9533;
+    --mg-cosmic-deep: #c65d0a;
     /* legacy var names kept so existing rules keep working */
-    --mg-orange: #1d4ed8;
-    --mg-gold: #f5c518;
-    --mg-gold-2: #ffd84d;
-    --mg-grad: linear-gradient(135deg, #f5c518 0%, #ffd84d 100%);
+    --mg-yellow: var(--mg-cosmic);
+    --mg-yellow-2: var(--mg-cosmic-2);
+    --mg-orange: var(--mg-cosmic);
+    --mg-gold: var(--mg-cosmic);
+    --mg-gold-2: var(--mg-cosmic-2);
+    --mg-grad: linear-gradient(135deg, #e87722 0%, #ff9533 100%);
     --mg-dark: #07172f;
     --mg-card: rgba(255, 255, 255, .05);
-    --mg-border: rgba(245, 197, 24, .22);
+    --mg-border: rgba(232, 119, 34, .22);
 }
 
 /* ---- Brand buttons -------------------------------------------------- */
@@ -28,12 +31,12 @@
     border: none; cursor: pointer; text-decoration: none;
     transition: transform .18s ease, box-shadow .25s ease, filter .2s ease;
 }
-.mg-btn:hover { transform: translateY(-2px); filter: brightness(1.04); box-shadow: 0 14px 30px rgba(245, 197, 24, .45); color: var(--mg-navy) !important; }
+.mg-btn:hover { transform: translateY(-2px); filter: brightness(1.04); box-shadow: 0 14px 30px rgba(232, 119, 34, .45); color: var(--mg-navy) !important; }
 .mg-btn--ghost {
     background: transparent; border: 1.5px solid var(--mg-border);
     color: var(--mg-yellow-2) !important;
 }
-.mg-btn--ghost:hover { border-color: var(--mg-yellow); background: rgba(245, 197, 24, .10); box-shadow: none; }
+.mg-btn--ghost:hover { border-color: var(--mg-yellow); background: rgba(232, 119, 34, .10); box-shadow: none; }
 
 /* ---- Search field on dark ------------------------------------------ */
 .mg-search { max-width: 460px; margin: 22px auto 0; position: relative; }
@@ -56,7 +59,7 @@
 }
 .mg-card:hover {
     transform: translateY(-8px);
-    border-color: rgba(245, 197, 24, .55);
+    border-color: rgba(232, 119, 34, .55);
     box-shadow: 0 24px 50px rgba(3, 12, 28, .55);
 }
 .mg-card__media { position: relative; aspect-ratio: 16 / 11; overflow: hidden; background: #0c1d3a; }
@@ -106,7 +109,7 @@
    ===================================================================== */
 body {
     background:
-        radial-gradient(1150px 720px at 10% -6%,  rgba(245,197,24,.14), transparent 52%),
+        radial-gradient(1150px 720px at 10% -6%,  rgba(232,119,34,.14), transparent 52%),
         radial-gradient(1000px 700px at 96% 4%,   rgba(29,78,216,.26),  transparent 52%),
         radial-gradient(1100px 900px at 50% 118%, rgba(37,99,235,.16), transparent 55%),
         linear-gradient(180deg, #0c2a5e 0%, #0a2350 45%, #07172f 100%) !important;
@@ -132,7 +135,7 @@ body {
 .ms-banner-area .ms-br-30 { box-shadow: 0 30px 80px rgba(3,12,28,.45); }
 .ms-banner-area .include__bg::before {
     content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit;
-    background: linear-gradient(120deg, rgba(29,78,216,.32) 0%, rgba(245,197,24,.10) 45%, rgba(7,23,47,.10) 100%);
+    background: linear-gradient(120deg, rgba(29,78,216,.32) 0%, rgba(232,119,34,.10) 45%, rgba(7,23,47,.10) 100%);
     pointer-events: none;
 }
 
@@ -158,13 +161,13 @@ footer .ms-footer-bg { background-color: transparent !important; }
 .ms-casting-card {
     background: #ffffff;
     border-radius: 24px;
-    border: 1px solid rgba(245, 197, 24, .25);
+    border: 1px solid rgba(232, 119, 34, .25);
     box-shadow: 0 30px 80px rgba(3, 12, 28, .45);
     padding: 44px 40px;
     overflow: hidden;
 }
 .ms-casting-head { text-align: center; margin-bottom: 28px; }
-.ms-casting-kicker { display: inline-block; color: #b8920a; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; font-size: 13px; }
+.ms-casting-kicker { display: inline-block; color: var(--mg-cosmic-deep); font-weight: 800; letter-spacing: 2px; text-transform: uppercase; font-size: 13px; }
 .ms-casting-title { color: var(--mg-navy); font-size: 34px; font-weight: 800; margin: 10px 0 0; }
 .ms-casting-title::after { content: ""; display: block; width: 90px; height: 4px; margin: 16px auto 0; border-radius: 4px; background: linear-gradient(90deg, var(--mg-blue), var(--mg-yellow)); }
 .ms-casting-sub { color: #5b6b86; font-size: 16px; max-width: 700px; margin: 18px auto 0; }
@@ -184,7 +187,7 @@ footer .ms-footer-bg { background-color: transparent !important; }
 .ms-casting-table tbody tr:nth-child(odd) { background: #f7f9fd; }
 .ms-casting-table tbody tr:hover { background: #fff7d6; }
 .ms-casting-table tbody td:first-child { font-weight: 700; color: var(--mg-navy); }
-.ms-date-chip { display: inline-block; background: rgba(245, 197, 24, .18); color: #8a6d00; border: 1px solid rgba(245, 197, 24, .5); padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 13.5px; }
+.ms-date-chip { display: inline-block; background: rgba(232, 119, 34, .18); color: #a34a0a; border: 1px solid rgba(232, 119, 34, .5); padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 13.5px; }
 
 .ms-finals-title { text-align: center; color: var(--mg-navy); font-weight: 800; margin: 36px 0 22px; font-size: 24px; }
 .ms-finals-timeline { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; }
@@ -192,7 +195,7 @@ footer .ms-footer-bg { background-color: transparent !important; }
 .ms-finals-item .ms-finals-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--mg-blue); }
 .ms-finals-name { font-weight: 700; color: var(--mg-navy); }
 .ms-finals-date { font-size: 13px; color: #6b7a93; }
-.ms-finals-item.is-next { background: linear-gradient(180deg, #fff7d6, #fff); border-color: var(--mg-yellow); box-shadow: 0 12px 30px rgba(245, 197, 24, .3); }
+.ms-finals-item.is-next { background: linear-gradient(180deg, #fff7d6, #fff); border-color: var(--mg-yellow); box-shadow: 0 12px 30px rgba(232, 119, 34, .3); }
 .ms-finals-item.is-next .ms-finals-dot { background: var(--mg-yellow); }
 .ms-finals-badge { position: absolute; top: -10px; right: -8px; background: var(--mg-yellow); color: var(--mg-navy); font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 20px; }
 
@@ -238,7 +241,7 @@ footer .ms-footer-bg { background-color: transparent !important; }
     background: linear-gradient(135deg, var(--mg-yellow) 0%, var(--mg-yellow-2) 100%);
     color: var(--mg-navy) !important;
     border-color: var(--mg-yellow);
-    box-shadow: 0 6px 16px rgba(245, 197, 24, .35);
+    box-shadow: 0 6px 16px rgba(232, 119, 34, .35);
 }
 .offcanvas__lang .ms-lang-switch--frontend {
     justify-content: center;
@@ -256,4 +259,45 @@ footer .ms-footer-bg { background-color: transparent !important; }
 }
 @media (min-width: 1200px) {
     .offcanvas__lang { display: none; }
+}
+
+/* =====================================================================
+   Public header — blue bar like admin (replaces black theme)
+   ===================================================================== */
+#header-sticky.header__area,
+#header-sticky.sticky,
+.header__area.ms-bg-body {
+    background: linear-gradient(135deg, var(--mg-navy) 0%, var(--mg-blue-2) 100%) !important;
+    box-shadow: 0 4px 18px rgba(10, 35, 80, .22);
+}
+#header-sticky .header__main.ms-border2 {
+    border-bottom-color: rgba(255, 255, 255, .12) !important;
+}
+.header__area .main-menu ul li a,
+.header__area .ms-enquiry-box a,
+.header__area .ms-enquiry-box .text,
+.header__area .user__acount a {
+    color: #fff !important;
+}
+.header__area .ms-enquiry-box .icon,
+.header__area .flaticon-star.icon,
+.header__area .ms-border-btn i,
+.header__area .fa-regular.fa-plus {
+    color: var(--mg-cosmic) !important;
+}
+.header__area .ms-border-btn {
+    border-color: rgba(255, 255, 255, .55) !important;
+    color: #fff !important;
+}
+.header__area .ms-border-btn:hover {
+    background: var(--mg-cosmic) !important;
+    border-color: var(--mg-cosmic) !important;
+    color: #fff !important;
+}
+.header__area .ms-enquiry-box .number {
+    background: var(--mg-cosmic);
+    color: var(--mg-navy);
+}
+.header__area .bar-icon span {
+    background: #fff;
 }

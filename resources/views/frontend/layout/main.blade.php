@@ -21,7 +21,8 @@
     <link rel="stylesheet" href="{{ asset('public/frontend/css/css-fontawesome-pro.css') }}">
     <link rel="stylesheet" href="{{ asset('public/frontend/css/css-spacing.css') }}">
     <link rel="stylesheet" href="{{ asset('public/frontend/css/css-main.css') }}">
-    <link rel="stylesheet" href="{{ asset('public/css/frontend-modern.css') }}?v=20260702-lang" type="text/css" id="frontend-modern-style">
+    <link rel="stylesheet" href="{{ asset('public/css/frontend-modern.css') }}?v=20260702-brand" type="text/css" id="frontend-modern-style">
+    @yield('styles')
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 
@@ -49,14 +50,6 @@
 
 @php
     $user = Auth::user() ?? null;
-    if($user) {
-        $contestents = \App\vote::join('employees', 'votes.musician_id', '=', 'employees.id')
-        ->where('votes.user_id', $user->id)
-        ->where('employees.is_active', 1)
-        ->select('employees.id', 'employees.name', 'employees.image', 'votes.musician_id')
-        ->distinct('votes.musician_id')
-        ->get();
-    }
 @endphp
 <style>
     .header__action-inner {
@@ -114,12 +107,6 @@
                 <div class="offcanvas__btn mb-30">
                     <a class="user__name" href="{{ route('home') }}"><i class="fa-solid fa-plus"></i> {{trans('file.Home')}}</a>
                 </div>
-                               <div class="offcanvas__btn mb-30">
-                    <a class="user__name" href="https://mulemagospeltalent.com/audition-now/" target="_blank" rel="noopener">
-                        <i class="fa-solid fa-plus"></i> {{ trans('file.Register Now!') }}
-                    </a>
-                </div>
-
                 <div class="offcanvas__btn mb-30">
                     <a class="user__name" href="{{ route('about') }}"><i class="fa-solid fa-plus"></i> {{trans('file.About Us')}}</a>
                 </div>
@@ -131,9 +118,6 @@
                 <div class="hr-1 mt-30 mb-30 d-xl-none"></div>
                 <div class="offcanvas__btn mb-30">
                     <a class="user__name" href="{{ route('user.contentant') }}"><i class="fa-solid fa-plus"></i> {{trans('file.My Votes')}}</a>
-                </div>
-                <div class="offcanvas__btn mb-30">
-                    <a class="user__name" href="{{ route('user.contentant') }}"><i class="fa-solid fa-plus"></i> {{trans('file.My Contestants')}}</a>
                 </div>
                 <div class="offcanvas__btn mb-30">
                     <a class="user__name" href="{{ route('user.events') }}"><i class="fa-solid fa-plus"></i> {{trans('file.My Events')}}</a>
@@ -182,9 +166,6 @@
                                                     <a href="{{ route('home') }}">{{trans('file.Home')}}</a>
                                                 </li>
                                                 <li>
-                                                    <a href="{{ route('user.signup') }}">{{trans('file.Registration')}}</a>
-                                                </li>
-                                                <li>
                                                     <a href="{{ route('about') }}">{{trans('file.About Us')}}</a>
                                                 </li>
                                                 <li>
@@ -195,44 +176,6 @@
                                     </div>
                                 </div>
                                 <div class="header__action-inner d-flex align-items-center flex-grow-1 justify-content-end">
-                                    @if($user)
-                                        <!-- <div class="enquiry__list ml-10 mr-10 ms-browse-act-wrap p-relative">
-                                            <div class="ms-enquiry-box p-relative d-none d-xl-inline-flex">
-                                                <a href="{{ route('user.contentant') }}">
-                                                    <span class="text">{{trans('file.My Votes')}}</span></a>
-                                            </div>
-                                        </div> -->
-                                        <div class="enquiry__list ml-10 mr-10 ms-browse-act-wrap p-relative">
-                                            <div class="ms-enquiry-box p-relative d-none d-xl-inline-flex">
-                                                <a href="{{ route('user.contentant') }}"><i class="flaticon-star icon"></i>
-                                                    <span class="text">{{trans('file.My Contestants')}}</span> <span class="number">{{ count($contestents) }}</span></a>
-                                            </div>
-                                            <div class="ms-browse-act-item-wrap p-absolute">
-                                                @foreach($contestents as $contestent)
-                                                <div class="ms-song-item">
-                                                    <div class="ms-song-img p-relative">
-                                                        <a href="{{ route('musician.data', $contestent->id) }}"><img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($contestent->image) }}" alt="{{trans('file.Contestants name')}}" loading="lazy" decoding="async"></a>
-                                                    </div>
-                                                    <div class="ms-song-content">
-                                                        <h3 class="ms-song-title">
-                                                            <a href="{{ route('musician.data', $contestent->id) }}">{{ $contestent->name }}</a>
-                                                        </h3>
-                                                    </div>
-                                                </div>
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    @endif
-                                 <div class="header__btn">
-                                    <a href="https://mulemagospeltalent.com/audition-now/" 
-                                       class="ms-border-btn register-attention-btn"
-                                       target="_blank"
-                                       rel="noopener noreferrer">
-                                        <i class="fa-regular fa-plus"></i> {{ trans('file.Register Now!') }}
-                                    </a>
-                                </div>
-
-
                                     @if(!$user)
                                     <div class="user__acount d-none d-xxl-inline-flex">
                                             <span>
@@ -268,6 +211,43 @@
                                                                 <i class="dripicons-power"></i> {{trans('file.logout')}}
                                                             </a>
                                                             <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                                                                @csrf
+                                                            </form>
+                                                        </h3>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+                                    @if($user && $user->role_id != 3)
+                                        <div class="enquiry__list ml-10 mr-10 ms-browse-act-wrap p-relative">
+                                            <div class="ms-enquiry-box p-relative d-none d-xl-inline-flex">
+                                                <a href="#"><i class="flaticon-star icon"></i>
+                                                    <span class="text">{{ trans('file.Admin') }}</span>
+                                                </a>
+                                            </div>
+                                            <div class="ms-browse-act-item-wrap p-absolute">
+                                                <div class="ms-song-item">
+                                                    <div class="ms-song-content">
+                                                        <h3 class="ms-song-title">
+                                                            <a href="{{ url('/admin') }}">
+                                                                <span class="text">{{ trans('file.Admin Dashboard') }}</span>
+                                                            </a>
+                                                        </h3>
+                                                        <hr>
+                                                        <h3 class="ms-song-title">
+                                                            <a href="{{ route('user.profile', $user->id) }}">
+                                                                <span class="text">{{ trans('file.profile') }}</span>
+                                                            </a>
+                                                        </h3>
+                                                        <hr>
+                                                        <h3 class="ms-song-title" style="margin-bottom: 10px;">
+                                                            <a href="{{ route('logout') }}"
+                                                            onclick="event.preventDefault();
+                                                                document.getElementById('frontend-admin-logout-form').submit();">
+                                                                <i class="dripicons-power"></i> {{ trans('file.logout') }}
+                                                            </a>
+                                                            <form id="frontend-admin-logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                                                                 @csrf
                                                             </form>
                                                         </h3>

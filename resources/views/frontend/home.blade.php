@@ -118,19 +118,19 @@
                 </div>
             </div>
             <style>
-                .ms-rank-area { background: radial-gradient(900px 400px at 50% -30%, rgba(246,196,83,.08), transparent 60%); }
+                .ms-rank-area { background: radial-gradient(900px 400px at 50% -30%, rgba(232,119,34,.08), transparent 60%); }
                 .ms-rank-item { text-align:center; padding:12px 6px 18px; }
                 .ms-rank-avatar { position:relative; width:180px; height:180px; margin:0 auto 16px; border-radius:50%; padding:6px;
-                    background:linear-gradient(145deg,#f6c453,#e0a021);
-                    box-shadow:0 0 0 6px #12294d, 0 0 30px rgba(246,196,83,.5); }
+                    background:linear-gradient(145deg,#e87722,#ff9533);
+                    box-shadow:0 0 0 6px #12294d, 0 0 30px rgba(232,119,34,.55); }
                 .ms-rank-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; display:block; border:3px solid #12294d; background:#0d1f3c; }
                 .ms-rank-badge { position:absolute; top:2px; left:2px; z-index:2; min-width:34px; height:34px; line-height:30px; padding:0 8px;
-                    border-radius:20px; background:#12294d; color:#f6c453; font-weight:800; font-size:15px; text-align:center;
-                    border:2px solid #f6c453; box-shadow:0 3px 8px rgba(0,0,0,.35); }
+                    border-radius:20px; background:#12294d; color:#e87722; font-weight:800; font-size:15px; text-align:center;
+                    border:2px solid #e87722; box-shadow:0 3px 8px rgba(0,0,0,.35); }
                 .ms-rank-name { font-size:18px; font-weight:700; margin:0 0 5px; line-height:1.25; }
                 .ms-rank-name a { color:#fff; }
-                .ms-rank-name a:hover { color:#f6c453; }
-                .ms-rank-votes { display:inline-block; color:#f6c453; font-weight:700; font-size:13px; letter-spacing:.6px; text-transform:uppercase; }
+                .ms-rank-name a:hover { color:#ff9533; }
+                .ms-rank-votes { display:inline-block; color:#e87722; font-weight:700; font-size:13px; letter-spacing:.6px; text-transform:uppercase; }
                 .ms-rank-votes i { margin-right:4px; }
                 @media (max-width:575px){ .ms-rank-avatar { width:140px; height:140px; } .ms-rank-name { font-size:16px; } }
             </style>
@@ -444,7 +444,7 @@
 
         <!-- Ambassador  area start -->
         @if(\App\Helpers\SiteContent::enabled('ambassadors'))
-        <section class="ms-fun-brand ms-bg-2 pb-130 pt-125">
+        <section class="ms-fun-brand ms-bg-2 ms-ambassadors-section pb-130 pt-125">
             <div class="container">
                 <div class="row align-items-end mb-25 bdFadeUp">
                     <div class="col-xl-6 col-lg-6">
@@ -466,9 +466,9 @@
                                         @foreach($ambassadors as $ambassador)
                                             <div class="swiper-slide">
                                                 <div class="ms-popular__item p-relative mb-30">
-                                                    <div class="ms-popular__thumb" style="border-radius: 10%;">
+                                                    <div class="ms-popular__thumb ms-ambassador-glow">
                                                         <div class="ms-popular-overlay"></div>
-                                                        <a ><img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($ambassador->image) }}" loading="lazy" decoding="async"></a>
+                                                        <a><img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($ambassador->image) }}" alt="{{ $ambassador->name }}" loading="lazy" decoding="async"></a>
                                                         <a class="ms-popular__link">
                                                             <span class="ms-popular-icon"><i class="fa-regular fa-arrow-right-long"></i></span>
                                                         </a>
@@ -487,6 +487,28 @@
                     </div>
                 </div>
             </div>
+            <style>
+                .ms-ambassadors-section .ms-ambassador-glow {
+                    border-radius: 50%;
+                    border: 2px solid rgba(232, 119, 34, 0.65);
+                    box-shadow:
+                        0 0 0 6px #12294d,
+                        0 0 22px rgba(232, 119, 34, 0.55),
+                        0 0 40px rgba(232, 119, 34, 0.25),
+                        inset 0 0 12px rgba(232, 119, 34, 0.08);
+                }
+                .ms-ambassadors-section .ms-popular__title a {
+                    color: #e87722;
+                    background: #12294d;
+                    border: 1px solid rgba(232, 119, 34, 0.45);
+                    font-weight: 600;
+                }
+                .ms-ambassadors-section .ms-popular__title a:hover {
+                    color: #ffffff;
+                    background: #1a3a6b;
+                    border-color: #e87722;
+                }
+            </style>
         </section>
         @endif
         <!-- Ambassador  area end -->
@@ -567,7 +589,7 @@
                     <div class="col-lg-8">
                         <div class="section__title-wrapper mb-40 text-center bd-title-anim">
                             <span class="section__subtitle"><i class="fa-solid fa-trophy"></i> Grand Finale</span>
-                            <h2 class="section__title">Finals <span class="animated-underline active">Schedule</span></h2>
+                            <h2 class="section__title">{{ \App\Helpers\SiteContent::get('primes_title', 'Finals Schedule') }}</h2>
                         </div>
                     </div>
                 </div>
@@ -588,12 +610,12 @@
                     </div>
                 </div>
                 <style>
-                    .ms-countdown { text-align: center; padding: 24px 20px; border-radius: 16px; background: rgba(255,255,255,.04); border: 1px solid rgba(246,196,83,.3); }
+                    .ms-countdown { text-align: center; padding: 24px 20px; border-radius: 16px; background: rgba(255,255,255,.04); border: 1px solid rgba(232,119,34,.3); }
                     .ms-countdown__label { color: rgba(255,255,255,.8); font-size: 15px; margin: 0 0 14px; letter-spacing: .5px; }
-                    .ms-countdown__label i { color: #f6c453; margin-right: 6px; }
+                    .ms-countdown__label i { color: #e87722; margin-right: 6px; }
                     .ms-countdown__grid { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
-                    .ms-countdown__cell { min-width: 78px; padding: 14px 10px; border-radius: 12px; background: linear-gradient(180deg, rgba(240,169,59,.15), rgba(255,255,255,.03)); border: 1px solid rgba(240,169,59,.35); }
-                    .ms-countdown__cell span { display: block; font-size: 30px; font-weight: 800; color: #f0a93b; line-height: 1; }
+                    .ms-countdown__cell { min-width: 78px; padding: 14px 10px; border-radius: 12px; background: linear-gradient(180deg, rgba(232,119,34,.15), rgba(255,255,255,.03)); border: 1px solid rgba(232,119,34,.35); }
+                    .ms-countdown__cell span { display: block; font-size: 30px; font-weight: 800; color: #e87722; line-height: 1; }
                     .ms-countdown__cell small { display: block; margin-top: 6px; color: rgba(255,255,255,.65); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
                 </style>
                 <script>
@@ -625,19 +647,29 @@
                     <div class="col-xl-10">
                         <div class="casting-timeline">
                             @php
-                                $finals = [
-                                    ['label' => 'Prime 1',     'date' => 'August 9, 2026',  'icon' => 'fa-microphone-lines'],
-                                    ['label' => 'Prime 2',     'date' => 'August 17, 2026', 'icon' => 'fa-music'],
-                                    ['label' => 'Prime 3',     'date' => 'August 23, 2026', 'icon' => 'fa-star'],
-                                    ['label' => 'Final Prime', 'date' => 'August 30, 2026', 'icon' => 'fa-crown'],
-                                ];
+                                $sc_primes = \App\Helpers\SiteContent::get('primes', []);
+                                $nowTs = time();
+                                $nextPrimeTs = $sc_next_prime ? strtotime($sc_next_prime['date'] ?? '') : null;
                             @endphp
-                            @foreach($finals as $i => $final)
-                                <div class="casting-timeline__item {{ $loop->last ? 'is-final' : '' }}">
-                                    <div class="casting-timeline__dot"><i class="fa-solid {{ $final['icon'] }}"></i></div>
+                            @foreach($sc_primes as $i => $final)
+                                @php
+                                    $primeTs = !empty($final['date']) ? strtotime($final['date']) : false;
+                                    $isNext = $nextPrimeTs && $primeTs && $primeTs === $nextPrimeTs;
+                                    $isFinal = $loop->last;
+                                    $displayDate = !empty($final['date']) ? \Carbon\Carbon::parse($final['date'])->format('F j, Y g:i A') : '';
+                                    $primeImg = \App\Helpers\SiteContent::primeImageUrl($final['image'] ?? null);
+                                @endphp
+                                <div class="casting-timeline__item {{ $isFinal ? 'is-final' : '' }} {{ $isNext ? 'is-next' : '' }}">
+                                    @if($primeImg)
+                                    <div class="casting-timeline__photo">
+                                        <img src="{{ $primeImg }}" alt="{{ $final['label'] ?? 'Prime' }}" loading="lazy" decoding="async">
+                                    </div>
+                                    @else
+                                    <div class="casting-timeline__dot"><i class="fa-solid fa-microphone-lines"></i></div>
+                                    @endif
                                     <div class="casting-timeline__content">
-                                        <span class="casting-timeline__date">{{ $final['date'] }}</span>
-                                        <h5 class="casting-timeline__label">{{ $final['label'] }}</h5>
+                                        <span class="casting-timeline__date">{{ $displayDate }}</span>
+                                        <h5 class="casting-timeline__label">{{ $final['label'] ?? ('Prime ' . ($i + 1)) }}</h5>
                                     </div>
                                 </div>
                             @endforeach
@@ -711,9 +743,20 @@
                 }
                 .casting-timeline__item:hover { transform: translateY(-6px); border-color: rgba(246,196,83,.5); }
                 .casting-timeline__item.is-final {
-                    background: linear-gradient(135deg, rgba(246,196,83,.16), rgba(226,86,42,.12));
-                    border-color: rgba(246,196,83,.45);
+                    background: linear-gradient(135deg, rgba(232,119,34,.16), rgba(226,86,42,.12));
+                    border-color: rgba(232,119,34,.45);
                 }
+                .casting-timeline__item.is-next {
+                    border-color: rgba(232,119,34,.75);
+                    box-shadow: 0 12px 30px rgba(232,119,34,.28);
+                }
+                .casting-timeline__photo {
+                    width: 88px; height: 88px; margin: 0 auto 14px;
+                    border-radius: 50%; overflow: hidden;
+                    border: 3px solid #e87722;
+                    box-shadow: 0 0 0 5px #12294d, 0 0 22px rgba(232,119,34,.45);
+                }
+                .casting-timeline__photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
                 .casting-timeline__dot {
                     width: 64px; height: 64px; margin: 0 auto 16px;
                     display: flex; align-items: center; justify-content: center;
@@ -740,146 +783,108 @@
 
         <!-- Partner Area Start Here  -->
         @if(\App\Helpers\SiteContent::enabled('partners'))
-        <section class="ms-partner-area fix pb-130">
-    <div class="container">
-        <div class="row justify-content-center bdFadeUp">
-            <div class="col-lg-6">
-                <div class="section__title-wrapper mb-65 text-center bd-title-anim">
-                    <span class="section__subtitle">{{ trans("file.Our Partners") }}</span>
-                    <h2 class="section__title">{{ trans("file.Most") }}
-                        <span class="animated-underline active">{{ trans("file.Valuable") }}</span>
-                        {{ trans("file.Partners") }}
-                    </h2>
+        <section class="ms-partner-area fix pb-130 pt-90">
+            <div class="container">
+                <div class="row justify-content-center bdFadeUp">
+                    <div class="col-lg-6">
+                        <div class="section__title-wrapper mb-65 text-center bd-title-anim">
+                            <span class="section__subtitle">{{ trans("file.Our Partners") }}</span>
+                            <h2 class="section__title">{{ trans("file.Most") }}
+                                <span class="animated-underline active">{{ trans("file.Valuable") }}</span>
+                                {{ trans("file.Partners") }}
+                            </h2>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mg-partner-grid partner-logos">
+                    @php
+                        $partnerLogos = [
+                            ['src' => url('public/logo/' . $general_setting->site_logo), 'alt' => 'Site Logo'],
+                            ['src' => url('public/logo/Beyond.png'), 'alt' => 'Beyond Logo'],
+                            ['src' => url('public/logo/Elfa.png'), 'alt' => 'Elfa Logo'],
+                            ['src' => url('public/logo/MBS.png'), 'alt' => 'MBS Logo'],
+                            ['src' => url('public/logo/HimFirst.png'), 'alt' => 'HimFirst Logo'],
+                            ['src' => url('public/logo/Nafi.png'), 'alt' => 'Nafi Logo'],
+                            ['src' => url('public/logo/OFCC.png'), 'alt' => 'OFCC Logo'],
+                            ['src' => url('public/logo/DEXDESIGN.png'), 'alt' => 'DEXDESIGN Logo'],
+                        ];
+                    @endphp
+                    @foreach($partnerLogos as $logo)
+                        <div class="mg-partner-logo">
+                            <img src="{{ $logo['src'] }}" alt="{{ $logo['alt'] }}" loading="lazy" decoding="async">
+                        </div>
+                    @endforeach
                 </div>
             </div>
-        </div>
-
-        <style>
-    /* Logo container */
-    .logo-container {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr); /* 4 logos per row */
-        gap: 30px; /* Proper spacing */
-        justify-content: center;
-        align-items: center;
-        padding: 20px;
-        text-align: center;
-    }
-
-    /* Individual logo styling */
-    .logo-container img {
-        width: 260px; /* 75% larger than original */
-        height: auto;
-        opacity: 0; /* Hidden initially */
-        filter: none !important;
-        transition: transform 0.5s ease-in-out, opacity 1s ease-in-out;
-        animation: fadeInPop 1.5s ease-in-out forwards, float 3s infinite ease-in-out alternate;
-    }
-
-    /* Hover Effect: Spin + Zoom */
-    .logo-container img:hover {
-        transform: scale(1.3) rotate(360deg); /* Zoom + Full Spin */
-        transition: transform 0.8s ease-in-out; /* Smooth animation */
-    }
-
-    /* Fade-in & Pop Effect */
-    @keyframes fadeInPop {
-        0% {
-            opacity: 0;
-            transform: scale(0.8);
-        }
-        100% {
-            opacity: 1;
-            transform: scale(1);
-        }
-    }
-
-    /* Floating Animation (Gentle Up & Down Motion) */
-    @keyframes float {
-        0% {
-            transform: translateY(0px);
-        }
-        100% {
-            transform: translateY(10px);
-        }
-    }
-    @media (max-width: 450px) {
-        .ms-input2-box input, .ms-input2-box textarea {
-            width: 164%;
-        }
-        .partner-logos {
-            display: block;
-        }
-    }
-
-</style>
-
-<div class="logo-container partner-logos">
-    <img src="{{ url('public/logo/' . $general_setting->site_logo) }}" alt="Site Logo">
-    <img src="{{ url('public/logo/Beyond.png') }}" alt="Beyond Logo">
-    <img src="{{ url('public/logo/Elfa.png') }}" alt="Elfa Logo">
-    <img src="{{ url('public/logo/MBS.png') }}" alt="MBS Logo">
-    <img src="{{ url('public/logo/HimFirst.png') }}" alt="HimFirst Logo">
-    <img src="{{ url('public/logo/Nafi.png') }}" alt="Nafi Logo">
-    <img src="{{ url('public/logo/OFCC.png') }}" alt="OFCC Logo">
-    <img src="{{ url('public/logo/DEXDESIGN.png') }}" alt="DEXDESIGN Logo">
-</div>
-
-    </div>
-</section>
-
-<!-- Swiper CSS -->
-<link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
-
-<!-- Swiper JS -->
-<script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
-
-<!-- Initialize Swiper -->
-<script>
-
-    window.addEventListener('load', () => {
-        const popup = document.getElementById('popup');
-        const closeBtn = document.getElementById('closeBtn');
-        if (!popup) { return; } // popup disabled from settings
-
-        // Show popup
-        popup.classList.add('active');
-
-        // Close on click
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => {
-                popup.classList.remove('active');
-            });
-        }
-
-        // Optional: Close when clicking outside the popup
-        popup.addEventListener('click', (e) => {
-            if (e.target === popup) {
-                popup.classList.remove('active');
-            }
-        });
-    });
-
-    var swiper = new Swiper(".swiper-container", {
-    slidesPerView: 3,
-    spaceBetween: 30,
-    loop: true,
-    autoplay: {
-        delay: 2500,
-        disableOnInteraction: false,
-    },
-});
-</script>
-
-<!-- CSS to Ensure Images Show Properly -->
-<style>
-.swiper-slide img {
-    max-width: 100%;
-    height: auto;
-    display: block;
-}
-</style>
-
+            <style>
+                .mg-partner-grid {
+                    display: grid;
+                    grid-template-columns: repeat(4, 1fr);
+                    gap: 28px;
+                    align-items: center;
+                    justify-items: center;
+                    padding: 10px 20px 20px;
+                }
+                .mg-partner-logo {
+                    opacity: 0;
+                    transform: translateY(24px) scale(0.92);
+                    transition: transform .45s ease, box-shadow .45s ease;
+                }
+                .mg-partner-logo.is-visible {
+                    animation: mgPartnerIn .85s cubic-bezier(.22, 1, .36, 1) forwards, mgPartnerFloat 4s ease-in-out infinite alternate;
+                }
+                .mg-partner-logo img {
+                    width: 100%;
+                    max-width: 220px;
+                    height: auto;
+                    display: block;
+                    filter: none !important;
+                    transition: transform .55s ease;
+                }
+                .mg-partner-logo:hover img {
+                    transform: scale(1.08) rotate(2deg);
+                }
+                @keyframes mgPartnerIn {
+                    0% { opacity: 0; transform: translateY(24px) scale(0.92); }
+                    100% { opacity: 1; transform: translateY(0) scale(1); }
+                }
+                @keyframes mgPartnerFloat {
+                    0% { transform: translateY(0); }
+                    100% { transform: translateY(-8px); }
+                }
+                @media (max-width: 991px) {
+                    .mg-partner-grid { grid-template-columns: repeat(3, 1fr); }
+                }
+                @media (max-width: 575px) {
+                    .mg-partner-grid { grid-template-columns: repeat(2, 1fr); gap: 18px; }
+                    .mg-partner-logo img { max-width: 150px; }
+                }
+            </style>
+            <script>
+                (function () {
+                    var grid = document.querySelector('.mg-partner-grid');
+                    if (!grid) { return; }
+                    var items = grid.querySelectorAll('.mg-partner-logo');
+                    items.forEach(function (item, i) {
+                        item.style.animationDelay = (i * 0.12) + 's, ' + (i * 0.08 + 0.85) + 's';
+                    });
+                    if ('IntersectionObserver' in window) {
+                        var obs = new IntersectionObserver(function (entries) {
+                            entries.forEach(function (entry) {
+                                if (entry.isIntersecting) {
+                                    entry.target.classList.add('is-visible');
+                                    obs.unobserve(entry.target);
+                                }
+                            });
+                        }, { threshold: 0.15 });
+                        items.forEach(function (item) { obs.observe(item); });
+                    } else {
+                        items.forEach(function (item) { item.classList.add('is-visible'); });
+                    }
+                })();
+            </script>
+        </section>
         @endif
         <!-- Partner Area End Here  -->
 
@@ -985,6 +990,23 @@
     <script>
         setTimeout(function() {
             $(".alert").alert('close');
-        }, 10000); // 10000 milliseconds = 10 seconds
+        }, 10000);
+
+        window.addEventListener('load', function () {
+            var popup = document.getElementById('popup');
+            var closeBtn = document.getElementById('closeBtn');
+            if (!popup) { return; }
+            popup.classList.add('active');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function () {
+                    popup.classList.remove('active');
+                });
+            }
+            popup.addEventListener('click', function (e) {
+                if (e.target === popup) {
+                    popup.classList.remove('active');
+                }
+            });
+        });
     </script>
 @endsection
