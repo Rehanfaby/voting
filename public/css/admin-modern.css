@@ -279,6 +279,25 @@ header.header .navbar,
     gap: 5px;
     margin-left: 4px;
 }
+.header .nav-menu .ms-lang-switch--header-end {
+    margin-left: auto !important;
+}
+.header .nav-menu .nav-admin-link a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #fff !important;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 4px 10px;
+    border-radius: 8px;
+}
+.header .nav-menu .nav-admin-link a:hover {
+    background: rgba(255, 255, 255, .12);
+}
+.header .nav-menu .nav-admin-link a i {
+    color: var(--ma-yellow);
+}
 .header .nav-menu .ms-lang-switch .ms-lang {
     display: inline-flex;
     align-items: center;

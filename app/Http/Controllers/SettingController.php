@@ -93,13 +93,13 @@ class SettingController extends Controller
         $general_setting->vote_price = $data['vote_price'];
         $general_setting->vote_coin = $data['vote_coin'];
         if (Schema::hasColumn('general_settings', 'hide_votes')) {
-            $general_setting->hide_votes = $request->has('hide_votes') ? 1 : 0;
+            $general_setting->hide_votes = self::checkboxInt($request, 'hide_votes');
         }
         if (Schema::hasColumn('general_settings', 'is_voting_start')) {
-            $general_setting->is_voting_start = $request->has('is_voting_start') ? 1 : 0;
+            $general_setting->is_voting_start = self::checkboxInt($request, 'is_voting_start');
         }
         if (Schema::hasColumn('general_settings', 'require_contestant_approval')) {
-            $general_setting->require_contestant_approval = $request->has('require_contestant_approval') ? 1 : 0;
+            $general_setting->require_contestant_approval = self::checkboxInt($request, 'require_contestant_approval');
         }
         $logo = $request->site_logo;
         $email_header = $request->email_header;
@@ -592,5 +592,15 @@ class SettingController extends Controller
             $pos_setting->keybord_active = true;
     	$pos_setting->save();
     	return redirect()->back()->with('message', 'POS setting updated successfully');
+    }
+
+    /** Read a checkbox value (hidden 0 + optional checked 1). has() is wrong — hidden fields always present. */
+    private static function checkboxInt(Request $request, $key)
+    {
+        $value = $request->input($key, 0);
+        if (is_array($value)) {
+            $value = end($value);
+        }
+        return (int) $value === 1 ? 1 : 0;
     }
 }

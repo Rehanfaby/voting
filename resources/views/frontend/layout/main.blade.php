@@ -62,6 +62,11 @@
     .header__action-inner {
          gap: 5px;
     }
+    .ms-header-lang--end {
+        margin-left: auto;
+        padding-left: 12px;
+        flex-shrink: 0;
+    }
 </style>
 <!-- Offcanvas area start -->
 <div class="fix">
@@ -189,8 +194,7 @@
                                         </nav>
                                     </div>
                                 </div>
-                                <div class="header__action-inner d-flex align-items-center">
-                                    @include('partials.lang_switch')
+                                <div class="header__action-inner d-flex align-items-center flex-grow-1 justify-content-end">
                                     @if($user)
                                         <!-- <div class="enquiry__list ml-10 mr-10 ms-browse-act-wrap p-relative">
                                             <div class="ms-enquiry-box p-relative d-none d-xl-inline-flex">
@@ -272,6 +276,9 @@
                                             </div>
                                         </div>
                                     @endif
+                                    <div class="ms-header-lang ms-header-lang--end">
+                                        @include('partials.lang_switch')
+                                    </div>
                                 </div>
                                 <div class="header__hamburger">
                                     <div class="sidebar__toggle">

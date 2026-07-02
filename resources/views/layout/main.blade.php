@@ -89,7 +89,7 @@
     <!-- Custom stylesheet - for your changes-->
     <link rel="stylesheet" href="<?php echo asset('public/css/custom-'.$general_setting->theme) ?>" type="text/css" id="custom-style">
     <!-- Modern admin theme overlay (Alpha Bridge inspired) -->
-    <link rel="stylesheet" href="<?php echo asset('public/css/admin-modern.css') ?>?v=20260702-v1" type="text/css" id="admin-modern-style">
+    <link rel="stylesheet" href="<?php echo asset('public/css/admin-modern.css') ?>?v=20260702-v2" type="text/css" id="admin-modern-style">
     <style>
         /* Header layout guarantee: logo top-left ALONE, fullscreen + language top-right.
            Inline so it always wins over any cached copy of the base theme / admin-modern.css. */
@@ -100,7 +100,9 @@
             display: inline-flex !important; align-items: center !important;
         }
         @media all and (max-width: 1024px) { .header .navbar-holder .brand-big { display: inline-flex !important; } }
-        .header .navbar-holder .nav-menu { margin-left: auto !important; margin-right: 8px !important; order: 9 !important; }
+        .header .navbar-holder .nav-menu { margin-left: auto !important; margin-right: 8px !important; order: 9 !important; flex: 1 1 auto; }
+        .header .navbar-holder .nav-menu.ms-header-nav { justify-content: flex-end; }
+        .header .navbar-holder .ms-lang-switch--header-end { margin-left: auto !important; }
     </style>
 </head>
 
@@ -514,10 +516,16 @@
                     @endif
                   </span>
 
-                <ul class="nav-menu list-unstyled d-flex flex-md-row align-items-md-center">
+                <ul class="nav-menu list-unstyled d-flex flex-md-row align-items-md-center ms-header-nav">
                     <li class="nav-item"><a id="btnFullscreen" data-toggle="tooltip" title="{{trans('file.Full Screen')}}"><i class="dripicons-expand"></i></a></li>
 
-                    <li class="nav-item ms-lang-switch">
+                    @if($user_index_permission_active ?? false)
+                    <li class="nav-item nav-admin-link">
+                        <a href="{{ route('admin.index') }}" title="{{ trans('file.Admin') }}"><i class="dripicons-user-id"></i> <span>{{ trans('file.Admin') }}</span></a>
+                    </li>
+                    @endif
+
+                    <li class="nav-item ms-lang-switch ms-lang-switch--header-end">
                         <a href="{{ url('language_switch/en') }}" class="ms-lang {{ app()->getLocale() == 'en' ? 'active' : '' }}">EN</a>
                         <a href="{{ url('language_switch/fr') }}" class="ms-lang {{ app()->getLocale() == 'fr' ? 'active' : '' }}">FR</a>
                     </li>

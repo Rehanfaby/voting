@@ -100,7 +100,7 @@
                                                 <i class="far fa-plus"></i>
                                             </button>
                                         </div>
-                                        @if($general_setting->is_voting_start == true)  <button type="submit" class="ms-addto-cart-btn"><span>{{ trans('file.Vote') }}</span></button> @endif
+                                        @if(\App\Helpers\VoteSettings::votingEnabled())  <button type="submit" class="ms-addto-cart-btn"><span>{{ trans('file.Vote') }}</span></button> @endif
                                     </div>
                                 </div>
                             </form>

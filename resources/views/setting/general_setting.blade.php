@@ -208,12 +208,11 @@
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label>Hide Votes</label><br>
-                                        <input type="hidden" name="hide_votes" value="0">
                                         <label class="checkbox-inline">
                                             <input type="checkbox" class="setting-toggle" name="hide_votes" value="1"
                                                 data-confirm-on="Hide all vote counts on the public website?"
                                                 data-confirm-off="Show vote counts on the public website again?"
-                                                {{ !empty($lims_general_setting_data->hide_votes) ? 'checked' : '' }}>
+                                                {{ (int) ($lims_general_setting_data->hide_votes ?? 0) === 1 ? 'checked' : '' }}>
                                             Hide all vote counts on the public site
                                         </label>
                                     </div>
@@ -221,12 +220,11 @@
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label>Enable Voting</label><br>
-                                        <input type="hidden" name="is_voting_start" value="0">
                                         <label class="checkbox-inline">
                                             <input type="checkbox" class="setting-toggle" name="is_voting_start" value="1"
                                                 data-confirm-on="Enable public voting? Visitors will be able to cast votes."
                                                 data-confirm-off="Disable public voting? Visitors will not be able to cast new votes."
-                                                {{ !empty($lims_general_setting_data->is_voting_start) ? 'checked' : '' }}>
+                                                {{ (int) ($lims_general_setting_data->is_voting_start ?? 0) === 1 ? 'checked' : '' }}>
                                             Allow visitors to cast votes
                                         </label>
                                     </div>
@@ -234,12 +232,11 @@
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label>Require Contestant Approval</label><br>
-                                        <input type="hidden" name="require_contestant_approval" value="0">
                                         <label class="checkbox-inline">
                                             <input type="checkbox" class="setting-toggle" name="require_contestant_approval" value="1"
                                                 data-confirm-on="Require admin approval before new contestants go live?"
                                                 data-confirm-off="Auto-approve new contestants immediately? They will appear on the site without admin review."
-                                                {{ ($lims_general_setting_data->require_contestant_approval ?? true) ? 'checked' : '' }}>
+                                                {{ (int) ($lims_general_setting_data->require_contestant_approval ?? 1) === 1 ? 'checked' : '' }}>
                                             New contestants must be approved before going live
                                         </label>
                                         <small class="form-text text-muted">Uncheck to auto-approve new contestants instantly.</small>
