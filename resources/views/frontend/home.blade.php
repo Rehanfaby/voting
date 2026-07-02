@@ -107,7 +107,9 @@
                                     </div>
                                     <div class="ms-rank-info">
                                         <h3 class="ms-rank-name"><a href="{{ route('musician.data', $musician->id) }}">{{ $musician->name }}</a></h3>
+                                        @if($see_votes)
                                         <span class="ms-rank-votes"><i class="fa fa-vote-yea"></i> {{ number_format($vote_counts[$musician->id] ?? 0) }} {{ trans('file.Votes') }}</span>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -254,7 +256,9 @@
                                     @if($key == 0) 1st @elseif($key == 1) 2nd @else 3rd @endif
                                 </div>
                                 <h4 class="ms-winner-name">{{ $winner->name }}</h4>
+                                @if($see_votes)
                                 <span class="ms-winner-votes"><i class="fa fa-vote-yea"></i> {{ $winner_data->total_vote }} {{ trans('file.Votes') }}</span>
+                                @endif
                             </div>
                         @endif
                     @endforeach
@@ -900,7 +904,9 @@
                                 </div>
                                 <div class="ms-rank-info">
                                     <h3 class="ms-rank-name"><a href="{{ route('musician.data', $musician->id) }}">{{ $musician->name }}</a></h3>
+                                    @if($see_votes)
                                     <span class="ms-rank-votes"><i class="fa fa-vote-yea"></i> {{ number_format($row->total_vote) }} {{ trans('file.Votes') }}</span>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -956,7 +962,7 @@
                                                             @else
                                                                 {{$key + 1}}th
                                                             @endif
-                                                            -- {{ $best_musician->name }} ({{ $best_musician_data->total_vote }})
+                                                            -- {{ $best_musician->name }}@if($see_votes) ({{ $best_musician_data->total_vote }})@endif
 
                                                         </a>
                                                     </h4>

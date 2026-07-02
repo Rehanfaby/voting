@@ -6,6 +6,7 @@ use App\Department;
 use App\Employee;
 use App\Gallery;
 use App\User;
+use App\Helpers\VoteSettings;
 use App\Customer;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
@@ -95,7 +96,7 @@ class RegisterController extends Controller
         if($data['role_id'] == 2) {
             $data['user_id'] = $user->id;
             $data['is_active'] = true;
-            $data['is_approve'] = false;
+            $data['is_approve'] = VoteSettings::initialContestantApproval();
             $data['department_id'] = Department::where('is_active', true)->first()->id;
             $employee = Employee::create($data);
             $file = $data['file'];

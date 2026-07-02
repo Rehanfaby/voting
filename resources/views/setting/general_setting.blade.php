@@ -200,6 +200,44 @@
                                         <input type="text" name="vote_coin" class="form-control" value="{{$lims_general_setting_data->vote_coin}}">
                                     </div>
                                 </div>
+                                <div class="col-md-12">
+                                    <hr>
+                                    <h5 class="mb-3">Voting &amp; Contestants</h5>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Hide Votes</label><br>
+                                        <input type="hidden" name="hide_votes" value="0">
+                                        <label class="checkbox-inline">
+                                            <input type="checkbox" name="hide_votes" value="1"
+                                                {{ !empty($lims_general_setting_data->hide_votes) ? 'checked' : '' }}>
+                                            Hide all vote counts on the public site
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Enable Voting</label><br>
+                                        <input type="hidden" name="is_voting_start" value="0">
+                                        <label class="checkbox-inline">
+                                            <input type="checkbox" name="is_voting_start" value="1"
+                                                {{ !empty($lims_general_setting_data->is_voting_start) ? 'checked' : '' }}>
+                                            Allow visitors to cast votes
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Require Contestant Approval</label><br>
+                                        <input type="hidden" name="require_contestant_approval" value="0">
+                                        <label class="checkbox-inline">
+                                            <input type="checkbox" name="require_contestant_approval" value="1"
+                                                {{ ($lims_general_setting_data->require_contestant_approval ?? true) ? 'checked' : '' }}>
+                                            New contestants must be approved before going live
+                                        </label>
+                                        <small class="form-text text-muted">Uncheck to auto-approve new contestants instantly.</small>
+                                    </div>
+                                </div>
                             </div>
                             <div class="form-group">
                                 <input type="submit" value="{{trans('file.submit')}}" class="btn btn-primary">

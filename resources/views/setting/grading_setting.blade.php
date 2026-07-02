@@ -64,17 +64,6 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label>{{trans('file.Voting Start')}} *</label><br>
-                                        <input type="hidden" name="is_voting_start" value="0">
-                                        <label class="checkbox-inline">
-                                            <input type="checkbox" name="is_voting_start" value="1"
-                                                {{ $lims_general_setting_data->is_voting_start ? 'checked' : '' }}>
-                                            {{ trans('file.Voting Start') }}
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
                                         <label>{{trans('file.Available for Grading')}} *</label><br>
                                         <input type="hidden" name="available_grading" value="0">
                                         <label class="checkbox-inline">
@@ -83,6 +72,9 @@
                                             {{ trans('file.Available for Grading') }}
                                         </label>
                                     </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <p class="text-muted small mb-0"><i class="dripicons-information"></i> Enable Voting and Hide Votes are managed under <a href="{{ route('setting.general') }}">General Settings</a>.</p>
                                 </div>
                             </div>
                             <div class="form-group">

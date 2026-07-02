@@ -50,7 +50,7 @@ $(document).ready(function () {
     // ------------------------------------------------------ //
 
     if ($(window).outerWidth() > 992) {
-        $("nav.side-navbar,.table-container,.transaction-list,.right-sidebar").mCustomScrollbar({
+        $("nav.side-navbar .main-menu,.table-container,.transaction-list,.right-sidebar").mCustomScrollbar({
             theme: "light",
             scrollInertia: 200
         });

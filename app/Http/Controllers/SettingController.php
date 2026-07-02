@@ -91,6 +91,9 @@ class SettingController extends Controller
         $general_setting->state = $data['state'];
         $general_setting->vote_price = $data['vote_price'];
         $general_setting->vote_coin = $data['vote_coin'];
+        $general_setting->hide_votes = $request->has('hide_votes') ? 1 : 0;
+        $general_setting->is_voting_start = $request->has('is_voting_start') ? 1 : 0;
+        $general_setting->require_contestant_approval = $request->has('require_contestant_approval') ? 1 : 0;
         $logo = $request->site_logo;
         $email_header = $request->email_header;
         $email_footer = $request->email_footer;
@@ -137,7 +140,6 @@ class SettingController extends Controller
         $general_setting->judge_percentage = $request->judge_percentage;
         $general_setting->ambassador_percentage = $request->ambassador_percentage;
         $general_setting->number_of_elimination = $request->number_of_elimination;
-        $general_setting->is_voting_start = $request->is_voting_start;
         $general_setting->available_grading = $request->available_grading;
 
         $general_setting->save();

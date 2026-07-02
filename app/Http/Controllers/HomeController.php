@@ -165,13 +165,7 @@ class HomeController extends Controller
             $best_musician = Employee::find($best_musician_data->musician_id);
         }
 
-        $see_votes = false;
-        $role = Role::first();
-        if($role->hasPermissionTo('see-votes')) {
-            $see_votes = true;
-        }
-
-        // Total valid (paid) votes per contestant, keyed by musician id, for the
+        $see_votes = \App\Helpers\VoteSettings::showPublicCounts();, keyed by musician id, for the
         // top carousel. Without this the view falls back to 0 for everyone.
         $vote_counts = DB::table('votes')
             ->select('musician_id', DB::raw('SUM(vote) as total_vote'))
@@ -208,13 +202,7 @@ class HomeController extends Controller
         $contentants = Employee::where('is_active', true)->where('is_approve', true)->get();
 
 
-        $see_votes = false;
-        $role = Role::first();
-        if($role->hasPermissionTo('see-votes')) {
-            $see_votes = true;
-        }
-
-        return view('frontend.employee', compact('musician', 'contentants', 'images', 'audios', 'videos', 'shorts', 'youtubes', 'see_votes'));
+        $see_votes = \App\Helpers\VoteSettings::showPublicCounts();
     }
 
     public function events() {

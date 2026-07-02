@@ -43,10 +43,22 @@ nav.side-navbar {
     background: linear-gradient(185deg, var(--ma-navy-2) 0%, var(--ma-navy-1) 100%) !important;
     box-shadow: 4px 0 24px rgba(10, 35, 80, .22);
     border: none !important;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 63px);
+    max-height: calc(100vh - 63px);
 }
 
 nav.side-navbar .side-navbar-wrapper {
     background: transparent !important;
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    scrollbar-width: auto;
+    scrollbar-color: var(--ma-yellow) rgba(0, 0, 0, .22);
 }
 
 /* Menu items — larger, bolder (Beyond style) */
@@ -137,25 +149,39 @@ nav.side-navbar ul.side-menu li a {
 .side-navbar .side-navbar-wrapper::-webkit-scrollbar-thumb:hover {
     background: var(--ma-yellow-2);
 }
-/* Firefox */
-.side-navbar .side-navbar-wrapper {
+/* Firefox + layout handled above on .side-navbar-wrapper */
+
+/* Scrollable menu area — admin block stays pinned below */
+nav.side-navbar .main-menu {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
     scrollbar-width: auto;
     scrollbar-color: var(--ma-yellow) rgba(0, 0, 0, .22);
+}
+nav.side-navbar .main-menu::-webkit-scrollbar { width: 12px; }
+nav.side-navbar .main-menu::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, .22);
+}
+nav.side-navbar .main-menu::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--ma-yellow) 0%, var(--ma-yellow-deep) 100%);
+    border-radius: 10px;
+    border: 2px solid rgba(0, 0, 0, .18);
 }
 
 /* ---------------------------------------------------------------------
    Sidebar bottom admin/user block (Beyond)
    --------------------------------------------------------------------- */
 .side-admin-block {
-    margin-top: auto;
+    flex-shrink: 0;
+    margin-top: 0;
     padding: 16px 16px 18px;
     border-top: 1px solid rgba(255, 255, 255, .12);
     background: rgba(0, 0, 0, .18);
-}
-nav.side-navbar .side-navbar-wrapper {
-    display: flex;
-    flex-direction: column;
-    min-height: 100%;
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
 }
 .side-admin-block .sab-user {
     display: flex;

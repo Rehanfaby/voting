@@ -12,6 +12,7 @@ use App\Employee;
 use App\User;
 use App\Department;
 use App\Helpers\ImageOptimizer;
+use App\Helpers\VoteSettings;
 use Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -201,6 +202,7 @@ class EmployeeController extends Controller
                     $data['image'] = $imageName;
                 }
                 $data['is_active'] = true;
+                $data['is_approve'] = VoteSettings::initialContestantApproval();
                 Employee::create($data);
 
                 if ($password !== null) {

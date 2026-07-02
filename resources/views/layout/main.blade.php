@@ -89,7 +89,7 @@
     <!-- Custom stylesheet - for your changes-->
     <link rel="stylesheet" href="<?php echo asset('public/css/custom-'.$general_setting->theme) ?>" type="text/css" id="custom-style">
     <!-- Modern admin theme overlay (Alpha Bridge inspired) -->
-    <link rel="stylesheet" href="<?php echo asset('public/css/admin-modern.css') ?>?v=20260701-v4" type="text/css" id="admin-modern-style">
+    <link rel="stylesheet" href="<?php echo asset('public/css/admin-modern.css') ?>?v=20260702-v1" type="text/css" id="admin-modern-style">
     <style>
         /* Header layout guarantee: logo top-left ALONE, fullscreen + language top-right.
            Inline so it always wins over any cached copy of the base theme / admin-modern.css. */
