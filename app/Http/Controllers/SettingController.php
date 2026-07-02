@@ -17,6 +17,7 @@ use App\Helpers\AppCache;
 use App\Helpers\SiteContent;
 use App\Helpers\ImageOptimizer;
 use DB;
+use Illuminate\Support\Facades\Schema;
 use ZipArchive;
 use Twilio\Rest\Client;
 use Clickatell\Rest;
@@ -91,9 +92,15 @@ class SettingController extends Controller
         $general_setting->state = $data['state'];
         $general_setting->vote_price = $data['vote_price'];
         $general_setting->vote_coin = $data['vote_coin'];
-        $general_setting->hide_votes = $request->has('hide_votes') ? 1 : 0;
-        $general_setting->is_voting_start = $request->has('is_voting_start') ? 1 : 0;
-        $general_setting->require_contestant_approval = $request->has('require_contestant_approval') ? 1 : 0;
+        if (Schema::hasColumn('general_settings', 'hide_votes')) {
+            $general_setting->hide_votes = $request->has('hide_votes') ? 1 : 0;
+        }
+        if (Schema::hasColumn('general_settings', 'is_voting_start')) {
+            $general_setting->is_voting_start = $request->has('is_voting_start') ? 1 : 0;
+        }
+        if (Schema::hasColumn('general_settings', 'require_contestant_approval')) {
+            $general_setting->require_contestant_approval = $request->has('require_contestant_approval') ? 1 : 0;
+        }
         $logo = $request->site_logo;
         $email_header = $request->email_header;
         $email_footer = $request->email_footer;

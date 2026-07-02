@@ -203,13 +203,16 @@
                                 <div class="col-md-12">
                                     <hr>
                                     <h5 class="mb-3">Voting &amp; Contestants</h5>
+                                    <p class="alert alert-info py-2 small mb-3"><i class="dripicons-information"></i> These toggles only change voting visibility and contestant workflow. They are safe — they will not take the site offline.</p>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label>Hide Votes</label><br>
                                         <input type="hidden" name="hide_votes" value="0">
                                         <label class="checkbox-inline">
-                                            <input type="checkbox" name="hide_votes" value="1"
+                                            <input type="checkbox" class="setting-toggle" name="hide_votes" value="1"
+                                                data-confirm-on="Hide all vote counts on the public website?"
+                                                data-confirm-off="Show vote counts on the public website again?"
                                                 {{ !empty($lims_general_setting_data->hide_votes) ? 'checked' : '' }}>
                                             Hide all vote counts on the public site
                                         </label>
@@ -220,7 +223,9 @@
                                         <label>Enable Voting</label><br>
                                         <input type="hidden" name="is_voting_start" value="0">
                                         <label class="checkbox-inline">
-                                            <input type="checkbox" name="is_voting_start" value="1"
+                                            <input type="checkbox" class="setting-toggle" name="is_voting_start" value="1"
+                                                data-confirm-on="Enable public voting? Visitors will be able to cast votes."
+                                                data-confirm-off="Disable public voting? Visitors will not be able to cast new votes."
                                                 {{ !empty($lims_general_setting_data->is_voting_start) ? 'checked' : '' }}>
                                             Allow visitors to cast votes
                                         </label>
@@ -231,7 +236,9 @@
                                         <label>Require Contestant Approval</label><br>
                                         <input type="hidden" name="require_contestant_approval" value="0">
                                         <label class="checkbox-inline">
-                                            <input type="checkbox" name="require_contestant_approval" value="1"
+                                            <input type="checkbox" class="setting-toggle" name="require_contestant_approval" value="1"
+                                                data-confirm-on="Require admin approval before new contestants go live?"
+                                                data-confirm-off="Auto-approve new contestants immediately? They will appear on the site without admin review."
                                                 {{ ($lims_general_setting_data->require_contestant_approval ?? true) ? 'checked' : '' }}>
                                             New contestants must be approved before going live
                                         </label>
@@ -284,6 +291,13 @@
         $('#custom-style').attr('href', style_link);
     });
 
+    $(document).on('change', 'input.setting-toggle', function () {
+        var el = this;
+        var msg = el.checked ? $(el).data('confirm-on') : $(el).data('confirm-off');
+        if (msg && !window.confirm(msg)) {
+            el.checked = !el.checked;
+        }
+    });
 
 </script>
 @endsection

@@ -165,7 +165,9 @@ class HomeController extends Controller
             $best_musician = Employee::find($best_musician_data->musician_id);
         }
 
-        $see_votes = \App\Helpers\VoteSettings::showPublicCounts();, keyed by musician id, for the
+        $see_votes = \App\Helpers\VoteSettings::showPublicCounts();
+
+        // Total valid (paid) votes per contestant, keyed by musician id, for the
         // top carousel. Without this the view falls back to 0 for everyone.
         $vote_counts = DB::table('votes')
             ->select('musician_id', DB::raw('SUM(vote) as total_vote'))
@@ -203,6 +205,8 @@ class HomeController extends Controller
 
 
         $see_votes = \App\Helpers\VoteSettings::showPublicCounts();
+
+        return view('frontend.employee', compact('musician', 'contentants', 'images', 'audios', 'videos', 'shorts', 'youtubes', 'see_votes'));
     }
 
     public function events() {
