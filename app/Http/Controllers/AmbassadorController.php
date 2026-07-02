@@ -10,6 +10,7 @@ use App\Biller;
 use App\Ambassador;
 use App\User;
 use App\Department;
+use App\Helpers\ImageOptimizer;
 use Auth;
 use Illuminate\Validation\Rule;
 
@@ -96,6 +97,7 @@ class AmbassadorController extends Controller
             $imageName = preg_replace('/[^a-zA-Z0-9]/', '', $request['email']);
             $imageName = $imageName . '.' . $ext;
             $image->move('public/images/employee', $imageName);
+            ImageOptimizer::afterUpload(public_path('images/employee/' . $imageName), 'portrait');
             $data['image'] = $imageName;
         }
 
@@ -128,6 +130,7 @@ class AmbassadorController extends Controller
             $imageName = preg_replace('/[^a-zA-Z0-9]/', '', $request['email']);
             $imageName = $imageName . '.' . $ext;
             $image->move('public/images/employee', $imageName);
+            ImageOptimizer::afterUpload(public_path('images/employee/' . $imageName), 'portrait');
             $data['image'] = $imageName;
         }
 

@@ -48,7 +48,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label>{{trans('file.Country')}}</label>
-                                    <input type="text" name="country" class="form-control">
+                                    @include('partials.country_select', ['selected' => old('country')])
                                 </div>
                             </div>
 

@@ -201,7 +201,7 @@ class EmployeeController extends Controller
             $imageName = preg_replace('/[^a-zA-Z0-9]/', '', $request['email']);
             $imageName = $imageName . '.' . $ext;
             $image->move('public/images/employee', $imageName);
-            \App\Helpers\ImageOptimizer::process(public_path('images/employee/' . $imageName));
+            ImageOptimizer::afterUpload(public_path('images/employee/' . $imageName), 'portrait');
             $data['image'] = $imageName;
         }
 
@@ -239,7 +239,7 @@ class EmployeeController extends Controller
             $imageName = preg_replace('/[^a-zA-Z0-9]/', '', $request['email']);
             $imageName = $imageName . '.' . $ext;
             $image->move('public/images/employee', $imageName);
-            \App\Helpers\ImageOptimizer::process(public_path('images/employee/' . $imageName));
+            ImageOptimizer::afterUpload(public_path('images/employee/' . $imageName), 'portrait');
             $data['image'] = $imageName;
         }
 

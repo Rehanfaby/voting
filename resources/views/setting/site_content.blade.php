@@ -64,6 +64,52 @@
             </div>
         </div>
 
+        {{-- Most voted + hero banners --}}
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h4><i class="dripicons-star"></i> Most Voted of the Week</h4>
+                    </div>
+                    <div class="card-body">
+                        <p class="italic"><small>How many top-voted contestants to show in the <strong>Most Voted Contestant of the Week</strong> section (1–20).</small></p>
+                        <div class="form-group">
+                            <label>Number to display</label>
+                            <input type="number" name="most_voted_count" class="form-control" min="1" max="20" value="{{ $content['most_voted_count'] ?? 1 }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h4><i class="dripicons-photo-group"></i> Hero Banner (Vote Section)</h4>
+                    </div>
+                    <div class="card-body">
+                        <p class="italic"><small>Upload new hero images here — they are <strong>automatically compressed</strong> for fast loading. Leave blank to keep the current banner.</small></p>
+                        <div class="form-group">
+                            <label>English hero (JPG/PNG, up to 8&nbsp;MB)</label>
+                            <input type="file" name="hero_image_en" accept="image/jpeg,image/png" class="form-control-file">
+                        </div>
+                        <div class="form-group">
+                            <label>French hero (JPG/PNG, up to 8&nbsp;MB)</label>
+                            <input type="file" name="hero_image_fr" accept="image/jpeg,image/png" class="form-control-file">
+                        </div>
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <small class="d-block text-muted">Current EN</small>
+                                <img src="{{ \App\Helpers\SiteContent::heroImageUrl('en') }}?v={{ time() }}" alt="Hero EN" style="max-height:80px; max-width:100%; border-radius:6px;">
+                            </div>
+                            <div class="col-6">
+                                <small class="d-block text-muted">Current FR</small>
+                                <img src="{{ \App\Helpers\SiteContent::heroImageUrl('fr') }}?v={{ time() }}" alt="Hero FR" style="max-height:80px; max-width:100%; border-radius:6px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         {{-- Provincial casting calendar --}}
         <div class="row">
             <div class="col-md-12">

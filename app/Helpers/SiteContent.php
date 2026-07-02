@@ -91,6 +91,9 @@ class SiteContent
             // Countdown toggles (checkboxes in Settings > Site Content).
             'casting_countdown' => true,
             'primes_countdown'  => true,
+            'most_voted_count'  => 1,
+            'hero_image_en'     => null,
+            'hero_image_fr'     => null,
             'casting_title'    => 'Provincial Casting Calendar 2026',
             'casting_subtitle' => "Here's a draft schedule for the Mulema Gospel casting by province.",
             'casting_rows' => [
@@ -170,8 +173,7 @@ class SiteContent
         return $all[$key] ?? $default;
     }
 
-    /**
-     * Public URL of the popup image. Uses the admin-uploaded image when present,
+    /** Public URL of the popup image. Uses the admin-uploaded image when present,
      * otherwise falls back to the bundled default flyer.
      */
     public static function popupImageUrl()
@@ -181,6 +183,31 @@ class SiteContent
             return url($img);
         }
         return asset('public/img/flayer.jpeg');
+    }
+
+    /**
+     * Hero banner for the homepage vote section. Uses admin-uploaded image when
+     * set, otherwise the bundled locale-specific banner.
+     */
+    public static function heroImageUrl($locale = null)
+    {
+        $locale = $locale ?: \App::getLocale();
+        $key = $locale === 'fr' ? 'hero_image_fr' : 'hero_image_en';
+        $fallback = $locale === 'fr'
+            ? 'public/frontend/images/top-banner2-fr.jpg'
+            : 'public/frontend/images/top-banner2-en.jpg';
+        $img = self::get($key);
+        if (!empty($img) && file_exists(public_path($img))) {
+            return url($img);
+        }
+        return url($fallback);
+    }
+
+    /** How many top-voted contestants to show in "Most Voted of the Week". */
+    public static function mostVotedCount()
+    {
+        $n = (int) self::get('most_voted_count', 1);
+        return max(1, min(20, $n));
     }
 
     /** The next upcoming prime (for the countdown), or null. */

@@ -15,6 +15,7 @@ use App\HrmSetting;
 use App\RewardPointSetting;
 use App\Helpers\AppCache;
 use App\Helpers\SiteContent;
+use App\Helpers\ImageOptimizer;
 use DB;
 use ZipArchive;
 use Twilio\Rest\Client;
@@ -98,24 +99,28 @@ class SettingController extends Controller
             $ext = pathinfo($logo->getClientOriginalName(), PATHINFO_EXTENSION);
             $logoName = date("Ymdhis") . '.' . $ext;
             $logo->move('public/logo', $logoName);
+            ImageOptimizer::afterUpload(public_path('logo/' . $logoName), 'logo');
             $general_setting->site_logo = $logoName;
         }
         if ($email_header) {
             $ext = pathinfo($email_header->getClientOriginalName(), PATHINFO_EXTENSION);
             $headerName = date("Ymdhi") . '.' . $ext;
             $email_header->move('public/logo', $headerName);
+            ImageOptimizer::afterUpload(public_path('logo/' . $headerName), 'logo');
             $general_setting->email_header = $headerName;
         }
         if ($email_footer) {
             $ext = pathinfo($email_footer->getClientOriginalName(), PATHINFO_EXTENSION);
             $footerName = date("Ymdis") . '.' . $ext;
             $email_footer->move('public/logo', $footerName);
+            ImageOptimizer::afterUpload(public_path('logo/' . $footerName), 'logo');
             $general_setting->email_footer = $footerName;
         }
         if ($email_water_mark) {
             $ext = pathinfo($email_water_mark->getClientOriginalName(), PATHINFO_EXTENSION);
             $waterMarkName = date("Ymdhs") . '.' . $ext;
             $email_water_mark->move('public/logo', $waterMarkName);
+            ImageOptimizer::afterUpload(public_path('logo/' . $waterMarkName), 'logo');
             $general_setting->email_water_mark = $waterMarkName;
         }
         $general_setting->save();
@@ -182,8 +187,29 @@ class SettingController extends Controller
             $file = $request->file('popup_image');
             $name = 'popup-' . time() . '.' . $file->getClientOriginalExtension();
             $file->move($dir, $name);
+            ImageOptimizer::afterUpload($dir . '/' . $name, 'banner');
             $data['popup_image'] = 'uploads/popup/' . $name;
         }
+
+        // Hero banner uploads (English / French) — auto-compressed on save.
+        $heroDir = public_path('uploads/hero');
+        if (!is_dir($heroDir)) {
+            @mkdir($heroDir, 0755, true);
+        }
+        foreach (['hero_image_en' => 'hero-en', 'hero_image_fr' => 'hero-fr'] as $field => $prefix) {
+            if ($request->hasFile($field)) {
+                $request->validate([
+                    $field => 'image|mimes:jpg,jpeg,png|max:8192',
+                ]);
+                $file = $request->file($field);
+                $name = $prefix . '-' . time() . '.' . $file->getClientOriginalExtension();
+                $file->move($heroDir, $name);
+                ImageOptimizer::afterUpload($heroDir . '/' . $name, 'banner');
+                $data[$field] = 'uploads/hero/' . $name;
+            }
+        }
+
+        $data['most_voted_count'] = max(1, min(20, (int) $request->input('most_voted_count', $data['most_voted_count'] ?? 1)));
 
         // Casting rows
         $rows = [];

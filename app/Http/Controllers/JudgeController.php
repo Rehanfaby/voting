@@ -11,6 +11,7 @@ use App\Biller;
 use App\Judge;
 use App\User;
 use App\Department;
+use App\Helpers\ImageOptimizer;
 use Auth;
 use Illuminate\Validation\Rule;
 
@@ -26,11 +27,8 @@ class JudgeController extends Controller
                 $all_permission[] = $permission->name;
             if(empty($all_permission))
                 $all_permission[] = 'dummy text';
-//            $lims_employee_all = Judge::where('is_active', true)->get();
-//            $lims_department_list = Department::where('is_active', true)->get();
-            $judge_role_id = Role::where('name', 'judge')->first()->id;
-            $lims_user_list = User::where('is_deleted', false)->where('role_id', $judge_role_id)->get();
-            return view('user.judge', compact('lims_user_list', 'all_permission'));
+            $lims_employee_all = Judge::where('is_active', true)->get();
+            return view('judge.index', compact('lims_employee_all', 'all_permission'));
         }
         else
             return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
@@ -96,6 +94,7 @@ class JudgeController extends Controller
             $imageName = preg_replace('/[^a-zA-Z0-9]/', '', $request['email']);
             $imageName = $imageName . '.' . $ext;
             $image->move('public/images/employee', $imageName);
+            ImageOptimizer::afterUpload(public_path('images/employee/' . $imageName), 'portrait');
             $data['image'] = $imageName;
         }
 
@@ -128,6 +127,7 @@ class JudgeController extends Controller
             $imageName = preg_replace('/[^a-zA-Z0-9]/', '', $request['email']);
             $imageName = $imageName . '.' . $ext;
             $image->move('public/images/employee', $imageName);
+            ImageOptimizer::afterUpload(public_path('images/employee/' . $imageName), 'portrait');
             $data['image'] = $imageName;
         }
 

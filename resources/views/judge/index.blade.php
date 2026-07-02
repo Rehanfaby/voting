@@ -33,6 +33,7 @@
                     <th>{{trans('file.Email')}}</th>
                     <th>{{trans('file.Phone Number')}}</th>
                     <th>{{trans('file.Address')}}</th>
+                    <th>{{trans('file.Country')}}</th>
                     <th class="not-exported">{{trans('file.action')}}</th>
                 </tr>
             </thead>
@@ -42,7 +43,7 @@
                 <tr data-id="{{$employee->id}}">
                     <td>{{$key}}</td>
                     @if($employee->image)
-                    <td> <img src="{{url('public/images/employee',$employee->image)}}" height="80" width="80">
+                    <td> <img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($employee->image) }}" height="80" width="80" loading="lazy">
                     </td>
                     @else
                     <td>No Image</td>
@@ -52,9 +53,14 @@
                     <td>{{ $employee->phone_number}}</td>
                     <td>{{ $employee->address}}
                             @if($employee->city){{ ', '.$employee->city}}@endif
-                            @if($employee->state){{ ', '.$employee->state}}@endif
-                            @if($employee->postal_code){{ ', '.$employee->postal_code}}@endif
-                            @if($employee->country){{ ', '.$employee->country}}@endif</td>
+                            @if($employee->country){{ ', '.\App\Helpers\CountryFlag::label($employee->country)}}@endif</td>
+                    <td>
+                        @if($employee->country && ($f = \App\Helpers\CountryFlag::url($employee->country, 24)))
+                            <img src="{{ $f }}" alt="" width="24" height="18"> {{ \App\Helpers\CountryFlag::label($employee->country) }}
+                        @else
+                            —
+                        @endif
+                    </td>
                     <td>
                         <div class="btn-group">
                             <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{trans('file.action')}}
@@ -123,7 +129,7 @@
                     </div>
                     <div class="col-md-6 form-group">
                         <label>{{trans('file.Country')}}</label>
-                        <input type="text" name="country" class="form-control">
+                        @include('partials.country_select', ['selected' => ''])
                     </div>
                 </div>
                 <div class="form-group">
@@ -164,7 +170,7 @@
         $("#editModal input[name='phone_number']").val( $(this).data('phone_number') );
         $("#editModal input[name='address']").val( $(this).data('address') );
         $("#editModal input[name='city']").val( $(this).data('city') );
-        $("#editModal input[name='country']").val( $(this).data('country') );
+        $("#editModal select[name='country']").val( $(this).data('country') || '' );
         $('.selectpicker').selectpicker('refresh');
     });
 
@@ -182,7 +188,7 @@
         'columnDefs': [
             {
                 "orderable": false,
-                'targets': [0, 1, 6]
+                'targets': [0, 1, 7]
             },
             {
                 'render': function(data, type, row, meta){

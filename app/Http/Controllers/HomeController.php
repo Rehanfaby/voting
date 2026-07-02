@@ -9,6 +9,7 @@ use App\Employee;
 use App\Gallery;
 use App\GeneralSetting;
 use App\Judge;
+use App\Helpers\SiteContent;
 use App\TicketSeat;
 use App\User;
 use App\vote;
@@ -116,17 +117,34 @@ class HomeController extends Controller
 //        $start_date = date('Y-m-d', strtotime('last monday'));
 //        $end_date = date('Y-m-d');
 
-        $best_musician_data = DB::table('votes')
+        $mostVotedLimit = SiteContent::mostVotedCount();
+
+        $weekly_top_rows = DB::table('votes')
             ->select('votes.musician_id', DB::raw('SUM(votes.vote) as total_vote'))
             ->join('employees', 'employees.id', '=', 'votes.musician_id')
-//            ->whereDate('votes.created_at', '>=', $start_date)
-//            ->whereDate('votes.created_at', '<=', $end_date)
             ->where('employees.is_active', true)
             ->where('employees.is_approve', true)
             ->where('votes.status', true)
             ->orderBy('total_vote', 'desc')
             ->groupBy('votes.musician_id')
-            ->first();
+            ->limit($mostVotedLimit)
+            ->get();
+
+        $weekly_top = [];
+        foreach ($weekly_top_rows as $row) {
+            $emp = Employee::find($row->musician_id);
+            if ($emp) {
+                $weekly_top[] = (object) [
+                    'employee'   => $emp,
+                    'total_vote' => (int) $row->total_vote,
+                ];
+            }
+        }
+
+        $best_musician_data = !empty($weekly_top) ? (object) [
+            'musician_id' => $weekly_top[0]->employee->id,
+            'total_vote'  => $weekly_top[0]->total_vote,
+        ] : null;
 
         $best_musicians = DB::table('votes')
             ->select('votes.musician_id', DB::raw('SUM(votes.vote) as total_vote'))
@@ -143,22 +161,8 @@ class HomeController extends Controller
 
         $best_musician = null;
 
-        if($best_musician_data != null) {
-            $best_musician  = Employee::find($best_musician_data->musician_id);
-        } else {
-            $best_musician_data = DB::table('votes')
-                ->select('votes.musician_id', DB::raw('SUM(votes.vote) as total_vote'))
-                ->join('employees', 'employees.id', '=', 'votes.musician_id')
-                ->where('employees.is_active', true)
-                ->where('employees.is_approve', true)
-                ->where('votes.status', true)
-                ->orderBy('total_vote', 'desc')
-                ->groupBy('votes.musician_id')
-                ->first();
-
-            if($best_musician_data != null) {
-                $best_musician  = Employee::find($best_musician_data->musician_id);
-            }
+        if ($best_musician_data != null) {
+            $best_musician = Employee::find($best_musician_data->musician_id);
         }
 
         $see_votes = false;
@@ -176,7 +180,7 @@ class HomeController extends Controller
             ->pluck('total_vote', 'musician_id')
             ->toArray();
 
-        return view('frontend.home', compact('musicians', 'judges', 'best_musician', 'see_votes', 'ambassadors', 'best_musicians', 'best_musician_data', 'vote_counts'));
+        return view('frontend.home', compact('musicians', 'judges', 'best_musician', 'see_votes', 'ambassadors', 'best_musicians', 'best_musician_data', 'vote_counts', 'weekly_top'));
     }
 
     public function signup()

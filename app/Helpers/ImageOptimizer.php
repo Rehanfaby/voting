@@ -23,6 +23,10 @@ class ImageOptimizer
             if (!is_file($path)) {
                 return;
             }
+            // Re-encoding GIFs can break animation; leave them as uploaded.
+            if (preg_match('/\.gif$/i', $path)) {
+                return;
+            }
             @ini_set('memory_limit', '512M');
 
             $img = Image::make($path);
@@ -76,6 +80,31 @@ class ImageOptimizer
     {
         self::optimize($path, $maxEdge, $quality);
         self::thumbnail($path, $thumbSize, 70);
+    }
+
+    /**
+     * Run the right optimization profile after any image upload.
+     * portrait = contestant/judge/ambassador (resize + thumbnail)
+     * banner   = hero / popup (wide images, no thumbnail)
+     * logo     = site logos and email headers
+     */
+    public static function afterUpload($path, $profile = 'portrait')
+    {
+        if (!is_file($path)) {
+            return;
+        }
+        switch ($profile) {
+            case 'banner':
+                self::optimize($path, 1600, 72);
+                break;
+            case 'logo':
+                self::optimize($path, 800, 80);
+                break;
+            case 'portrait':
+            default:
+                self::process($path, 1000, 78, 320);
+                break;
+        }
     }
 
     /**

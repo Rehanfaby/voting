@@ -139,7 +139,7 @@
         <section class="ms-banner-area p-relative">
             <a class="ms-scroll-down" href="#">{{trans('file.SCROLL DOWN')}}</a>
             <div class="container-fluid ms-maw-1710">
-                @php $sc_hero = \App::getLocale() == 'en' ? url('public/frontend/images/top-banner2-en.jpg') : url('public/frontend/images/top-banner2-fr.jpg'); @endphp
+                @php $sc_hero = \App\Helpers\SiteContent::heroImageUrl(); @endphp
                 <div class="ms-br-30 mx-auto include__bg z-index-1 ms-overlay-1 p-relative" data-background="{{ $sc_hero }}" style="background-image:url('{{ $sc_hero }}'); background-size:cover; background-position:center;">
                     <div class="container">
                         <div class="row justify-content-center">
@@ -298,49 +298,59 @@
 
         <!-- judge  area start -->
         @if(\App\Helpers\SiteContent::enabled('judges'))
-        <section class="ms-fun-brand ms-bg-2 pb-130 pt-125">
+        <section class="ms-judges-area pb-130 pt-125">
             <div class="container">
                 <div class="row align-items-end mb-25 bdFadeUp">
-                    <div class="col-xl-6 col-lg-6">
+                    <div class="col-xl-8 col-lg-8 mx-auto text-center">
                         <div class="section__title-wrapper mb-40 bd-title-anim">
                             <span class="section__subtitle">{{trans('file.Our Seasoned Judges')}}</span>
                             <h2 class="section__title msg_title">
-                                <span class="animated-underline active"></span> <br>
-
+                                <span class="animated-underline active"></span>
                             </h2>
                         </div>
                     </div>
                 </div>
-                <div class="row bdFadeUp">
-                    <div class="col-xxl-12">
-                        <div class="tab-content" id="nav-tabContent">
-                            <div class="tab-pane fade show active" id="nav-popular-1" role="tabpanel" aria-labelledby="nav-popular-1-tab" tabindex="0">
-                                <div class="swiper-container ms-popular-active fix">
-                                    <div class="swiper-wrapper">
-                                        @foreach($judges as $contentant)
-                                            <div class="swiper-slide">
-                                                <div class="ms-popular__item p-relative mb-30">
-                                                    <div class="ms-popular__thumb">
-                                                        <div class="ms-popular-overlay"></div>
-                                                        <a ><img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($contentant->image) }}" loading="lazy" decoding="async"></a>
-                                                        <a class="ms-popular__link">
-                                                            <span class="ms-popular-icon"><i class="fa-regular fa-arrow-right-long"></i></span>
-                                                        </a>
-                                                    </div>
-                                                    <h4 class="ms-popular__title"><a >
-                                                            {{ $contentant->name }}
-                                                        </a>
-                                                    </h4>
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    </div>
+                <div class="row justify-content-center bdFadeUp">
+                    @foreach($judges as $judge)
+                        @php $flagUrl = \App\Helpers\CountryFlag::url($judge->country, 28); @endphp
+                        <div class="col-6 col-md-4 col-lg-3 mb-4">
+                            <div class="ms-judge-card text-center">
+                                <div class="ms-judge-avatar mx-auto">
+                                    @if($judge->image)
+                                        <img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($judge->image) }}" alt="{{ $judge->name }}" width="160" height="160" loading="lazy" decoding="async">
+                                    @else
+                                        <span class="ms-judge-placeholder"><i class="fa fa-user"></i></span>
+                                    @endif
                                 </div>
+                                <h3 class="ms-judge-name">
+                                    {{ $judge->name }}
+                                    @if($flagUrl)
+                                        <img src="{{ $flagUrl }}" alt="{{ \App\Helpers\CountryFlag::label($judge->country) }}" class="ms-judge-flag" width="22" height="16" loading="lazy">
+                                    @endif
+                                </h3>
+                                @if($judge->city)
+                                    <span class="ms-judge-meta">{{ $judge->city }}</span>
+                                @elseif($judge->country)
+                                    <span class="ms-judge-meta">{{ \App\Helpers\CountryFlag::label($judge->country) }}</span>
+                                @endif
                             </div>
                         </div>
-                    </div>
+                    @endforeach
                 </div>
             </div>
+            <style>
+                .ms-judges-area { background: radial-gradient(900px 420px at 50% 0%, rgba(246,196,83,.07), transparent 65%); }
+                .ms-judge-card { padding: 10px 8px 18px; }
+                .ms-judge-avatar { position:relative; width:160px; height:160px; border-radius:50%; padding:5px;
+                    background:linear-gradient(145deg,#f6c453,#e0a021);
+                    box-shadow:0 0 0 5px #12294d, 0 0 28px rgba(246,196,83,.45); margin-bottom:14px; }
+                .ms-judge-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; display:block; border:3px solid #12294d; background:#0d1f3c; }
+                .ms-judge-placeholder { display:flex; align-items:center; justify-content:center; width:100%; height:100%; border-radius:50%; background:#1a3058; color:#f6c453; font-size:42px; border:3px solid #12294d; }
+                .ms-judge-name { font-size:17px; font-weight:700; color:#f6c453; margin:0 0 4px; line-height:1.3; }
+                .ms-judge-flag { display:inline-block; vertical-align:middle; margin-left:6px; border-radius:2px; box-shadow:0 1px 3px rgba(0,0,0,.35); }
+                .ms-judge-meta { display:block; color:rgba(255,255,255,.75); font-size:12px; letter-spacing:.5px; text-transform:uppercase; }
+                @media (max-width:575px){ .ms-judge-avatar { width:130px; height:130px; } .ms-judge-name { font-size:15px; } }
+            </style>
         </section>
         @endif
         <!-- judge  area end -->
@@ -855,36 +865,31 @@
         <!-- Partner Area End Here  -->
 
         <!-- CTA Area Start Here  -->
-        @if(\App\Helpers\SiteContent::enabled('most_voted'))
-        <section class="ms-cta-area ms-cta--120 p-relative zindex-10">
+        @if(\App\Helpers\SiteContent::enabled('most_voted') && !empty($weekly_top))
+        <section class="ms-song-area ms-rank-area ms-weekly-voted pt-80 pb-80">
             <div class="container">
-                <div class="ms-cta-bg include__bg ms-cta-overlay zindex-1 fix"  data-background="{{ url('public/frontend/images/sound-bg.png') }}">
-                    @if($best_musician)
-                        <a href="{{ route('musician.data', $best_musician->id) }}">
-                    @endif
-                        <div class="ms-cta-wrap">
-                            <div class="ms-cta-item">
-                                <div class="ms-cta-content">
-                                    <h2 class="section__title mb-25">{{trans("file.Most Voted Contestant of the Week")}}</h2>
-                                    @if($best_musician)
-                                        <h4 class="section__title mb-25">({{ $best_musician->name }}) => ({{@$best_musician_data->total_vote}}   {{trans("file.Votes")}})</h4>
-                                    @endif
-                                    <p class="mb-0">
-                                        {{trans("file.Here comes the best Contestant of the week")}}!
-                                    </p>
+                <div class="text-center mb-40">
+                    <h2 class="section__title mb-10">{{ trans('file.Most Voted Contestant of the Week') }}</h2>
+                    <p class="mb-0">{{ trans('file.Here comes the best Contestant of the week') }}!</p>
+                </div>
+                <div class="row justify-content-center">
+                    @foreach($weekly_top as $key => $row)
+                        @php $musician = $row->employee; @endphp
+                        <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-4">
+                            <div class="ms-rank-item">
+                                <div class="ms-rank-avatar mx-auto">
+                                    <span class="ms-rank-badge">{{ $key + 1 }}</span>
+                                    <a href="{{ route('musician.data', $musician->id) }}">
+                                        <img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($musician->image) }}" alt="{{ $musician->name }}" width="180" height="180" loading="lazy" decoding="async">
+                                    </a>
                                 </div>
-                            </div>
-                            <div class="ms-cta-item">
-                                <div class="ms-cta-img ms-popular__thumb">
-                                    @if($best_musician)
-                                        <img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($best_musician->image) }}" loading="lazy" decoding="async">
-                                    @endif
+                                <div class="ms-rank-info">
+                                    <h3 class="ms-rank-name"><a href="{{ route('musician.data', $musician->id) }}">{{ $musician->name }}</a></h3>
+                                    <span class="ms-rank-votes"><i class="fa fa-vote-yea"></i> {{ number_format($row->total_vote) }} {{ trans('file.Votes') }}</span>
                                 </div>
                             </div>
                         </div>
-                    @if($best_musician)
-                        </a>
-                    @endif
+                    @endforeach
                 </div>
             </div>
         </section>
