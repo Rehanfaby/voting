@@ -361,12 +361,12 @@
                     <li data-menu-key="report"><a href="#report" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-document-remove"></i><span>{{trans('file.Reports')}}</span></a>
                         <ul id="report" class="collapse list-unstyled ">
                             @if($voting_report_active)
-                                <li id="vote-report-menu">
-                                    <a href="{{url('report/voting')}}">{{trans('file.Voting Report')}}</a>
-                                </li>
-                                <li id="ticket-report-menu">
-                                    <a href="{{url('report/ticket/purchase')}}">{{trans('file.Total Purchase Tickets')}}</a>
-                                </li>
+                                <li id="report-centre-menu"><a href="{{ route('report.centre') }}">{{ trans('file.Reports Centre') }}</a></li>
+                                <li id="vote-report-menu"><a href="{{url('report/voting')}}">{{trans('file.Voting Report')}}</a></li>
+                                <li id="votes-region-report-menu"><a href="{{ route('report.votes.by.region') }}">{{ trans('file.Votes by Region') }}</a></li>
+                                <li id="ticket-report-menu"><a href="{{ route('report.ticket.sales') }}">{{ trans('file.Total Ticket Sales') }}</a></li>
+                                <li id="contestants-list-report-menu"><a href="{{ route('report.contestants.list') }}">{{ trans('file.Contestants List') }}</a></li>
+                                <li id="income-expense-report-menu"><a href="{{ route('report.income.expense') }}">{{ trans('file.Income and Expenses') }}</a></li>
                             @endif
                         </ul>
                     </li>

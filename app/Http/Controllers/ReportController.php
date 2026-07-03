@@ -27,6 +27,8 @@ use App\Payment;
 use App\Warehouse;
 use App\Product_Warehouse;
 use App\Expense;
+use App\Department;
+use App\Helpers\ReportPeriod;
 use App\Payroll;
 use App\User;
 use App\Customer;
@@ -309,6 +311,269 @@ class ReportController extends Controller
         };
 
         return redirect()->route('report.contestant.eliminated')->with('message', 'Eliminated contestant list is ready');
+    }
+
+    public function reportCentre()
+    {
+        if (!$this->canAccessReports()) {
+            return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
+        }
+
+        return view('report.centre');
+    }
+
+    public function votesByRegionReport(Request $request)
+    {
+        if (!$this->canAccessReports()) {
+            return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
+        }
+
+        list($start_date, $end_date, $period) = ReportPeriod::resolve($request);
+        $department_id = $request->input('department_id');
+
+        $query = DB::table('votes')
+            ->join('employees', 'employees.id', '=', 'votes.musician_id')
+            ->leftJoin('departments', 'departments.id', '=', 'employees.department_id')
+            ->where('votes.status', true)
+            ->whereDate('votes.created_at', '>=', $start_date)
+            ->whereDate('votes.created_at', '<=', $end_date);
+
+        if ($department_id) {
+            $query->where('employees.department_id', $department_id);
+        }
+
+        $rows = $query
+            ->select(
+                DB::raw('COALESCE(departments.name, "Unassigned") as region'),
+                DB::raw('SUM(votes.vote) as total_votes'),
+                DB::raw('COUNT(DISTINCT votes.musician_id) as contestants'),
+                DB::raw('COALESCE(SUM(votes.grand_total), 0) as revenue')
+            )
+            ->groupBy('region')
+            ->orderByDesc('total_votes')
+            ->get();
+
+        $contestantRows = DB::table('votes')
+            ->join('employees', 'employees.id', '=', 'votes.musician_id')
+            ->leftJoin('departments', 'departments.id', '=', 'employees.department_id')
+            ->where('votes.status', true)
+            ->whereDate('votes.created_at', '>=', $start_date)
+            ->whereDate('votes.created_at', '<=', $end_date)
+            ->when($department_id, function ($q) use ($department_id) {
+                $q->where('employees.department_id', $department_id);
+            })
+            ->select(
+                'employees.name as contestant',
+                DB::raw('COALESCE(departments.name, "Unassigned") as region'),
+                DB::raw('SUM(votes.vote) as total_votes')
+            )
+            ->groupBy('employees.id', 'employees.name', 'region')
+            ->orderByDesc('total_votes')
+            ->get();
+
+        $departments = Department::where('is_active', true)->orderBy('name')->get();
+
+        if ($request->input('export') === 'csv') {
+            return $this->csvDownload('votes-by-region.csv', ['Region', 'Total Votes', 'Contestants', 'Revenue'], $rows->map(function ($r) {
+                return [$r->region, $r->total_votes, $r->contestants, $r->revenue];
+            }));
+        }
+        if ($request->input('export') === 'pdf') {
+            return $this->pdfDownload('report.exports.table', [
+                'title' => 'Votes by Region',
+                'headers' => ['Region', 'Total Votes', 'Contestants', 'Revenue'],
+                'rows' => $rows,
+                'start_date' => $start_date,
+                'end_date' => $end_date,
+            ], 'votes-by-region.pdf');
+        }
+
+        return view('report.votes-by-region', compact('rows', 'contestantRows', 'start_date', 'end_date', 'period', 'departments', 'department_id'));
+    }
+
+    public function ticketSalesSummaryReport(Request $request)
+    {
+        if (!$this->canAccessReports()) {
+            return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
+        }
+
+        list($start_date, $end_date, $period) = ReportPeriod::resolve($request);
+        $category_id = $request->input('category_id');
+
+        $query = DB::table('tickets')
+            ->join('products', 'products.id', '=', 'tickets.product_id')
+            ->leftJoin('categories', 'categories.id', '=', 'products.category_id')
+            ->where('tickets.status', 1)
+            ->whereDate('tickets.created_at', '>=', $start_date)
+            ->whereDate('tickets.created_at', '<=', $end_date);
+
+        if ($category_id) {
+            $query->where('products.category_id', $category_id);
+        }
+
+        $rows = (clone $query)
+            ->select(
+                DB::raw('COALESCE(categories.name, "General") as event'),
+                DB::raw('SUM(tickets.qty) as tickets_sold'),
+                DB::raw('COALESCE(SUM(tickets.total_amount), SUM(tickets.qty * COALESCE(tickets.price, products.price, 0)), 0) as revenue')
+            )
+            ->groupBy('event')
+            ->orderByDesc('tickets_sold')
+            ->get();
+
+        $totals = (clone $query)->selectRaw('SUM(qty) as tickets_sold, COALESCE(SUM(total_amount), 0) as revenue')->first();
+        $events = Category::where('is_active', true)->orderBy('name')->get();
+
+        if ($request->input('export') === 'csv') {
+            return $this->csvDownload('ticket-sales.csv', ['Event', 'Tickets Sold', 'Revenue'], $rows->map(function ($r) {
+                return [$r->event, $r->tickets_sold, $r->revenue];
+            }));
+        }
+        if ($request->input('export') === 'pdf') {
+            return $this->pdfDownload('report.exports.table', [
+                'title' => 'Ticket Sales',
+                'headers' => ['Event', 'Tickets Sold', 'Revenue'],
+                'rows' => $rows,
+                'start_date' => $start_date,
+                'end_date' => $end_date,
+            ], 'ticket-sales.pdf');
+        }
+
+        return view('report.ticket-sales-summary', compact('rows', 'totals', 'start_date', 'end_date', 'period', 'events', 'category_id'));
+    }
+
+    public function contestantsListReport(Request $request)
+    {
+        if (!$this->canAccessReports()) {
+            return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
+        }
+
+        $department_id = $request->input('department_id');
+        $rows = Employee::with('departments')
+            ->where('is_active', true)
+            ->when($department_id, function ($q) use ($department_id) {
+                $q->where('department_id', $department_id);
+            })
+            ->orderBy('name')
+            ->get()
+            ->map(function ($e) {
+                $votes = DB::table('votes')->where('musician_id', $e->id)->where('status', true)->sum('vote');
+                return (object) [
+                    'name' => $e->name,
+                    'region' => optional($e->departments)->name ?? 'Unassigned',
+                    'email' => $e->email,
+                    'phone' => $e->phone_number,
+                    'approved' => $e->is_approve ? 'Yes' : 'No',
+                    'total_votes' => (int) $votes,
+                ];
+            });
+
+        $departments = Department::where('is_active', true)->orderBy('name')->get();
+
+        if ($request->input('export') === 'csv') {
+            return $this->csvDownload('contestants.csv', ['Name', 'Region', 'Email', 'Phone', 'Approved', 'Total Votes'], $rows->map(function ($r) {
+                return [$r->name, $r->region, $r->email, $r->phone, $r->approved, $r->total_votes];
+            }));
+        }
+        if ($request->input('export') === 'pdf') {
+            return $this->pdfDownload('report.exports.table', [
+                'title' => 'Contestants List',
+                'headers' => ['Name', 'Region', 'Email', 'Phone', 'Approved', 'Votes'],
+                'rows' => $rows,
+            ], 'contestants.pdf');
+        }
+
+        return view('report.contestants-list', compact('rows', 'departments', 'department_id'));
+    }
+
+    public function incomeExpenseReport(Request $request)
+    {
+        if (!$this->canAccessReports()) {
+            return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
+        }
+
+        list($start_date, $end_date, $period) = ReportPeriod::resolve($request);
+        $department_id = $request->input('department_id');
+
+        $voteIncomeQuery = DB::table('votes')
+            ->join('employees', 'employees.id', '=', 'votes.musician_id')
+            ->where('votes.status', true)
+            ->whereDate('votes.created_at', '>=', $start_date)
+            ->whereDate('votes.created_at', '<=', $end_date);
+        if ($department_id) {
+            $voteIncomeQuery->where('employees.department_id', $department_id);
+        }
+        $voteIncome = (float) $voteIncomeQuery->sum('grand_total');
+
+        $ticketIncome = (float) DB::table('tickets')
+            ->where('status', 1)
+            ->whereDate('created_at', '>=', $start_date)
+            ->whereDate('created_at', '<=', $end_date)
+            ->sum('total_amount');
+
+        $expenses = (float) Expense::whereDate('created_at', '>=', $start_date)
+            ->whereDate('created_at', '<=', $end_date)
+            ->sum('amount');
+
+        $incomeRows = collect([
+            (object) ['source' => 'Vote payments', 'amount' => $voteIncome],
+            (object) ['source' => 'Ticket sales', 'amount' => $ticketIncome],
+        ]);
+
+        $expenseRows = Expense::whereDate('created_at', '>=', $start_date)
+            ->whereDate('created_at', '<=', $end_date)
+            ->orderByDesc('created_at')
+            ->get(['reference_no', 'amount', 'note', 'created_at']);
+
+        $departments = Department::where('is_active', true)->orderBy('name')->get();
+        $totalIncome = $voteIncome + $ticketIncome;
+        $net = $totalIncome - $expenses;
+
+        if ($request->input('export') === 'csv') {
+            $csvRows = $incomeRows->map(function ($r) {
+                return ['Income: ' . $r->source, $r->amount];
+            })->merge($expenseRows->map(function ($r) {
+                return ['Expense: ' . ($r->reference_no ?: $r->note), $r->amount];
+            }));
+            return $this->csvDownload('income-expense.csv', ['Item', 'Amount'], $csvRows);
+        }
+        if ($request->input('export') === 'pdf') {
+            return $this->pdfDownload('report.income-expense-pdf', compact(
+                'incomeRows', 'expenseRows', 'totalIncome', 'expenses', 'net', 'start_date', 'end_date'
+            ), 'income-expense.pdf');
+        }
+
+        return view('report.income-expense', compact(
+            'incomeRows', 'expenseRows', 'totalIncome', 'expenses', 'net',
+            'start_date', 'end_date', 'period', 'departments', 'department_id'
+        ));
+    }
+
+    private function canAccessReports()
+    {
+        $role = Role::find(Auth::user()->role_id);
+        return $role && $role->hasPermissionTo('vote-report');
+    }
+
+    private function csvDownload($filename, array $headers, $rows)
+    {
+        return response()->streamDownload(function () use ($headers, $rows) {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, $headers);
+            foreach ($rows as $row) {
+                fputcsv($out, is_array($row) ? $row : (array) $row);
+            }
+            fclose($out);
+        }, $filename, ['Content-Type' => 'text/csv']);
+    }
+
+    private function pdfDownload($view, array $data, $filename)
+    {
+        if (!class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
+            return redirect()->back()->with('not_permitted', 'PDF export is not available.');
+        }
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView($view, $data)->setPaper('a4', 'landscape');
+        return $pdf->download($filename);
     }
 
 }

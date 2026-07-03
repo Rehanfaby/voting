@@ -181,6 +181,9 @@ class SiteContent
         if (isset($data['about_page']) && is_array($data['about_page'])) {
             $merged['about_page'] = array_merge($defaults['about_page'] ?? [], $data['about_page']);
         }
+        if (isset($merged['primes']) && is_array($merged['primes'])) {
+            $merged['primes'] = self::sortedPrimes($merged['primes']);
+        }
         return $merged;
     }
 
@@ -208,8 +211,8 @@ class SiteContent
     public static function popupImageUrl()
     {
         $img = self::get('popup_image');
-        if (!empty($img) && file_exists(public_path($img))) {
-            return url($img);
+        if (!empty($img) && self::uploadExists($img)) {
+            return self::publicUploadUrl($img);
         }
         return asset('public/img/flayer.jpeg');
     }
@@ -218,7 +221,53 @@ class SiteContent
     public static function hasCustomPopup()
     {
         $img = self::get('popup_image');
-        return !empty($img) && file_exists(public_path($img));
+        return !empty($img) && self::uploadExists($img);
+    }
+
+    /** Build a public URL for files stored under /public on this install. */
+    public static function publicUploadUrl($relativePath)
+    {
+        if (empty($relativePath)) {
+            return '';
+        }
+        $path = ltrim(str_replace('\\', '/', $relativePath), '/');
+        if (strpos($path, 'public/') === 0) {
+            return url($path);
+        }
+
+        return url('public/' . $path);
+    }
+
+    public static function uploadExists($relativePath)
+    {
+        if (empty($relativePath)) {
+            return false;
+        }
+        $path = ltrim(str_replace('\\', '/', $relativePath), '/');
+        if (file_exists(public_path($path))) {
+            return true;
+        }
+        if (strpos($path, 'public/') !== 0 && file_exists(public_path('public/' . $path))) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /** Sort prime rows earliest-first by date/time. */
+    public static function sortedPrimes(array $primes)
+    {
+        usort($primes, function ($a, $b) {
+            $ta = !empty($a['date']) ? strtotime($a['date']) : PHP_INT_MAX;
+            $tb = !empty($b['date']) ? strtotime($b['date']) : PHP_INT_MAX;
+            if ($ta === $tb) {
+                return 0;
+            }
+
+            return $ta <=> $tb;
+        });
+
+        return array_values($primes);
     }
 
     /**
@@ -233,8 +282,8 @@ class SiteContent
             ? 'public/frontend/images/top-banner2-fr.jpg'
             : 'public/frontend/images/top-banner2-en.jpg';
         $img = self::get($key);
-        if (!empty($img) && file_exists(public_path($img))) {
-            return url($img);
+        if (!empty($img) && self::uploadExists($img)) {
+            return self::publicUploadUrl($img);
         }
         return url($fallback);
     }
@@ -249,16 +298,18 @@ class SiteContent
     /** Public URL for a prime/finals promo image (optional). */
     public static function primeImageUrl($path)
     {
-        if (empty($path) || !file_exists(public_path($path))) {
+        if (empty($path) || !self::uploadExists($path)) {
             return null;
         }
-        return url($path);
+
+        return self::publicUploadUrl($path);
     }
 
     /** The next upcoming prime (for the countdown), or null. */
     public static function nextPrime()
     {
         $primes = self::get('primes', []);
+        $primes = self::sortedPrimes(is_array($primes) ? $primes : []);
         $now = time();
         $upcoming = null;
         foreach ($primes as $p) {
@@ -291,8 +342,8 @@ class SiteContent
     {
         $page = self::get('about_page', []);
         $img = is_array($page) ? ($page['image'] ?? null) : null;
-        if (!empty($img) && file_exists(public_path($img))) {
-            return url($img);
+        if (!empty($img) && self::uploadExists($img)) {
+            return self::publicUploadUrl($img);
         }
         return asset('public/frontend/images/bottom-banner-en.jpeg');
     }

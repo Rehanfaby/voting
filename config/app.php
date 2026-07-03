@@ -22,7 +22,7 @@ return [
     | Bump this on each release. Displayed on the login screen and footer.
     */
 
-    'version' => env('APP_VERSION', '2.1.2'),
+    'version' => env('APP_VERSION', '2.1.3'),
 
     /*
     |--------------------------------------------------------------------------

@@ -307,6 +307,11 @@ Route::group(['middleware' => ['auth', 'active']], function() {
     Route::get('voter/user', 'UserController@voter')->name('voter.index');
 
     Route::get('report/voting', 'ReportController@votingReport')->name('voting.report');
+    Route::get('report/centre', 'ReportController@reportCentre')->name('report.centre');
+    Route::get('report/votes-by-region', 'ReportController@votesByRegionReport')->name('report.votes.by.region');
+    Route::get('report/ticket/sales', 'ReportController@ticketSalesSummaryReport')->name('report.ticket.sales');
+    Route::get('report/contestants/list', 'ReportController@contestantsListReport')->name('report.contestants.list');
+    Route::get('report/income-expense', 'ReportController@incomeExpenseReport')->name('report.income.expense');
     Route::get('report/ticket/purchase', 'ReportController@ticketPurchaseReport')->name('report.ticket.purchase');
     Route::get('report/contestant/ranking', 'ReportController@contestantRanking')->name('report.contestant.ranking');
     Route::get('report/contestant/qualified', 'ReportController@qualifiedContestantRanking')->name('report.contestant.qualified');

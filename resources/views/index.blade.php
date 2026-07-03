@@ -46,12 +46,36 @@
             ->groupBy('employees.name')->orderByDesc('t')->limit(5)->get();
     }, collect());
 
-    /* Contestants per department */
+    /* Contestants per region (department) */
     $deptRows = $__safe(function () {
         return \DB::table('employees')
             ->leftJoin('departments', 'departments.id', '=', 'employees.department_id')
             ->where('employees.is_active', true)->where('employees.is_approve', true)
             ->select(\DB::raw('COALESCE(departments.name, "Unassigned") as name'), \DB::raw('COUNT(*) as c'))
+            ->groupBy('name')->orderByDesc('c')->limit(8)->get();
+    }, collect());
+
+    $votesByRegion = $__safe(function () {
+        return \DB::table('votes')
+            ->join('employees', 'employees.id', '=', 'votes.musician_id')
+            ->leftJoin('departments', 'departments.id', '=', 'employees.department_id')
+            ->where('votes.status', true)
+            ->select(\DB::raw('COALESCE(departments.name, "Unassigned") as name'), \DB::raw('SUM(votes.vote) as t'))
+            ->groupBy('name')->orderByDesc('t')->limit(8)->get();
+    }, collect());
+
+    $totalTicketsSold = (int) $__safe(function () {
+        return \DB::table('tickets')->where('status', 1)->sum('qty');
+    });
+    $ticketRevenue = (float) $__safe(function () {
+        return \DB::table('tickets')->where('status', 1)->sum('total_amount');
+    });
+    $ticketsByEvent = $__safe(function () {
+        return \DB::table('tickets')
+            ->join('products', 'products.id', '=', 'tickets.product_id')
+            ->leftJoin('categories', 'categories.id', '=', 'products.category_id')
+            ->where('tickets.status', 1)
+            ->select(\DB::raw('COALESCE(categories.name, "General") as name'), \DB::raw('SUM(tickets.qty) as c'))
             ->groupBy('name')->orderByDesc('c')->limit(8)->get();
     }, collect());
 @endphp
@@ -109,6 +133,13 @@
           <div class="ms-stat-label">Pending Approval</div>
         </div>
       </a>
+      <a href="{{ route('report.ticket.sales') }}" class="ms-stat" style="--ms-accent:#0d9488;">
+        <div class="ms-stat-icon"><i class="fa fa-ticket"></i></div>
+        <div class="ms-stat-body">
+          <div class="ms-stat-value">{{ number_format($totalTicketsSold) }}</div>
+          <div class="ms-stat-label">Tickets Sold</div>
+        </div>
+      </a>
     </div>
 
     <div class="ms-chart-grid">
@@ -117,8 +148,19 @@
         <canvas id="msVotesTrend" height="120"></canvas>
       </div>
       <div class="ms-panel">
-        <h3><i class="fa fa-pie-chart"></i> Contestants by Department</h3>
+        <h3><i class="fa fa-pie-chart"></i> Contestants by Region</h3>
         <canvas id="msDeptChart" height="200"></canvas>
+      </div>
+    </div>
+
+    <div class="ms-chart-grid">
+      <div class="ms-panel">
+        <h3><i class="fa fa-bar-chart"></i> Votes by Region</h3>
+        <canvas id="msVotesRegionChart" height="130"></canvas>
+      </div>
+      <div class="ms-panel">
+        <h3><i class="fa fa-ticket"></i> Tickets Sold by Event</h3>
+        <canvas id="msTicketsEventChart" height="130"></canvas>
       </div>
     </div>
 
@@ -223,6 +265,39 @@
                     x: { beginAtZero: true, grid: { color: '#eef2f7' }, ticks: { precision: 0 } },
                     y: { grid: { display: false } }
                 }
+            }
+        });
+    }
+
+    var votesRegionEl = document.getElementById('msVotesRegionChart');
+    if (votesRegionEl) {
+        new Chart(votesRegionEl.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: @json($votesByRegion->pluck('name')),
+                datasets: [{ label: 'Votes', data: @json($votesByRegion->pluck('t')), backgroundColor: '#16a34a', borderRadius: 8 }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, x: { grid: { display: false } } }
+            }
+        });
+    }
+
+    var ticketsEventEl = document.getElementById('msTicketsEventChart');
+    if (ticketsEventEl) {
+        new Chart(ticketsEventEl.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: @json($ticketsByEvent->pluck('name')),
+                datasets: [{ label: 'Tickets', data: @json($ticketsByEvent->pluck('c')), backgroundColor: '#0d9488', borderRadius: 8 }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true, maintainAspectRatio: true,
+                plugins: { legend: { display: false } },
+                scales: { x: { beginAtZero: true, ticks: { precision: 0 } }, y: { grid: { display: false } } }
             }
         });
     }

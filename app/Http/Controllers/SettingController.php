@@ -161,9 +161,8 @@ class SettingController extends Controller
         $section_labels = SiteContent::homepageSectionKeys();
         $menu_labels = SiteContent::menuKeys();
         $menu_order = SiteContent::menuOrder();
-        $about = $content['about_page'] ?? [];
 
-        return view('setting.site_content', compact('content', 'section_labels', 'menu_labels', 'menu_order', 'about'));
+        return view('setting.site_content', compact('content', 'section_labels', 'menu_labels', 'menu_order'));
     }
 
     public function siteContentStoreSection(Request $request)
@@ -263,7 +262,6 @@ class SettingController extends Controller
                 $labels = $request->input('prime_label', []);
                 $primeDates = $request->input('prime_date', []);
                 $existingImages = $request->input('prime_image_existing', []);
-                $primeFiles = $request->file('prime_image', []);
                 $primeDir = public_path('uploads/primes');
                 if (!is_dir($primeDir)) {
                     @mkdir($primeDir, 0755, true);
@@ -272,10 +270,10 @@ class SettingController extends Controller
                     $label = trim($label);
                     $date = trim($primeDates[$i] ?? '');
                     $image = trim($existingImages[$i] ?? '');
-                    if (isset($primeFiles[$i]) && $primeFiles[$i]->isValid()) {
-                        $file = $primeFiles[$i];
+                    $file = $request->file("prime_image.$i");
+                    if ($file && $file->isValid()) {
                         $request->validate([
-                            "prime_image.$i" => 'image|mimes:jpg,jpeg,png,gif|max:8192',
+                            "prime_image.$i" => 'image|mimes:jpg,jpeg,png,gif,webp|max:8192',
                         ]);
                         $name = 'prime-' . $i . '-' . time() . '.' . $file->getClientOriginalExtension();
                         $file->move($primeDir, $name);
@@ -287,7 +285,7 @@ class SettingController extends Controller
                     }
                     $primes[] = ['label' => $label, 'date' => $date, 'image' => $image ?: null];
                 }
-                $data['primes'] = $primes;
+                $data['primes'] = SiteContent::sortedPrimes($primes);
                 $message = 'Finals schedule saved.';
                 break;
 
@@ -309,30 +307,6 @@ class SettingController extends Controller
                     $data['menu_order'] = $order;
                 }
                 $message = 'Side menu order saved.';
-                break;
-
-            case 'about_page':
-                $about = $data['about_page'] ?? [];
-                foreach (['hero_subtitle', 'mission_title', 'mission_p1', 'mission_p2', 'mission_p3', 'heart_badge', 'intro_title', 'intro_text', 'regions', 'values_heading', 'values', 'leaders_heading', 'leaders_subheading', 'winners_year', 'winners_heading'] as $field) {
-                    $about[$field] = $request->input($field, '');
-                }
-                if ($request->hasFile('about_image')) {
-                    $request->validate(['about_image' => 'image|mimes:jpg,jpeg,png,gif,webp|max:8192']);
-                    $dir = public_path('uploads/about');
-                    if (!is_dir($dir)) {
-                        @mkdir($dir, 0755, true);
-                    }
-                    $file = $request->file('about_image');
-                    $name = 'about-' . time() . '.' . $file->getClientOriginalExtension();
-                    $file->move($dir, $name);
-                    ImageOptimizer::afterUpload($dir . '/' . $name, 'banner');
-                    $about['image'] = 'uploads/about/' . $name;
-                }
-                if ($request->has('delete_about_image')) {
-                    $about['image'] = null;
-                }
-                $data['about_page'] = $about;
-                $message = 'About Us page content saved.';
                 break;
 
             default:

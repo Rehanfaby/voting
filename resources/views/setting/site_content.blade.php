@@ -61,18 +61,18 @@
                             </label>
                             <span class="sc-toggle-label">Enable Homepage Popup</span>
                         </div>
-                        <div class="row align-items-center">
+                        <div class="row align-items-start">
                             <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Popup image (JPG / PNG / GIF, up to 8&nbsp;MB)</label>
-                                    <input type="file" name="popup_image" accept="image/*" class="form-control-file">
+                                <div id="popup-paste-zone" class="sc-paste-zone" tabindex="0">
+                                    <p class="mb-2"><strong>Paste or upload</strong> — click here and press <kbd>Ctrl+V</kbd> / <kbd>Cmd+V</kbd>, or choose a file below.</p>
+                                    <input type="file" name="popup_image" id="popup_image_input" accept="image/*" class="form-control-file">
                                 </div>
                             </div>
                             <div class="col-md-6 text-center">
-                                <label class="d-block">Current popup</label>
-                                <img src="{{ \App\Helpers\SiteContent::popupImageUrl() }}?v={{ config('app.version') }}" alt="Current popup" style="max-height:160px; max-width:100%; border:1px solid #e5e7eb; border-radius:8px; padding:4px; background:#fff;">
+                                <label class="d-block">Preview</label>
+                                <img id="popup-preview-img" src="{{ \App\Helpers\SiteContent::popupImageUrl() }}?v={{ config('app.version') }}" alt="Popup preview" style="max-height:180px; max-width:100%; border:1px solid #e5e7eb; border-radius:8px; padding:4px; background:#fff;">
                                 @if(!\App\Helpers\SiteContent::hasCustomPopup())
-                                    <small class="text-muted d-block mt-1">Showing default flyer (upload your own to replace)</small>
+                                    <small class="text-muted d-block mt-1">Default flyer shown until you upload your own.</small>
                                 @endif
                             </div>
                         </div>
@@ -214,7 +214,7 @@
                     <div class="card-body">
                         {!! Form::open(['route' => 'setting.site_content.section', 'method' => 'post', 'files' => true]) !!}
                         <input type="hidden" name="section" value="primes">
-                        <p class="italic"><small>Pick a date &amp; time and optional promo image for each prime.</small></p>
+                        <p class="italic"><small>Events are sorted automatically by date (earliest first) when you save.</small></p>
                         <div class="form-group col-md-6 px-0">
                             <label>Schedule Title</label>
                             <input type="text" name="primes_title" class="form-control" value="{{ $content['primes_title'] ?? 'Finals Schedule' }}">
@@ -238,7 +238,7 @@
                                             <td><input type="datetime-local" name="prime_date[]" class="form-control" value="{{ !empty($p['date']) ? \Carbon\Carbon::parse($p['date'])->format('Y-m-d\TH:i') : '' }}"></td>
                                             <td>
                                                 <input type="hidden" name="prime_image_existing[]" value="{{ $p['image'] ?? '' }}">
-                                                <input type="file" name="prime_image[]" accept="image/*" class="form-control-file">
+                                                <input type="file" name="prime_image[{{ $i }}]" accept="image/*" class="form-control-file">
                                                 @if(!empty($p['image']))
                                                     <img src="{{ \App\Helpers\SiteContent::primeImageUrl($p['image']) }}?v={{ config('app.version') }}" alt="" style="max-height:48px;margin-top:6px;border-radius:6px;">
                                                 @endif
@@ -252,73 +252,6 @@
                         <button type="button" class="btn btn-info btn-sm mb-3" id="add-prime-row"><i class="dripicons-plus"></i> Add Prime</button>
                         <div class="sc-section-actions">
                             <button type="submit" class="btn btn-primary">Save</button>
-                        </div>
-                        {!! Form::close() !!}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {{-- About Us page --}}
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header d-flex align-items-center">
-                        <h4><i class="fa fa-info-circle"></i> About Us Page</h4>
-                    </div>
-                    <div class="card-body">
-                        {!! Form::open(['route' => 'setting.site_content.section', 'method' => 'post', 'files' => true]) !!}
-                        <input type="hidden" name="section" value="about_page">
-                        <p class="italic"><small>Edit all text and images shown on the public <a href="{{ route('about') }}" target="_blank">About Us</a> page. Manage leader photos and winner cards from <a href="{{ route('about_us.index') }}">About Us → Our Leaders / Winners</a>.</small></p>
-                        <div class="row">
-                            <div class="col-md-5">
-                                <div class="form-group">
-                                    <label>{{ trans('file.Mission image') }}</label>
-                                    @php $aboutImg = $about['image'] ?? null; @endphp
-                                    @if($aboutImg && file_exists(public_path($aboutImg)))
-                                        <div class="mb-2"><img src="{{ url($aboutImg) }}?v={{ config('app.version') }}" alt="" style="max-width:100%;border-radius:12px;max-height:220px;object-fit:cover;"></div>
-                                    @endif
-                                    <input type="file" name="about_image" class="form-control" accept="image/*">
-                                </div>
-                            </div>
-                            <div class="col-md-7">
-                                <div class="form-group"><label>{{ trans('file.Hero subtitle') }}</label><textarea name="hero_subtitle" class="form-control" rows="2">{{ $about['hero_subtitle'] ?? '' }}</textarea></div>
-                                <div class="form-group"><label>{{ trans('file.Mission heading') }}</label><input type="text" name="mission_title" class="form-control" value="{{ $about['mission_title'] ?? '' }}"></div>
-                                <div class="form-group"><label>{{ trans('file.Heart badge text') }}</label><input type="text" name="heart_badge" class="form-control" value="{{ $about['heart_badge'] ?? '' }}"></div>
-                            </div>
-                        </div>
-                        <div class="form-group"><label>{{ trans('file.Mission paragraph') }} 1</label><textarea name="mission_p1" class="form-control" rows="2">{{ $about['mission_p1'] ?? '' }}</textarea></div>
-                        <div class="form-group"><label>{{ trans('file.Mission paragraph') }} 2</label><textarea name="mission_p2" class="form-control" rows="2">{{ $about['mission_p2'] ?? '' }}</textarea></div>
-                        <div class="form-group"><label>{{ trans('file.Mission paragraph') }} 3</label><textarea name="mission_p3" class="form-control" rows="2">{{ $about['mission_p3'] ?? '' }}</textarea></div>
-                        <hr>
-                        <div class="form-group"><label>{{ trans('file.Our Values') }} — {{ trans('file.Section heading') }}</label><input type="text" name="values_heading" class="form-control" value="{{ $about['values_heading'] ?? '' }}"></div>
-                        <div class="form-group"><label>{{ trans('file.Values comma separated') }}</label><input type="text" name="values" class="form-control" value="{{ $about['values'] ?? '' }}"></div>
-                        <hr>
-                        <div class="form-group"><label>{{ trans('file.Intro heading') }}</label><input type="text" name="intro_title" class="form-control" value="{{ $about['intro_title'] ?? '' }}"></div>
-                        <div class="form-group"><label>{{ trans('file.Intro text') }}</label><textarea name="intro_text" class="form-control" rows="3">{{ $about['intro_text'] ?? '' }}</textarea></div>
-                        <div class="form-group"><label>{{ trans('file.Regions comma separated') }}</label><input type="text" name="regions" class="form-control" value="{{ $about['regions'] ?? '' }}"></div>
-                        <hr>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group"><label>{{ trans('file.Our Leaders') }} — {{ trans('file.Section heading') }}</label><input type="text" name="leaders_heading" class="form-control" value="{{ $about['leaders_heading'] ?? '' }}"></div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group"><label>{{ trans('file.Section subheading') }}</label><input type="text" name="leaders_subheading" class="form-control" value="{{ $about['leaders_subheading'] ?? '' }}"></div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="form-group"><label>{{ trans('file.Year') }}</label><input type="text" name="winners_year" class="form-control" value="{{ $about['winners_year'] ?? '2025' }}"></div>
-                            </div>
-                            <div class="col-md-8">
-                                <div class="form-group"><label>{{ trans('file.Winners') }} — {{ trans('file.Section heading') }}</label><input type="text" name="winners_heading" class="form-control" value="{{ $about['winners_heading'] ?? '' }}" placeholder="2025 Winners"></div>
-                            </div>
-                        </div>
-                        <div class="sc-section-actions">
-                            <button type="submit" class="btn btn-primary">Save</button>
-                            @if(!empty($aboutImg) && file_exists(public_path($aboutImg)))
-                                <button type="submit" name="delete_about_image" value="1" class="btn btn-danger" onclick="return confirm('Remove the mission image?')">Delete mission image</button>
-                            @endif
                         </div>
                         {!! Form::close() !!}
                     </div>
@@ -377,6 +310,8 @@
     .sc-menu-label { font-weight:600; color:#14223f; }
     .sc-menu-actions .btn { padding:2px 8px; }
     .sc-section-actions { margin-top:16px; padding-top:12px; border-top:1px solid #e8edf5; display:flex; gap:10px; flex-wrap:wrap; }
+    .sc-paste-zone { border:2px dashed #c5d3ea; border-radius:10px; padding:16px; background:#f8fafc; cursor:text; }
+    .sc-paste-zone:focus { outline:none; border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.15); }
 </style>
 
 <script type="text/javascript">
@@ -392,11 +327,12 @@
                 '</tr>';
         }
         function primeRow() {
+            var idx = $('#primes-table tbody tr').length;
             return '<tr>' +
                 '<td><input type="text" name="prime_label[]" class="form-control"></td>' +
                 '<td><input type="datetime-local" name="prime_date[]" class="form-control"></td>' +
                 '<td><input type="hidden" name="prime_image_existing[]" value="">' +
-                '<input type="file" name="prime_image[]" accept="image/*" class="form-control-file"></td>' +
+                '<input type="file" name="prime_image[' + idx + ']" accept="image/*" class="form-control-file"></td>' +
                 '<td><button type="button" class="btn btn-danger btn-sm sc-remove-row">&times;</button></td>' +
                 '</tr>';
         }
@@ -413,6 +349,48 @@
             var item = $(this).closest('.sc-menu-item');
             var next = item.next('.sc-menu-item');
             if (next.length) { item.insertAfter(next); }
+        });
+
+        var popupInput = document.getElementById('popup_image_input');
+        var popupPreview = document.getElementById('popup-preview-img');
+        var popupZone = document.getElementById('popup-paste-zone');
+
+        function previewPopupFile(file) {
+            if (!file || !popupPreview) return;
+            var reader = new FileReader();
+            reader.onload = function (ev) { popupPreview.src = ev.target.result; };
+            reader.readAsDataURL(file);
+        }
+
+        if (popupInput) {
+            popupInput.addEventListener('change', function () {
+                if (this.files && this.files[0]) previewPopupFile(this.files[0]);
+            });
+        }
+
+        function attachPopupPaste(e) {
+            if (!e.clipboardData || !e.clipboardData.items || !popupInput) return;
+            for (var i = 0; i < e.clipboardData.items.length; i++) {
+                if (e.clipboardData.items[i].type.indexOf('image') === -1) continue;
+                var file = e.clipboardData.items[i].getAsFile();
+                if (!file) continue;
+                e.preventDefault();
+                var dt = new DataTransfer();
+                dt.items.add(file);
+                popupInput.files = dt.files;
+                previewPopupFile(file);
+                break;
+            }
+        }
+
+        if (popupZone) popupZone.addEventListener('paste', attachPopupPaste);
+        document.addEventListener('paste', function (e) {
+            if (!popupZone) return;
+            var t = e.target;
+            if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA') && !popupZone.contains(t)) return;
+            if (document.activeElement === popupZone || popupZone.contains(document.activeElement)) {
+                attachPopupPaste(e);
+            }
         });
     })();
 </script>
