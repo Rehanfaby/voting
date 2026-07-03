@@ -204,8 +204,8 @@ Route::group(['middleware' => ['auth', 'active']], function() {
 	Route::resource('user','UserController');
 
 	Route::get('setting/site_content', 'SettingController@siteContent')->name('setting.site_content');
+	Route::post('setting/site_content/section', 'SettingController@siteContentStoreSection')->name('setting.site_content.section');
 	Route::post('setting/site_content_store', 'SettingController@siteContentStore')->name('setting.site_content.store');
-	Route::post('setting/site_content_toggle', 'SettingController@siteContentToggle')->name('setting.site_content.toggle');
 	Route::get('setting/general_setting', 'SettingController@generalSetting')->name('setting.general');
     Route::get('setting/grading_setting', 'SettingController@gradingSetting')->name('setting.grading');
 	Route::post('setting/general_setting_store', 'SettingController@generalSettingStore')->name('setting.generalStore');
@@ -273,6 +273,10 @@ Route::group(['middleware' => ['auth', 'active']], function() {
     Route::get('about-us', 'AboutUsController@index')->name('about_us.index');
     Route::get('about-us/settings', 'AboutUsController@settings')->name('about_us.settings');
     Route::post('about-us/settings', 'AboutUsController@settingsStore')->name('about_us.settings.store');
+    Route::get('about-us/values', 'AboutUsController@values')->name('about_us.values');
+    Route::post('about-us/values', 'AboutUsController@valuesStore')->name('about_us.values.store');
+    Route::get('about-us/winners', 'AboutUsController@winners')->name('about_us.winners');
+    Route::post('about-us/winners', 'AboutUsController@winnersStore')->name('about_us.winners.store');
     Route::post('about-us', 'AboutUsController@store')->name('about_us.store');
     Route::post('about-us/update', 'AboutUsController@update')->name('about_us.update');
     Route::delete('about-us/{id}', 'AboutUsController@destroy')->name('about_us.destroy');

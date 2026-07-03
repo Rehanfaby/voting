@@ -276,6 +276,12 @@
                     ['permission_id', $index_employee->id],
                     ['role_id', $role->id]
                 ])->first();
+
+                $general_setting_permission = DB::table('permissions')->where('name', 'general_setting')->first();
+                $general_setting_permission_active = DB::table('role_has_permissions')->where([
+                    ['permission_id', $general_setting_permission->id],
+                    ['role_id', $role->id]
+                ])->first();
                 ?>
                 @if($user_index_permission_active || $index_employee_active)
                     <li data-menu-key="people"><a href="#people" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-user"></i><span>{{trans('file.People')}}</span></a>
@@ -365,6 +371,23 @@
                         </ul>
                     </li>
                 @endif
+                @if($general_setting_permission_active || $index_employee_active)
+                    <li data-menu-key="about-us"><a href="#about-us" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-info-circle"></i><span>{{ trans('file.About Us') }}</span></a>
+                        <ul id="about-us" class="collapse list-unstyled ">
+                            @if($general_setting_permission_active)
+                                <li id="about-us-settings-menu"><a href="{{ route('about_us.settings') }}">{{ trans('file.About Page Content') }}</a></li>
+                                <li id="about-us-values-menu"><a href="{{ route('about_us.values') }}">{{ trans('file.Our Values') }}</a></li>
+                                <li id="about-us-winners-menu"><a href="{{ route('about_us.winners') }}">{{ trans('file.Winners') }}</a></li>
+                            @endif
+                            @if($index_employee_active)
+                                <li id="about-us-leaders-menu"><a href="{{ route('about_us.index') }}">{{ trans('file.Our Leaders') }}</a></li>
+                            @endif
+                        </ul>
+                    </li>
+                @endif
+                @if($general_setting_permission_active)
+                    <li data-menu-key="site-content" id="site-content-top-menu"><a href="{{ route('setting.site_content') }}"><i class="dripicons-view-apps"></i><span>{{ trans('file.Site Content') }}</span></a></li>
+                @endif
                 <li data-menu-key="setting"><a href="#setting" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-gear"></i><span>{{trans('file.settings')}}</span></a>
                     <ul id="setting" class="collapse list-unstyled ">
                         <?php
@@ -441,9 +464,6 @@
                         {{--                      @endif--}}
                         @if($general_setting_permission_active)
                             <li id="general-setting-menu"><a href="{{route('setting.general')}}">{{trans('file.General Setting')}}</a></li>
-                            <li id="site-content-menu"><a href="{{route('setting.site_content')}}">Site Content &amp; Sections</a></li>
-                            <li id="about-us-menu"><a href="{{route('about_us.settings')}}">{{trans('file.About Us Page')}}</a></li>
-                            <li id="about-us-team-menu"><a href="{{route('about_us.index')}}">{{trans('file.Leadership Team')}}</a></li>
                         @endif
 {{--                        @if($customer_group_permission_active)--}}
 {{--                            <li id="customer-group-menu"><a href="{{route('customer_group.index')}}">{{trans('file.Customer Group')}}</a></li>--}}
@@ -698,7 +718,7 @@
                         </div>
                         <div class="col-md-6 form-group">
                             <label>{{trans('file.Contestants name')}} *</label>
-                            <select name="musician_id" class="selectpicker form-control" required data-live-search="true"   title="Select Contentant...">
+                            <select name="musician_id" class="selectpicker form-control" required data-live-search="true"   title="Select Contestant...">
                                 @foreach($contentants as $contentant)
                                     <option value="{{$contentant->id}}">{{$contentant->name}}</option>
                                 @endforeach

@@ -21,7 +21,7 @@
         </section>
 
         {{-- Mission --}}
-        <section class="mg-about__mission pb-90">
+        <section class="mg-about__mission pb-60">
             <div class="container">
                 <div class="row align-items-center g-5">
                     <div class="col-lg-5">
@@ -43,13 +43,20 @@
                             <p>{{ \App\Helpers\SiteContent::aboutField('mission_p2', trans('file.About mission paragraph 2')) }}</p>
                             <p>{{ \App\Helpers\SiteContent::aboutField('mission_p3', trans('file.About mission paragraph 3')) }}</p>
                         </div>
-                        <ul class="mg-about__values">
-                            <li><i class="fa-solid fa-star"></i> {{ trans('file.Excellence') }}</li>
-                            <li><i class="fa-solid fa-shield-halved"></i> {{ trans('file.Integrity') }}</li>
-                            <li><i class="fa-solid fa-dove"></i> {{ trans('file.Spirit-led worship') }}</li>
-                        </ul>
                     </div>
                 </div>
+            </div>
+        </section>
+
+        {{-- Our Values --}}
+        <section class="mg-about__values-section pb-70">
+            <div class="container">
+                <h2 class="mg-about__values-heading">{{ \App\Helpers\SiteContent::aboutField('values_heading', trans('file.Our Values')) }}</h2>
+                <ul class="mg-about__values">
+                    @foreach(\App\Helpers\SiteContent::aboutValues() as $value)
+                        <li><i class="fa-solid {{ $value['icon'] }}"></i> {{ $value['label'] }}</li>
+                    @endforeach
+                </ul>
             </div>
         </section>
 
@@ -95,17 +102,25 @@
             </div>
         </section>
 
-        {{-- Team --}}
+        {{-- Our Leaders --}}
         @if($team->isNotEmpty())
-        <section class="mg-about__team pb-130">
+        <section class="mg-about__team pb-90">
             <div class="container">
                 <div class="text-center mb-50">
-                    <span class="mg-about__label mg-about__label--center">{{ trans('file.Our Leadership') }}</span>
-                    <h2 class="mg-about__title mg-about__title--light mg-about__title--center">{{ trans('file.The visionaries behind Mulema Gospel') }}</h2>
+                    <span class="mg-about__label mg-about__label--center">{{ trans('file.Our Leaders') }}</span>
+                    <h2 class="mg-about__title mg-about__title--light mg-about__title--center">
+                        {{ \App\Helpers\SiteContent::aboutField('leaders_heading', trans('file.Our Leaders')) }}
+                    </h2>
+                    @php $leadersSub = \App\Helpers\SiteContent::aboutField('leaders_subheading', ''); @endphp
+                    @if($leadersSub)
+                        <p class="mg-about__intro">{{ $leadersSub }}</p>
+                    @else
+                        <p class="mg-about__intro">{{ trans('file.Leaders subheading default') }}</p>
+                    @endif
                 </div>
                 <div class="row justify-content-center g-4">
                     @foreach($team as $member)
-                    <div class="col-xl-3 col-lg-4 col-md-6">
+                    <div class="col-xl-4 col-lg-4 col-md-6">
                         <article class="mg-about__person">
                             <div class="mg-about__person-photo">
                                 @if($member->image)
@@ -121,8 +136,53 @@
                             @if($member->title)
                                 <p class="mg-about__person-role">{{ $member->title }}</p>
                             @endif
+                            @if($member->bio)
+                                <p class="mg-about__person-bio">{{ $member->bio }}</p>
+                            @endif
                         </article>
                     </div>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+        @endif
+
+        {{-- Winners --}}
+        @php
+            $winnerRows = collect($winners ?? [])->filter(function ($row) {
+                return $row && trim((string) $row->name) !== '';
+            });
+        @endphp
+        @if($winnerRows->isNotEmpty())
+        <section class="mg-about__winners pb-90">
+            <div class="container">
+                <div class="text-center mb-50">
+                    <span class="mg-about__label mg-about__label--center">{{ trans('file.Winners') }}</span>
+                    <h2 class="mg-about__title mg-about__title--light mg-about__title--center">
+                        {{ \App\Helpers\SiteContent::aboutField('winners_heading', $winnersYear . ' ' . trans('file.Winners')) }}
+                    </h2>
+                </div>
+                <div class="row justify-content-center g-4">
+                    @foreach(\App\AboutWinner::PLACEMENTS as $placement => $placementLabel)
+                        @php $winner = $winners[$placement] ?? null; @endphp
+                        @if($winner && trim((string) $winner->name) !== '')
+                        <div class="col-xl-4 col-lg-4 col-md-6">
+                            <article class="mg-about__winner mg-about__winner--{{ $placement }}">
+                                <span class="mg-about__winner-badge">{{ $placementLabel }}</span>
+                                <div class="mg-about__winner-photo">
+                                    @if($winner->image)
+                                        <img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($winner->image) }}" alt="{{ $winner->name }}" loading="lazy" decoding="async">
+                                    @else
+                                        <span class="mg-about__person-initial">{{ strtoupper(substr($winner->name, 0, 1)) }}</span>
+                                    @endif
+                                </div>
+                                <h3 class="mg-about__winner-name">{{ $winner->name }}</h3>
+                                @if($winner->bio)
+                                    <p class="mg-about__winner-bio">{{ $winner->bio }}</p>
+                                @endif
+                            </article>
+                        </div>
+                        @endif
                     @endforeach
                 </div>
             </div>

@@ -21,7 +21,7 @@
     <link rel="stylesheet" href="{{ asset('public/frontend/css/css-fontawesome-pro.css') }}">
     <link rel="stylesheet" href="{{ asset('public/frontend/css/css-spacing.css') }}">
     <link rel="stylesheet" href="{{ asset('public/frontend/css/css-main.css') }}">
-    <link rel="stylesheet" href="{{ asset('public/css/frontend-modern.css') }}?v=20260702-about" type="text/css" id="frontend-modern-style">
+    <link rel="stylesheet" href="{{ asset('public/css/frontend-modern.css') }}?v={{ config('app.version') }}" type="text/css" id="frontend-modern-style">
     @yield('styles')
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
@@ -176,6 +176,9 @@
                                                 </li>
                                                 <li>
                                                     <a href="{{ route('contact') }}">{{trans('file.Contact Us')}}</a>
+                                                </li>
+                                                <li>
+                                                    <a href="{{ route('team') }}">{{trans('file.Vote')}}</a>
                                                 </li>
                                             </ul>
                                         </nav>

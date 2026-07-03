@@ -5,8 +5,11 @@
         <section class="mg-tickets__hero pt-130 pb-50">
             <div class="container text-center">
                 <span class="mg-tickets__badge">{{ trans('file.Purchase Ticket') }}</span>
-                <h1 class="mg-tickets__title">{{ trans('file.Ticket List') }}</h1>
+                <h1 class="mg-tickets__title">{{ $event->name ?? trans('file.Ticket List') }}</h1>
                 <p class="mg-tickets__lead">{{ trans('file.Choose your ticket type and select seats') }}</p>
+                @isset($event)
+                    @include('partials.event_countdown', ['event' => $event, 'class' => 'mg-event-countdown--hero'])
+                @endisset
             </div>
         </section>
 
@@ -32,4 +35,8 @@
             </div>
         </section>
     </main>
+@endsection
+
+@section('scripts')
+<script src="{{ asset('public/js/event-countdown.js') }}"></script>
 @endsection

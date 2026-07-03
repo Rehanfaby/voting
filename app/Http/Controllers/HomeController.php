@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\AboutMember;
+use App\AboutWinner;
 use App\Ambassador;
 use App\Category;
 use App\Coin;
@@ -73,7 +74,10 @@ class HomeController extends Controller
             ->orderBy('id')
             ->get();
 
-        return view('frontend.about', compact('team'));
+        $winnersYear = \App\Helpers\SiteContent::aboutWinnersYear();
+        $winners = AboutWinner::where('year', $winnersYear)->get()->keyBy('placement');
+
+        return view('frontend.about', compact('team', 'winners', 'winnersYear'));
     }
 
     public function contact()
@@ -200,8 +204,7 @@ class HomeController extends Controller
     }
 
     public function team(){
-        $musicians = Employee::where('is_active', true)->where('is_approve', true)->get();
-        return view('frontend.team', compact('musicians'));
+        return view('frontend.team', $this->contestantTeamPageData());
     }
 
     public function employee($id) {
@@ -225,20 +228,21 @@ class HomeController extends Controller
     }
 
     public function tickets($id) {
+        $event = Category::where('id', $id)->where('is_active', true)->firstOrFail();
         $tickets = Product::where('category_id', $id)->where('is_active', true)
             ->select('id', 'name', 'qty', 'image', 'price', 'seat_selection_enabled')
             ->paginate(12);
-        return view('frontend.tickets', compact('tickets'));
+        return view('frontend.tickets', compact('tickets', 'event'));
     }
 
     public function ticket($id) {
-        $ticket = Product::findOrFail($id);
+        $ticket = Product::with('category')->findOrFail($id);
         return view('frontend.ticket', compact('ticket'));
     }
 
     public function purchaseTicket(Request $request) {
         $data = $request->all();
-        $ticket = Product::findOrFail($data['ticket_id']);
+        $ticket = Product::with('category')->findOrFail($data['ticket_id']);
         $seatSelection = $this->resolveTicketSeatSelection($ticket, $request);
 
         if ($seatSelection === false) {
@@ -260,8 +264,12 @@ class HomeController extends Controller
     }
 
     public function employeeFind(Request $request) {
-        $musicians = Employee::where('name', 'LIKE', '%' . $request->search . '%')->where('is_active', true)->where('is_approve', true)->get();
-        return view('frontend.team', compact('musicians'));
+        $musicians = Employee::where('name', 'LIKE', '%' . $request->search . '%')
+            ->where('is_active', true)
+            ->where('is_approve', true)
+            ->get();
+
+        return view('frontend.team', $this->contestantTeamPageData($musicians));
     }
 
     public function employeeVote(Request $request) {
@@ -681,6 +689,24 @@ class HomeController extends Controller
 
         $this->sendWhatsappMsgTicketMomoSuccess($ticket);
         return true;
+    }
+
+    /** Shared data for the public contestants / vote page. */
+    private function contestantTeamPageData($musicians = null)
+    {
+        if ($musicians === null) {
+            $musicians = Employee::where('is_active', true)->where('is_approve', true)->get();
+        }
+
+        $see_votes = \App\Helpers\VoteSettings::showPublicCounts();
+        $vote_counts = DB::table('votes')
+            ->select('musician_id', DB::raw('SUM(vote) as total_vote'))
+            ->where('status', true)
+            ->groupBy('musician_id')
+            ->pluck('total_vote', 'musician_id')
+            ->toArray();
+
+        return compact('musicians', 'see_votes', 'vote_counts');
     }
 
     /**

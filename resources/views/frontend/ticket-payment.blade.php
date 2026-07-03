@@ -12,6 +12,9 @@
             <div class="container text-center">
                 <span class="mg-tickets__badge">{{ trans('file.Ticket payment') }}</span>
                 <h1 class="mg-tickets__title">{{ trans('file.Complete your purchase') }}</h1>
+                @if($ticket->category ?? null)
+                    @include('partials.event_countdown', ['event' => $ticket->category, 'class' => 'mg-event-countdown--hero'])
+                @endif
             </div>
         </section>
 
@@ -133,6 +136,7 @@
 @endsection
 
 @section('scripts')
+<script src="{{ asset('public/js/event-countdown.js') }}"></script>
 <script>
 document.querySelectorAll('[id^="identity_type_"]').forEach(function (sel) {
     sel.addEventListener('change', function () {

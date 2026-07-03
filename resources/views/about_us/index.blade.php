@@ -14,10 +14,7 @@
 @endif
 
 <section class="container-fluid">
-    <ul class="nav nav-tabs mb-4">
-        <li class="nav-item"><a class="nav-link" href="{{ route('about_us.settings') }}">{{ trans('file.About Page Content') }}</a></li>
-        <li class="nav-item"><a class="nav-link active" href="{{ route('about_us.index') }}">{{ trans('file.Leadership Team') }}</a></li>
-    </ul>
+    @include('about_us.partials.nav-tabs', ['active' => 'leaders'])
     @if(in_array('employees-add', $all_permission))
     <div class="container-fluid mb-3">
         <button type="button" class="btn btn-info" data-toggle="modal" data-target="#addModal"><i class="dripicons-plus"></i> {{ trans('file.Add About Member') }}</button>
@@ -30,6 +27,7 @@
                     <th>{{ trans('file.Image') }}</th>
                     <th>{{ trans('file.name') }}</th>
                     <th>{{ trans('file.Title') }}</th>
+                    <th>{{ trans('file.Description') }}</th>
                     <th>{{ trans('file.Country') }}</th>
                     <th>{{ trans('file.Sort Order') }}</th>
                     <th class="not-exported">{{ trans('file.action') }}</th>
@@ -47,6 +45,7 @@
                     </td>
                     <td>{{ $member->name }}</td>
                     <td>{{ $member->title }}</td>
+                    <td>{{ \Illuminate\Support\Str::limit($member->bio, 80) }}</td>
                     <td>
                         @include('partials.country_flag', ['country' => $member->country, 'size' => 24])
                         {{ \App\Helpers\CountryFlag::label($member->country) }}
@@ -62,6 +61,7 @@
                                         data-id="{{ $member->id }}"
                                         data-name="{{ $member->name }}"
                                         data-title="{{ $member->title }}"
+                                        data-bio="{{ $member->bio }}"
                                         data-country="{{ $member->country }}"
                                         data-sort_order="{{ $member->sort_order }}">
                                         <i class="dripicons-document-edit"></i> {{ trans('file.edit') }}
@@ -93,6 +93,7 @@
             {!! Form::open(['route' => 'about_us.store', 'method' => 'post', 'files' => true]) !!}
             <div class="form-group"><label>{{ trans('file.name') }} *</label><input type="text" name="name" class="form-control" required></div>
             <div class="form-group"><label>{{ trans('file.Title') }}</label><input type="text" name="title" class="form-control" placeholder="Founder, Board Member…"></div>
+            <div class="form-group"><label>{{ trans('file.Description') }}</label><textarea name="bio" class="form-control" rows="4"></textarea></div>
             <div class="form-group"><label>{{ trans('file.Country') }}</label>@include('partials.country_select', ['selected' => old('country')])</div>
             <div class="form-group"><label>{{ trans('file.Sort Order') }}</label><input type="number" name="sort_order" class="form-control" value="0" min="0"></div>
             <div class="form-group"><label>{{ trans('file.Image') }}</label><input type="file" name="image" class="form-control" accept="image/*"></div>
@@ -113,6 +114,7 @@
             <input type="hidden" name="member_id" id="edit-member-id">
             <div class="form-group"><label>{{ trans('file.name') }} *</label><input type="text" name="name" id="edit-name" class="form-control" required></div>
             <div class="form-group"><label>{{ trans('file.Title') }}</label><input type="text" name="title" id="edit-title" class="form-control"></div>
+            <div class="form-group"><label>{{ trans('file.Description') }}</label><textarea name="bio" id="edit-bio" class="form-control" rows="4"></textarea></div>
             <div class="form-group"><label>{{ trans('file.Country') }}</label>@include('partials.country_select', ['selected' => ''])</div>
             <div class="form-group"><label>{{ trans('file.Sort Order') }}</label><input type="number" name="sort_order" id="edit-sort-order" class="form-control" min="0"></div>
             <div class="form-group"><label>{{ trans('file.Image') }}</label><input type="file" name="image" class="form-control" accept="image/*"></div>
@@ -127,6 +129,7 @@
         $('#edit-member-id').val($(this).data('id'));
         $('#edit-name').val($(this).data('name'));
         $('#edit-title').val($(this).data('title'));
+        $('#edit-bio').val($(this).data('bio'));
         $('#edit-sort-order').val($(this).data('sort_order'));
         $('#editModal select[name="country"]').val($(this).data('country') || '');
     });

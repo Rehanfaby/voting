@@ -12,71 +12,67 @@
     @endif
 
     <main>
-        <!-- page title area start  -->
-        <section class="page-title-area page-title-spacing p-relative zindex-1 " data-background="assets/img/bg/work-bg.jpg">
-            <div class="ms-overlay ms-overlay8 p-absolute zindex--1"></div>
+        <section class="mg-contestants-page pt-40 pb-80">
             <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-xxl-9">
-                        <div class="page-title-wrapper text-center pt-15">
-                            <div class="page-title-icon mx-auto mb-30">
-                                <i class="flaticon-star"></i>
-                            </div>
-                            <h3 class="ms-page-title lh-1">{{trans("file.Vote Your Favourite Contestant")}}</h3>
-                        </div>
+                <div class="mg-contestants-page__head text-center">
+                    <p class="mg-contestants-page__eyebrow">{{ trans('file.Vote your Candidate') }}</p>
+                    <h1 class="mg-contestants-page__title">{{ trans('file.Contestants') }}</h1>
+                    <div class="mg-search mg-contestants-page__search">
+                        <i class="fa fa-search"></i>
+                        <input type="text" id="contestant-search" placeholder="{{ trans('file.Search Your Contestant') }}">
                     </div>
                 </div>
-            </div>
-        </section>
-        <!-- page title area end  -->
 
-        <!-- team area start here  -->
-        <section class="ms-team-area ms-bg-2 pt-125 pb-110">
-            <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-xl-6">
-                        <div class="section__title-wrapper text-center mb-80">
-                            <h2 class="section__title">{{trans("file.Contestants")}}</h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="row ms-team-inner">
-                    <div class="row justify-content-center">
-                        <div class="col-xl-6">
-                            <div class="section__title-wrapper text-center mb-80">
-                                <input type="text" id="contestant-search" class="form-control mt-3" placeholder="Search Contestants...">
+                @php
+                    $ranked = $musicians->sortByDesc(function ($m) use ($vote_counts) {
+                        return $vote_counts[$m->id] ?? 0;
+                    })->values();
+                @endphp
+
+                <div class="row mg-contestant-grid justify-content-center" id="contestant-grid">
+                    @foreach($ranked as $key => $musician)
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2 contestant-list">
+                        <div class="mg-contestant-card">
+                            <div class="mg-contestant-card__avatar">
+                                <span class="mg-contestant-card__badge">{{ $key + 1 }}</span>
+                                <a href="{{ route('musician.data', $musician->id) }}">
+                                    <img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($musician->image) }}" alt="{{ $musician->name }}" width="160" height="160" loading="lazy" decoding="async">
+                                </a>
                             </div>
-                        </div>
-                    </div>
-                    @foreach($musicians as $musician)
-                    <div class="col-xl-4 col-md-6 contestant-list">
-                        <div class="ms-team-item-wrap">
-                            <div class="ms-team-item p-relative">
-                                <div class="ms-team-img">
-                                    <a href="{{ route('musician.data', $musician->id) }}">
-                                        <img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($musician->image) }}" alt="team image" loading="lazy" decoding="async">
-                                    </a>
-                                </div>
-                                <h3 class="ms-team-title"><a href="{{ route('musician.data', $musician->id) }}">{{ $musician->name }}</a>
-                                </h3>
-                            </div>
+                            <h3 class="mg-contestant-card__name">
+                                <a href="{{ route('musician.data', $musician->id) }}">{{ $musician->name }}</a>
+                            </h3>
+                            @if($see_votes)
+                            <span class="mg-contestant-card__votes">
+                                <i class="fa fa-vote-yea"></i>
+                                {{ number_format($vote_counts[$musician->id] ?? 0) }} {{ trans('file.Votes') }}
+                            </span>
+                            @else
+                            <a href="{{ route('musician.data', $musician->id) }}" class="mg-contestant-card__cta">{{ trans('file.Vote For Me') }}</a>
+                            @endif
                         </div>
                     </div>
                     @endforeach
                 </div>
+
+                @if($ranked->isEmpty())
+                <p class="mg-contestants-page__empty text-center">{{ trans('file.No contestants found') }}</p>
+                @endif
             </div>
         </section>
-        <!-- team area end here  -->
-    <script>
-        $(document).ready(function(){
-            $('#contestant-search').on('keyup', function() {
-                var value = $(this).val().toLowerCase();
-                $('.contestant-list').filter(function() {
-                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
-                });
-            });
-        });
-    </script>
     </main>
 
+@endsection
+
+@section('scripts')
+<script>
+    $(document).ready(function () {
+        $('#contestant-search').on('keyup', function () {
+            var value = $(this).val().toLowerCase();
+            $('.contestant-list').each(function () {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+            });
+        });
+    });
+</script>
 @endsection

@@ -591,7 +591,7 @@ class ProductController extends Controller
 
         $this->applyTicketDefaults($data);
 
-        $data['product_details'] = str_replace('"', '@', $data['product_details']);
+        $data['product_details'] = str_replace('"', '@', $data['product_details'] ?? '');
 
         $data['rent_price_per_hour'] = $data['rent_price_per_hour'] ?? 0;
         $data['rent_price_per_day'] =  $data['rent_price_per_day'] ?? 0;
@@ -641,15 +641,17 @@ class ProductController extends Controller
 
 
         $warehouse = Warehouse::where('is_active', true)->first();
-        $check_warehouse = Product_Warehouse::where('product_id', $lims_product_data->id)->where('warehouse_id', $warehouse->id)->first();
-        if(!$check_warehouse) {
-            Product_Warehouse::create([
-                "product_id" => $lims_product_data->id,
-                "warehouse_id" => $warehouse->id,
-                "qty" => $data['qty'],
-            ]);
-        } else {
-            $check_warehouse->update(['qty' => $data['qty']]);
+        if ($warehouse) {
+            $check_warehouse = Product_Warehouse::where('product_id', $lims_product_data->id)->where('warehouse_id', $warehouse->id)->first();
+            if(!$check_warehouse) {
+                Product_Warehouse::create([
+                    "product_id" => $lims_product_data->id,
+                    "warehouse_id" => $warehouse->id,
+                    "qty" => $data['qty'],
+                ]);
+            } else {
+                $check_warehouse->update(['qty' => $data['qty']]);
+            }
         }
 
         if(isset($data['is_diffPrice'])) {
@@ -665,6 +667,15 @@ class ProductController extends Controller
             }
         }
         \Session::flash('create_message', 'Product created successfully');
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'redirect' => url('products'),
+            ]);
+        }
+
+        return redirect('products')->with('create_message', 'Product created successfully');
     }
 
     public function edit($id)

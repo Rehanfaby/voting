@@ -207,51 +207,105 @@
         method: 'POST',
         url: '{{ route('products.store') }}',
         dictDefaultMessage: '{{ trans('file.Ticket image drop message') }}',
-        headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+            'Accept': 'application/json'
+        },
         renameFile: function(file) {
-            return new Date().getTime() + file.name;
+            return new Date().getTime() + '_' + file.name;
         },
         acceptedFiles: ".jpeg,.jpg,.png,.gif,.webp",
         init: function () {
             var dz = this;
+
+            function redirectAfterSave(response) {
+                if (typeof response === 'string') {
+                    try { response = JSON.parse(response); } catch (e) { response = null; }
+                }
+                var url = '{{ route('products.index') }}';
+                if (response && response.redirect) {
+                    url = response.redirect;
+                }
+                window.location.href = url;
+            }
+
+            function showSaveError(response) {
+                var msg = '{{ trans('file.Could not save ticket') }}';
+                if (response && response.errors) {
+                    if (response.errors.name) {
+                        $("#name-error").text(response.errors.name);
+                        msg = response.errors.name;
+                    }
+                    if (response.errors.code) {
+                        $("#code-error").text(response.errors.code);
+                        msg = response.errors.code;
+                    }
+                } else if (typeof response === 'string' && response.indexOf('{') >= 0) {
+                    try {
+                        var parsed = JSON.parse(response);
+                        if (parsed.message) msg = parsed.message;
+                    } catch (e) {}
+                }
+                alert(msg);
+            }
+
             $('#submit-btn').on("click", function (e) {
                 e.preventDefault();
-                if ($("#product-form").valid() && validate()) {
-                    tinyMCE.triggerSave();
-                    if (dz.getAcceptedFiles().length) {
-                        dz.processQueue();
-                    } else {
-                        $.ajax({
-                            type: 'POST',
-                            url: '{{ route('products.store') }}',
-                            data: $("#product-form").serialize(),
-                            success: function () { location.href = '../products'; },
-                            error: function (response) {
-                                if (response.responseJSON && response.responseJSON.errors) {
-                                    if (response.responseJSON.errors.name) $("#name-error").text(response.responseJSON.errors.name);
-                                    if (response.responseJSON.errors.code) $("#code-error").text(response.responseJSON.errors.code);
-                                }
-                            }
-                        });
-                    }
+                $('#ticket-cost-hidden').val($('input[name="price"]').val() || 0);
+                tinyMCE.triggerSave();
+
+                var name = $.trim($('input[name="name"]').val());
+                var code = $.trim($('input[name="code"]').val());
+                var category = $('select[name="category_id"]').val();
+                var price = $('input[name="price"]').val();
+                if (!name || !code || !category || price === '') {
+                    alert('{{ trans('file.Please fill in all required fields') }}');
+                    return;
+                }
+
+                $(this).prop('disabled', true).addClass('is-saving');
+
+                if (dz.getAcceptedFiles().length) {
+                    dz.processQueue();
+                } else {
+                    $.ajax({
+                        type: 'POST',
+                        url: '{{ route('products.store') }}',
+                        data: $("#product-form").serialize(),
+                        success: redirectAfterSave,
+                        error: function (xhr) {
+                            $('#submit-btn').prop('disabled', false).removeClass('is-saving');
+                            showSaveError(xhr.responseJSON || xhr.responseText);
+                        }
+                    });
                 }
             });
-            this.on('sending', function (file, xhr, formData) {
+
+            this.on('sendingmultiple', function (files, xhr, formData) {
                 $("#product-form").serializeArray().forEach(function (el) {
                     formData.append(el.name, el.value);
                 });
             });
-        },
-        error: function (file, response) {
-            if (response.errors && response.errors.name) {
-                $("#name-error").text(response.errors.name);
-                this.removeAllFiles(true);
-            } else if (response.errors && response.errors.code) {
-                $("#code-error").text(response.errors.code);
-                this.removeAllFiles(true);
-            }
-        },
-        successmultiple: function () { location.href = '../products'; }
+
+            this.on('successmultiple', function (files, response) {
+                redirectAfterSave(response);
+            });
+
+            this.on('success', function (file, response) {
+                redirectAfterSave(response);
+            });
+
+            this.on('errormultiple', function (files, response) {
+                $('#submit-btn').prop('disabled', false).removeClass('is-saving');
+                showSaveError(response);
+                dz.removeAllFiles(true);
+            });
+
+            this.on('error', function (file, response) {
+                $('#submit-btn').prop('disabled', false).removeClass('is-saving');
+                showSaveError(response);
+            });
+        }
     });
 
     document.addEventListener('paste', function (e) {

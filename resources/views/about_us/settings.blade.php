@@ -5,10 +5,7 @@
 @endif
 
 <section class="container-fluid">
-    <ul class="nav nav-tabs mb-4">
-        <li class="nav-item"><a class="nav-link active" href="{{ route('about_us.settings') }}">{{ trans('file.About Page Content') }}</a></li>
-        <li class="nav-item"><a class="nav-link" href="{{ route('about_us.index') }}">{{ trans('file.Leadership Team') }}</a></li>
-    </ul>
+    @include('about_us.partials.nav-tabs', ['active' => 'settings'])
 
     <div class="card">
         <div class="card-header"><h4>{{ trans('file.Edit About Us Page') }}</h4></div>
@@ -42,6 +39,12 @@
             <div class="form-group"><label>{{ trans('file.Intro heading') }}</label><input type="text" name="intro_title" class="form-control" value="{{ $about['intro_title'] ?? '' }}"></div>
             <div class="form-group"><label>{{ trans('file.Intro text') }}</label><textarea name="intro_text" class="form-control" rows="4">{{ $about['intro_text'] ?? '' }}</textarea></div>
             <div class="form-group"><label>{{ trans('file.Regions comma separated') }}</label><input type="text" name="regions" class="form-control" value="{{ $about['regions'] ?? '' }}"></div>
+
+            <hr>
+            <h5>{{ trans('file.Our Leaders') }}</h5>
+            <div class="form-group"><label>{{ trans('file.Section heading') }}</label><input type="text" name="leaders_heading" class="form-control" value="{{ $about['leaders_heading'] ?? '' }}" placeholder="{{ trans('file.Our Leaders') }}"></div>
+            <div class="form-group"><label>{{ trans('file.Section subheading') }}</label><input type="text" name="leaders_subheading" class="form-control" value="{{ $about['leaders_subheading'] ?? '' }}" placeholder="{{ trans('file.Leaders subheading default') }}"></div>
+            <p class="text-muted small">{{ trans('file.Manage leaders in tab') }}</p>
 
             <button type="submit" class="btn btn-primary">{{ trans('file.submit') }}</button>
             {!! Form::close() !!}

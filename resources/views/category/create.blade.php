@@ -58,8 +58,23 @@
                     <input type="file" name="image" class="form-control">
                 </div>
                 <div class="col-md-6 form-group">
-                    <label>{{trans('file.Parent Category')}}</label>
+                    <label>{{ trans('file.Parent Category') }}</label>
                     {{Form::select('parent_id', $lims_categories, null, ['class' => 'form-control','placeholder' => 'No Parent Category'])}}
+                </div>
+                <div class="col-md-12 form-group">
+                    <label class="d-flex align-items-center gap-2 mb-2">
+                        <input type="checkbox" name="countdown_enabled" value="1">
+                        <span>{{ trans('file.Enable ticket countdown') }}</span>
+                    </label>
+                    <small class="text-muted d-block mb-2">{{ trans('file.Event countdown help') }}</small>
+                </div>
+                <div class="col-md-6 form-group">
+                    <label>{{ trans('file.Countdown ends at') }}</label>
+                    <input type="datetime-local" name="countdown_at" class="form-control">
+                </div>
+                <div class="col-md-6 form-group">
+                    <label>{{ trans('file.Countdown label') }}</label>
+                    <input type="text" name="countdown_label" class="form-control" placeholder="{{ trans('file.Ticket sales close in') }}">
                 </div>
             </div>
 
@@ -93,13 +108,28 @@
                 <input type="file" name="image" class="form-control">
             </div>
             <div class="col-md-6 form-group">
-                <label>{{trans('file.Parent Category')}}</label>
+                <label>{{ trans('file.Parent Category') }}</label>
                 <select name="parent_id" class="form-control selectpicker" id="parent">
                     <option value="">No {{trans('file.parent')}}</option>
                     @foreach($lims_category_all as $category)
                     <option value="{{$category->id}}">{{$category->name}}</option>
                     @endforeach
                 </select>
+            </div>
+            <div class="col-md-12 form-group">
+                <label class="d-flex align-items-center gap-2 mb-2">
+                    <input type="checkbox" name="countdown_enabled" id="edit-countdown-enabled" value="1">
+                    <span>{{ trans('file.Enable ticket countdown') }}</span>
+                </label>
+                <small class="text-muted d-block mb-2">{{ trans('file.Event countdown help') }}</small>
+            </div>
+            <div class="col-md-6 form-group">
+                <label>{{ trans('file.Countdown ends at') }}</label>
+                <input type="datetime-local" name="countdown_at" id="edit-countdown-at" class="form-control">
+            </div>
+            <div class="col-md-6 form-group">
+                <label>{{ trans('file.Countdown label') }}</label>
+                <input type="text" name="countdown_label" id="edit-countdown-label" class="form-control" placeholder="{{ trans('file.Ticket sales close in') }}">
             </div>
         </div>
 
@@ -173,6 +203,14 @@
             $("#editModal input[name='name']").val(data['name']);
             $("#editModal select[name='parent_id']").val(data['parent_id']);
             $("#editModal input[name='category_id']").val(data['id']);
+            $("#edit-countdown-enabled").prop('checked', data['countdown_enabled'] == 1);
+            $("#edit-countdown-label").val(data['countdown_label'] || '');
+            if (data['countdown_at']) {
+                var dt = data['countdown_at'].replace(' ', 'T').substring(0, 16);
+                $("#edit-countdown-at").val(dt);
+            } else {
+                $("#edit-countdown-at").val('');
+            }
             $('.selectpicker').selectpicker('refresh');
           });
     });

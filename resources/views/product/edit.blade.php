@@ -1012,6 +1012,14 @@
                 }
             });
 
+            this.on('sendingmultiple', function (files, xhr, formData) {
+                // Append all form inputs to the formData Dropzone will POST
+                var data = $("#product-form").serializeArray();
+                $.each(data, function (key, el) {
+                    formData.append(el.name, el.value);
+                });
+            });
+
             this.on('sending', function (file, xhr, formData) {
                 // Append all form inputs to the formData Dropzone will POST
                 var data = $("#product-form").serializeArray();

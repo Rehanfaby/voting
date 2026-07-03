@@ -159,6 +159,9 @@ class CategoryController extends Controller
         $lims_category_data['name'] = $request->name;
         $lims_category_data['parent_id'] = $request->parent_id;
         $lims_category_data['is_active'] = true;
+        $lims_category_data['countdown_enabled'] = $request->has('countdown_enabled');
+        $lims_category_data['countdown_at'] = $request->input('countdown_at') ?: null;
+        $lims_category_data['countdown_label'] = $request->input('countdown_label');
         Category::create($lims_category_data);
         return redirect('category')->with('message', 'Category inserted successfully');
     }
@@ -185,6 +188,9 @@ class CategoryController extends Controller
         ]);
 
         $input = $request->except('image');
+        $input['countdown_enabled'] = $request->has('countdown_enabled');
+        $input['countdown_at'] = $request->input('countdown_at') ?: null;
+        $input['countdown_label'] = $request->input('countdown_label');
         $image = $request->image;
         if ($image) {
             $ext = pathinfo($image->getClientOriginalName(), PATHINFO_EXTENSION);

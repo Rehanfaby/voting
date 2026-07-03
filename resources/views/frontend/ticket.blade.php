@@ -14,6 +14,9 @@
                 @if($ticket->event_day)
                     <p class="mg-tickets__lead"><i class="fa-regular fa-calendar"></i> {{ $ticket->event_day }}</p>
                 @endif
+                @if($ticket->category)
+                    @include('partials.event_countdown', ['event' => $ticket->category, 'class' => 'mg-event-countdown--hero'])
+                @endif
             </div>
         </section>
 
@@ -85,6 +88,7 @@
 @endsection
 
 @section('scripts')
+<script src="{{ asset('public/js/event-countdown.js') }}"></script>
 <script>
 (function () {
     var basePrice = {{ (float) $ticket->price }};

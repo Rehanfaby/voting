@@ -33,6 +33,8 @@ class SiteContent
             'contestants'      => 'Contestants',
             'account'          => 'Accounting',
             'report'           => 'Reports',
+            'about-us'         => 'About Us',
+            'site-content'     => 'Site Content',
             'setting'          => 'Settings',
         ];
     }
@@ -55,6 +57,12 @@ class SiteContent
     }
 
     /** Sections that can be toggled on/off from the admin. */
+    /** Homepage section toggles (popup is managed in its own card). */
+    public static function homepageSectionKeys()
+    {
+        return array_diff_key(self::sectionKeys(), ['popup' => true]);
+    }
+
     public static function sectionKeys()
     {
         return [
@@ -111,7 +119,7 @@ class SiteContent
             'menu_order' => [
                 'dashboard', 'product', 'vote', 'point', 'ambassador-point',
                 'grading-setting', 'coin', 'expense', 'people', 'contestants',
-                'account', 'report', 'setting',
+                'account', 'report', 'about-us', 'site-content', 'setting',
             ],
             'primes_title' => 'Finals Schedule',
             // date is ISO (YYYY-MM-DD HH:MM) so the front-end can count down.
@@ -132,6 +140,12 @@ class SiteContent
                 'intro_text' => '',
                 'image' => null,
                 'regions' => 'Adamaoua, Centre, East, Far North, Littoral, North, North-West, West, South, South-West',
+                'values_heading' => '',
+                'values' => 'Excellence, Integrity, Spirit-led worship, Purity, Innovation, Performance',
+                'leaders_heading' => '',
+                'leaders_subheading' => '',
+                'winners_year' => '2025',
+                'winners_heading' => '',
             ],
         ];
     }
@@ -198,6 +212,13 @@ class SiteContent
             return url($img);
         }
         return asset('public/img/flayer.jpeg');
+    }
+
+    /** Whether an admin-uploaded popup image exists (not the default flyer). */
+    public static function hasCustomPopup()
+    {
+        $img = self::get('popup_image');
+        return !empty($img) && file_exists(public_path($img));
     }
 
     /**
@@ -284,5 +305,42 @@ class SiteContent
             return ['Adamaoua', 'Centre', 'East', 'Far North', 'Littoral', 'North', 'North-West', 'West', 'South', 'South-West'];
         }
         return array_values(array_filter(array_map('trim', explode(',', $raw))));
+    }
+
+    /** @return array<int, array{label: string, icon: string}> */
+    public static function aboutValues()
+    {
+        $icons = ['fa-star', 'fa-shield-halved', 'fa-dove', 'fa-gem', 'fa-lightbulb', 'fa-bolt'];
+        $defaults = [
+            trans('file.Excellence'),
+            trans('file.Integrity'),
+            trans('file.Spirit-led worship'),
+            trans('file.Purity'),
+            trans('file.Innovation'),
+            trans('file.Performance'),
+        ];
+
+        $raw = self::aboutField('values', implode(', ', $defaults));
+        $labels = array_values(array_filter(array_map('trim', explode(',', $raw))));
+
+        if (empty($labels)) {
+            $labels = $defaults;
+        }
+
+        $values = [];
+        foreach ($labels as $i => $label) {
+            $values[] = [
+                'label' => $label,
+                'icon' => $icons[$i] ?? 'fa-circle-check',
+            ];
+        }
+
+        return $values;
+    }
+
+    public static function aboutWinnersYear()
+    {
+        $year = trim(self::aboutField('winners_year', '2025'));
+        return $year !== '' ? $year : '2025';
     }
 }

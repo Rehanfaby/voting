@@ -68,10 +68,10 @@
                                 @if(in_array("employees-edit", $all_permission))
                                     @if($employee->is_approve == 0)
                                         <li>
-                                            <a onclick="return confirm('Are you sure you want to approve this musician?')" href="{{ route('musician.approve', $employee->id) }}" class="edit-btn btn btn-link"><i class="fa fa-check"></i> Approve</a>
+                                            <a onclick="return confirm('Are you sure you want to approve this contestant?')" href="{{ route('musician.approve', $employee->id) }}" class="edit-btn btn btn-link"><i class="fa fa-check"></i> Approve</a>
                                         </li>
                                         <li>
-                                            <a onclick="return confirm('Are you sure you want to reject this musician?')" href="{{ route('musician.reject', $employee->id) }}" class="edit-btn btn btn-link"><i class="fa fa-close"></i> Reject</a>
+                                            <a onclick="return confirm('Are you sure you want to reject this contestant?')" href="{{ route('musician.reject', $employee->id) }}" class="edit-btn btn btn-link"><i class="fa fa-close"></i> Reject</a>
                                         </li>
                                     @endif
                                 <li>

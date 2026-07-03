@@ -158,144 +158,200 @@ class SettingController extends Controller
     public function siteContent()
     {
         $content = SiteContent::all();
-        $section_labels = SiteContent::sectionKeys();
+        $section_labels = SiteContent::homepageSectionKeys();
         $menu_labels = SiteContent::menuKeys();
         $menu_order = SiteContent::menuOrder();
-        return view('setting.site_content', compact('content', 'section_labels', 'menu_labels', 'menu_order'));
+        $about = $content['about_page'] ?? [];
+
+        return view('setting.site_content', compact('content', 'section_labels', 'menu_labels', 'menu_order', 'about'));
     }
 
-    public function siteContentStore(Request $request)
+    public function siteContentStoreSection(Request $request)
     {
+        $section = $request->input('section');
         $data = SiteContent::all();
+        $message = 'Site content updated successfully';
 
-        // Section toggles (unchecked checkboxes are absent from the request)
-        $posted = (array) $request->input('sections', []);
-        $sections = [];
-        foreach (array_keys(SiteContent::sectionKeys()) as $key) {
-            $sections[$key] = !empty($posted[$key]);
-        }
-        $data['sections'] = $sections;
+        switch ($section) {
+            case 'homepage_sections':
+                $posted = (array) $request->input('sections', []);
+                $sections = $data['sections'] ?? [];
+                foreach (array_keys(SiteContent::homepageSectionKeys()) as $key) {
+                    $sections[$key] = !empty($posted[$key]);
+                }
+                $data['sections'] = $sections;
+                $message = 'Homepage sections saved.';
+                break;
 
-        $data['casting_title']    = $request->input('casting_title', $data['casting_title'] ?? '');
-        $data['casting_subtitle'] = $request->input('casting_subtitle', $data['casting_subtitle'] ?? '');
-        $data['primes_title']     = $request->input('primes_title', $data['primes_title'] ?? 'Finals Schedule');
+            case 'popup':
+                if (!isset($data['sections']) || !is_array($data['sections'])) {
+                    $data['sections'] = [];
+                }
+                $popupPosted = (array) $request->input('sections', []);
+                $data['sections']['popup'] = !empty($popupPosted['popup']);
 
-        // Countdown enable checkboxes (absent when unchecked)
-        $data['casting_countdown'] = $request->has('casting_countdown');
-        $data['primes_countdown']  = $request->has('primes_countdown');
+                if ($request->has('delete_popup_image')) {
+                    $data['popup_image'] = null;
+                    $message = 'Popup image removed.';
+                } elseif ($request->hasFile('popup_image')) {
+                    $request->validate([
+                        'popup_image' => 'image|mimes:jpg,jpeg,png,gif|max:8192',
+                    ]);
+                    $dir = public_path('uploads/popup');
+                    if (!is_dir($dir)) {
+                        @mkdir($dir, 0755, true);
+                    }
+                    $file = $request->file('popup_image');
+                    $name = 'popup-' . time() . '.' . $file->getClientOriginalExtension();
+                    $file->move($dir, $name);
+                    ImageOptimizer::afterUpload($dir . '/' . $name, 'banner');
+                    $data['popup_image'] = 'uploads/popup/' . $name;
+                    $message = 'Homepage popup saved.';
+                } else {
+                    $message = 'Homepage popup settings saved.';
+                }
+                break;
 
-        // Popup image upload (optional). Stored under public/uploads/popup.
-        if ($request->hasFile('popup_image')) {
-            $request->validate([
-                'popup_image' => 'image|mimes:jpg,jpeg,png,gif|max:8192',
-            ]);
-            $dir = public_path('uploads/popup');
-            if (!is_dir($dir)) {
-                @mkdir($dir, 0755, true);
-            }
-            $file = $request->file('popup_image');
-            $name = 'popup-' . time() . '.' . $file->getClientOriginalExtension();
-            $file->move($dir, $name);
-            ImageOptimizer::afterUpload($dir . '/' . $name, 'banner');
-            $data['popup_image'] = 'uploads/popup/' . $name;
-        }
+            case 'most_voted_hero':
+                $data['most_voted_count'] = max(1, min(20, (int) $request->input('most_voted_count', $data['most_voted_count'] ?? 1)));
+                $heroDir = public_path('uploads/hero');
+                if (!is_dir($heroDir)) {
+                    @mkdir($heroDir, 0755, true);
+                }
+                foreach (['hero_image_en' => 'hero-en', 'hero_image_fr' => 'hero-fr'] as $field => $prefix) {
+                    if ($request->hasFile($field)) {
+                        $request->validate([
+                            $field => 'image|mimes:jpg,jpeg,png|max:8192',
+                        ]);
+                        $file = $request->file($field);
+                        $name = $prefix . '-' . time() . '.' . $file->getClientOriginalExtension();
+                        $file->move($heroDir, $name);
+                        ImageOptimizer::afterUpload($heroDir . '/' . $name, 'banner');
+                        $data[$field] = 'uploads/hero/' . $name;
+                    }
+                }
+                $message = 'Most voted & hero banner saved.';
+                break;
 
-        // Hero banner uploads (English / French) — auto-compressed on save.
-        $heroDir = public_path('uploads/hero');
-        if (!is_dir($heroDir)) {
-            @mkdir($heroDir, 0755, true);
-        }
-        foreach (['hero_image_en' => 'hero-en', 'hero_image_fr' => 'hero-fr'] as $field => $prefix) {
-            if ($request->hasFile($field)) {
-                $request->validate([
-                    $field => 'image|mimes:jpg,jpeg,png|max:8192',
-                ]);
-                $file = $request->file($field);
-                $name = $prefix . '-' . time() . '.' . $file->getClientOriginalExtension();
-                $file->move($heroDir, $name);
-                ImageOptimizer::afterUpload($heroDir . '/' . $name, 'banner');
-                $data[$field] = 'uploads/hero/' . $name;
-            }
-        }
+            case 'casting':
+                $data['casting_title'] = $request->input('casting_title', $data['casting_title'] ?? '');
+                $data['casting_subtitle'] = $request->input('casting_subtitle', $data['casting_subtitle'] ?? '');
+                $data['casting_countdown'] = $request->has('casting_countdown');
+                $rows = [];
+                $provinces = $request->input('province', []);
+                $venues = $request->input('venue', []);
+                $dates = $request->input('cast_date', []);
+                foreach ($provinces as $i => $province) {
+                    $province = trim($province);
+                    if ($province === '' && trim($venues[$i] ?? '') === '' && trim($dates[$i] ?? '') === '') {
+                        continue;
+                    }
+                    $rows[] = [
+                        'province' => $province,
+                        'venue' => trim($venues[$i] ?? ''),
+                        'date' => trim($dates[$i] ?? ''),
+                    ];
+                }
+                $data['casting_rows'] = $rows;
+                $message = 'Casting calendar saved.';
+                break;
 
-        $data['most_voted_count'] = max(1, min(20, (int) $request->input('most_voted_count', $data['most_voted_count'] ?? 1)));
+            case 'primes':
+                $data['primes_title'] = $request->input('primes_title', $data['primes_title'] ?? 'Finals Schedule');
+                $data['primes_countdown'] = $request->has('primes_countdown');
+                $primes = [];
+                $labels = $request->input('prime_label', []);
+                $primeDates = $request->input('prime_date', []);
+                $existingImages = $request->input('prime_image_existing', []);
+                $primeFiles = $request->file('prime_image', []);
+                $primeDir = public_path('uploads/primes');
+                if (!is_dir($primeDir)) {
+                    @mkdir($primeDir, 0755, true);
+                }
+                foreach ($labels as $i => $label) {
+                    $label = trim($label);
+                    $date = trim($primeDates[$i] ?? '');
+                    $image = trim($existingImages[$i] ?? '');
+                    if (isset($primeFiles[$i]) && $primeFiles[$i]->isValid()) {
+                        $file = $primeFiles[$i];
+                        $request->validate([
+                            "prime_image.$i" => 'image|mimes:jpg,jpeg,png,gif|max:8192',
+                        ]);
+                        $name = 'prime-' . $i . '-' . time() . '.' . $file->getClientOriginalExtension();
+                        $file->move($primeDir, $name);
+                        ImageOptimizer::afterUpload($primeDir . '/' . $name, 'banner');
+                        $image = 'uploads/primes/' . $name;
+                    }
+                    if ($label === '' && $date === '' && $image === '') {
+                        continue;
+                    }
+                    $primes[] = ['label' => $label, 'date' => $date, 'image' => $image ?: null];
+                }
+                $data['primes'] = $primes;
+                $message = 'Finals schedule saved.';
+                break;
 
-        // Casting rows
-        $rows = [];
-        $provinces = $request->input('province', []);
-        $venues    = $request->input('venue', []);
-        $dates     = $request->input('cast_date', []);
-        foreach ($provinces as $i => $province) {
-            $province = trim($province);
-            if ($province === '' && trim($venues[$i] ?? '') === '' && trim($dates[$i] ?? '') === '') {
-                continue;
-            }
-            $rows[] = [
-                'province' => $province,
-                'venue'    => trim($venues[$i] ?? ''),
-                'date'     => trim($dates[$i] ?? ''),
-            ];
-        }
-        $data['casting_rows'] = $rows;
+            case 'menu_order':
+                $postedOrder = (array) $request->input('menu_order', []);
+                $validKeys = array_keys(SiteContent::menuKeys());
+                $order = [];
+                foreach ($postedOrder as $key) {
+                    if (in_array($key, $validKeys, true) && !in_array($key, $order, true)) {
+                        $order[] = $key;
+                    }
+                }
+                foreach ($validKeys as $key) {
+                    if (!in_array($key, $order, true)) {
+                        $order[] = $key;
+                    }
+                }
+                if (!empty($order)) {
+                    $data['menu_order'] = $order;
+                }
+                $message = 'Side menu order saved.';
+                break;
 
-        // Prime dates + optional promo images
-        $primes = [];
-        $labels          = $request->input('prime_label', []);
-        $primeDates      = $request->input('prime_date', []);
-        $existingImages  = $request->input('prime_image_existing', []);
-        $primeFiles      = $request->file('prime_image', []);
-        $primeDir = public_path('uploads/primes');
-        if (!is_dir($primeDir)) {
-            @mkdir($primeDir, 0755, true);
-        }
-        foreach ($labels as $i => $label) {
-            $label = trim($label);
-            $date  = trim($primeDates[$i] ?? '');
-            $image = trim($existingImages[$i] ?? '');
-            if (isset($primeFiles[$i]) && $primeFiles[$i]->isValid()) {
-                $file = $primeFiles[$i];
-                $request->validate([
-                    "prime_image.$i" => 'image|mimes:jpg,jpeg,png,gif|max:8192',
-                ]);
-                $name = 'prime-' . $i . '-' . time() . '.' . $file->getClientOriginalExtension();
-                $file->move($primeDir, $name);
-                ImageOptimizer::afterUpload($primeDir . '/' . $name, 'banner');
-                $image = 'uploads/primes/' . $name;
-            }
-            if ($label === '' && $date === '' && $image === '') {
-                continue;
-            }
-            $primes[] = ['label' => $label, 'date' => $date, 'image' => $image ?: null];
-        }
-        $data['primes'] = $primes;
+            case 'about_page':
+                $about = $data['about_page'] ?? [];
+                foreach (['hero_subtitle', 'mission_title', 'mission_p1', 'mission_p2', 'mission_p3', 'heart_badge', 'intro_title', 'intro_text', 'regions', 'values_heading', 'values', 'leaders_heading', 'leaders_subheading', 'winners_year', 'winners_heading'] as $field) {
+                    $about[$field] = $request->input($field, '');
+                }
+                if ($request->hasFile('about_image')) {
+                    $request->validate(['about_image' => 'image|mimes:jpg,jpeg,png,gif,webp|max:8192']);
+                    $dir = public_path('uploads/about');
+                    if (!is_dir($dir)) {
+                        @mkdir($dir, 0755, true);
+                    }
+                    $file = $request->file('about_image');
+                    $name = 'about-' . time() . '.' . $file->getClientOriginalExtension();
+                    $file->move($dir, $name);
+                    ImageOptimizer::afterUpload($dir . '/' . $name, 'banner');
+                    $about['image'] = 'uploads/about/' . $name;
+                }
+                if ($request->has('delete_about_image')) {
+                    $about['image'] = null;
+                }
+                $data['about_page'] = $about;
+                $message = 'About Us page content saved.';
+                break;
 
-        // Side-menu order (list of known menu keys in the chosen order)
-        $postedOrder = (array) $request->input('menu_order', []);
-        $validKeys = array_keys(SiteContent::menuKeys());
-        $order = [];
-        foreach ($postedOrder as $key) {
-            if (in_array($key, $validKeys, true) && !in_array($key, $order, true)) {
-                $order[] = $key;
-            }
-        }
-        foreach ($validKeys as $key) {
-            if (!in_array($key, $order, true)) {
-                $order[] = $key;
-            }
-        }
-        if (!empty($order)) {
-            $data['menu_order'] = $order;
+            default:
+                return redirect()->back()->with('not_permitted', 'Unknown section.');
         }
 
         SiteContent::save($data);
 
-        return redirect()->back()->with('message', 'Site content updated successfully');
+        return redirect()->back()->with('message', $message);
+    }
+
+    /** @deprecated Use siteContentStoreSection — kept so old bookmarks still work. */
+    public function siteContentStore(Request $request)
+    {
+        return $this->siteContentStoreSection($request->merge(['section' => 'homepage_sections']));
     }
 
     /**
-     * Instantly persist a single homepage section on/off toggle (AJAX).
-     * Lets the switches take effect the moment they are flipped, without
-     * requiring the user to scroll down and press Submit.
+     * @deprecated Section toggles are saved via siteContentStoreSection.
      */
     public function siteContentToggle(Request $request)
     {
