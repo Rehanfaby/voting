@@ -13,6 +13,8 @@ use App\Judge;
 use App\Helpers\SiteContent;
 use App\Helpers\PhoneHelper;
 use App\Helpers\WhatsAppFormatter;
+use App\ProductSeat;
+use App\ProductSeatZone;
 use App\TicketSeat;
 use App\User;
 use App\vote;
@@ -223,27 +225,38 @@ class HomeController extends Controller
     }
 
     public function tickets($id) {
-        $tickets = Product::where('category_id', $id)->where('is_active', true)->select('id', 'name', 'qty', 'image', 'price')->paginate(12);
-//        foreach ($tickets as $ticketProduct) {
-//            $soldQty = Ticket::where('product_id', $ticketProduct->id)
-//                ->where('status', 1)
-//                ->sum('qty');
-//
-//            $remainingQty = $ticketProduct->qty - $soldQty;
-//            $ticketProduct->remaining_qty = $remainingQty;
-//        }
+        $tickets = Product::where('category_id', $id)->where('is_active', true)
+            ->select('id', 'name', 'qty', 'image', 'price', 'seat_selection_enabled')
+            ->paginate(12);
         return view('frontend.tickets', compact('tickets'));
     }
 
     public function ticket($id) {
-        $ticket = Product::find($id);
+        $ticket = Product::findOrFail($id);
         return view('frontend.ticket', compact('ticket'));
     }
 
     public function purchaseTicket(Request $request) {
         $data = $request->all();
-        $ticket = Product::find($data['ticket_id']);
-        return view('frontend.ticket-payment', compact('data', 'ticket'));
+        $ticket = Product::findOrFail($data['ticket_id']);
+        $seatSelection = $this->resolveTicketSeatSelection($ticket, $request);
+
+        if ($seatSelection === false) {
+            return back()->with('not_permitted', trans('file.One or more seats are no longer available'));
+        }
+
+        if (is_array($seatSelection)) {
+            $data['seat_ids'] = implode(',', $seatSelection['ids']);
+            $data['seat_labels'] = implode(', ', $seatSelection['labels']);
+            $data['vote'] = count($seatSelection['ids']);
+            $data['amount'] = $seatSelection['total'];
+        } else {
+            $qty = max(1, (int) ($data['vote'] ?? 1));
+            $data['vote'] = $qty;
+            $data['amount'] = $qty * $ticket->price;
+        }
+
+        return view('frontend.ticket-payment', compact('data', 'ticket', 'seatSelection'));
     }
 
     public function employeeFind(Request $request) {
@@ -436,14 +449,19 @@ class HomeController extends Controller
             $this->sendWhatsappMsg($user, $password);
         }
 
-        $product = Product::where('id', $request->ticket_id)->select('price')->first();
-        if($product == null) {
-            return 'Ticket not found';
+        $product = Product::findOrFail($request->ticket_id);
+        $seatSelection = $this->resolveTicketSeatSelection($product, $request);
+        if ($product->seat_selection_enabled && $seatSelection === false) {
+            return back()->with('not_permitted', trans('file.One or more seats are no longer available'));
         }
+
+        $qty = is_array($seatSelection) ? count($seatSelection['ids']) : (int) $request->qty;
+        $amount = is_array($seatSelection) ? $seatSelection['total'] : (float) $request->amount;
+
         $ticket = Ticket::create([
             'user_id' => $user->id,
             'product_id' => $request->ticket_id,
-            'qty' => $request->qty,
+            'qty' => $qty,
             'status' => false,
             'reference' => 'abc',
             'identity_type' => $request->identity_type ?? 1,
@@ -455,9 +473,14 @@ class HomeController extends Controller
             'email' => $request->email,
             'token' => Str::random(6),
             'price' => $product->price,
-            'total_amount' => $request->amount,
-            'payment_method' => 1
+            'total_amount' => $amount,
+            'payment_method' => 1,
+            'selected_seat_ids' => is_array($seatSelection) ? json_encode($seatSelection['ids']) : null,
         ]);
+
+        if (is_array($seatSelection)) {
+            $this->reserveTicketSeats($ticket, $seatSelection['ids']);
+        }
 
         if($ticket) {
             $route = route('ticket.payment.check.stripe');
@@ -486,7 +509,11 @@ class HomeController extends Controller
         $session = \Stripe\Checkout\Session::retrieve($request->session_id);
 
         if ($session->payment_status !== 'paid') {
-            Ticket::where('id', $session->metadata->ticket_id)->delete();
+            $ticket = Ticket::where('id', $session->metadata->ticket_id)->first();
+            if ($ticket) {
+                $this->releaseTicketSeats($ticket);
+                $ticket->delete();
+            }
             return redirect()->route('home')->with('not_permitted', 'payment failed.');
         }
 
@@ -534,14 +561,19 @@ class HomeController extends Controller
             $user = User::create($data);
             $this->sendWhatsappMsg($user, $password);
         }
-        $product = Product::where('id', $request->ticket_id)->select('price')->first();
-        if($product == null) {
-            return 'Ticket not found';
+        $product = Product::findOrFail($request->ticket_id);
+        $seatSelection = $this->resolveTicketSeatSelection($product, $request);
+        if ($product->seat_selection_enabled && $seatSelection === false) {
+            return back()->with('not_permitted', trans('file.One or more seats are no longer available'));
         }
+
+        $qty = is_array($seatSelection) ? count($seatSelection['ids']) : (int) $request->qty;
+        $amount = is_array($seatSelection) ? $seatSelection['total'] : (float) $request->amount;
+
         $ticket = Ticket::create([
                     'user_id' => $user->id,
                     'product_id' => $request->ticket_id,
-                    'qty' => $request->qty,
+                    'qty' => $qty,
                     'status' => false,
                     'reference' => 'abc',
                     'identity_type' => $request->identity_type ?? 1,
@@ -553,9 +585,14 @@ class HomeController extends Controller
                     'email' => $request->email,
                     'token' => Str::random(6),
                     'price' => $product->price,
-                    'total_amount' => $request->amount,
-                    'payment_method' => 0
+                    'total_amount' => $amount,
+                    'payment_method' => 0,
+                    'selected_seat_ids' => is_array($seatSelection) ? json_encode($seatSelection['ids']) : null,
                 ]);
+
+        if (is_array($seatSelection)) {
+            $this->reserveTicketSeats($ticket, $seatSelection['ids']);
+        }
         $token = getenv("MOMO_TOKEN");
         if($token && $ticket) {
             $route = route('ticket.payment.check');
@@ -576,7 +613,11 @@ class HomeController extends Controller
     public function ticketPaymentCheck(Request $request)
     {
         if($request->status != 'SUCCESSFUL'){
-            Ticket::where('id', $request->external_reference)->delete();
+            $ticket = Ticket::where('id', $request->external_reference)->first();
+            if ($ticket) {
+                $this->releaseTicketSeats($ticket);
+                $ticket->delete();
+            }
             return redirect()->route('home')->with('not_permitted', 'payment failed.');
         }
 
@@ -595,28 +636,102 @@ class HomeController extends Controller
 
     private function processTicketSuccessfulPayment($ticket, $reference)
     {
-        $lastSeat = TicketSeat::where('product_id', $ticket->product_id)->orderBy('id', 'desc')->first()->seat_number ?? 0;
-        $qty = (int) $ticket->qty;
-        $seatNumbers = range($lastSeat + 1, $lastSeat + $qty);
-
         $ticket->status = true;
         $ticket->reference = $reference;
-        $ticket->seat_numbers = json_encode($seatNumbers);
-        $ticket->save();
 
-        for ($i = 1; $i <= $qty; $i++) {
-            $lastSeat++;
-            TicketSeat::create([
-                'ticket_id' => $ticket->id,
-                'product_id' => $ticket->product_id,
-                'seat_number' => $lastSeat,
-                'token' => Str::random(6)
-            ]);
+        $seatIds = json_decode($ticket->selected_seat_ids, true);
+        if (is_array($seatIds) && count($seatIds)) {
+            $seats = ProductSeat::where('product_id', $ticket->product_id)
+                ->whereIn('id', $seatIds)
+                ->get();
+            $labels = [];
+            foreach ($seats as $seat) {
+                $seat->status = 'sold';
+                $seat->ticket_id = $ticket->id;
+                $seat->save();
+                $labels[] = $seat->label;
+                TicketSeat::create([
+                    'ticket_id' => $ticket->id,
+                    'product_id' => $ticket->product_id,
+                    'seat_number' => $seat->id,
+                    'seat_label' => $seat->label,
+                    'product_seat_id' => $seat->id,
+                    'token' => Str::random(6),
+                ]);
+            }
+            $ticket->seat_numbers = json_encode($labels);
+            $ticket->save();
+        } else {
+            $lastSeat = TicketSeat::where('product_id', $ticket->product_id)->orderBy('id', 'desc')->first()->seat_number ?? 0;
+            $qty = (int) $ticket->qty;
+            $seatNumbers = range($lastSeat + 1, $lastSeat + $qty);
+            $ticket->seat_numbers = json_encode($seatNumbers);
+            $ticket->save();
+
+            for ($i = 1; $i <= $qty; $i++) {
+                $lastSeat++;
+                TicketSeat::create([
+                    'ticket_id' => $ticket->id,
+                    'product_id' => $ticket->product_id,
+                    'seat_number' => $lastSeat,
+                    'token' => Str::random(6),
+                ]);
+            }
         }
 
         $this->sendWhatsappMsgTicketMomoSuccess($ticket);
         return true;
+    }
 
+    /**
+     * @return array|false|null  seat bundle, false if invalid, null if seat selection off
+     */
+    private function resolveTicketSeatSelection(Product $product, Request $request)
+    {
+        if (!$product->seat_selection_enabled) {
+            return null;
+        }
+
+        $raw = $request->input('seat_ids', '');
+        $ids = array_values(array_unique(array_filter(array_map('intval', explode(',', (string) $raw)))));
+        if (empty($ids)) {
+            return false;
+        }
+
+        $seats = ProductSeat::where('product_id', $product->id)
+            ->whereIn('id', $ids)
+            ->where('status', 'available')
+            ->with('zone')
+            ->get();
+
+        if ($seats->count() !== count($ids)) {
+            return false;
+        }
+
+        $total = $seats->sum(function ($seat) use ($product) {
+            return $seat->zone ? (float) $seat->zone->price : (float) $product->price;
+        });
+
+        return [
+            'ids' => $seats->pluck('id')->all(),
+            'labels' => $seats->pluck('label')->all(),
+            'total' => $total,
+        ];
+    }
+
+    private function reserveTicketSeats(Ticket $ticket, array $seatIds)
+    {
+        ProductSeat::where('product_id', $ticket->product_id)
+            ->whereIn('id', $seatIds)
+            ->where('status', 'available')
+            ->update(['status' => 'reserved', 'ticket_id' => $ticket->id]);
+    }
+
+    private function releaseTicketSeats(Ticket $ticket)
+    {
+        ProductSeat::where('ticket_id', $ticket->id)
+            ->whereIn('status', ['reserved'])
+            ->update(['status' => 'available', 'ticket_id' => null]);
     }
 
     public function musicianVotePaymentPending($id)

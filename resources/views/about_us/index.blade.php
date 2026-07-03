@@ -13,7 +13,11 @@
 <div class="alert alert-danger alert-dismissible text-center"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>{{ session()->get('not_permitted') }}</div>
 @endif
 
-<section>
+<section class="container-fluid">
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item"><a class="nav-link" href="{{ route('about_us.settings') }}">{{ trans('file.About Page Content') }}</a></li>
+        <li class="nav-item"><a class="nav-link active" href="{{ route('about_us.index') }}">{{ trans('file.Leadership Team') }}</a></li>
+    </ul>
     @if(in_array('employees-add', $all_permission))
     <div class="container-fluid mb-3">
         <button type="button" class="btn btn-info" data-toggle="modal" data-target="#addModal"><i class="dripicons-plus"></i> {{ trans('file.Add About Member') }}</button>

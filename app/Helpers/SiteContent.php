@@ -121,6 +121,18 @@ class SiteContent
                 ['label' => 'Prime 3',     'date' => '2026-08-22 19:00'],
                 ['label' => 'Final Prime', 'date' => '2026-08-29 19:00'],
             ],
+            'about_page' => [
+                'hero_subtitle' => '',
+                'mission_title' => '',
+                'mission_p1' => '',
+                'mission_p2' => '',
+                'mission_p3' => '',
+                'heart_badge' => '',
+                'intro_title' => '',
+                'intro_text' => '',
+                'image' => null,
+                'regions' => 'Adamaoua, Centre, East, Far North, Littoral, North, North-West, West, South, South-West',
+            ],
         ];
     }
 
@@ -151,6 +163,9 @@ class SiteContent
             if (isset($data[$listKey]) && is_array($data[$listKey])) {
                 $merged[$listKey] = array_values($data[$listKey]);
             }
+        }
+        if (isset($data['about_page']) && is_array($data['about_page'])) {
+            $merged['about_page'] = array_merge($defaults['about_page'] ?? [], $data['about_page']);
         }
         return $merged;
     }
@@ -235,5 +250,39 @@ class SiteContent
             }
         }
         return $upcoming;
+    }
+
+    /** About page field with lang-file fallback. */
+    public static function aboutField($key, $fallback = '')
+    {
+        $page = self::get('about_page', []);
+        if (!is_array($page)) {
+            return $fallback;
+        }
+        $val = $page[$key] ?? null;
+        if ($val !== null && trim((string) $val) !== '') {
+            return $val;
+        }
+        return $fallback;
+    }
+
+    public static function aboutImageUrl()
+    {
+        $page = self::get('about_page', []);
+        $img = is_array($page) ? ($page['image'] ?? null) : null;
+        if (!empty($img) && file_exists(public_path($img))) {
+            return url($img);
+        }
+        return asset('public/frontend/images/bottom-banner-en.jpeg');
+    }
+
+    /** @return string[] */
+    public static function aboutRegions()
+    {
+        $raw = self::aboutField('regions', '');
+        if ($raw === '') {
+            return ['Adamaoua', 'Centre', 'East', 'Far North', 'Littoral', 'North', 'North-West', 'West', 'South', 'South-West'];
+        }
+        return array_values(array_filter(array_map('trim', explode(',', $raw))));
     }
 }

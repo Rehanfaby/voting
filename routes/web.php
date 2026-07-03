@@ -64,6 +64,7 @@ Route::group(['middleware' => 'checkOtp'], function() {
 
 	Route::get('/tickets/{id}', 'HomeController@tickets')->name('tickets');
 	Route::get('/ticket/data/{id}', 'HomeController@ticket')->name('ticket.data');
+	Route::get('/api/ticket/{id}/seats', 'ProductSeatMapController@publicSeats')->name('ticket.seats.public');
 	Route::post('/purchase/ticket', 'HomeController@purchaseTicket')->name('purchase.ticket');
 
 	Route::post('/ticket/payment', 'HomeController@ticketPayment')->name('ticket.payment');
@@ -133,6 +134,11 @@ Route::group(['middleware' => ['auth', 'active']], function() {
 	Route::post('products/update', 'ProductController@updateProduct');
 	Route::get('products/store/model', 'SaleController@storeModel')->name('product.store.model');
 	Route::resource('products', 'ProductController');
+    Route::get('products/{id}/seat-map', 'ProductSeatMapController@edit')->name('products.seat_map');
+    Route::post('products/{id}/seat-map/settings', 'ProductSeatMapController@saveSettings')->name('products.seat_map.settings');
+    Route::post('products/{id}/seat-map/zones', 'ProductSeatMapController@saveZone')->name('products.seat_map.zones');
+    Route::delete('products/seat-zones/{zoneId}', 'ProductSeatMapController@deleteZone')->name('products.seat_zones.destroy');
+    Route::post('products/{id}/seat-map/seats', 'ProductSeatMapController@saveSeats')->name('products.seat_map.seats');
 
     Route::get('/admin/tickets/index', 'TicketController@index')->name('admin.ticket.index');
     Route::post('/tickets/deletebyselection', 'TicketController@deleteBySelection')->name('tickets.deleteBySelection');
@@ -265,6 +271,8 @@ Route::group(['middleware' => ['auth', 'active']], function() {
     Route::resource('ambassador', 'AmbassadorController');
     Route::post('ambassador/deletebyselection', 'AmbassadorController@deleteBySelection');
     Route::get('about-us', 'AboutUsController@index')->name('about_us.index');
+    Route::get('about-us/settings', 'AboutUsController@settings')->name('about_us.settings');
+    Route::post('about-us/settings', 'AboutUsController@settingsStore')->name('about_us.settings.store');
     Route::post('about-us', 'AboutUsController@store')->name('about_us.store');
     Route::post('about-us/update', 'AboutUsController@update')->name('about_us.update');
     Route::delete('about-us/{id}', 'AboutUsController@destroy')->name('about_us.destroy');

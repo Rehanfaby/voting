@@ -1,81 +1,53 @@
 @extends('frontend.layout.main')
 @section('content')
 
-    @if($errors->has('name'))
-        <div class="alert alert-danger alert-dismissible text-center"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>{{ $errors->first('name') }}</div>
-    @endif
-    @if(session()->has('message'))
-        <div class="alert alert-success alert-dismissible text-center"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>{{ session()->get('message') }}</div>
-    @endif
-    @if(session()->has('not_permitted'))
-        <div class="alert alert-danger alert-dismissible text-center"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>{{ session()->get('not_permitted') }}</div>
-    @endif
-
-    <main>
-        <!-- page title area start  -->
-        <section class="page-title-area page-title-spacing p-relative zindex-1 " data-background="assets/img/bg/work-bg.jpg">
-            <div class="ms-overlay ms-overlay8 p-absolute zindex--1"></div>
-            <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-xxl-9">
-                        <div class="page-title-wrapper text-center pt-15">
-                            <div class="page-title-icon mx-auto mb-30">
-                                <i class="flaticon-star"></i>
-                            </div>
-                            <h3 class="ms-page-title lh-1">{{trans("file.Events")}}</h3>
-                        </div>
-                    </div>
+    <main class="mg-tickets">
+        <section class="mg-tickets__hero pt-130 pb-50">
+            <div class="container text-center">
+                <span class="mg-tickets__badge">{{ trans('file.Events') }}</span>
+                <h1 class="mg-tickets__title">{{ trans('file.Event List') }}</h1>
+                <p class="mg-tickets__lead">{{ trans('file.Book your seat for upcoming gospel events') }}</p>
+                <div class="mg-tickets__search-wrap">
+                    <i class="fa-solid fa-search"></i>
+                    <input type="text" id="event-search" placeholder="{{ trans('file.Search events') }}…">
                 </div>
             </div>
         </section>
-        <!-- page title area end  -->
 
-        <!-- team area start here  -->
-        <section class="ms-team-area ms-bg-2 pt-125 pb-110">
+        <section class="mg-tickets__grid pb-130">
             <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-xl-6">
-                        <div class="section__title-wrapper text-center mb-80">
-                            <h2 class="section__title">{{trans("file.Event List")}}</h2>
-                            <input type="text" id="ticket-search" class="form-control mt-3" placeholder="Search tickets...">
-                        </div>
-                    </div>
-                </div>
-                <div class="row ms-team-inner" id="ticket-list">
-                    @foreach($events as $ticket)
-                        <div class="col-xl-4 col-md-6 ticket-item">
-                            <div class="ms-team-item-wrap">
-                                <div class="ms-team-item p-relative">
-                                    <div class="ms-team-img mb-3">
-                                        <a href="{{ route('tickets', $ticket->id) }}">
-                                            <img src="{{ url('public/images/category', $ticket->image) }}" alt="ticket image">
-                                        </a>
-                                    </div>
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <h3 class="ms-team-title mb-0">
-                                            <a href="{{ route('tickets', $ticket->id) }}">{{ $ticket->name }}</a>
-                                        </h3>
-                                    </div>
-                                </div>
+                <div class="row g-4" id="event-list">
+                    @foreach($events as $event)
+                    <div class="col-xl-4 col-md-6 event-card">
+                        <a href="{{ route('tickets', $event->id) }}" class="mg-event-card">
+                            <div class="mg-event-card__img">
+                                @if($event->image)
+                                    <img src="{{ url('public/images/category', $event->image) }}" alt="{{ $event->name }}" loading="lazy">
+                                @else
+                                    <div class="mg-event-card__placeholder"><i class="fa-solid fa-ticket"></i></div>
+                                @endif
                             </div>
-                        </div>
+                            <div class="mg-event-card__body">
+                                <h3>{{ $event->name }}</h3>
+                                <span class="mg-event-card__cta">{{ trans('file.View tickets') }} <i class="fa-solid fa-arrow-right"></i></span>
+                            </div>
+                        </a>
+                    </div>
                     @endforeach
                 </div>
-                {{ $events->links() }}
+                <div class="mt-4 d-flex justify-content-center">{{ $events->links() }}</div>
             </div>
         </section>
-        <!-- team area end here  -->
-
     </main>
-    <script>
-$(document).ready(function(){
-    $('#ticket-search').on('keyup', function() {
-        var value = $(this).val().toLowerCase();
-        $('#ticket-list .ticket-item').filter(function() {
-            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
-        });
+@endsection
+
+@section('scripts')
+<script>
+document.getElementById('event-search').addEventListener('input', function () {
+    var q = this.value.toLowerCase();
+    document.querySelectorAll('.event-card').forEach(function (el) {
+        el.style.display = el.textContent.toLowerCase().indexOf(q) >= 0 ? '' : 'none';
     });
 });
 </script>
-
 @endsection

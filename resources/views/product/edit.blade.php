@@ -8,6 +8,9 @@
                 <div class="card">
                     <div class="card-header d-flex align-items-center">
                         <h4>{{trans('file.Update Product')}}</h4>
+                        <a href="{{ route('products.seat_map', $lims_product_data->id) }}" class="btn btn-warning ml-auto">
+                            <i class="dripicons-map"></i> {{ trans('file.Seat map') }}
+                        </a>
                     </div>
                     <div class="card-body">
                         <p class="italic"><small>{{trans('file.The field labels marked with * are required input fields')}}.</small></p>

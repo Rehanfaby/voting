@@ -442,7 +442,8 @@
                         @if($general_setting_permission_active)
                             <li id="general-setting-menu"><a href="{{route('setting.general')}}">{{trans('file.General Setting')}}</a></li>
                             <li id="site-content-menu"><a href="{{route('setting.site_content')}}">Site Content &amp; Sections</a></li>
-                            <li id="about-us-menu"><a href="{{route('about_us.index')}}">{{trans('file.About Us Page')}}</a></li>
+                            <li id="about-us-menu"><a href="{{route('about_us.settings')}}">{{trans('file.About Us Page')}}</a></li>
+                            <li id="about-us-team-menu"><a href="{{route('about_us.index')}}">{{trans('file.Leadership Team')}}</a></li>
                         @endif
 {{--                        @if($customer_group_permission_active)--}}
 {{--                            <li id="customer-group-menu"><a href="{{route('customer_group.index')}}">{{trans('file.Customer Group')}}</a></li>--}}
