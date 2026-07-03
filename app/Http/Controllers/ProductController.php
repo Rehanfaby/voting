@@ -589,6 +589,8 @@ class ProductController extends Controller
         elseif($data['type'] == 'digital')
             $data['cost'] = $data['unit_id'] = $data['purchase_unit_id'] = $data['sale_unit_id'] = 0;
 
+        $this->applyTicketDefaults($data);
+
         $data['product_details'] = str_replace('"', '@', $data['product_details']);
 
         $data['rent_price_per_hour'] = $data['rent_price_per_hour'] ?? 0;
@@ -714,6 +716,11 @@ class ProductController extends Controller
         }
         elseif($data['type'] == 'digital')
             $data['cost'] = $data['unit_id'] = $data['purchase_unit_id'] = $data['sale_unit_id'] = 0;
+
+        elseif($data['type'] == 'digital')
+            $data['cost'] = $data['unit_id'] = $data['purchase_unit_id'] = $data['sale_unit_id'] = 0;
+
+        $this->applyTicketDefaults($data);
 
         if(!isset($data['featured']))
             $data['featured'] = 0;
@@ -1476,5 +1483,42 @@ class ProductController extends Controller
             'availableQty',
             'buyers'
         ));
+    }
+
+    /** Defaults for ticket products when inventory fields are omitted from the form. */
+    private function applyTicketDefaults(array &$data)
+    {
+        if (($data['type'] ?? 'standard') !== 'standard') {
+            return;
+        }
+
+        if (empty($data['unit_id'])) {
+            $unit = Unit::where('is_active', true)
+                ->where(function ($q) {
+                    $q->where('unit_name', 'Ticket')->orWhere('unit_code', 'ticket');
+                })
+                ->first();
+            if ($unit) {
+                $data['unit_id'] = $unit->id;
+                $data['sale_unit_id'] = $data['sale_unit_id'] ?: $unit->id;
+                $data['purchase_unit_id'] = $data['purchase_unit_id'] ?: $unit->id;
+            }
+        }
+
+        if (!isset($data['cost']) || $data['cost'] === '' || $data['cost'] === null) {
+            $data['cost'] = $data['price'] ?? 0;
+        }
+
+        if (empty($data['tax_id'])) {
+            $data['tax_id'] = null;
+        }
+
+        if (empty($data['tax_method'])) {
+            $data['tax_method'] = 1;
+        }
+
+        if (empty($data['brand_id'])) {
+            $data['brand_id'] = null;
+        }
     }
 }

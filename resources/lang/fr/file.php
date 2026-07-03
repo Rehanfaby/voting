@@ -1013,4 +1013,9 @@ return [
     'Save seat map' => 'Enregistrer le plan',
     'Stage' => 'Scène',
     'Ticket List' => 'Liste des billets',
+    'Ticket details' => 'Détails du billet',
+    'Available seats' => 'Places disponibles',
+    'Ticket image paste hint' => 'Glissez-déposez, cliquez pour parcourir ou collez une image (Ctrl+V / Cmd+V) n\'importe où sur cette page.',
+    'Ticket image drop message' => 'Déposez les images du billet ici ou collez depuis le presse-papiers',
+    'Ticket details placeholder' => 'Décrivez ce qui est inclus avec ce billet…',
 ];

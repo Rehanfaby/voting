@@ -1010,4 +1010,9 @@ return [
     'Save seat map' => 'Save seat map',
     'Stage' => 'Stage',
     'Ticket List' => 'Ticket List',
+    'Ticket details' => 'Ticket details',
+    'Available seats' => 'Available seats',
+    'Ticket image paste hint' => 'Drag & drop, click to browse, or paste an image (Ctrl+V / Cmd+V) anywhere on this page.',
+    'Ticket image drop message' => 'Drop ticket images here or paste from clipboard',
+    'Ticket details placeholder' => 'Describe what is included with this ticket…',
 ];

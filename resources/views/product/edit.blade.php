@@ -5,19 +5,26 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-12">
-                <div class="card">
+                <div class="card mg-ticket-form-card">
                     <div class="card-header d-flex align-items-center">
-                        <h4>{{trans('file.Update Product')}}</h4>
+                        <h4>{{ trans('file.Update Product') }}</h4>
                         <a href="{{ route('products.seat_map', $lims_product_data->id) }}" class="btn btn-warning ml-auto">
                             <i class="dripicons-map"></i> {{ trans('file.Seat map') }}
                         </a>
                     </div>
                     <div class="card-body">
                         <p class="italic"><small>{{trans('file.The field labels marked with * are required input fields')}}.</small></p>
-                        <form id="product-form">
+                        <form id="product-form" class="mg-ticket-form">
                             <input type="hidden" name="id" value="{{$lims_product_data->id}}" />
+                            <input type="hidden" name="unit_id" value="{{ $lims_product_data->unit_id }}">
+                            <input type="hidden" name="sale_unit_id" value="{{ $lims_product_data->sale_unit_id }}">
+                            <input type="hidden" name="purchase_unit_id" value="{{ $lims_product_data->purchase_unit_id }}">
+                            <input type="hidden" name="cost" value="{{ $lims_product_data->cost }}">
+                            <input type="hidden" name="tax_id" value="{{ $lims_product_data->tax_id }}">
+                            <input type="hidden" name="tax_method" value="{{ $lims_product_data->tax_method }}">
+                            <input type="hidden" name="brand_id" value="{{ $lims_product_data->brand_id }}">
                             <div class="row">
-                                <div class="col-md-4">
+                                <div class="col-md-4 d-none">
                                     <div class="form-group">
                                         <label>{{trans('file.Product Type')}} *</strong> </label>
                                         <div class="input-group">
@@ -117,7 +124,7 @@
                                         </table>
                                     </div>
                                 </div>
-                                <div class="col-md-4 brand_id">
+                                <div class="col-md-4 brand_id d-none">
                                     <div class="form-group">
                                         <label>{{trans('file.Brand')}}</strong> </label>
                                         <div class="input-group">
@@ -143,7 +150,7 @@
                                       </div>
                                     </div>
                                 </div>
-                                <div id="unit" class="col-md-12">
+                                <div id="unit" class="col-md-12 d-none">
                                     <div class="row ">
                                         <div class="col-md-4">
                                                 <label>{{trans('file.Product Unit')}} *</strong> </label>
@@ -178,7 +185,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div id="cost" class="col-md-4">
+                                <div id="cost" class="col-md-4 d-none">
                                     <div class="form-group">
                                         <label>{{trans('file.Product Cost')}} *</strong> </label>
                                         <input type="number" name="cost" value="{{$lims_product_data->cost}}" required class="form-control" step="any">
@@ -228,7 +235,7 @@
                                         <input type="number" name="alert_quantity" value="{{$lims_product_data->alert_quantity}}" class="form-control" step="any">
                                     </div>
                                 </div> -->
-                                <div class="col-md-4 tax_id">
+                                <div class="col-md-4 tax_id d-none">
                                     <div class="form-group">
                                         <input type="hidden" name="tax" value="{{$lims_product_data->tax_id}}">
                                         <label>{{trans('file.product')}} {{trans('file.Tax')}}</strong> </label>
@@ -240,7 +247,7 @@
                                         </select>
                                     </div>
                                 </div>
-                                <div class="col-md-4 tax_method">
+                                <div class="col-md-4 tax_method d-none">
                                     <div class="form-group">
                                         <input type="hidden" name="tax_method_id" value="{{$lims_product_data->tax_method}}">
                                         <label>{{trans('file.Tax Method')}}</strong> </label>
@@ -280,8 +287,9 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label>{{trans('file.Product Image')}}</strong> </label> <i class="dripicons-question" data-toggle="tooltip" title="{{trans('file.You can upload multiple image. Only .jpeg, .jpg, .png, .gif file can be uploaded. First image will be base image.')}}"></i>
-                                        <div id="imageUpload" class="dropzone"></div>
+                                        <label>{{ trans('file.Product Image') }}</label>
+                                        <p class="mg-ticket-form__note">{{ trans('file.Ticket image paste hint') }}</p>
+                                        <div id="imageUpload" class="dropzone mg-ticket-dropzone" tabindex="0"></div>
                                         <span class="validation-msg" id="image-error"></span>
                                     </div>
                                 </div>
@@ -1060,6 +1068,19 @@
             this.removeAllFiles(true);
         }
     });
+
+    document.addEventListener('paste', function (e) {
+        if (!e.clipboardData || !e.clipboardData.items || !myDropzone) return;
+        var target = e.target;
+        if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') && !target.closest('#imageUpload')) return;
+        [].forEach.call(e.clipboardData.items, function (item) {
+            if (item.type.indexOf('image') === -1) return;
+            var file = item.getAsFile();
+            if (file) myDropzone.addFile(file);
+        });
+    });
+
+    $('#imageUpload').on('click', function () { this.focus(); });
 
 </script>
 @endsection

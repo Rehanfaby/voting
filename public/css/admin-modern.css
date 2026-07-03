@@ -842,3 +842,87 @@ a.ms-stat:hover::after {
 .ms-rank-list li:nth-child(1) .ms-rank-pos { background: var(--ma-yellow); color: var(--ma-navy-1); }
 .ms-rank-name { flex: 1; font-weight: 600; color: var(--ma-navy-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ms-rank-votes { font-weight: 800; color: var(--ma-blue); }
+
+/* Admin ticket create / edit */
+.mg-ticket-form-card {
+    border: 1px solid #e7edf5;
+    border-radius: var(--ma-radius);
+    box-shadow: var(--ma-shadow);
+    overflow: hidden;
+}
+.mg-ticket-form-card .card-header {
+    background: linear-gradient(135deg, var(--ma-navy-1) 0%, #0c2f6b 100%);
+    color: #fff;
+    border: none;
+}
+.mg-ticket-form-card .card-header h4 { color: #fff; margin: 0; font-weight: 700; }
+.mg-ticket-form__hint {
+    color: #64748b;
+    font-size: 13px;
+    margin-bottom: 20px;
+}
+.mg-ticket-form__section {
+    background: #f8fafc;
+    border: 1px solid #e7edf5;
+    border-radius: 12px;
+    padding: 20px 22px;
+    margin-bottom: 18px;
+}
+.mg-ticket-form__title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ma-navy-1);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin: 0 0 16px;
+}
+.mg-ticket-form__note {
+    font-size: 13px;
+    color: #64748b;
+    margin: 6px 0 0;
+}
+.mg-ticket-form__check {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: var(--ma-navy-1);
+    margin: 0;
+    cursor: pointer;
+}
+.mg-ticket-form__submit {
+    padding: 12px 28px;
+    font-weight: 700;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #e87722, #ff9533);
+    border: none;
+}
+.mg-ticket-form__submit:hover { filter: brightness(1.05); }
+.mg-ticket-dropzone {
+    border: 2px dashed #cbd5e1 !important;
+    border-radius: 12px !important;
+    background: #fff !important;
+    min-height: 160px;
+    transition: border-color .2s, background .2s;
+}
+.mg-ticket-dropzone.dz-drag-hover,
+.mg-ticket-dropzone:focus {
+    border-color: #e87722 !important;
+    background: #fff8f3 !important;
+    outline: none;
+}
+.mg-ticket-dropzone .dz-message {
+    color: #64748b;
+    font-weight: 600;
+    margin: 2em 0;
+}
+.mg-ticket-form .form-control,
+.mg-ticket-form .bootstrap-select .dropdown-toggle {
+    border-radius: 10px;
+    border-color: #dbe3ee;
+}
+.mg-ticket-form label {
+    font-weight: 600;
+    color: var(--ma-navy-1);
+    font-size: 13px;
+}
