@@ -43,8 +43,9 @@ class CategoryController extends Controller
         else
             $limit = $totalData;
         $start = $request->input('start');
-        $order = $columns[$request->input('order.0.column')];
-        $dir = $request->input('order.0.dir');
+        $orderCol = (int) $request->input('order.0.column', 2);
+        $order = $columns[$orderCol] ?? 'name';
+        $dir = $request->input('order.0.dir', 'asc');
         if(empty($request->input('search.value')))
             $categories = Category::offset($start)
                         ->where('is_active', true)
@@ -131,7 +132,7 @@ class CategoryController extends Controller
                     "data"            => $data
                     );
 
-        echo json_encode($json_data);
+        return response()->json($json_data);
     }
 
     public function store(Request $request)

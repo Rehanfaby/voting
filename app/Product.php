@@ -51,7 +51,7 @@ class Product extends Model
         return $this->hasMany(TicketSeat::class, 'product_id');
     }
 
-    public function ticketSeats()
+    public function productSeats()
     {
         return $this->hasMany(ProductSeat::class, 'product_id');
     }

@@ -521,36 +521,6 @@
                 <ul class="nav-menu list-unstyled d-flex flex-md-row align-items-md-center ms-header-nav">
                     <li class="nav-item"><a id="btnFullscreen" data-toggle="tooltip" title="{{trans('file.Full Screen')}}"><i class="dripicons-expand"></i></a></li>
 
-                    @php $headerRoleName = $role->name ?? 'Staff'; @endphp
-                    <li class="nav-item nav-user-dropdown dropdown">
-                        <a href="#" class="nav-link dropdown-toggle nav-user-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <span class="nav-user-chip">
-                                <span class="nav-user-avatar">{{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}</span>
-                                <span class="nav-user-meta d-none d-md-inline-flex">
-                                    <span class="nav-user-name">{{ Auth::user()->name }}</span>
-                                    <span class="nav-user-role">{{ strtoupper(str_replace('_', ' ', $headerRoleName)) }}</span>
-                                </span>
-                                <i class="fa fa-angle-down nav-user-chevron"></i>
-                            </span>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-right nav-user-menu">
-                            <li class="dropdown-header">{{ trans('file.My Account') }}</li>
-                            <li>
-                                <a class="dropdown-item" href="{{ url('/admin') }}"><i class="fa fa-th-large"></i> {{ trans('file.Admin Dashboard') }}</a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{{ route('user.profile', Auth::user()->id) }}"><i class="dripicons-user"></i> {{ trans('file.profile') }}</a>
-                            </li>
-                            <li class="dropdown-divider"></li>
-                            <li>
-                                <a class="dropdown-item nav-user-logout" href="#" onclick="event.preventDefault(); document.getElementById('header-logout-form').submit();">
-                                    <i class="dripicons-export"></i> {{ trans('file.logout') }}
-                                </a>
-                                <form id="header-logout-form" action="{{ route('logout') }}" method="POST" style="display:none">@csrf</form>
-                            </li>
-                        </ul>
-                    </li>
-
                     <li class="nav-item ms-lang-switch ms-lang-switch--header-end">
                         <a href="{{ url('language_switch/en') }}" class="ms-lang {{ app()->getLocale() == 'en' ? 'active' : '' }}">EN</a>
                         <a href="{{ url('language_switch/fr') }}" class="ms-lang {{ app()->getLocale() == 'fr' ? 'active' : '' }}">FR</a>
