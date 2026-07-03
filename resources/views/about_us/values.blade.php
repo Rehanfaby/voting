@@ -5,7 +5,7 @@
 @endif
 
 <section class="container-fluid">
-    @include('about_us.partials.nav-tabs', ['active' => 'values'])
+    @include('about_us.partials.frontend-preview', ['previewSection' => 'values', 'about' => $about])
 
     <div class="card">
         <div class="card-header"><h4>{{ trans('file.Our Values') }}</h4></div>

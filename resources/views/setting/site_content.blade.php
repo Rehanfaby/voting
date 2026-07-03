@@ -180,14 +180,20 @@
                         <div class="table-responsive">
                             <table class="table" id="casting-table">
                                 <thead>
-                                    <tr><th>Province</th><th>City / Venue</th><th>Date</th><th style="width:60px"></th></tr>
+                                    <tr><th>Province</th><th>City / Venue</th><th>Date</th><th>Enabled</th><th style="width:60px"></th></tr>
                                 </thead>
                                 <tbody>
-                                    @foreach(($content['casting_rows'] ?? []) as $row)
+                                    @foreach(($content['casting_rows'] ?? []) as $i => $row)
                                         <tr>
                                             <td><input type="text" name="province[]" class="form-control" value="{{ $row['province'] ?? '' }}"></td>
                                             <td><input type="text" name="venue[]" class="form-control" value="{{ $row['venue'] ?? '' }}"></td>
                                             <td><input type="text" name="cast_date[]" class="form-control" value="{{ $row['date'] ?? '' }}" placeholder="e.g. April 4–5, 2026"></td>
+                                            <td class="align-middle">
+                                                <label class="sc-switch mb-0">
+                                                    <input type="checkbox" name="cast_enabled[{{ $i }}]" value="1" {{ ($row['enabled'] ?? true) ? 'checked' : '' }}>
+                                                    <span class="sc-slider"></span>
+                                                </label>
+                                            </td>
                                             <td><button type="button" class="btn btn-danger btn-sm sc-remove-row">&times;</button></td>
                                         </tr>
                                     @endforeach
@@ -229,19 +235,25 @@
                         <div class="table-responsive">
                             <table class="table" id="primes-table">
                                 <thead>
-                                    <tr><th>Prime Label</th><th>Date &amp; Time</th><th>Promo Image</th><th style="width:60px"></th></tr>
+                                    <tr><th>Prime Label</th><th>Date &amp; Time</th><th>Promo Image</th><th>Enabled</th><th style="width:60px"></th></tr>
                                 </thead>
                                 <tbody>
                                     @foreach(($content['primes'] ?? []) as $i => $p)
                                         <tr>
                                             <td><input type="text" name="prime_label[]" class="form-control" value="{{ $p['label'] ?? '' }}"></td>
-                                            <td><input type="datetime-local" name="prime_date[]" class="form-control" value="{{ !empty($p['date']) ? \Carbon\Carbon::parse($p['date'])->format('Y-m-d\TH:i') : '' }}"></td>
+                                            <td><input type="datetime-local" name="prime_date[]" class="form-control" value="{{ !empty($p['date']) ? \App\Helpers\SiteContent::parseEventDate($p['date'])->format('Y-m-d\TH:i') : '' }}"></td>
                                             <td>
                                                 <input type="hidden" name="prime_image_existing[]" value="{{ $p['image'] ?? '' }}">
                                                 <input type="file" name="prime_image[{{ $i }}]" accept="image/*" class="form-control-file">
                                                 @if(!empty($p['image']))
                                                     <img src="{{ \App\Helpers\SiteContent::primeImageUrl($p['image']) }}?v={{ config('app.version') }}" alt="" style="max-height:48px;margin-top:6px;border-radius:6px;">
                                                 @endif
+                                            </td>
+                                            <td class="align-middle">
+                                                <label class="sc-switch mb-0">
+                                                    <input type="checkbox" name="prime_enabled[{{ $i }}]" value="1" {{ ($p['enabled'] ?? true) ? 'checked' : '' }}>
+                                                    <span class="sc-slider"></span>
+                                                </label>
                                             </td>
                                             <td><button type="button" class="btn btn-danger btn-sm sc-remove-row">&times;</button></td>
                                         </tr>
@@ -319,10 +331,12 @@
 
     (function () {
         function castingRow() {
+            var idx = $('#casting-table tbody tr').length;
             return '<tr>' +
                 '<td><input type="text" name="province[]" class="form-control"></td>' +
                 '<td><input type="text" name="venue[]" class="form-control"></td>' +
                 '<td><input type="text" name="cast_date[]" class="form-control" placeholder="e.g. April 4\u20135, 2026"></td>' +
+                '<td class="align-middle"><label class="sc-switch mb-0"><input type="checkbox" name="cast_enabled[' + idx + ']" value="1" checked><span class="sc-slider"></span></label></td>' +
                 '<td><button type="button" class="btn btn-danger btn-sm sc-remove-row">&times;</button></td>' +
                 '</tr>';
         }
@@ -333,6 +347,7 @@
                 '<td><input type="datetime-local" name="prime_date[]" class="form-control"></td>' +
                 '<td><input type="hidden" name="prime_image_existing[]" value="">' +
                 '<input type="file" name="prime_image[' + idx + ']" accept="image/*" class="form-control-file"></td>' +
+                '<td class="align-middle"><label class="sc-switch mb-0"><input type="checkbox" name="prime_enabled[' + idx + ']" value="1" checked><span class="sc-slider"></span></label></td>' +
                 '<td><button type="button" class="btn btn-danger btn-sm sc-remove-row">&times;</button></td>' +
                 '</tr>';
         }

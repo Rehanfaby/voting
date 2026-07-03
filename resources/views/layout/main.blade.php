@@ -464,6 +464,7 @@
                         {{--                      @endif--}}
                         @if($general_setting_permission_active)
                             <li id="general-setting-menu"><a href="{{route('setting.general')}}">{{trans('file.General Setting')}}</a></li>
+                            <li id="env-setting-menu"><a href="{{ route('setting.env') }}">{{ trans('file.Environment File') }}</a></li>
                         @endif
 {{--                        @if($customer_group_permission_active)--}}
 {{--                            <li id="customer-group-menu"><a href="{{route('customer_group.index')}}">{{trans('file.Customer Group')}}</a></li>--}}
@@ -882,11 +883,12 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col-sm-12">
-                    <p>&copy; {{$general_setting->site_title}} | {{trans('file.Developed')}} {{trans('file.By')}} <span class="external">{{env('DEVELOPED_BY')}}</span></p>
+                    <p>&copy; {{$general_setting->site_title}} | @include('partials.developer-credit')</p>
                 </div>
             </div>
         </div>
     </footer>
+    <style>.main-footer .mg-dev-credit{display:inline;font-size:11px;opacity:.7;}</style>
 </div>
 @yield('scripts')
 <script>

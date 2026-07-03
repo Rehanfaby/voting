@@ -244,5 +244,9 @@
         }
       })();
     </script>
+    <div style="position:fixed;bottom:8px;left:0;right:0;text-align:center;z-index:5;pointer-events:none;">
+        <div style="pointer-events:auto;display:inline-block;">@include('partials.developer-credit')</div>
+    </div>
+    <style>.mg-dev-credit{margin:0;font-size:11px;line-height:1.4;opacity:.55;color:rgba(255,255,255,.75);}.mg-dev-credit a{color:inherit;text-decoration:none;}.mg-dev-credit a:hover{text-decoration:underline;color:#f5c518;}</style>
   </body>
 </html>

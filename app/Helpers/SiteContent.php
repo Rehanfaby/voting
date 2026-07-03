@@ -255,19 +255,106 @@ class SiteContent
     }
 
     /** Sort prime rows earliest-first by date/time. */
+    /** Parse a prime/event datetime stored from admin (ISO or datetime-local). */
+    public static function parseEventDate($date)
+    {
+        if (empty($date)) {
+            return null;
+        }
+        try {
+            return \Carbon\Carbon::parse(trim(str_replace('T', ' ', (string) $date)));
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    public static function isRowEnabled(array $row)
+    {
+        return !isset($row['enabled']) || $row['enabled'] !== false;
+    }
+
+    /** Disable primes whose date/time has passed (persists to JSON). */
+    public static function expirePastEvents()
+    {
+        try {
+            if (!Storage::disk('local')->exists(self::FILE)) {
+                return;
+            }
+            $data = json_decode(Storage::disk('local')->get(self::FILE), true);
+            if (!is_array($data)) {
+                return;
+            }
+            $changed = false;
+            $now = \Carbon\Carbon::now();
+            if (!empty($data['primes']) && is_array($data['primes'])) {
+                foreach ($data['primes'] as &$prime) {
+                    if (isset($prime['enabled']) && $prime['enabled'] === false) {
+                        continue;
+                    }
+                    $dt = self::parseEventDate($prime['date'] ?? '');
+                    if ($dt && $dt->lt($now)) {
+                        $prime['enabled'] = false;
+                        $changed = true;
+                    }
+                }
+                unset($prime);
+            }
+            if ($changed) {
+                Storage::disk('local')->put(self::FILE, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+            }
+        } catch (\Throwable $e) {
+            // never break the site
+        }
+    }
+
     public static function sortedPrimes(array $primes)
     {
         usort($primes, function ($a, $b) {
-            $ta = !empty($a['date']) ? strtotime($a['date']) : PHP_INT_MAX;
-            $tb = !empty($b['date']) ? strtotime($b['date']) : PHP_INT_MAX;
-            if ($ta === $tb) {
+            $ta = self::parseEventDate($a['date'] ?? '');
+            $tb = self::parseEventDate($b['date'] ?? '');
+            $tsA = $ta ? $ta->timestamp : PHP_INT_MAX;
+            $tsB = $tb ? $tb->timestamp : PHP_INT_MAX;
+            if ($tsA === $tsB) {
                 return 0;
             }
 
-            return $ta <=> $tb;
+            return $tsA <=> $tsB;
         });
 
         return array_values($primes);
+    }
+
+    /** Enabled, upcoming primes for the public site (past events hidden). */
+    public static function activePrimes()
+    {
+        self::expirePastEvents();
+        $now = \Carbon\Carbon::now();
+        $out = [];
+        foreach (self::sortedPrimes(self::get('primes', [])) as $p) {
+            if (!self::isRowEnabled($p)) {
+                continue;
+            }
+            $dt = self::parseEventDate($p['date'] ?? '');
+            if ($dt && $dt->lt($now)) {
+                continue;
+            }
+            $out[] = $p;
+        }
+
+        return $out;
+    }
+
+    /** Enabled casting rows for the public site. */
+    public static function activeCastingRows()
+    {
+        $rows = self::get('casting_rows', []);
+        if (!is_array($rows)) {
+            return [];
+        }
+
+        return array_values(array_filter($rows, function ($row) {
+            return self::isRowEnabled(is_array($row) ? $row : []);
+        }));
     }
 
     /**
@@ -305,22 +392,27 @@ class SiteContent
         return self::publicUploadUrl($path);
     }
 
-    /** The next upcoming prime (for the countdown), or null. */
+    /** The next upcoming enabled prime (for the countdown), or null. */
     public static function nextPrime()
     {
-        $primes = self::get('primes', []);
-        $primes = self::sortedPrimes(is_array($primes) ? $primes : []);
-        $now = time();
+        self::expirePastEvents();
+        $now = \Carbon\Carbon::now();
         $upcoming = null;
-        foreach ($primes as $p) {
-            if (empty($p['date'])) {
+        $upcomingAt = null;
+        foreach (self::sortedPrimes(self::get('primes', [])) as $p) {
+            if (!self::isRowEnabled($p)) {
                 continue;
             }
-            $ts = strtotime($p['date']);
-            if ($ts && $ts >= $now && ($upcoming === null || $ts < strtotime($upcoming['date']))) {
+            $dt = self::parseEventDate($p['date'] ?? '');
+            if (!$dt || $dt->lte($now)) {
+                continue;
+            }
+            if ($upcoming === null || $dt->lt($upcomingAt)) {
                 $upcoming = $p;
+                $upcomingAt = $dt;
             }
         }
+
         return $upcoming;
     }
 

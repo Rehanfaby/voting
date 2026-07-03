@@ -8,7 +8,7 @@
 @endif
 
 <section class="container-fluid">
-    @include('about_us.partials.nav-tabs', ['active' => 'winners'])
+    @include('about_us.partials.frontend-preview', ['previewSection' => 'winners', 'about' => $about, 'previewWinners' => $winners, 'previewYear' => $year])
 
     <div class="card">
         <div class="card-header"><h4>{{ trans('file.Winners') }}</h4></div>

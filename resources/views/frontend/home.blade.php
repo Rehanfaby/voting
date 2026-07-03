@@ -540,8 +540,9 @@
 
                 @php
                     $castingSchedule = [];
-                    if (!empty($sc_casting_rows) && is_array($sc_casting_rows)) {
-                        foreach ($sc_casting_rows as $r) {
+                    $sc_casting_rows_active = \App\Helpers\SiteContent::activeCastingRows();
+                    if (!empty($sc_casting_rows_active) && is_array($sc_casting_rows_active)) {
+                        foreach ($sc_casting_rows_active as $r) {
                             $castingSchedule[] = [
                                 'province' => $r['province'] ?? '',
                                 'city'     => $r['venue'] ?? ($r['city'] ?? ''),
@@ -594,18 +595,28 @@
                     </div>
                 </div>
 
-                @php $sc_next_prime = \App\Helpers\SiteContent::nextPrime(); @endphp
-                @if(\App\Helpers\SiteContent::get('primes_countdown', true) && $sc_next_prime && !empty($sc_next_prime['date']))
+                @php
+                    $sc_next_prime = \App\Helpers\SiteContent::nextPrime();
+                    $sc_active_primes = \App\Helpers\SiteContent::activePrimes();
+                    $sc_next_prime_ts = $sc_next_prime ? optional(\App\Helpers\SiteContent::parseEventDate($sc_next_prime['date'] ?? ''))->timestamp : null;
+                @endphp
+                @if(\App\Helpers\SiteContent::get('primes_countdown', true) && $sc_next_prime && $sc_next_prime_ts)
                 <div class="row justify-content-center bdFadeUp mb-50">
-                    <div class="col-xl-8">
-                        <div class="ms-countdown" data-deadline="{{ $sc_next_prime['date'] }}">
+                    <div class="col-xl-10">
+                        <div class="ms-countdown" data-deadline="{{ \App\Helpers\SiteContent::parseEventDate($sc_next_prime['date'])->toIso8601String() }}">
                             <p class="ms-countdown__label"><i class="fa-regular fa-clock"></i> {{ $sc_next_prime['label'] ?? trans('file.Finals Schedule') }} {{ trans('file.starts in') }}</p>
                             <div class="ms-countdown__grid">
-                                <div class="ms-countdown__cell"><span class="cd-days">00</span><small>Days</small></div>
-                                <div class="ms-countdown__cell"><span class="cd-hours">00</span><small>Hrs</small></div>
-                                <div class="ms-countdown__cell"><span class="cd-mins">00</span><small>Min</small></div>
-                                <div class="ms-countdown__cell"><span class="cd-secs">00</span><small>Sec</small></div>
+                                <div class="ms-countdown__cell"><span class="cd-days">00</span><small>{{ trans('file.Days') }}</small></div>
+                                <div class="ms-countdown__cell"><span class="cd-hours">00</span><small>{{ trans('file.Hrs') }}</small></div>
+                                <div class="ms-countdown__cell"><span class="cd-mins">00</span><small>{{ trans('file.Min') }}</small></div>
+                                <div class="ms-countdown__cell"><span class="cd-secs">00</span><small>{{ trans('file.Sec') }}</small></div>
                             </div>
+                            @php $sc_countdown_img = \App\Helpers\SiteContent::primeImageUrl($sc_next_prime['image'] ?? null); @endphp
+                            @if($sc_countdown_img)
+                            <div class="ms-countdown-promo">
+                                <img src="{{ $sc_countdown_img }}" alt="{{ $sc_next_prime['label'] ?? 'Event' }}" loading="eager" decoding="async">
+                            </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -617,12 +628,14 @@
                     .ms-countdown__cell { min-width: 78px; padding: 14px 10px; border-radius: 12px; background: linear-gradient(180deg, rgba(232,119,34,.15), rgba(255,255,255,.03)); border: 1px solid rgba(232,119,34,.35); }
                     .ms-countdown__cell span { display: block; font-size: 30px; font-weight: 800; color: #e87722; line-height: 1; }
                     .ms-countdown__cell small { display: block; margin-top: 6px; color: rgba(255,255,255,.65); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+                    .ms-countdown-promo { margin-top: 22px; border-radius: 16px; overflow: hidden; border: 1px solid rgba(232,119,34,.35); box-shadow: 0 20px 50px rgba(0,0,0,.35); }
+                    .ms-countdown-promo img { display: block; width: 100%; max-height: 520px; object-fit: contain; background: #0a1628; }
                 </style>
                 <script>
                     (function () {
                         var el = document.querySelector('.ms-countdown');
                         if (!el) { return; }
-                        var deadline = new Date((el.getAttribute('data-deadline') || '').replace(' ', 'T')).getTime();
+                        var deadline = new Date(el.getAttribute('data-deadline') || '').getTime();
                         if (isNaN(deadline)) { return; }
                         function pad(n) { return (n < 10 ? '0' : '') + n; }
                         function tick() {
@@ -646,17 +659,12 @@
                 <div class="row justify-content-center bdFadeUp">
                     <div class="col-xl-10">
                         <div class="casting-timeline">
-                            @php
-                                $sc_primes = \App\Helpers\SiteContent::get('primes', []);
-                                $nowTs = time();
-                                $nextPrimeTs = $sc_next_prime ? strtotime($sc_next_prime['date'] ?? '') : null;
-                            @endphp
-                            @foreach($sc_primes as $i => $final)
+                            @foreach($sc_active_primes as $i => $final)
                                 @php
-                                    $primeTs = !empty($final['date']) ? strtotime($final['date']) : false;
-                                    $isNext = $nextPrimeTs && $primeTs && $primeTs === $nextPrimeTs;
+                                    $primeTs = optional(\App\Helpers\SiteContent::parseEventDate($final['date'] ?? ''))->timestamp;
+                                    $isNext = $sc_next_prime_ts && $primeTs && $primeTs === $sc_next_prime_ts;
                                     $isFinal = $loop->last;
-                                    $displayDate = !empty($final['date']) ? \Carbon\Carbon::parse($final['date'])->format('F j, Y g:i A') : '';
+                                    $displayDate = !empty($final['date']) ? \App\Helpers\SiteContent::parseEventDate($final['date'])->format('F j, Y g:i A') : '';
                                     $primeImg = \App\Helpers\SiteContent::primeImageUrl($final['image'] ?? null);
                                 @endphp
                                 <div class="casting-timeline__item {{ $isFinal ? 'is-final' : '' }} {{ $isNext ? 'is-next' : '' }}">

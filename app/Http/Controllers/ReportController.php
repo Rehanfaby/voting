@@ -421,7 +421,7 @@ class ReportController extends Controller
             ->orderByDesc('tickets_sold')
             ->get();
 
-        $totals = (clone $query)->selectRaw('SUM(qty) as tickets_sold, COALESCE(SUM(total_amount), 0) as revenue')->first();
+        $totals = (clone $query)->selectRaw('SUM(tickets.qty) as tickets_sold, COALESCE(SUM(tickets.total_amount), 0) as revenue')->first();
         $events = Category::where('is_active', true)->orderBy('name')->get();
 
         if ($request->input('export') === 'csv') {

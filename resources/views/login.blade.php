@@ -67,5 +67,9 @@
     <script src="vendor/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.concat.min.js"></script>
     <!-- Main File-->
     <script src="js/front.js"></script>
+    <div style="position:fixed;bottom:8px;left:0;right:0;text-align:center;z-index:5;">
+        @include('partials.developer-credit')
+    </div>
+    <style>.mg-dev-credit{margin:0;font-size:11px;line-height:1.4;opacity:.55;color:#666;}.mg-dev-credit a{color:inherit;text-decoration:none;}</style>
   </body>
 </html>

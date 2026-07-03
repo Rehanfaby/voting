@@ -5,7 +5,7 @@
 @endif
 
 <section class="container-fluid">
-    @include('about_us.partials.nav-tabs', ['active' => 'settings'])
+    @include('about_us.partials.frontend-preview', ['previewSection' => 'settings', 'about' => $about])
 
     <div class="card">
         <div class="card-header"><h4>{{ trans('file.Edit About Us Page') }}</h4></div>
@@ -18,8 +18,10 @@
                     <div class="form-group">
                         <label>{{ trans('file.Mission image') }}</label>
                         @php $img = $about['image'] ?? null; @endphp
-                        @if($img && file_exists(public_path($img)))
-                            <div class="mb-2"><img src="{{ url($img) }}" alt="" style="max-width:100%;border-radius:12px;max-height:280px;object-fit:cover;"></div>
+                        @if($img && \App\Helpers\SiteContent::uploadExists($img))
+                            <div class="mb-2"><img src="{{ \App\Helpers\SiteContent::publicUploadUrl($img) }}" alt="" style="max-width:100%;border-radius:12px;max-height:280px;object-fit:cover;"></div>
+                        @else
+                            <div class="mb-2"><img src="{{ \App\Helpers\SiteContent::aboutImageUrl() }}" alt="" style="max-width:100%;border-radius:12px;max-height:280px;object-fit:cover;"></div>
                         @endif
                         <input type="file" name="about_image" class="form-control" accept="image/*">
                     </div>

@@ -131,7 +131,7 @@
                 @endif
                 <div class="hr-1 mt-30 mb-30 d-xl-none"></div>
                 <div class="offcanvas__btn mb-30">
-                    <a class="ms-border-btn" href="{{ route('team') }}"><i class="fa-solid fa-plus"></i> {{trans('file.Vote your Candidate')}}</a>
+                    <a class="ms-border-btn" href="{{ route('team') }}"><i class="fa-solid fa-plus"></i> {{trans('file.Vote Now')}}</a>
                 </div>
                 <div class="offcanvas__btn mb-30 offcanvas__lang">
                     @include('partials.lang_switch')
@@ -178,7 +178,7 @@
                                                     <a href="{{ route('contact') }}">{{trans('file.Contact Us')}}</a>
                                                 </li>
                                                 <li>
-                                                    <a href="{{ route('team') }}">{{trans('file.Vote')}}</a>
+                                                    <a href="{{ route('team') }}">{{trans('file.Vote Now')}}</a>
                                                 </li>
                                             </ul>
                                         </nav>
@@ -372,16 +372,16 @@
                                         <img src="{{url('public/logo', $general_setting->site_logo)}}" alt="{{trans('file.Site Logo')}}">
                                     </a>
                                 </div>
-                                <div class="ms-footer-copy">
-                                    <a href="{{ route('contact') }}">
-                                        <p style="font-size: 25px">{{env('DEVELOPED_BY')}}</p>
-                                    </a>
+                                <div class="ms-footer-copy text-end">
+                                    <p class="mb-1" style="font-size:14px;color:rgba(255,255,255,.75);">&copy; {{ date('Y') }} {{ $general_setting->site_title ?? 'Mulema GC' }}</p>
+                                    @include('partials.developer-credit')
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </footer>
+            <style>.mg-dev-credit{margin:0;font-size:11px;line-height:1.4;opacity:.65;color:rgba(255,255,255,.7);}.mg-dev-credit a{color:inherit;text-decoration:none;}.mg-dev-credit a:hover{text-decoration:underline;color:#e87722;}</style>
             <!-- Footer Area End Here  -->
             </div>
 

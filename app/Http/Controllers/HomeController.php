@@ -86,18 +86,29 @@ class HomeController extends Controller
     }
 
      public function contactMessage(Request $request){
-        $query = $request->message;
-         $msg = "*Message:* ".$query . "\n\n";
-         $msg .= '*Thank you for contacting ' . getenv("APP_NAME") . '.* ' . '\n\n';
-         $msg .= 'We will contact you soon...! \n\n';
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'number' => 'required|string|max:40',
+            'email' => 'nullable|email|max:255',
+            'message' => 'required|string|max:5000',
+        ]);
+
+        $adminNumber = getenv('ADMIN_NUMBER') ?: '237675321739';
+        $msg = '*New contact message — ' . (getenv('APP_NAME') ?: 'Mulema GC') . "*\n\n";
+        $msg .= '*Name:* ' . $request->name . "\n";
+        $msg .= '*Phone:* ' . $request->number . "\n";
+        if ($request->filled('email')) {
+            $msg .= '*Email:* ' . $request->email . "\n";
+        }
+        $msg .= "\n*Message:*\n" . $request->message;
 
          try{
-             $this->wpMessage($request->number, $msg);
+             $this->wpMessage($adminNumber, $msg);
          }
          catch(\Exception $e){
 
          }
-         return back()->with('message', 'Your message has been delivered, We will contact you ASAP..!');
+         return back()->with('message', trans('file.Your message has been sent'));
      }
 
     public function admin() {
@@ -180,6 +191,8 @@ class HomeController extends Controller
         }
 
         $see_votes = \App\Helpers\VoteSettings::showPublicCounts();
+
+        SiteContent::expirePastEvents();
 
         // Total valid (paid) votes per contestant, keyed by musician id, for the
         // top carousel. Without this the view falls back to 0 for everyone.

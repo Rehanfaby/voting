@@ -14,7 +14,8 @@
 @endif
 
 <section class="container-fluid">
-    @include('about_us.partials.nav-tabs', ['active' => 'leaders'])
+    @include('about_us.partials.frontend-preview', ['previewSection' => 'leaders', 'previewMembers' => $members])
+
     @if(in_array('employees-add', $all_permission))
     <div class="container-fluid mb-3">
         <button type="button" class="btn btn-info" data-toggle="modal" data-target="#addModal"><i class="dripicons-plus"></i> {{ trans('file.Add About Member') }}</button>

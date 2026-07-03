@@ -249,6 +249,7 @@ class SettingController extends Controller
                         'province' => $province,
                         'venue' => trim($venues[$i] ?? ''),
                         'date' => trim($dates[$i] ?? ''),
+                        'enabled' => $request->has("cast_enabled.$i"),
                     ];
                 }
                 $data['casting_rows'] = $rows;
@@ -269,6 +270,13 @@ class SettingController extends Controller
                 foreach ($labels as $i => $label) {
                     $label = trim($label);
                     $date = trim($primeDates[$i] ?? '');
+                    if ($date !== '') {
+                        try {
+                            $date = \Carbon\Carbon::parse(str_replace('T', ' ', $date))->format('Y-m-d H:i:s');
+                        } catch (\Throwable $e) {
+                            // keep raw value
+                        }
+                    }
                     $image = trim($existingImages[$i] ?? '');
                     $file = $request->file("prime_image.$i");
                     if ($file && $file->isValid()) {
@@ -283,7 +291,12 @@ class SettingController extends Controller
                     if ($label === '' && $date === '' && $image === '') {
                         continue;
                     }
-                    $primes[] = ['label' => $label, 'date' => $date, 'image' => $image ?: null];
+                    $primes[] = [
+                        'label' => $label,
+                        'date' => $date,
+                        'image' => $image ?: null,
+                        'enabled' => $request->has("prime_enabled.$i"),
+                    ];
                 }
                 $data['primes'] = SiteContent::sortedPrimes($primes);
                 $message = 'Finals schedule saved.';
@@ -649,5 +662,33 @@ class SettingController extends Controller
             $value = end($value);
         }
         return (int) $value === 1 ? 1 : 0;
+    }
+
+    public function envSetting()
+    {
+        if (!env('USER_VERIFIED')) {
+            return redirect()->back()->with('not_permitted', 'This feature is disabled for demo!');
+        }
+
+        $envPath = base_path('.env');
+        $contents = file_exists($envPath) ? file_get_contents($envPath) : '';
+
+        return view('setting.env_setting', compact('contents'));
+    }
+
+    public function envSettingStore(Request $request)
+    {
+        if (!env('USER_VERIFIED')) {
+            return redirect()->back()->with('not_permitted', 'This feature is disabled for demo!');
+        }
+
+        $request->validate([
+            'env_contents' => 'required|string|max:500000',
+        ]);
+
+        file_put_contents(base_path('.env'), $request->env_contents);
+        \Artisan::call('config:clear');
+
+        return redirect()->route('setting.env')->with('message', trans('file.Environment file updated successfully'));
     }
 }
