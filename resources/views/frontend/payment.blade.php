@@ -15,6 +15,7 @@
         $user = Auth::user();
         $amount = $data['vote'] * $general_setting->vote_price;
         $stripeMin = (int) env('STRIPE_MINIMUM_AMOUNT', 300);
+        $paymentSimulate = \App\Helpers\PhoneHelper::paymentSimulate();
         $localPhone = '';
         $localWhatsapp = '';
         if ($user && $user->phone) {
@@ -25,6 +26,8 @@
         } elseif ($localPhone) {
             $localWhatsapp = $localPhone;
         }
+        $localPhone = \App\Helpers\PhoneHelper::defaultPaymentLocal($localPhone);
+        $localWhatsapp = \App\Helpers\PhoneHelper::defaultPaymentLocal($localWhatsapp ?: $localPhone);
         $voterName = '';
         if ($user && !\App\Helpers\PhoneHelper::looksLikePhone($user->name)) {
             $voterName = $user->name;
@@ -102,25 +105,28 @@
                                     <input id="voter_name" type="text" name="voter_name" class="mg-text-input" placeholder="{{ trans('file.Enter your full name') }}" value="{{ old('voter_name', $voterName) }}" required maxlength="120">
                                 </div>
 
-                                <div id="mg-pay-mobile-fields">
-                                    <div class="mg-field">
-                                        <label for="phone_local">{{ trans('file.Momo Number') }}</label>
-                                        <div class="mg-phone-input">
-                                            <span class="mg-phone-prefix">🇨🇲 +237</span>
-                                            <input id="phone_local" type="tel" name="phone_local" inputmode="numeric" maxlength="9" placeholder="6XX XXX XXX" value="{{ old('phone_local', $localPhone) }}" required>
-                                        </div>
-                                        <small class="mg-field-hint">{{ trans('file.Enter your number without the country code') }}</small>
+                                @if($paymentSimulate)
+                                    <div class="alert alert-info py-2 px-3 mb-3" style="font-size:13px;border-radius:10px;">
+                                        <i class="fa fa-flask"></i> {{ trans('file.Payment simulation mode') }}
                                     </div>
+                                @endif
+
+                                <div id="mg-pay-mobile-fields">
+                                    @include('partials.cameroon-phone-field', [
+                                        'id' => 'phone_local',
+                                        'name' => 'phone_local',
+                                        'label' => trans('file.Momo Number'),
+                                        'value' => $localPhone,
+                                    ])
                                 </div>
 
-                                <div class="mg-field">
-                                    <label for="whatsapp_local"><i class="fab fa-whatsapp"></i> {{ trans('file.Whatsapp number') }}</label>
-                                    <div class="mg-phone-input">
-                                        <span class="mg-phone-prefix">🇨🇲 +237</span>
-                                        <input id="whatsapp_local" type="tel" name="whatsapp_local" inputmode="numeric" maxlength="9" placeholder="6XX XXX XXX" value="{{ old('whatsapp_local', $localWhatsapp) }}" required>
-                                    </div>
-                                    <small class="mg-field-hint">{{ trans('file.Confirmation will be sent to this WhatsApp number') }}</small>
-                                </div>
+                                @include('partials.cameroon-phone-field', [
+                                    'id' => 'whatsapp_local',
+                                    'name' => 'whatsapp_local',
+                                    'label' => '<i class="fab fa-whatsapp"></i> ' . trans('file.Whatsapp number'),
+                                    'value' => $localWhatsapp,
+                                    'hint' => trans('file.Confirmation will be sent to this WhatsApp number'),
+                                ])
 
                                 <button type="submit" class="mg-btn mg-pay-submit" id="mg-pay-submit-btn">
                                     <i class="fa-solid fa-lock"></i>
@@ -166,10 +172,6 @@
     .mg-field-hint { display:block; margin-top:4px; color:#6b7a93; font-size:11.5px; }
     .mg-text-input { width:100%; border:1px solid #dbe4f3; border-radius:12px; background:#f7f9fd; padding:11px 14px; font-size:15px; color:#14223f; outline:none; }
     .mg-text-input:focus { background:#fff; border-color:#e87722; }
-    .mg-phone-input { display:flex; align-items:stretch; border:1px solid #dbe4f3; border-radius:12px; overflow:hidden; background:#f7f9fd; }
-    .mg-phone-prefix { display:inline-flex; align-items:center; padding:0 12px; background:#0a2350; color:#fff; font-weight:700; font-size:13px; white-space:nowrap; border-right:1px solid #dbe4f3; }
-    .mg-phone-input input { flex:1; border:0; background:transparent; padding:11px 14px; font-size:15px; color:#14223f; outline:none; }
-    .mg-phone-input input:focus { background:#fff; }
     .mg-pay-submit { width:100%; justify-content:center; margin-top:4px; font-size:15px; padding:13px 20px; }
     @media (max-width:575px) {
         .mg-pay-summary { flex-direction:column; text-align:center; }
@@ -188,22 +190,20 @@
     if (!form) { return; }
 
     var mobileFields = document.getElementById('mg-pay-mobile-fields');
-    var phoneInput = document.getElementById('phone_local');
+    var phoneHidden = document.querySelector('#phone_local[data-cm-phone-hidden], input[name="phone_local"]');
     var radios = form.querySelectorAll('input[name="payment_method"]');
-
-    function digitsOnly(el) {
-        el.addEventListener('input', function () {
-            el.value = el.value.replace(/\D/g, '').slice(0, 9);
-        });
-    }
-    digitsOnly(phoneInput);
-    digitsOnly(document.getElementById('whatsapp_local'));
 
     function syncMethod() {
         var method = form.querySelector('input[name="payment_method"]:checked');
         var isCard = method && method.value === 'card';
         mobileFields.style.display = isCard ? 'none' : 'block';
-        phoneInput.required = !isCard;
+        if (phoneHidden) {
+            phoneHidden.required = !isCard;
+        }
+        var waHidden = form.querySelector('input[name="whatsapp_local"]');
+        if (waHidden) {
+            waHidden.required = !isCard;
+        }
     }
 
     radios.forEach(function (r) { r.addEventListener('change', syncMethod); });

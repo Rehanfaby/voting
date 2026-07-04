@@ -357,6 +357,15 @@ class HomeController extends Controller
             return redirect()->route('musician.vote.payment.pending', $vote->id);
         }
 
+        if (PhoneHelper::paymentSimulate() && $vote) {
+            $vote->status = true;
+            $vote->reference = 'SIM-' . $vote->id;
+            $vote->save();
+            $this->sendWhatsappMsgVoteMomoSuccess($user, $vote->vote, $vote->musician_id, $vote);
+
+            return redirect()->route('home')->with('message', trans('file.Thank you for your voting'));
+        }
+
         $vote->delete();
         $message = 'There is any other issue in payment method, please contact the system administrator';
         return back()->with('not_permitted', $message);
@@ -560,14 +569,16 @@ class HomeController extends Controller
         $data['is_deleted'] = false;
         $data['password'] = bcrypt($password);
         $data['name'] = $request->name;
-        $data['phone'] = $request->phone;
-        $data['whatsapp_number'] = $request->whatsapp_number ?? $request->phone;
+        $data['phone'] = PhoneHelper::fromLocalDigits($request->input('phone_local'))
+            ?? PhoneHelper::cameroon($request->phone);
+        $data['whatsapp_number'] = PhoneHelper::fromLocalDigits($request->input('whatsapp_local'))
+            ?? PhoneHelper::cameroon($request->whatsapp_number ?? $data['phone']);
         $data['email'] = $request->email ?? 'user@gmail.com';
         $data['role_id'] = 3;
 
 
         if($data['phone'] == null) {
-            return 'Phone cannot be null';
+            return back()->with('not_permitted', trans('file.Please enter a valid mobile money number.'));
         }
 
         if ($user_check = User::where('phone', $request->phone)->first()) {
@@ -621,12 +632,23 @@ class HomeController extends Controller
             $amount = $request->amount;
             $link = $this->mobileMoneyRequestLink($token, $amount, $route, $ticket->id, $mtn_number);
             if ($link == false) {
+                $this->releaseTicketSeats($ticket);
+                $ticket->delete();
                 $message = 'Phone Number is incorrect or There is any other issue in payment method';
                 return redirect()->route('home')->with('not_permitted', $message);
             }
             header("Location: $link");
             die();
         }
+
+        if (PhoneHelper::paymentSimulate() && $ticket) {
+            $this->processTicketSuccessfulPayment($ticket, 'SIM-' . $ticket->id);
+
+            return redirect()->route('home')->with('message', trans('file.Thank you for your Purchasing Ticket'));
+        }
+
+        $this->releaseTicketSeats($ticket);
+        $ticket->delete();
         $message = 'There is any other issue in payment method, please contact the system administrator';
         return back()->with('not_permitted', $message);
     }

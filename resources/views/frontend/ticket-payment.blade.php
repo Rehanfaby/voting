@@ -5,6 +5,19 @@
         $user = \Illuminate\Support\Facades\Auth::user();
         $payAmount = $data['amount'] ?? ($data['vote'] * $ticket->price);
         $seatLabels = $data['seat_labels'] ?? null;
+        $paymentSimulate = \App\Helpers\PhoneHelper::paymentSimulate();
+        $localPhone = '';
+        $localWhatsapp = '';
+        if ($user && $user->phone) {
+            $localPhone = preg_replace('/^\+?237/', '', preg_replace('/\D/', '', $user->phone));
+        }
+        if ($user && $user->whatsapp_number) {
+            $localWhatsapp = preg_replace('/^\+?237/', '', preg_replace('/\D/', '', $user->whatsapp_number));
+        } elseif ($localPhone) {
+            $localWhatsapp = $localPhone;
+        }
+        $localPhone = \App\Helpers\PhoneHelper::defaultPaymentLocal($localPhone);
+        $localWhatsapp = \App\Helpers\PhoneHelper::defaultPaymentLocal($localWhatsapp ?: $localPhone);
     @endphp
 
     <main class="mg-tickets mg-ticket-pay">
@@ -46,6 +59,11 @@
                             <h3><i class="fa-solid fa-mobile-screen"></i> {{ trans('file.Pay By MOMO or OM') }}</h3>
                             <form method="post" action="{{ route('ticket.payment') }}">
                                 @csrf
+                                @if($paymentSimulate)
+                                    <div class="alert alert-info py-2 px-3 mb-3" style="font-size:13px;border-radius:10px;">
+                                        <i class="fa fa-flask"></i> {{ trans('file.Payment simulation mode') }}
+                                    </div>
+                                @endif
                                 @if(!$user)
                                     <input type="text" name="name" required placeholder="{{ trans('file.Name') }}">
                                     <input type="text" name="email" required placeholder="email">
@@ -58,8 +76,6 @@
                                     <input type="text" name="identity_number" class="id-field id-nic" placeholder="{{ __('Identity Number') }}">
                                     <input type="text" name="student_number" class="id-field id-student" placeholder="{{ __('Student Number') }}" style="display:none;">
                                     <input type="text" name="passport_number" class="id-field id-passport" placeholder="{{ __('Passport Number') }}" style="display:none;">
-                                    <input type="text" name="phone" required placeholder="{{ trans('file.Momo Number') }}" maxlength="13">
-                                    <input type="text" name="whatsapp_number" required placeholder="{{ trans('file.Whatsapp number') }}">
                                 @else
                                     <input type="text" name="name" required value="{{ $user->name }}" placeholder="{{ trans('file.Name') }}">
                                     <input type="text" name="email" required value="{{ $user->email }}" placeholder="email">
@@ -72,9 +88,20 @@
                                     <input type="text" name="identity_number" class="id-field id-nic" placeholder="{{ __('Identity Number') }}">
                                     <input type="text" name="student_number" class="id-field id-student" placeholder="{{ __('Student Number') }}" style="display:none;">
                                     <input type="text" name="passport_number" class="id-field id-passport" placeholder="{{ __('Passport Number') }}" style="display:none;">
-                                    <input type="text" name="phone" required placeholder="{{ trans('file.Momo Number') }}" maxlength="13">
-                                    <input type="text" name="whatsapp_number" required placeholder="{{ trans('file.Whatsapp number') }}">
                                 @endif
+                                @include('partials.cameroon-phone-field', [
+                                    'id' => 'ticket_phone_local',
+                                    'name' => 'phone_local',
+                                    'label' => trans('file.Momo Number'),
+                                    'value' => $localPhone,
+                                ])
+                                @include('partials.cameroon-phone-field', [
+                                    'id' => 'ticket_whatsapp_local',
+                                    'name' => 'whatsapp_local',
+                                    'label' => '<i class="fab fa-whatsapp"></i> ' . trans('file.Whatsapp number'),
+                                    'value' => $localWhatsapp,
+                                    'hint' => trans('file.Confirmation will be sent to this WhatsApp number'),
+                                ])
                                 <input type="hidden" name="ticket_id" value="{{ $ticket->id }}">
                                 <input type="hidden" name="qty" value="{{ $data['vote'] }}">
                                 <input type="hidden" name="amount" value="{{ $payAmount }}">
