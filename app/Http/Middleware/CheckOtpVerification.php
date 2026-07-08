@@ -21,7 +21,7 @@ class CheckOtpVerification
             return $next($request);
         }
 
-        if ($request->routeIs('check.otp', 'check.otp.store', 'logout')) {
+        if ($request->routeIs('check.otp', 'check.otp.store', 'check.otp.resend', 'check.otp.cancel', 'logout')) {
             return $next($request);
         }
 

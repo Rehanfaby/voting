@@ -235,11 +235,12 @@ class HomeController extends Controller
         $shorts = Gallery::where('employee_id', $id)->where('type', 'short')->get();
         $youtubes = Gallery::where('employee_id', $id)->where('type', 'link')->get();
         $contentants = Employee::where('is_active', true)->where('is_approve', true)->get();
+        $teamData = $this->contestantTeamPageData($contentants);
 
-
-        $see_votes = \App\Helpers\VoteSettings::showPublicCounts();
-
-        return view('frontend.employee', compact('musician', 'contentants', 'images', 'audios', 'videos', 'shorts', 'youtubes', 'see_votes'));
+        return view('frontend.employee', array_merge(
+            compact('musician', 'contentants', 'images', 'audios', 'videos', 'shorts', 'youtubes'),
+            $teamData
+        ));
     }
 
     public function events() {
@@ -959,8 +960,30 @@ class HomeController extends Controller
 
     public function otpCheck(){
         $user = Auth::user();
-        $this->sendOTP($user);
-        return view('otp_screen');
+        $sent = $this->sendOTP($user);
+        $user->refresh();
+
+        return view('otp_screen', [
+            'otp_sent_at' => $user->otp_time,
+            'otp_send_failed' => $sent === false && !$user->otp_time,
+        ]);
+    }
+
+    public function otpResend()
+    {
+        $user = Auth::user();
+        if ($this->sendOTP($user)) {
+            return redirect()->route('check.otp')->with('message', trans('file.OTP resent successfully'));
+        }
+
+        return redirect()->route('check.otp')->with('not_permitted', trans('file.OTP resend failed'));
+    }
+
+    public function otpCancel()
+    {
+        Auth::logout();
+
+        return redirect()->route('login');
     }
 
     public function otpCheckStore(Request $request) {
@@ -973,23 +996,49 @@ class HomeController extends Controller
             }
             return redirect()->route('home');
         } else {
-            return redirect()->back()->with('not_permitted', 'Invalid OTP');
+            return redirect()->back()->with('not_permitted', trans('file.Invalid OTP'));
         }
     }
 
     public function sendOTP($user) {
-        if ($user->otp_time == null || $user->otp_time < date('Y-m-d H:i:s', strtotime('-1 minutes'))) {
-            $otp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-            $msg = WhatsAppFormatter::otpMessage($user->name ?? 'User', $otp, 3);
-            $recipient = $user->whatsapp_number ?? $user->phone;
-            try {
-                $this->wpMessage($recipient, $msg);
-                $user->update(['otp' => $otp, 'otp_time' => date('Y-m-d H:i:s')]);
-            } catch (\Exception $e) {
-                return $otp;
-            }
-            return $otp;
+        if ($user->otp_time != null && $user->otp_time >= date('Y-m-d H:i:s', strtotime('-1 minutes'))) {
+            return null;
         }
+
+        $recipient = $this->loginOtpRecipient($user);
+        if (!$recipient) {
+            \Log::warning('Login OTP: user has no phone', ['user_id' => $user->id]);
+            return false;
+        }
+
+        $otp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $msg = WhatsAppFormatter::otpMessage($user->name ?? 'User', $otp, 3);
+
+        if (!$this->wpMessage($recipient, $msg)) {
+            \Log::warning('Login OTP WhatsApp delivery failed', [
+                'user_id' => $user->id,
+                'to' => \App\Helpers\PhoneHelper::forUltraMsg($recipient),
+            ]);
+            return false;
+        }
+
+        $user->update(['otp' => $otp, 'otp_time' => date('Y-m-d H:i:s')]);
+
+        return true;
+    }
+
+    /** Prefer a valid Cameroon number for login OTP delivery. */
+    private function loginOtpRecipient($user)
+    {
+        $candidates = array_filter([$user->phone, $user->whatsapp_number]);
+        foreach ($candidates as $candidate) {
+            $e164 = \App\Helpers\PhoneHelper::forUltraMsg($candidate);
+            if ($e164 && strpos($e164, '+237') === 0) {
+                return $candidate;
+            }
+        }
+
+        return $user->phone ?: $user->whatsapp_number;
     }
 
     public function whatsapp()

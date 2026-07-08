@@ -217,46 +217,46 @@
 
 
         <!-- Popular  area start -->
-        <section class="ms-popular__area pb-100 fix">
+        <section class="mg-contestants-page pt-40 pb-80">
             <div class="container">
-                <div class="row align-items-end mb-25 bdFadeUp">
-                    <div class="col-xl-6 col-lg-6">
-                        <div class="section__title-wrapper mb-40 bd-title-anim">
-                            <span class="section__subtitle">{{trans('file.Our Popular Contestants')}}</span>
-                            <h2 class="section__title msg_title">
-                                <span class="animated-underline active">{{trans('file.Vote')}}</span> <br>
-                                {{trans('file.Your favourite Contestant')}}
-                            </h2>
-                        </div>
-                    </div>
+                <div class="mg-contestants-page__head text-center">
+                    <p class="mg-contestants-page__eyebrow">{{ trans('file.Our Popular Contestants') }}</p>
+                    <h2 class="mg-contestants-page__title">
+                        <span class="animated-underline active">{{ trans('file.Vote') }}</span>
+                        {{ trans('file.Your favourite Contestant') }}
+                    </h2>
                 </div>
-                <div class="row bdFadeUp">
-                    <div class="col-xxl-12">
-                        <div class="tab-content" id="nav-tabContent">
-                            <div class="tab-pane fade show active" id="nav-popular-1" role="tabpanel" aria-labelledby="nav-popular-1-tab" tabindex="0">
-                                <div class="swiper-container ms-popular-active fix">
-                                    <div class="swiper-wrapper">
-                                        @foreach($contentants as $contentant)
-                                        <div class="swiper-slide">
-                                            <div class="ms-popular__item p-relative mb-30">
-                                                <div class="ms-popular__thumb">
-                                                    <div class="ms-popular-overlay"></div>
-                                                    <a href="{{ route('musician.data', $contentant->id) }}"><img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($contentant->image) }}" alt="popular band" loading="lazy" decoding="async"></a>
-                                                    <a href="{{ route('musician.data', $contentant->id) }}" class="ms-popular__link">
-                                                        <span class="ms-popular-icon"><i class="fa-regular fa-arrow-right-long"></i></span>
-                                                    </a>
-                                                </div>
-                                                <h4 class="ms-popular__title"><a href="{{ route('musician.data', $contentant->id) }}">
-                                                        {{ $contentant->name }}
-                                                    </a></h4>
-                                            </div>
-                                        </div>
-                                        @endforeach
-                                    </div>
-                                </div>
+
+                @php
+                    $ranked = $contentants->sortByDesc(function ($m) use ($vote_counts) {
+                        return $vote_counts[$m->id] ?? 0;
+                    })->values();
+                @endphp
+
+                <div class="row mg-contestant-grid justify-content-center">
+                    @foreach($ranked as $key => $contentant)
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                        <div class="mg-contestant-card">
+                            <div class="mg-contestant-card__avatar">
+                                <span class="mg-contestant-card__badge">{{ $key + 1 }}</span>
+                                <a href="{{ route('musician.data', $contentant->id) }}">
+                                    <img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($contentant->image) }}" alt="{{ $contentant->name }}" width="160" height="160" loading="lazy" decoding="async">
+                                </a>
                             </div>
+                            <h3 class="mg-contestant-card__name">
+                                <a href="{{ route('musician.data', $contentant->id) }}">{{ $contentant->name }}</a>
+                            </h3>
+                            @if($see_votes)
+                            <span class="mg-contestant-card__votes">
+                                <i class="fa fa-vote-yea"></i>
+                                {{ number_format($vote_counts[$contentant->id] ?? 0) }} {{ trans('file.Votes') }}
+                            </span>
+                            @else
+                            <a href="{{ route('musician.data', $contentant->id) }}" class="mg-contestant-card__cta">{{ trans('file.Vote For Me') }}</a>
+                            @endif
                         </div>
                     </div>
+                    @endforeach
                 </div>
             </div>
         </section>

@@ -97,6 +97,12 @@ class PhoneHelper
         return '+237' . $digits;
     }
 
+    /** E.164 (+237…) for UltraMsg and other WhatsApp APIs. */
+    public static function forUltraMsg($phone)
+    {
+        return self::cameroon($phone);
+    }
+
     /** True when a stored "name" is really just a phone number. */
     public static function looksLikePhone($value)
     {

@@ -206,14 +206,31 @@ class Controller extends BaseController
     }
 
     public function wpMessage($number, $msg){
-        $params= [
-            'token' => getenv('ULTRAMSG_TOKEN'),
-            'to' => $number,
-            'body' => $msg
+        $instance = config('services.ultramsg.instance');
+        $token = config('services.ultramsg.token');
+        $to = \App\Helpers\PhoneHelper::forUltraMsg($number);
+
+        if (!$instance || !$token) {
+            \Log::error('UltraMsg not configured', [
+                'has_instance' => (bool) $instance,
+                'has_token' => (bool) $token,
+            ]);
+            return false;
+        }
+
+        if (!$to) {
+            \Log::warning('UltraMsg skipped: invalid phone number', ['raw' => $number]);
+            return false;
+        }
+
+        $params = [
+            'token' => $token,
+            'to' => $to,
+            'body' => $msg,
         ];
         $curl = curl_init();
         curl_setopt_array($curl, array(
-            CURLOPT_URL => "https://api.ultramsg.com/".getenv('ULTRAMSG_INSTANCE')."/messages/chat",
+            CURLOPT_URL => "https://api.ultramsg.com/{$instance}/messages/chat",
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => "",
             CURLOPT_MAXREDIRS => 10,
@@ -230,8 +247,25 @@ class Controller extends BaseController
 
         $response = curl_exec($curl);
         $err = curl_error($curl);
-
         curl_close($curl);
+
+        if ($err) {
+            \Log::error('UltraMsg curl error', ['error' => $err, 'to' => $to]);
+            return false;
+        }
+
+        $decoded = json_decode((string) $response, true);
+        if (!is_array($decoded)) {
+            \Log::warning('UltraMsg unexpected response', ['response' => $response, 'to' => $to]);
+            return false;
+        }
+
+        if (isset($decoded['error']) && $decoded['error']) {
+            \Log::warning('UltraMsg API error', ['response' => $decoded, 'to' => $to]);
+            return false;
+        }
+
+        return true;
     }
 
 

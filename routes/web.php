@@ -184,6 +184,8 @@ Route::group(['middleware' => ['auth', 'active', 'checkOtp']], function() {
     Route::post('/logout', 'HomeController@logout')->name('logout');
 	Route::get('/otp/screen', 'HomeController@otpCheck')->name('check.otp');
 	Route::post('/otp/screen/store', 'HomeController@otpCheckStore')->name('check.otp.store');
+	Route::post('/otp/screen/resend', 'HomeController@otpResend')->name('check.otp.resend');
+	Route::post('/otp/screen/cancel', 'HomeController@otpCancel')->name('check.otp.cancel');
 	Route::get('/admin', 'HomeController@admin');
 	Route::get('/wp', 'HomeController@whatsapp');
 	Route::get('/mmt', 'HomeController@mobileMoneyToken');
