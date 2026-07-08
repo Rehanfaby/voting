@@ -66,21 +66,11 @@
                                 <h3 class="ms-product-price">{{ $general_setting->vote_price }} {{ $currency->code }} {{trans('file.for 1 vote')}}</h3>
                             </div>
                             <h2 class="ms-product-title2 mb-30">
-                                <a href="$">{{ $musician->name }}</a>
+                                <a href="{{ route('musician.data', $musician->id) }}">{{ $musician->name }}</a>
                             </h2>
                             @if($see_votes)
                                 <div class="ms-is-product-stock mb-25">
-                                    @php
-//                                        $start_date = date('Y-m-d', strtotime('last monday'));
-//                                        $end_date = date('Y-m-d');
-
-                                        $vote_count = \App\vote::where('status', true)
-                                        ->where('musician_id', $musician->id)
-//                                        ->whereDate('votes.created_at', '>=', $start_date)
-//                                        ->whereDate('votes.created_at', '<=', $end_date)
-                                        ->sum('vote');
-                                    @endphp
-                                    <i class="fa-solid fa-check"></i> {{trans('file.Total votes')}}:<span> {{ $vote_count }}</span>
+                                    <i class="fa-solid fa-check"></i> {{trans('file.Total votes')}}:<span> {{ $vote_count ?? 0 }}</span>
                                 </div>
                             @endif
                             <div class="ms-is-product-stock mb-25">

@@ -22,7 +22,7 @@ return [
     | Bump this on each release. Displayed on the login screen and footer.
     */
 
-    'version' => env('APP_VERSION', '2.1.7'),
+    'version' => env('APP_VERSION', '2.1.8'),
 
     /*
     |--------------------------------------------------------------------------
@@ -32,6 +32,15 @@ return [
     | default; flip LOGIN_OTP_ENABLED=true in .env to turn it back on.
     */
     'login_otp_enabled' => env('LOGIN_OTP_ENABLED', true),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Dangerous admin features (off by default in production)
+    |--------------------------------------------------------------------------
+    */
+    'allow_env_editor' => env('ALLOW_ENV_EDITOR', false),
+
+    'campay_webhook_secret' => env('CAMPAY_WEBHOOK_SECRET'),
 
     /*
     |--------------------------------------------------------------------------

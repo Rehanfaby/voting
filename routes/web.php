@@ -43,7 +43,7 @@ Route::group(['middleware' => 'checkOtp'], function() {
     Route::get('/about', 'HomeController@about')->name('about');
     Route::get('/contact', 'HomeController@contact')->name('contact');
     Route::post('/contact/message', 'HomeController@contactMessage')->name('contact.message');
-    Route::get('user/contentant', 'HomeController@userContentant')->name('user.contentant');
+    Route::get('user/contentant', 'HomeController@userContentant')->name('user.contentant')->middleware('auth');
     Route::get('musician/data/{id}', 'HomeController@employee')->name('musician.data');
     Route::post('musician/find', 'HomeController@employeeFind')->name('musician.find');
     Route::post('musician/vote', 'HomeController@employeeVote')->name('musician.vote');
@@ -76,7 +76,7 @@ Route::group(['middleware' => 'checkOtp'], function() {
 	Route::get('/ticket/scan/{token}', 'HomeController@ticketScan')->name('ticket.scan');
     Route::get('/ticket/scan/used/{token}', 'HomeController@ticketScanUsed')->name('ticket.scan.used');
 
-	Route::get('user/events', 'HomeController@userEvents')->name('user.events');
+	Route::get('user/events', 'HomeController@userEvents')->name('user.events')->middleware('auth');
 
 });
 
@@ -187,10 +187,12 @@ Route::group(['middleware' => ['auth', 'active', 'checkOtp']], function() {
 	Route::post('/otp/screen/resend', 'HomeController@otpResend')->name('check.otp.resend');
 	Route::post('/otp/screen/cancel', 'HomeController@otpCancel')->name('check.otp.cancel');
 	Route::get('/admin', 'HomeController@admin');
-	Route::get('/wp', 'HomeController@whatsapp');
-	Route::get('/mmt', 'HomeController@mobileMoneyToken');
-	Route::get('/mmr', 'HomeController@mobileMoneyRequest');
-	Route::get('/mms', 'HomeController@mobileMoneyStatus');
+	if (config('app.debug')) {
+		Route::get('/wp', 'HomeController@whatsapp');
+		Route::get('/mmt', 'HomeController@mobileMoneyToken');
+		Route::get('/mmr', 'HomeController@mobileMoneyRequest');
+		Route::get('/mms', 'HomeController@mobileMoneyStatus');
+	}
 	Route::get('/dashboard-filter/{start_date}/{end_date}', 'HomeController@dashboardFilter');
 	Route::get('check-batch-availability/{product_id}/{batch_no}/{warehouse_id}', 'ProductController@checkBatchAvailability');
 

@@ -16,11 +16,19 @@ class Active
      */
     public function handle($request, Closure $next)
     {
-        if(Auth::check() && Auth::user()->isActive()){
-            return $next($request);
+        if (Auth::check()) {
+            if (Auth::user()->isActive()) {
+                return $next($request);
+            }
+
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('login')
+                ->with('not_permitted', 'Your account has been deactivated. Please contact the administrator.');
         }
 
-        return redirect('/dashboard');
-        
+        return redirect()->route('login');
     }
 }

@@ -228,7 +228,8 @@ class HomeController extends Controller
     }
 
     public function employee($id) {
-        $musician = Employee::find($id);
+        $musician = Employee::where('is_active', true)->where('is_approve', true)->findOrFail($id);
+        $vote_count = vote::where('status', true)->where('musician_id', $id)->sum('vote');
         $images = Gallery::where('employee_id', $id)->where('type', 'image')->get();
         $audios = Gallery::where('employee_id', $id)->where('type', 'audio')->get();
         $videos = Gallery::where('employee_id', $id)->where('type', 'video')->get();
@@ -238,7 +239,7 @@ class HomeController extends Controller
         $teamData = $this->contestantTeamPageData($contentants);
 
         return view('frontend.employee', array_merge(
-            compact('musician', 'contentants', 'images', 'audios', 'videos', 'shorts', 'youtubes'),
+            compact('musician', 'contentants', 'images', 'audios', 'videos', 'shorts', 'youtubes', 'vote_count'),
             $teamData
         ));
     }
@@ -285,7 +286,8 @@ class HomeController extends Controller
     }
 
     public function employeeFind(Request $request) {
-        $musicians = Employee::where('name', 'LIKE', '%' . $request->search . '%')
+        $search = substr((string) $request->input('search', ''), 0, 100);
+        $musicians = Employee::where('name', 'LIKE', '%' . $search . '%')
             ->where('is_active', true)
             ->where('is_approve', true)
             ->get();
@@ -294,8 +296,17 @@ class HomeController extends Controller
     }
 
     public function employeeVote(Request $request) {
+        $request->validate([
+            'musician_id' => 'required|integer',
+            'vote' => 'required|integer|min:1|max:1000',
+        ]);
+
+        $musician = Employee::where('is_active', true)->where('is_approve', true)
+            ->findOrFail($request->musician_id);
+
         $data = $request->all();
-        $musician = Employee::find($data['musician_id']);
+        $data['vote'] = (int) $request->vote;
+
         return view('frontend.payment', compact('data', 'musician'));
     }
 
@@ -334,22 +345,23 @@ class HomeController extends Controller
 
         $user = $this->findOrCreateVoterUser($phone, $whatsapp, $voterName);
 
+        $voteCount = $this->validatedVoteCount($request);
         $general_setting = GeneralSetting::pluck('vote_price')->first();
+        $amount = $general_setting * $voteCount;
         $vote = vote::create([
                     'user_id' => $user->id,
                     'musician_id' => $request->musician_id,
-                    'vote' => $request->vote,
+                    'vote' => $voteCount,
                     'status' => false,
                     'reference' => 'pending',
                     'price' => $general_setting,
-                    'grand_total' => $general_setting * $request->vote,
+                    'grand_total' => $amount,
                     'whatsapp_number' => $whatsapp
                 ]);
 
         $token = getenv("MOMO_TOKEN");
         if($token && $vote) {
             $campayNumber = ltrim($phone, '+');
-            $amount = $request->amount;
             $reference = $this->mobileMoneyCollect($token, $campayNumber, $amount, $vote->id, 'Mulema Gospel Vote');
             if ($reference == false) {
                 $vote->delete();
@@ -401,23 +413,23 @@ class HomeController extends Controller
 
         $user = $this->findOrCreateVoterUser($phone, $whatsapp, $voterName);
 
+        $voteCount = $this->validatedVoteCount($request);
         $general_setting = GeneralSetting::pluck('vote_price')->first();
+        $amount = $general_setting * $voteCount;
         $vote = vote::create([
             'user_id' => $user->id,
             'musician_id' => $request->musician_id,
-            'vote' => $request->vote,
+            'vote' => $voteCount,
             'status' => false,
             'reference' => 'abc',
             'price' => $general_setting,
-            'grand_total' => $general_setting * $request->vote,
+            'grand_total' => $amount,
             'whatsapp_number' => $whatsapp
 
         ]);
 
         if($vote) {
             $route = route('musician.vote.payment.check.stripe');
-            $amount = $request->amount;
-
             $link = $this->createCheckoutSession($amount, $route, $vote->id, $vote);
             if ($link == false) {
                 $message = 'There is any other issue in payment method';
@@ -442,11 +454,11 @@ class HomeController extends Controller
 //        dd($session);
 
         if ($session->payment_status !== 'paid') {
-            Vote::where('id', $session->metadata->vote_id)->delete();
+            vote::where('id', $session->metadata->vote_id)->delete();
             return redirect()->route('home')->with('not_permitted', 'payment failed.');
         }
 
-        $vote = Vote::where('id', $session->metadata->vote_id)->first();
+        $vote = vote::where('id', $session->metadata->vote_id)->first();
         $vote->status = true;
         $vote->reference = $session->payment_intent;
         $vote->save();
@@ -734,6 +746,12 @@ class HomeController extends Controller
         return true;
     }
 
+    /** Clamp vote quantity from user input to a safe server-side range. */
+    private function validatedVoteCount(Request $request, int $max = 1000): int
+    {
+        return max(1, min($max, (int) $request->input('vote', 1)));
+    }
+
     /** Shared data for the public contestants / vote page. */
     private function contestantTeamPageData($musicians = null)
     {
@@ -849,11 +867,11 @@ class HomeController extends Controller
     public function musicianVotePaymentCheck(Request $request)
     {
         if($request->status != 'SUCCESSFUL'){
-            Vote::where('id', $request->external_reference)->delete();
+            vote::where('id', $request->external_reference)->delete();
             return redirect()->route('home')->with('not_permitted', 'payment failed.');
         }
 
-        $vote = Vote::where('id', $request->external_reference)->first();
+        $vote = vote::where('id', $request->external_reference)->first();
         $vote->status = true;
         $vote->reference = $request->reference;
         $vote->save();
@@ -871,12 +889,21 @@ class HomeController extends Controller
 
     public function handleCampayWebhook(Request $request)
     {
+        $secret = config('app.campay_webhook_secret');
+        if ($secret) {
+            $provided = $request->header('X-Campay-Secret') ?? $request->input('secret');
+            if (!hash_equals((string) $secret, (string) $provided)) {
+                Log::warning('Campay webhook rejected: invalid secret');
+                return response()->json(['status' => 'unauthorized'], 401);
+            }
+        }
+
         $data = $request->all();
 
         Log::info('Campay Webhook Received', $data);
 
         if (($data['status'] ?? '') === 'SUCCESSFUL' && isset($data['external_reference'])) {
-            $vote = Vote::where('id', $data['external_reference'])->first();
+            $vote = vote::where('id', $data['external_reference'])->first();
 
             if ($vote && !$vote->status) {
                 $vote->status = true;
@@ -938,7 +965,7 @@ class HomeController extends Controller
                 'reference' => rand(1, 999999),
                 'price' => $general_setting,
                 'grand_total' => $request->amount,
-                'whatsapp_number' => $data['whatsapp_number']
+                'whatsapp_number' => $user->whatsapp_number ?? $user->phone
             ]);
             $remaining_coin = $coin_check->coin - $request->amount;
 
@@ -989,7 +1016,11 @@ class HomeController extends Controller
     public function otpCheckStore(Request $request) {
         $user = Auth::user();
 
-        if ($request->otp == $user->otp && $user->otp_time > date('Y-m-d H:i:s', strtotime('-3 minutes'))) {
+        if (!$user->otp || !$user->otp_time || $user->otp_time <= date('Y-m-d H:i:s', strtotime('-3 minutes'))) {
+            return redirect()->back()->with('not_permitted', trans('file.Invalid OTP'));
+        }
+
+        if (hash_equals((string) $user->otp, (string) $request->otp)) {
             $user->update(['otp' => null, 'otp_time' => null, 'otp_verify' => '1']);
             if ((int) $user->role_id !== 3) {
                 return redirect('/admin');
@@ -1060,6 +1091,10 @@ class HomeController extends Controller
 
 
     public function mobileMoneyToken(){
+        if (!config('app.debug')) {
+            abort(404);
+        }
+
         $curl = curl_init();
 
 
@@ -1518,8 +1553,11 @@ class HomeController extends Controller
     {
         $user = User::where('phone', $request->phone)->where('is_active', true)->first();
         if ($user) {
-            $otp = $this->sendOTP($user);
-            Session::put('otp', $otp);
+            if (!$this->sendOTP($user)) {
+                return back()->with('not_permitted', trans('file.OTP delivery failed'));
+            }
+            $user->refresh();
+            Session::put('otp', $user->otp);
             Session::put('user', $user);
             return view('frontend.otp_screen_forgot_password');
         }
@@ -1530,7 +1568,8 @@ class HomeController extends Controller
     public function forgotPasswordCheck(Request $request)
     {
 
-        if ($request->otp == Session::get('otp')) {
+        $sessionOtp = (string) Session::get('otp');
+        if ($sessionOtp !== '' && hash_equals($sessionOtp, (string) $request->otp)) {
             Session::forget('otp');
             return view('frontend.password_change');
         }
@@ -1585,7 +1624,11 @@ class HomeController extends Controller
         }
 
         $otp = $this->sendOTP($user);
-        Session::put("reset_otp", $otp);
+        if (!$otp) {
+            return back()->with("not_permitted", trans('file.OTP delivery failed'));
+        }
+        $user->refresh();
+        Session::put("reset_otp", $user->otp);
         Session::put("reset_user_id", $user->id);
 
         return redirect()->route('admin.password.verify')
@@ -1604,7 +1647,8 @@ class HomeController extends Controller
     {
         $request->validate(['otp' => 'required']);
 
-        if ($request->otp == Session::get("reset_otp")) {
+        $sessionOtp = (string) Session::get("reset_otp");
+        if ($sessionOtp !== '' && hash_equals($sessionOtp, (string) $request->otp)) {
             Session::put("reset_otp_verified", true);
             return redirect()->route('admin.password.reset.form');
         }

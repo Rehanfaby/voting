@@ -83,6 +83,11 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
+        $role = Role::find(Auth::user()->role_id);
+        if (!$role || !$role->hasPermissionTo('users-add')) {
+            return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
+        }
+
         $this->validate($request, [
             'name' => [
                 'max:255',
@@ -158,11 +163,22 @@ class UserController extends Controller
 
     public function update(Request $request, $id)
     {
+        $role = Role::find(Auth::user()->role_id);
+        if (!$role || !$role->hasPermissionTo('users-edit')) {
+            return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
+        }
+
         if(!env('USER_VERIFIED'))
             return redirect()->back()->with('not_permitted', 'This feature is disable for demo!');
 
 
         $input = $request->except('sign', 'stemp', 'password');
+
+        if ((int) Auth::user()->role_id !== 1) {
+            foreach (['role_id', 'is_active', 'is_deleted', 'otp', 'otp_time', 'otp_verify', 'remember_token'] as $field) {
+                unset($input[$field]);
+            }
+        }
 
         if(!isset($input['is_active']))
             $input['is_active'] = false;
@@ -175,23 +191,45 @@ class UserController extends Controller
 
     public function profile($id)
     {
+        if ((int) Auth::id() !== (int) $id) {
+            $role = Role::find(Auth::user()->role_id);
+            if (!$role || !$role->hasPermissionTo('users-index')) {
+                return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
+            }
+        }
+
         $lims_user_data = User::find($id);
+        if (!$lims_user_data) {
+            return redirect()->back()->with('not_permitted', 'User not found.');
+        }
+
         return view('user.profile', compact('lims_user_data'));
     }
 
     public function profileUpdate(Request $request, $id)
     {
+        if ((int) Auth::id() !== (int) $id) {
+            return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
+        }
+
         if(!env('USER_VERIFIED'))
             return redirect()->back()->with('not_permitted', 'This feature is disable for demo!');
 
-        $input = $request->all();
+        $input = $request->only(['name', 'email', 'phone', 'company_name', 'whatsapp_number']);
         $lims_user_data = User::find($id);
+        if (!$lims_user_data) {
+            return redirect()->back()->with('not_permitted', 'User not found.');
+        }
         $lims_user_data->update($input);
         return redirect()->back()->with('message3', 'Data updated successfullly');
     }
 
     public function changePassword(Request $request, $id)
     {
+        if ((int) Auth::id() !== (int) $id) {
+            return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
+        }
+
         if(!env('USER_VERIFIED'))
             return redirect()->back()->with('not_permitted', 'This feature is disable for demo!');
 
@@ -213,6 +251,11 @@ class UserController extends Controller
 
     public function deleteBySelection(Request $request)
     {
+        $role = Role::find(Auth::user()->role_id);
+        if (!$role || !$role->hasPermissionTo('users-delete')) {
+            return response('Unauthorized', 403);
+        }
+
         $user_id = $request['userIdArray'] ?? $request['ids'] ?? [];
         foreach ($user_id as $id) {
             if($id == null) {

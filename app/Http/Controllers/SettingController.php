@@ -17,6 +17,7 @@ use App\Helpers\AppCache;
 use App\Helpers\SiteContent;
 use App\Helpers\ImageOptimizer;
 use DB;
+use Auth;
 use Illuminate\Support\Facades\Schema;
 use ZipArchive;
 use Twilio\Rest\Client;
@@ -666,6 +667,10 @@ class SettingController extends Controller
 
     public function envSetting()
     {
+        if (!config('app.allow_env_editor', false) || (int) Auth::user()->role_id !== 1) {
+            return redirect()->back()->with('not_permitted', 'Environment editor is disabled.');
+        }
+
         if (!env('USER_VERIFIED')) {
             return redirect()->back()->with('not_permitted', 'This feature is disabled for demo!');
         }
@@ -678,6 +683,10 @@ class SettingController extends Controller
 
     public function envSettingStore(Request $request)
     {
+        if (!config('app.allow_env_editor', false) || (int) Auth::user()->role_id !== 1) {
+            return redirect()->back()->with('not_permitted', 'Environment editor is disabled.');
+        }
+
         if (!env('USER_VERIFIED')) {
             return redirect()->back()->with('not_permitted', 'This feature is disabled for demo!');
         }

@@ -954,6 +954,9 @@
                                             @php
                                                 $best_musician  = Employee::find($best_musician_data->musician_id);
                                             @endphp
+                                            @if(!$best_musician)
+                                                @continue
+                                            @endif
                                             <div class="swiper-slide">
                                                 <div class="ms-popular__item p-relative mb-30">
                                                     <div class="ms-popular__thumb" style="border-radius: 10%;">
