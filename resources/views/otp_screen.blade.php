@@ -50,8 +50,28 @@
             border-radius: 50%;
             background: linear-gradient(135deg, rgba(29,78,216,.12), rgba(245,197,24,.12));
             border: 2px solid rgba(245,197,24,.45);
+            animation: mg-logo-in .8s ease-out both, mg-logo-pulse 2.6s ease-in-out 1s infinite;
         }
-        .auth-logo img { max-width: 74px; max-height: 74px; border-radius: 50%; }
+        .auth-logo img {
+            max-width: 74px; max-height: 74px; border-radius: 50%;
+            animation: mg-logo-spin 6s linear infinite;
+        }
+        @keyframes mg-logo-in {
+            0%   { transform: scale(.3) rotate(-25deg); opacity: 0; }
+            60%  { transform: scale(1.1) rotate(6deg); opacity: 1; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        @keyframes mg-logo-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(245,197,24,.55); }
+            50%      { box-shadow: 0 0 0 14px rgba(245,197,24,0); }
+        }
+        @keyframes mg-logo-spin {
+            0%   { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .auth-logo, .auth-logo img { animation: none; }
+        }
         .auth-title { margin: 4px 0 2px; font-size: 22px; font-weight: 700; color: var(--ink); }
         .auth-sub { margin: 0; font-size: 13.5px; color: #64748b; line-height: 1.5; }
         .auth-body { padding: 26px 32px 34px; }
@@ -109,10 +129,18 @@
             margin-bottom: 18px; text-align: center;
         }
         .alert-box.success { background: #e7f6ec; border-color: #a8dab7; color: #1d7a3c; }
-        .page-version {
-            position: fixed; bottom: 12px; left: 0; right: 0;
-            text-align: center; font-size: 11px; font-weight: 700;
-            letter-spacing: .6px; color: rgba(255,255,255,.45);
+        .page-credit {
+            position: fixed; bottom: 14px; left: 0; right: 0;
+            text-align: center; font-size: 11.5px; letter-spacing: .3px;
+            color: rgba(255,255,255,.6); line-height: 1.4;
+        }
+        .page-credit a { color: #f5c518; text-decoration: none; }
+        .page-credit a:hover { text-decoration: underline; }
+        .page-credit .page-version {
+            display: inline-block; margin-left: 8px; padding: 2px 8px;
+            border-radius: 30px; font-weight: 700; font-size: 10.5px;
+            letter-spacing: .8px; color: #f5c518;
+            background: rgba(245,197,24,.12); border: 1px solid rgba(245,197,24,.35);
         }
     </style>
 </head>
@@ -173,7 +201,11 @@
         </div>
     </div>
 
-    <div class="page-version">{{ strtoupper(substr($general_setting->site_title, 0, 3)) }} V.{{ config('app.version') }}</div>
+    <div class="page-credit">
+        {{ trans('file.Developed') }} {{ trans('file.By') }}:
+        <a href="https://wa.me/237675321739" target="_blank" rel="noopener noreferrer">Engr. Tefu R. Mbole</a>
+        <span class="page-version">V.{{ config('app.version') }}</span>
+    </div>
 
     <script>
         (function () {

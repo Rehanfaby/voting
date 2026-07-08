@@ -265,6 +265,23 @@ class Controller extends BaseController
             return false;
         }
 
+        // UltraMsg returns HTTP 200 with `sent: true` even when the WhatsApp
+        // instance is not authenticated (message stays queued indefinitely).
+        // Treat that as a delivery failure so callers can surface an error.
+        $note = strtolower((string) ($decoded['message'] ?? ''));
+        if ($note !== '' && (
+            strpos($note, 'not authenticated') !== false
+            || strpos($note, 'will be sent after') !== false
+            || strpos($note, 'instance is not') !== false
+            || strpos($note, 'disconnected') !== false
+        )) {
+            \Log::warning('UltraMsg instance not connected — message queued, not delivered', [
+                'response' => $decoded,
+                'to' => $to,
+            ]);
+            return false;
+        }
+
         return true;
     }
 
