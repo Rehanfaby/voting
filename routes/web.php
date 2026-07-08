@@ -38,7 +38,7 @@ Route::get('language_switch/{locale}', 'LanguageController@switchLanguage');
 Route::get('/payment-cancel', [StripePaymentController::class, 'paymentCancel'])->name('payment.cancel');
 
 //frontend
-Route::group(['middleware' => 'checkOtp'], function() {
+Route::group([], function() {
     Route::get('/', 'HomeController@index')->name('home');
     Route::get('/about', 'HomeController@about')->name('about');
     Route::get('/contact', 'HomeController@contact')->name('contact');

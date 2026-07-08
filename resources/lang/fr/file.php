@@ -753,6 +753,8 @@ return [
     'OTP resend failed' => 'Impossible de renvoyer le code. Attendez une minute et réessayez.',
     'OTP delivery failed' => 'Impossible d\'envoyer le code sur WhatsApp. Vérifiez le numéro de votre compte, puis réessayez.',
     'Back to Login' => 'Retour à la connexion',
+    'Back to Homepage' => 'Retour à l\'accueil',
+    'Sign in to dashboard' => 'Connectez-vous au tableau de bord',
     'Submit' => 'Soumettre',
     'Password Change' => 'Changement de Mot de Passe',
     'Please enter your new password and confirm password!' => 'Veuillez entrer votre nouveau mot de passe et le confirmer !',

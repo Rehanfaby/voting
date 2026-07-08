@@ -1010,7 +1010,7 @@ class HomeController extends Controller
     {
         Auth::logout();
 
-        return redirect()->route('login');
+        return redirect()->route('home');
     }
 
     public function otpCheckStore(Request $request) {

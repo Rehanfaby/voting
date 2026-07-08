@@ -859,6 +859,8 @@ return [
     'OTP resend failed' => 'Could not resend the code. Please wait a minute and try again.',
     'OTP delivery failed' => 'We could not deliver the verification code to WhatsApp. Check that your account has a valid phone number, then try resending.',
     'Back to Login' => 'Back to Login',
+    'Back to Homepage' => 'Back to Homepage',
+    'Sign in to dashboard' => 'Sign in to the dashboard',
     'Submit' => 'Submit',
     'Password Change' => 'Password Change',
     'Please enter your new password and confirm password!' => 'Please enter your new password and confirm password!',

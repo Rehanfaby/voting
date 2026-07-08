@@ -7,154 +7,13 @@
     <title>{{ $general_setting->site_title }} — {{ trans('file.Verify OTP') }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/png" href="{{ url('public/logo', $general_setting->site_logo) }}" />
-    <link rel="stylesheet" href="<?php echo asset('public/vendor/font-awesome/css/font-awesome.min.css') ?>" type="text/css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap">
-    <style>
-        :root {
-            --brand-blue: #1d4ed8;
-            --brand-gold: #f5c518;
-            --brand-navy: #0a2350;
-            --brand-grad: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
-            --ink: #14223f;
-        }
-        * { box-sizing: border-box; }
-        body {
-            margin: 0;
-            min-height: 100vh;
-            font-family: 'Poppins', system-ui, -apple-system, sans-serif;
-            background: linear-gradient(135deg, #0c2f6b 0%, #0a2350 55%, #07172f 100%);
-            color: var(--ink);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-        .auth-wrap { position: relative; z-index: 1; width: 100%; max-width: 430px; padding: 24px; }
-        .auth-card {
-            background: #fff;
-            border-radius: 24px;
-            box-shadow: 0 24px 70px rgba(3, 12, 28, .45);
-            overflow: hidden;
-        }
-        .auth-card__head {
-            text-align: center;
-            padding: 38px 30px 26px;
-            background: radial-gradient(120% 120% at 50% 0%, rgba(29,78,216,.14), transparent 65%);
-            border-bottom: 4px solid;
-            border-image: var(--brand-grad) 1;
-        }
-        .auth-logo {
-            width: 96px; height: 96px; margin: 0 auto 14px;
-            display: flex; align-items: center; justify-content: center;
-            border-radius: 50%;
-            background: linear-gradient(135deg, rgba(29,78,216,.12), rgba(245,197,24,.12));
-            border: 2px solid rgba(245,197,24,.45);
-            animation: mg-logo-in .8s ease-out both, mg-logo-pulse 2.6s ease-in-out 1s infinite;
-        }
-        .auth-logo img {
-            max-width: 74px; max-height: 74px; border-radius: 50%;
-            animation: mg-logo-spin 6s linear infinite;
-        }
-        @keyframes mg-logo-in {
-            0%   { transform: scale(.3) rotate(-25deg); opacity: 0; }
-            60%  { transform: scale(1.1) rotate(6deg); opacity: 1; }
-            100% { transform: scale(1) rotate(0deg); opacity: 1; }
-        }
-        @keyframes mg-logo-pulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(245,197,24,.55); }
-            50%      { box-shadow: 0 0 0 14px rgba(245,197,24,0); }
-        }
-        @keyframes mg-logo-spin {
-            0%   { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        @media (prefers-reduced-motion: reduce) {
-            .auth-logo, .auth-logo img { animation: none; }
-        }
-        .auth-title { margin: 4px 0 2px; font-size: 22px; font-weight: 700; color: var(--ink); }
-        .auth-sub { margin: 0; font-size: 13.5px; color: #64748b; line-height: 1.5; }
-        .auth-body { padding: 26px 32px 34px; }
-        .otp-field input {
-            width: 100%;
-            padding: 16px;
-            font-size: 24px;
-            font-weight: 700;
-            letter-spacing: 12px;
-            text-align: center;
-            color: var(--ink);
-            background: #fff;
-            border: 2px solid var(--brand-gold);
-            border-radius: 14px;
-            outline: none;
-            font-family: inherit;
-        }
-        .otp-field input:focus { box-shadow: 0 0 0 3px rgba(245,197,24,.25); }
-        .otp-timer {
-            text-align: center;
-            margin: 12px 0 18px;
-            font-size: 13px;
-            font-weight: 600;
-            color: #dc2626;
-        }
-        .otp-timer.expired { color: #94a3b8; }
-        .btn-verify {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 14px;
-            font-size: 15px;
-            font-weight: 700;
-            color: #fff;
-            background: var(--brand-grad);
-            cursor: pointer;
-        }
-        .btn-verify:hover { filter: brightness(1.05); }
-        .resend-row { text-align: center; margin-top: 16px; font-size: 13px; color: #64748b; }
-        .resend-row button {
-            background: none; border: none; padding: 0;
-            color: var(--brand-blue); font-weight: 600; cursor: pointer;
-            font-family: inherit; font-size: inherit;
-        }
-        .resend-row button:disabled { color: #94a3b8; cursor: not-allowed; }
-        .back-row { text-align: center; margin-top: 20px; }
-        .back-row button {
-            background: none; border: none; padding: 0;
-            color: #64748b; font-size: 13.5px; cursor: pointer; font-family: inherit;
-        }
-        .back-row button:hover { color: var(--brand-blue); }
-        .alert-box {
-            background: #fdecec; border: 1px solid #f5c2c7; color: #b02a37;
-            padding: 11px 14px; border-radius: 12px; font-size: 13px;
-            margin-bottom: 18px; text-align: center;
-        }
-        .alert-box.success { background: #e7f6ec; border-color: #a8dab7; color: #1d7a3c; }
-        .page-credit {
-            position: fixed; bottom: 14px; left: 0; right: 0;
-            text-align: center; font-size: 11.5px; letter-spacing: .3px;
-            color: rgba(255,255,255,.6); line-height: 1.4;
-        }
-        .page-credit a { color: #f5c518; text-decoration: none; }
-        .page-credit a:hover { text-decoration: underline; }
-        .page-credit .page-version {
-            display: inline-block; margin-left: 8px; padding: 2px 8px;
-            border-radius: 30px; font-weight: 700; font-size: 10.5px;
-            letter-spacing: .8px; color: #f5c518;
-            background: rgba(245,197,24,.12); border: 1px solid rgba(245,197,24,.35);
-        }
-    </style>
+    @include('auth.partials.auth-standalone-style')
 </head>
 <body>
     <div class="auth-wrap">
         <div class="auth-card">
             <div class="auth-card__head">
-                <div class="auth-logo">
-                    @if($general_setting->site_logo)
-                        <img src="{{ url('public/logo', $general_setting->site_logo) }}" alt="logo">
-                    @else
-                        <i class="fa fa-shield" style="font-size:40px;color:#1d4ed8;"></i>
-                    @endif
-                </div>
+                @include('auth.partials.auth-standalone-logo')
                 <h1 class="auth-title">{{ $general_setting->site_title }}</h1>
                 <p class="auth-sub">{{ trans('file.OTP login instructions') }}</p>
             </div>
@@ -177,7 +36,7 @@
                         <input id="login-otp" type="text" name="otp" required inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="one-time-code" autofocus>
                     </div>
                     <p class="otp-timer" id="otp-expiry">{{ trans('file.Code expires in') }} <span id="otp-expiry-time">3:00</span></p>
-                    <button type="submit" class="btn-verify">{{ trans('file.Verify OTP') }}</button>
+                    <button type="submit" class="btn-auth">{{ trans('file.Verify OTP') }}</button>
                 </form>
 
                 <div class="resend-row">
@@ -189,6 +48,9 @@
                 </div>
 
                 <div class="back-row">
+                    <a href="{{ route('home') }}"><i class="fa fa-home"></i> {{ trans('file.Back to Homepage') }}</a>
+                </div>
+                <div class="back-row" style="margin-top:10px;">
                     <form action="{{ route('check.otp.cancel') }}" method="post">
                         @csrf
                         <button type="submit"><i class="fa fa-arrow-left"></i> {{ trans('file.Back to Login') }}</button>
@@ -201,11 +63,7 @@
         </div>
     </div>
 
-    <div class="page-credit">
-        {{ trans('file.Developed') }} {{ trans('file.By') }}:
-        <a href="https://wa.me/237675321739" target="_blank" rel="noopener noreferrer">Engr. Tefu R. Mbole</a>
-        <span class="page-version">V.{{ config('app.version') }}</span>
-    </div>
+    @include('auth.partials.auth-standalone-credit')
 
     <script>
         (function () {

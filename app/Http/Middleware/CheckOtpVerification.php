@@ -8,13 +8,6 @@ use Illuminate\Support\Facades\Auth;
 
 class CheckOtpVerification
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @return mixed
-     */
     public function handle(Request $request, Closure $next)
     {
         if (!config('app.login_otp_enabled', true)) {
