@@ -1,39 +1,28 @@
-@extends('layouts.app')
+@extends('layout.main')
 @section('content')
-<div class="container">
+<div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">Dashboard</div>
-
+        <div class="col-md-5">
+            <div class="card mt-5">
+                <div class="card-header">
+                    <h4><i class="fab fa-whatsapp"></i> {{ trans('file.Authentication') }}</h4>
+                </div>
                 <div class="card-body">
-                    @if($errors->has('name'))
-                        <div class="alert alert-danger alert-dismissible text-center">
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>{{ $errors->first('name') }}</div>
-                    @endif
-                    @if(session()->has('message'))
-                        <div class="alert alert-success alert-dismissible text-center"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>{{ session()->get('message') }}</div>
-                    @endif
                     @if(session()->has('not_permitted'))
-                        <div class="alert alert-danger alert-dismissible text-center"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>{{ session()->get('not_permitted') }}</div>
+                        <div class="alert alert-danger">{{ session()->get('not_permitted') }}</div>
                     @endif
-
+                    <p class="text-muted">{{ trans('file.OTP login instructions') }}</p>
                     @if(Auth::user()->is_active)
                     <form action="{{ route('check.otp.store') }}" method="post">
                         @csrf
-                        <div class="form-group-material">
-                            <input id="login-otp" placeholder="" type="number" name="otp" required class="input-material" value="">
-                            <label for="login-otp" class="label-material">OTP</label>
-                            @if ($errors->has('otp'))
-                                <p>
-                                    <strong>{{ $errors->first('otp') }}</strong>
-                                </p>
-                            @endif
+                        <div class="form-group">
+                            <label for="login-otp">{{ trans('file.OTP') }}</label>
+                            <input id="login-otp" type="text" name="otp" required class="form-control text-center" inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="one-time-code" style="letter-spacing:8px;font-size:22px;font-weight:700;">
                         </div>
-                        <button type="submit" class="btn btn-primary btn-block">Verify OTP</button>
+                        <button type="submit" class="btn btn-primary btn-block">{{ trans('file.Verify OTP') }}</button>
                     </form>
                     @else
-                    You are logged in but id is not activated! Please contact with admin.
+                    <div class="alert alert-warning">{{ trans('file.Account not activated contact admin') }}</div>
                     @endif
                 </div>
             </div>

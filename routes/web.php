@@ -82,7 +82,7 @@ Route::group(['middleware' => 'checkOtp'], function() {
 
 //end frontend
 
-Route::group(['middleware' => ['auth', 'active']], function() {
+Route::group(['middleware' => ['auth', 'active', 'checkOtp']], function() {
 
 
 	Route::post('importunit', 'UnitController@importUnit')->name('unit.import');

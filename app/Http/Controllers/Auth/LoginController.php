@@ -79,9 +79,13 @@ class LoginController extends Controller
 
         {
 
-            // Admins / staff / judges / ambassadors land on the admin dashboard;
-            // voters (role 3) go to the public website.
             $user = Auth::user();
+
+            if ($user && config('app.login_otp_enabled', true)) {
+                $user->update(['otp_verify' => 0]);
+                return redirect()->route('check.otp');
+            }
+
             if($user && $user->role_id != 3) {
                 return redirect('/admin');
             }

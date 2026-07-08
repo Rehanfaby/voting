@@ -94,13 +94,20 @@ class HomeController extends Controller
         ]);
 
         $adminNumber = getenv('ADMIN_NUMBER') ?: '237675321739';
-        $msg = '*New contact message — ' . (getenv('APP_NAME') ?: 'Mulema GC') . "*\n\n";
-        $msg .= '*Name:* ' . $request->name . "\n";
-        $msg .= '*Phone:* ' . $request->number . "\n";
+        $msg = WhatsAppFormatter::brandLine();
+        $msg .= WhatsAppFormatter::bilingualHeading('📩', 'NOUVEAU MESSAGE', 'NEW CONTACT MESSAGE');
+        $msg .= WhatsAppFormatter::bilingualGreeting($request->name);
+        $msg .= WhatsAppFormatter::bilingualBody(
+            'Vous avez reçu un message depuis le site.',
+            'You have received a message from the website.'
+        );
+        $msg .= WhatsAppFormatter::bilingualLine('Nom', 'Name', $request->name);
+        $msg .= WhatsAppFormatter::bilingualLine('Téléphone', 'Phone', $request->number);
         if ($request->filled('email')) {
-            $msg .= '*Email:* ' . $request->email . "\n";
+            $msg .= WhatsAppFormatter::bilingualLine('E-mail', 'Email', $request->email);
         }
-        $msg .= "\n*Message:*\n" . $request->message;
+        $msg .= "\n■ *Message:*\n" . $request->message . "\n";
+        $msg .= WhatsAppFormatter::footer('Répondez via WhatsApp.', 'Reply via WhatsApp.');
 
          try{
              $this->wpMessage($adminNumber, $msg);
@@ -961,6 +968,9 @@ class HomeController extends Controller
 
         if ($request->otp == $user->otp && $user->otp_time > date('Y-m-d H:i:s', strtotime('-3 minutes'))) {
             $user->update(['otp' => null, 'otp_time' => null, 'otp_verify' => '1']);
+            if ((int) $user->role_id !== 3) {
+                return redirect('/admin');
+            }
             return redirect()->route('home');
         } else {
             return redirect()->back()->with('not_permitted', 'Invalid OTP');
@@ -969,10 +979,11 @@ class HomeController extends Controller
 
     public function sendOTP($user) {
         if ($user->otp_time == null || $user->otp_time < date('Y-m-d H:i:s', strtotime('-1 minutes'))) {
-            $otp = rand(1, 999999);
-            $msg = "Your OTP is: " . $otp . "\n That will be expired after 2 minutes";
+            $otp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+            $msg = WhatsAppFormatter::otpMessage($user->name ?? 'User', $otp, 3);
+            $recipient = $user->whatsapp_number ?? $user->phone;
             try {
-                $this->wpMessage($user->phone, $msg);
+                $this->wpMessage($recipient, $msg);
                 $user->update(['otp' => $otp, 'otp_time' => date('Y-m-d H:i:s')]);
             } catch (\Exception $e) {
                 return $otp;
@@ -1136,19 +1147,21 @@ class HomeController extends Controller
 
     public function sendWhatsappMsg($user, $password){
 
-//        $msg = '*Congrats:* Your account has been created' . '\n\n';
-//        $msg .= '*User name:* '. $user->name . '\n\n';
-//        $msg .= '*Phone number:* '. $user->phone . '\n\n';
-//        $msg .= '*Password:* '. $password . '\n\n';
-
-        $msg = "Account Creation\n\n";
-        $msg .= "🎉 *Félicitations : Votre compte a été créé ! / Congrats: Your Account has been Created!* 🎉\n";
-        $msg .= "👤 *Nom d'utilisateur / Username:* " . $user->name . "\n";
-        $msg .= "📱 *Numéro de téléphone / Phone Number:* " . $user->phone . "\n";
-        $msg .= "🔐 *Mot de passe / Password:* " . $password . "\n\n";
-        $msg .= "✅ *Bienvenue à bord ! / Welcome aboard!* 🙌\n\n";
-        $msg .= "🌐". getenv("APP_NAME");
-
+        $msg = WhatsAppFormatter::compose(
+            '🎉',
+            'COMPTE CRÉÉ',
+            'ACCOUNT CREATED',
+            $user->name ?? 'User',
+            'Félicitations ! Votre compte a été créé avec succès.',
+            'Congratulations! Your account has been created successfully.',
+            [
+                ['Nom d\'utilisateur', 'Username', $user->name ?? '—'],
+                ['Téléphone', 'Phone', $user->phone ?? '—'],
+                ['Mot de passe', 'Password', (string) $password],
+            ],
+            'Bienvenue à bord !',
+            'Welcome aboard!'
+        );
 
         try{
             $this->wpMessage($user->whatsapp_number ?? $user->phone, $msg);
@@ -1178,23 +1191,24 @@ class HomeController extends Controller
 //        $msg .= 'Your remaining coins are  '.$remaining_coin.'\n\n';
 
 
-        $msg = "🗳️ Merci pour votre vote ! 🙏 / Thank You for Your Vote! 🙏\n\n";
-        $msg .= "✅ Vous avez voté ".$vote." fois pour 🌟 {$musician->name} !\n";
-        $msg .= "✅ You have successfully cast ".$vote." vote";
-        $msg .= $vote > 1 ? "s" : "";
-        $msg .= " for 🌟 {$musician->name}!\n\n";
+        $voteLabel = $vote > 1 ? "{$vote} votes" : '1 vote';
 
-        $msg .= "📊 {$musician->name} a maintenant un total de ".$total_votes." votes 🎉👏\n";
-        $msg .= "📊 {$musician->name} now has a total of ".$total_votes." votes 🎉👏\n\n";
-
-        $msg .= "🪙 Coins restants : ".$remaining_coin."\n";
-        $msg .= "🪙 Remaining Coins: ".$remaining_coin."\n\n";
-
-        $msg .= "🙌 Continuez à soutenir ! Chaque vote compte ! 💪🔥\n";
-        $msg .= "🙌 Keep the support coming! Every vote counts! 💪🔥\n\n";
-
-        $msg .= "🌐". getenv("APP_NAME");
-
+        $msg = WhatsAppFormatter::compose(
+            '🗳️',
+            'VOTE ENREGISTRÉ',
+            'VOTE RECORDED',
+            $user->name ?? 'Voter',
+            "Vous avez voté {$vote} fois pour {$musician->name}.",
+            "You successfully cast {$voteLabel} for {$musician->name}.",
+            [
+                ['Candidat', 'Contestant', $musician->name ?? '—'],
+                ['Votes', 'Votes cast', (string) $vote],
+                ['Total des votes', 'Total votes', (string) $total_votes],
+                ['Coins restants', 'Remaining coins', (string) $remaining_coin],
+            ],
+            'Continuez à soutenir votre candidat !',
+            'Keep supporting your favourite contestant!'
+        );
 
         try{
             $this->wpMessage($user->phone, $msg);
@@ -1213,18 +1227,27 @@ class HomeController extends Controller
         $total_votes = vote::where('musician_id', $musician_id)->where('status', true)->sum('vote');
         $recipient = $whatsapp ?? $user->whatsapp_number ?? $user->phone;
         $amountLine = $amount ? number_format((float) $amount) . ' CFA' : null;
-
-        $msg = WhatsAppFormatter::heading('💳', 'VOTE PAYMENT PENDING');
-        $msg .= WhatsAppFormatter::greeting($user->name ?? 'Voter');
-        $msg .= "Please complete your payment within *30 minutes* to confirm your vote.\n\n";
-        $msg .= WhatsAppFormatter::line('Contestant', $musician->name ?? '—');
-        $msg .= WhatsAppFormatter::line('Votes', (string) $vote);
+        $lines = [
+            ['Candidat', 'Contestant', $musician->name ?? '—'],
+            ['Votes', 'Votes', (string) $vote],
+            ['Total actuel', 'Current total', (string) $total_votes],
+            ['Statut', 'Status', 'En attente / Pending'],
+        ];
         if ($amountLine) {
-            $msg .= WhatsAppFormatter::line('Amount', $amountLine);
+            array_splice($lines, 2, 0, [['Montant', 'Amount', $amountLine]]);
         }
-        $msg .= WhatsAppFormatter::line('Current total votes', (string) $total_votes);
-        $msg .= WhatsAppFormatter::line('Status', 'Pending payment');
-        $msg .= WhatsAppFormatter::footer();
+
+        $msg = WhatsAppFormatter::compose(
+            '💳',
+            'PAIEMENT DE VOTE EN ATTENTE',
+            'VOTE PAYMENT PENDING',
+            $user->name ?? 'Voter',
+            'Veuillez finaliser votre paiement Mobile Money dans les 30 minutes.',
+            'Please complete your Mobile Money payment within 30 minutes.',
+            $lines,
+            'Validez la demande MoMo sur votre téléphone.',
+            'Approve the MoMo prompt on your phone.'
+        );
 
         try{
             $this->wpMessage($recipient, $msg);
@@ -1247,13 +1270,25 @@ class HomeController extends Controller
         }
 
         foreach ($ticketSeats as $ticketSeat) {
-            $msg = '*Thank you for your Purchasing Ticket,*  \n\n';
-            $msg .= 'You have purchased ' . 1 . ' ticket for ' . $ticket->product->name . '\n\n';
-            $msg .= 'Your ticket number is: ' . $ticketSeat->token . '\n\n';
-            $msg .= 'Your Seat number is: ' . $ticketSeat->seat_number . '\n\n';
-            $msg .= 'QR code has been sent to your whatsapp number please scan it at the entrance of the event' . '\n\n';
-
             $user = User::find($ticket->user_id);
+            $eventName = $ticket->product->name ?? 'Event';
+
+            $msg = WhatsAppFormatter::compose(
+                '🎫',
+                'BILLET CONFIRMÉ',
+                'TICKET CONFIRMED',
+                $user->name ?? 'Guest',
+                'Merci pour votre achat de billet.',
+                'Thank you for your ticket purchase.',
+                [
+                    ['Événement', 'Event', $eventName],
+                    ['N° billet', 'Ticket no.', (string) $ticketSeat->token],
+                    ['Siège', 'Seat', (string) $ticketSeat->seat_label ?? (string) $ticketSeat->seat_number],
+                    ['Quantité', 'Quantity', '1'],
+                ],
+                'Présentez le QR code à l\'entrée.',
+                'Present your QR code at the entrance.'
+            );
 
             try{
                 $this->wpMessage($user->whatsapp_number ?? $user->phone, $msg);
@@ -1294,15 +1329,22 @@ class HomeController extends Controller
 //        $msg .= $musician->name . '`s total votes are  '.$total_votes.'\n\n';
 
 
-        $msg = WhatsAppFormatter::heading('✅', 'VOTE CONFIRMED');
-        $msg .= WhatsAppFormatter::greeting($user->name ?? 'Voter');
-        $msg .= "Thank you! Your vote has been recorded successfully.\n\n";
-        $msg .= WhatsAppFormatter::line('Contestant', $musician->name ?? '—');
-        $msg .= WhatsAppFormatter::line('Votes cast', (string) $vote);
-        $msg .= WhatsAppFormatter::line('New total votes', (string) $total_votes);
-        $msg .= WhatsAppFormatter::line('Status', 'Confirmed ✓');
-        $msg .= "\n🙌 Every vote counts — keep supporting your favourite!\n";
-        $msg .= WhatsAppFormatter::footer();
+        $msg = WhatsAppFormatter::compose(
+            '✅',
+            'VOTE CONFIRMÉ',
+            'VOTE CONFIRMED',
+            $user->name ?? 'Voter',
+            'Merci ! Votre vote a été enregistré avec succès.',
+            'Thank you! Your vote has been recorded successfully.',
+            [
+                ['Candidat', 'Contestant', $musician->name ?? '—'],
+                ['Votes', 'Votes cast', (string) $vote],
+                ['Nouveau total', 'New total votes', (string) $total_votes],
+                ['Statut', 'Status', 'Confirmé ✓ / Confirmed ✓'],
+            ],
+            'Chaque vote compte — merci pour votre soutien !',
+            'Every vote counts — thank you for your support!'
+        );
 
         try{
             $this->wpMessage($vote_data->whatsapp_number ?? $user->phone, $msg);
@@ -1350,11 +1392,20 @@ class HomeController extends Controller
             }
             $user = User::find($ticket->user_id);
             if($user) {
-                $msg = '*Ticket Scan Alert:* Your ticket has been scanned successfully' . '\n\n';
-                $msg .= '*Ticket number:* '. $token . '\n\n';
-                $msg .= '*Seat number:* '. $ticketSeat->seat_number . '\n\n';
-                $msg .= '*Event name:* '. $ticket->product->name . '\n\n';
-                $msg .= '*Event date:* '. $ticket->product->event_day . '\n\n';
+                $msg = WhatsAppFormatter::compose(
+                    '🎟️',
+                    'BILLET SCANNÉ',
+                    'TICKET SCANNED',
+                    $user->name ?? 'Guest',
+                    'Votre billet a été scanné avec succès à l\'entrée.',
+                    'Your ticket has been scanned successfully at the entrance.',
+                    [
+                        ['N° billet', 'Ticket no.', (string) $token],
+                        ['Siège', 'Seat', (string) $ticketSeat->seat_number],
+                        ['Événement', 'Event', $ticket->product->name ?? '—'],
+                        ['Date', 'Event date', (string) ($ticket->product->event_day ?? '—')],
+                    ]
+                );
                 try{
                     $this->wpMessage($user->whatsapp_number ?? $user->phone, $msg);
                 }
@@ -1383,13 +1434,24 @@ class HomeController extends Controller
 
     public function sendWhatsappMsgForUpdatePassword($user, $password){
 
-        $msg = '*Update Alert:* Your password has been updated, you new credentials are' . '\n\n';
-        $msg .= '*User name:* '. $user->name . '\n\n';
-        $msg .= '*Phone number:* '. $user->phone . '\n\n';
-        $msg .= '*Password:* '. $password . '\n\n';
+        $msg = WhatsAppFormatter::compose(
+            '🔑',
+            'MOT DE PASSE MIS À JOUR',
+            'PASSWORD UPDATED',
+            $user->name ?? 'User',
+            'Votre mot de passe a été mis à jour.',
+            'Your password has been updated.',
+            [
+                ['Nom d\'utilisateur', 'Username', $user->name ?? '—'],
+                ['Téléphone', 'Phone', $user->phone ?? '—'],
+                ['Nouveau mot de passe', 'New password', (string) $password],
+            ],
+            'Connectez-vous avec vos nouveaux identifiants.',
+            'Sign in with your new credentials.'
+        );
 
         try{
-            $this->wpMessage($user->phone, $msg);
+            $this->wpMessage($user->whatsapp_number ?? $user->phone, $msg);
         }
         catch(\Exception $e){
 
