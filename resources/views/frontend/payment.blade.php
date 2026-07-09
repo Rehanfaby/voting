@@ -170,8 +170,11 @@
     .mg-field { margin-bottom:12px; }
     .mg-field label { display:block; font-weight:700; color:#0a2350; margin-bottom:6px; font-size:13px; }
     .mg-field-hint { display:block; margin-top:4px; color:#6b7a93; font-size:11.5px; }
-    .mg-text-input { width:100%; border:1px solid #dbe4f3; border-radius:12px; background:#f7f9fd; padding:11px 14px; font-size:15px; color:#14223f; outline:none; }
-    .mg-text-input:focus { background:#fff; border-color:#e87722; }
+    .mg-text-input { width:100%; border:1px solid #dbe4f3; border-radius:12px; background:#fff !important; padding:11px 14px; font-size:15px; color:#14223f !important; -webkit-text-fill-color:#14223f; outline:none; }
+    .mg-text-input::placeholder { color:#94a3b8 !important; -webkit-text-fill-color:#94a3b8; }
+    .mg-text-input:focus { background:#fff !important; border-color:#e87722; }
+    .mg-pay-card .cm-phone-field__input { color:#14223f !important; -webkit-text-fill-color:#14223f; }
+    .mg-pay-card .cm-phone-field__input::placeholder { color:#94a3b8 !important; -webkit-text-fill-color:#94a3b8; }
     .mg-pay-submit { width:100%; justify-content:center; margin-top:4px; font-size:15px; padding:13px 20px; }
     @media (max-width:575px) {
         .mg-pay-summary { flex-direction:column; text-align:center; }

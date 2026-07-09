@@ -35,4 +35,15 @@ return [
         'token' => env('ULTRAMSG_TOKEN'),
     ],
 
+    'momo' => [
+        'token' => env('MOMO_TOKEN'),
+        'app_id' => env('MOMO_APP_ID'),
+        'username' => env('MOMO_APP_USERNAME'),
+        'password' => env('MOMO_APP_PASSWORD'),
+        'webhook' => env('MOMO_APP_WEBHOOK'),
+        'simulate' => env('PAYMENT_SIMULATE'),
+    ],
+
+    'admin_number' => env('ADMIN_NUMBER', '237675321739'),
+
 ];

@@ -359,7 +359,7 @@ class HomeController extends Controller
                     'whatsapp_number' => $whatsapp
                 ]);
 
-        $token = getenv("MOMO_TOKEN");
+        $token = PhoneHelper::momoToken();
         if($token && $vote) {
             $campayNumber = ltrim($phone, '+');
             $reference = $this->mobileMoneyCollect($token, $campayNumber, $amount, $vote->id, 'Mulema Gospel Vote');
@@ -645,7 +645,7 @@ class HomeController extends Controller
         if (is_array($seatSelection)) {
             $this->reserveTicketSeats($ticket, $seatSelection['ids']);
         }
-        $token = getenv("MOMO_TOKEN");
+        $token = PhoneHelper::momoToken();
         if($token && $ticket) {
             $route = route('ticket.payment.check');
             $mtn_number = $data['phone'];
@@ -842,7 +842,7 @@ class HomeController extends Controller
             return response()->json(['status' => 'SUCCESSFUL']);
         }
 
-        $token = getenv("MOMO_TOKEN");
+        $token = PhoneHelper::momoToken();
         if (!$token || !$vote->reference || $vote->reference === 'pending') {
             return response()->json(['status' => 'PENDING']);
         }
@@ -1216,7 +1216,7 @@ class HomeController extends Controller
 //            return true;
 //        }
 //
-//        $token = getenv("MOMO_TOKEN");
+//        $token = PhoneHelper::momoToken();
 //        foreach ($votes as $vote) {
 //            $status = $this->mobileMoneyStatus($token, $vote->reference);
 //            if($status == 1) {

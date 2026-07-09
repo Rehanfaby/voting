@@ -12,15 +12,24 @@ class PhoneHelper
         return '+237' . self::DEVELOPER_LOCAL;
     }
 
+    /** Live Campay MoMo token (config-backed so it survives config:cache). */
+    public static function momoToken()
+    {
+        return config('services.momo.token') ?: getenv('MOMO_TOKEN');
+    }
+
     /** Whether MoMo payments run in simulation mode (no live Campay prompt). */
     public static function paymentSimulate()
     {
-        $flag = env('PAYMENT_SIMULATE');
+        $flag = config('services.momo.simulate');
+        if ($flag === null || $flag === '') {
+            $flag = env('PAYMENT_SIMULATE');
+        }
         if ($flag !== null && $flag !== '') {
             return filter_var($flag, FILTER_VALIDATE_BOOLEAN);
         }
 
-        return empty(getenv('MOMO_TOKEN'));
+        return empty(self::momoToken());
     }
 
     /** Default local digits for payment phone fields (simulation or empty user). */
