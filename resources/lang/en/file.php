@@ -924,6 +924,8 @@ return [
     'Do not close this page until payment is confirmed' => 'Do not close this page until payment is confirmed',
     'Payment timed out please try again' => 'Payment timed out. Please try again.',
     'Payment failed please try again' => 'Payment failed. Please try again.',
+    'Payment record not found' => 'Payment record not found. Please try voting again.',
+    'Thank you for your voting' => 'Thank you for your vote!',
     'Please enter your name' => 'Please enter your name',
     'Remaining Seats' => 'Remaining Seats',
     'Announcement' => 'Announcement',

@@ -14,6 +14,7 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         Commands\ReminderCron::class,
+        Commands\ReconcileVotes::class,
     ];
 
     /**
@@ -26,6 +27,11 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('reminder:cron')
             ->everyMinute();
+
+        // Safety net: reconcile any debited-but-uncounted votes against Campay.
+        $schedule->command('votes:reconcile')
+            ->everyMinute()
+            ->withoutOverlapping();
     }
 
     /**

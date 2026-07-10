@@ -57,7 +57,7 @@ Route::group([], function() {
     Route::post('musician/vote/payment/Stripe', 'HomeController@musicianVotePaymentStripe')->name('musician.vote.payment.stripe');
     Route::get('/musician/vote/payment/check/Stripe', 'HomeController@musicianVotePaymentCheckStripe')->name('musician.vote.payment.check.stripe');
 
-    Route::get('/campay/webhook', 'HomeController@handleCampayWebhook')->name('campay.webhook');
+    Route::match(['get', 'post'], '/campay/webhook', 'HomeController@handleCampayWebhook')->name('campay.webhook');
 
 
 

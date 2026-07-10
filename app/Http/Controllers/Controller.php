@@ -49,7 +49,7 @@ class Controller extends BaseController
         $musician = Employee::where('id', $vote->musician_id)->first();
         $musician_name = 'Vote to: ' . $musician->name;
 
-        Stripe::setApiKey(env('STRIPE_SECRET'));
+        Stripe::setApiKey(config('services.stripe.secret') ?: env('STRIPE_SECRET'));
 
         try {
             $session = Session::create([
@@ -90,7 +90,7 @@ class Controller extends BaseController
     {
         $ticket = Ticket::where('id', $ticket_id)->first();
 
-        Stripe::setApiKey(env('STRIPE_SECRET'));
+        Stripe::setApiKey(config('services.stripe.secret') ?: env('STRIPE_SECRET'));
 
         try {
             $session = Session::create([

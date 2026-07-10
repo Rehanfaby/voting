@@ -960,6 +960,8 @@ return [
     'Do not close this page until payment is confirmed' => 'Ne fermez pas cette page avant la confirmation du paiement',
     'Payment timed out please try again' => 'Délai de paiement dépassé. Veuillez réessayer.',
     'Payment failed please try again' => 'Paiement échoué. Veuillez réessayer.',
+    'Payment record not found' => 'Enregistrement de paiement introuvable. Veuillez revoter.',
+    'Thank you for your voting' => 'Merci pour votre vote !',
     'Please enter your name' => 'Veuillez entrer votre nom',
     'Remaining Seats' => 'Sièges restants',
     'Announcement' => 'Annonce',

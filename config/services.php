@@ -46,4 +46,9 @@ return [
 
     'admin_number' => env('ADMIN_NUMBER', '237675321739'),
 
+    'stripe' => [
+        'key' => env('STRIPE_KEY'),
+        'secret' => env('STRIPE_SECRET'),
+    ],
+
 ];
