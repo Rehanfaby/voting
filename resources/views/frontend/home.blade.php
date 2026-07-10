@@ -991,52 +991,36 @@
                         </div>
                     </div>
                 </div>
-                <div class="row bdFadeUp">
-                    <div class="col-xxl-12">
-                        <div class="tab-content" id="nav-tabContent">
-                            <div class="tab-pane fade show active" id="nav-popular-1" role="tabpanel" aria-labelledby="nav-popular-1-tab" tabindex="0">
-                                <div class="swiper-container ms-popular-active fix">
-                                    <div class="swiper-wrapper">
-                                        @foreach($best_musicians as $key => $best_musician_data)
-                                            @php
-                                                $best_musician  = Employee::find($best_musician_data->musician_id);
-                                            @endphp
-                                            @if(!$best_musician)
-                                                @continue
-                                            @endif
-                                            <div class="swiper-slide">
-                                                <div class="ms-popular__item p-relative mb-30">
-                                                    <div class="ms-popular__thumb" style="border-radius: 10%;">
-                                                        <div class="ms-popular-overlay"></div>
-
-                                                        <a ><img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($best_musician->image) }}" loading="lazy" decoding="async"></a>
-                                                        <a class="ms-popular__link" href="{{ route('musician.data', $best_musician->id) }}">
-                                                            <span class="ms-popular-icon"><i class="fa-regular fa-arrow-right-long"></i></span>
-                                                        </a>
-                                                    </div>
-
-                                                    <h4 class="ms-popular__title"><a>
-                                                            @if($key == 0)
-                                                                1st
-                                                            @elseif($key == 1)
-                                                                2nd
-                                                            @elseif($key == 2)
-                                                                3rd
-                                                            @else
-                                                                {{$key + 1}}th
-                                                            @endif
-                                                            -- {{ $best_musician->name }}@if($see_votes) ({{ $best_musician_data->total_vote }})@endif
-
-                                                        </a>
-                                                    </h4>
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    </div>
+                <div class="row mg-contestant-grid justify-content-center bdFadeUp">
+                    @foreach($best_musicians as $key => $best_musician_data)
+                        @php
+                            $best_musician  = Employee::find($best_musician_data->musician_id);
+                        @endphp
+                        @if(!$best_musician)
+                            @continue
+                        @endif
+                        <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                            <div class="mg-contestant-card">
+                                <div class="mg-contestant-card__avatar">
+                                    <span class="mg-contestant-card__badge">{{ $key + 1 }}</span>
+                                    <a href="{{ route('musician.data', $best_musician->id) }}">
+                                        <img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($best_musician->image) }}" alt="{{ $best_musician->name }}" width="160" height="160" loading="lazy" decoding="async">
+                                    </a>
                                 </div>
+                                <h3 class="mg-contestant-card__name">
+                                    <a href="{{ route('musician.data', $best_musician->id) }}">{{ $best_musician->name }}</a>
+                                </h3>
+                                @if($see_votes)
+                                <span class="mg-contestant-card__votes">
+                                    <i class="fa fa-vote-yea"></i>
+                                    {{ number_format($best_musician_data->total_vote) }} {{ trans('file.Votes') }}
+                                </span>
+                                @else
+                                <a href="{{ route('musician.data', $best_musician->id) }}" class="mg-contestant-card__cta">{{ trans('file.Vote For Me') }}</a>
+                                @endif
                             </div>
                         </div>
-                    </div>
+                    @endforeach
                 </div>
             </div>
         </section>

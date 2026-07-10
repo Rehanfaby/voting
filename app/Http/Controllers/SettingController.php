@@ -163,6 +163,8 @@ class SettingController extends Controller
         $menu_labels = SiteContent::menuKeys();
         $menu_order = SiteContent::menuOrder();
         $partners = \App\Partner::orderBy('sort_order')->orderBy('id')->get();
+        $judges = \App\Judge::orderBy('sort_order')->orderBy('id')->get();
+        $ambassadors = \App\Ambassador::orderBy('sort_order')->orderBy('id')->get();
 
         $all_permission = [];
         $role = \Spatie\Permission\Models\Role::find(Auth::user()->role_id);
@@ -172,7 +174,7 @@ class SettingController extends Controller
             }
         }
 
-        return view('setting.site_content', compact('content', 'section_labels', 'menu_labels', 'menu_order', 'partners', 'all_permission'));
+        return view('setting.site_content', compact('content', 'section_labels', 'menu_labels', 'menu_order', 'partners', 'judges', 'ambassadors', 'all_permission'));
     }
 
     public function siteContentStoreSection(Request $request)
@@ -381,6 +383,21 @@ class SettingController extends Controller
                 $message = 'Side menu order saved.';
                 break;
 
+            case 'judges_order':
+                $this->applyModelOrder(\App\Judge::class, (array) $request->input('order', []));
+                $message = 'Judges order saved.';
+                break;
+
+            case 'ambassadors_order':
+                $this->applyModelOrder(\App\Ambassador::class, (array) $request->input('order', []));
+                $message = 'Ambassadors order saved.';
+                break;
+
+            case 'partners_order':
+                $this->applyModelOrder(\App\Partner::class, (array) $request->input('order', []));
+                $message = 'Logos order saved.';
+                break;
+
             default:
                 return redirect()->back()->with('not_permitted', 'Unknown section.');
         }
@@ -394,11 +411,28 @@ class SettingController extends Controller
             'casting' => 'sc-casting',
             'primes' => 'sc-primes',
             'gallery' => 'sc-gallery',
+            'judges_order' => 'sc-judges',
+            'ambassadors_order' => 'sc-ambassadors',
+            'partners_order' => 'sc-partners',
             'menu_order' => 'sc-menu_order',
         ];
         $fragment = isset($anchors[$section]) ? '#' . $anchors[$section] : '';
 
         return redirect(route('setting.site_content') . $fragment)->with('message', $message);
+    }
+
+    /** Persist a drag/arrow ordering by writing each id's position to sort_order. */
+    private function applyModelOrder($modelClass, array $ids)
+    {
+        $position = 0;
+        foreach ($ids as $id) {
+            $id = (int) $id;
+            if ($id <= 0) {
+                continue;
+            }
+            $modelClass::where('id', $id)->update(['sort_order' => $position]);
+            $position++;
+        }
     }
 
     /** @deprecated Use siteContentStoreSection — kept so old bookmarks still work. */

@@ -371,20 +371,6 @@
                         </ul>
                     </li>
                 @endif
-                @if($general_setting_permission_active || $index_employee_active)
-                    <li data-menu-key="about-us"><a href="#about-us" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-info-circle"></i><span>{{ trans('file.About Us') }}</span></a>
-                        <ul id="about-us" class="collapse list-unstyled ">
-                            @if($general_setting_permission_active)
-                                <li id="about-us-settings-menu"><a href="{{ route('about_us.settings') }}">{{ trans('file.About Page Content') }}</a></li>
-                                <li id="about-us-values-menu"><a href="{{ route('about_us.values') }}">{{ trans('file.Our Values') }}</a></li>
-                                <li id="about-us-winners-menu"><a href="{{ route('about_us.winners') }}">{{ trans('file.Winners') }}</a></li>
-                            @endif
-                            @if($index_employee_active)
-                                <li id="about-us-leaders-menu"><a href="{{ route('about_us.index') }}">{{ trans('file.Our Leaders') }}</a></li>
-                            @endif
-                        </ul>
-                    </li>
-                @endif
                 @if($general_setting_permission_active)
                     <li data-menu-key="site-content" id="site-content-top-menu"><a href="{{ route('setting.site_content') }}"><i class="dripicons-view-apps"></i><span>{{ trans('file.Site Content') }}</span></a></li>
                 @endif

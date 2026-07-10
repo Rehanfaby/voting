@@ -17,6 +17,9 @@
             <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#sc-casting" role="tab"><i class="dripicons-calendar"></i> Casting</a></li>
             <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#sc-primes" role="tab"><i class="dripicons-clock"></i> Primes</a></li>
             <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#sc-gallery" role="tab"><i class="dripicons-photo-group"></i> Gallery</a></li>
+            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#sc-about" role="tab"><i class="fa fa-info-circle"></i> {{ trans('file.About Us') }}</a></li>
+            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#sc-judges" role="tab"><i class="fa fa-gavel"></i> {{ trans('file.Judges') }}</a></li>
+            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#sc-ambassadors" role="tab"><i class="fa fa-podcast"></i> {{ trans('file.Ambassadors') }}</a></li>
             @if(in_array('employees-index', $all_permission ?? []))
             <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#sc-partners" role="tab"><i class="fa fa-images"></i> {{ trans('file.Logos') }}</a></li>
             @endif
@@ -374,9 +377,174 @@
         </div>
         </div>
 
+        {{-- About Us hub --}}
+        <div class="tab-pane fade" id="sc-about" role="tabpanel">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h4><i class="fa fa-info-circle"></i> {{ trans('file.About Us') }}</h4>
+                    </div>
+                    <div class="card-body">
+                        <p class="italic"><small>Manage the public About Us page. Choose a section below to edit it.</small></p>
+                        <div class="row">
+                            <div class="col-md-6 col-lg-3 mb-3">
+                                <a href="{{ route('about_us.settings') }}" class="sc-hub-card">
+                                    <i class="dripicons-document-edit"></i>
+                                    <span>{{ trans('file.About Page Content') }}</span>
+                                </a>
+                            </div>
+                            <div class="col-md-6 col-lg-3 mb-3">
+                                <a href="{{ route('about_us.values') }}" class="sc-hub-card">
+                                    <i class="dripicons-star"></i>
+                                    <span>{{ trans('file.Our Values') }}</span>
+                                </a>
+                            </div>
+                            <div class="col-md-6 col-lg-3 mb-3">
+                                <a href="{{ route('about_us.winners') }}" class="sc-hub-card">
+                                    <i class="dripicons-trophy"></i>
+                                    <span>{{ trans('file.Winners') }}</span>
+                                </a>
+                            </div>
+                            <div class="col-md-6 col-lg-3 mb-3">
+                                <a href="{{ route('about_us.index') }}" class="sc-hub-card">
+                                    <i class="dripicons-user-group"></i>
+                                    <span>{{ trans('file.Our Leaders') }}</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        {{-- Judges order --}}
+        <div class="tab-pane fade" id="sc-judges" role="tabpanel">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h4><i class="fa fa-gavel"></i> {{ trans('file.Judges') }} — {{ trans('file.Order') }}</h4>
+                    </div>
+                    <div class="card-body">
+                        {!! Form::open(['route' => 'setting.site_content.section', 'method' => 'post']) !!}
+                        <input type="hidden" name="section" value="judges_order">
+                        <p class="italic"><small>Reorder judges with the arrows, then press <strong>Save</strong>. This controls the order they appear on the homepage.</small></p>
+                        @if(($judges ?? collect())->isEmpty())
+                            <p class="text-muted">No judges yet.</p>
+                        @else
+                        <ul class="sc-menu-order list-unstyled" id="sc-judges-order">
+                            @foreach($judges as $judge)
+                                <li class="sc-menu-item" data-key="{{ $judge->id }}">
+                                    <input type="hidden" name="order[]" value="{{ $judge->id }}">
+                                    <span class="sc-menu-label d-flex align-items-center" style="gap:10px;">
+                                        @if($judge->image)
+                                            <img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($judge->image) }}" width="34" height="34" style="border-radius:50%;object-fit:cover;" loading="lazy">
+                                        @endif
+                                        {{ $judge->name }}
+                                    </span>
+                                    <span class="sc-menu-actions">
+                                        <button type="button" class="btn btn-sm btn-light sc-move-up" title="Move up"><i class="dripicons-chevron-up"></i></button>
+                                        <button type="button" class="btn btn-sm btn-light sc-move-down" title="Move down"><i class="dripicons-chevron-down"></i></button>
+                                    </span>
+                                </li>
+                            @endforeach
+                        </ul>
+                        <div class="sc-section-actions">
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </div>
+                        @endif
+                        {!! Form::close() !!}
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        {{-- Ambassadors order --}}
+        <div class="tab-pane fade" id="sc-ambassadors" role="tabpanel">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h4><i class="fa fa-podcast"></i> {{ trans('file.Ambassadors') }} — {{ trans('file.Order') }}</h4>
+                    </div>
+                    <div class="card-body">
+                        {!! Form::open(['route' => 'setting.site_content.section', 'method' => 'post']) !!}
+                        <input type="hidden" name="section" value="ambassadors_order">
+                        <p class="italic"><small>Reorder ambassadors with the arrows, then press <strong>Save</strong>. This controls the order they appear on the homepage.</small></p>
+                        @if(($ambassadors ?? collect())->isEmpty())
+                            <p class="text-muted">No ambassadors yet.</p>
+                        @else
+                        <ul class="sc-menu-order list-unstyled" id="sc-ambassadors-order">
+                            @foreach($ambassadors as $ambassador)
+                                <li class="sc-menu-item" data-key="{{ $ambassador->id }}">
+                                    <input type="hidden" name="order[]" value="{{ $ambassador->id }}">
+                                    <span class="sc-menu-label d-flex align-items-center" style="gap:10px;">
+                                        @if($ambassador->image)
+                                            <img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($ambassador->image) }}" width="34" height="34" style="border-radius:50%;object-fit:cover;" loading="lazy">
+                                        @endif
+                                        {{ $ambassador->name }}
+                                    </span>
+                                    <span class="sc-menu-actions">
+                                        <button type="button" class="btn btn-sm btn-light sc-move-up" title="Move up"><i class="dripicons-chevron-up"></i></button>
+                                        <button type="button" class="btn btn-sm btn-light sc-move-down" title="Move down"><i class="dripicons-chevron-down"></i></button>
+                                    </span>
+                                </li>
+                            @endforeach
+                        </ul>
+                        <div class="sc-section-actions">
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </div>
+                        @endif
+                        {!! Form::close() !!}
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+
         {{-- Logos / Partners --}}
         @if(in_array('employees-index', $all_permission ?? []))
         <div class="tab-pane fade" id="sc-partners" role="tabpanel">
+        @if(($partners ?? collect())->count() > 1)
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h4><i class="fa fa-sort"></i> {{ trans('file.Logos') }} — {{ trans('file.Order') }}</h4>
+                    </div>
+                    <div class="card-body">
+                        {!! Form::open(['route' => 'setting.site_content.section', 'method' => 'post']) !!}
+                        <input type="hidden" name="section" value="partners_order">
+                        <p class="italic"><small>Reorder logos with the arrows, then press <strong>Save</strong>. This controls the order they appear on the homepage.</small></p>
+                        <ul class="sc-menu-order list-unstyled" id="sc-partners-order">
+                            @foreach($partners as $partner)
+                                <li class="sc-menu-item" data-key="{{ $partner->id }}">
+                                    <input type="hidden" name="order[]" value="{{ $partner->id }}">
+                                    <span class="sc-menu-label d-flex align-items-center" style="gap:10px;">
+                                        @if($partner->image)
+                                            <img src="{{ url('public/images/partners', $partner->image) }}" height="30" style="max-width:90px;object-fit:contain;background:#f4f7fc;padding:2px;border-radius:6px;" loading="lazy">
+                                        @endif
+                                        {{ $partner->name ?: trans('file.Logo') }}
+                                    </span>
+                                    <span class="sc-menu-actions">
+                                        <button type="button" class="btn btn-sm btn-light sc-move-up" title="Move up"><i class="dripicons-chevron-up"></i></button>
+                                        <button type="button" class="btn btn-sm btn-light sc-move-down" title="Move down"><i class="dripicons-chevron-down"></i></button>
+                                    </span>
+                                </li>
+                            @endforeach
+                        </ul>
+                        <div class="sc-section-actions">
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </div>
+                        {!! Form::close() !!}
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
@@ -554,11 +722,31 @@
 @endif
 
 <style>
-    .sc-tabs { border-bottom:2px solid #e3e9f4; margin-bottom:22px; flex-wrap:wrap; }
-    .sc-tabs .nav-link { color:#5a6b8c; font-weight:600; border:none; border-bottom:3px solid transparent; padding:12px 18px; }
+    .sc-tabs { border-bottom:none; margin-bottom:24px; flex-wrap:wrap; gap:6px; }
+    .sc-tabs .nav-item { margin:0 4px 6px 0; }
+    .sc-tabs .nav-link { color:#334155; font-weight:700; border:2px solid #cbd5e1; border-radius:30px; padding:8px 18px; background:#fff; transition:.18s; }
     .sc-tabs .nav-link i { margin-right:6px; }
-    .sc-tabs .nav-link:hover { color:#1d4ed8; border-color:transparent; background:transparent; }
-    .sc-tabs .nav-link.active { color:#1d4ed8; background:transparent; border-color:#1d4ed8; }
+    .sc-tabs .nav-link:hover { transform:translateY(-1px); }
+    /* Colorful borders per tab, filled when active (like the grading tabs). */
+    .sc-tabs .nav-item:nth-child(8n+1) .nav-link { border-color:#2563eb; color:#2563eb; }
+    .sc-tabs .nav-item:nth-child(8n+1) .nav-link.active { background:#2563eb; color:#fff; }
+    .sc-tabs .nav-item:nth-child(8n+2) .nav-link { border-color:#16a34a; color:#16a34a; }
+    .sc-tabs .nav-item:nth-child(8n+2) .nav-link.active { background:#16a34a; color:#fff; }
+    .sc-tabs .nav-item:nth-child(8n+3) .nav-link { border-color:#e87722; color:#e87722; }
+    .sc-tabs .nav-item:nth-child(8n+3) .nav-link.active { background:#e87722; color:#fff; }
+    .sc-tabs .nav-item:nth-child(8n+4) .nav-link { border-color:#7c3aed; color:#7c3aed; }
+    .sc-tabs .nav-item:nth-child(8n+4) .nav-link.active { background:#7c3aed; color:#fff; }
+    .sc-tabs .nav-item:nth-child(8n+5) .nav-link { border-color:#0d9488; color:#0d9488; }
+    .sc-tabs .nav-item:nth-child(8n+5) .nav-link.active { background:#0d9488; color:#fff; }
+    .sc-tabs .nav-item:nth-child(8n+6) .nav-link { border-color:#db2777; color:#db2777; }
+    .sc-tabs .nav-item:nth-child(8n+6) .nav-link.active { background:#db2777; color:#fff; }
+    .sc-tabs .nav-item:nth-child(8n+7) .nav-link { border-color:#dc2626; color:#dc2626; }
+    .sc-tabs .nav-item:nth-child(8n+7) .nav-link.active { background:#dc2626; color:#fff; }
+    .sc-tabs .nav-item:nth-child(8n+8) .nav-link { border-color:#4f46e5; color:#4f46e5; }
+    .sc-tabs .nav-item:nth-child(8n+8) .nav-link.active { background:#4f46e5; color:#fff; }
+    .sc-hub-card { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; text-align:center; padding:26px 14px; height:100%; border:2px solid #e3e9f4; border-radius:14px; color:#14223f; font-weight:700; background:#f8fafc; transition:.18s; }
+    .sc-hub-card:hover { border-color:#2563eb; color:#1d4ed8; transform:translateY(-2px); box-shadow:0 10px 26px rgba(37,99,235,.14); text-decoration:none; }
+    .sc-hub-card i { font-size:26px; color:#2563eb; }
     .sc-toggle { display:flex; align-items:center; gap:12px; padding:12px 0; }
     .sc-toggle-label { font-weight:600; color:#14223f; }
     .sc-switch { position:relative; display:inline-block; width:50px; height:27px; margin:0; flex:0 0 50px; }
