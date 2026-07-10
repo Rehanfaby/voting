@@ -10,8 +10,24 @@
 <section class="forms">
     <div class="container-fluid">
 
+        <ul class="nav nav-tabs sc-tabs" id="sc-tab-nav" role="tablist">
+            <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#sc-homepage_sections" role="tab"><i class="dripicons-view-list"></i> Sections</a></li>
+            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#sc-popup" role="tab"><i class="dripicons-photo"></i> Popup</a></li>
+            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#sc-most_voted_hero" role="tab"><i class="dripicons-star"></i> Most Voted &amp; Hero</a></li>
+            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#sc-casting" role="tab"><i class="dripicons-calendar"></i> Casting</a></li>
+            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#sc-primes" role="tab"><i class="dripicons-clock"></i> Primes</a></li>
+            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#sc-gallery" role="tab"><i class="dripicons-photo-group"></i> Gallery</a></li>
+            @if(in_array('employees-index', $all_permission ?? []))
+            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#sc-partners" role="tab"><i class="fa fa-images"></i> {{ trans('file.Logos') }}</a></li>
+            @endif
+            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#sc-menu_order" role="tab"><i class="dripicons-menu"></i> Side Menu</a></li>
+        </ul>
+
+        <div class="tab-content sc-tab-content">
+
         {{-- Homepage section toggles (popup managed separately) --}}
-        <div class="row" id="sc-homepage_sections">
+        <div class="tab-pane fade show active" id="sc-homepage_sections" role="tabpanel">
+        <div class="row">
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header d-flex align-items-center">
@@ -42,9 +58,11 @@
                 </div>
             </div>
         </div>
+        </div>
 
         {{-- Homepage popup --}}
-        <div class="row" id="sc-popup">
+        <div class="tab-pane fade" id="sc-popup" role="tabpanel">
+        <div class="row">
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header d-flex align-items-center">
@@ -117,9 +135,11 @@
                 </div>
             </div>
         </div>
+        </div>
 
         {{-- Most voted + hero banners --}}
-        <div class="row" id="sc-most_voted_hero">
+        <div class="tab-pane fade" id="sc-most_voted_hero" role="tabpanel">
+        <div class="row">
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header d-flex align-items-center">
@@ -175,9 +195,11 @@
                 </div>
             </div>
         </div>
+        </div>
 
         {{-- Provincial casting calendar --}}
-        <div class="row" id="sc-casting">
+        <div class="tab-pane fade" id="sc-casting" role="tabpanel">
+        <div class="row">
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header d-flex align-items-center">
@@ -239,9 +261,11 @@
                 </div>
             </div>
         </div>
+        </div>
 
         {{-- Prime / finals schedule --}}
-        <div class="row" id="sc-primes">
+        <div class="tab-pane fade" id="sc-primes" role="tabpanel">
+        <div class="row">
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header d-flex align-items-center">
@@ -300,9 +324,11 @@
                 </div>
             </div>
         </div>
+        </div>
 
         {{-- Site gallery --}}
-        <div class="row" id="sc-gallery">
+        <div class="tab-pane fade" id="sc-gallery" role="tabpanel">
+        <div class="row">
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header d-flex align-items-center">
@@ -346,10 +372,12 @@
                 </div>
             </div>
         </div>
+        </div>
 
         {{-- Logos / Partners --}}
         @if(in_array('employees-index', $all_permission ?? []))
-        <div class="row" id="sc-partners">
+        <div class="tab-pane fade" id="sc-partners" role="tabpanel">
+        <div class="row">
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header d-flex align-items-center justify-content-between">
@@ -429,61 +457,12 @@
                 </div>
             </div>
         </div>
-
-        <div id="addPartnerModal" class="modal fade text-left" tabindex="-1" role="dialog">
-            <div class="modal-dialog" role="document"><div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">{{ trans('file.Add Logo') }}</h5>
-                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
-                </div>
-                <div class="modal-body">
-                    {!! Form::open(['route' => 'partner.store', 'method' => 'post', 'files' => true]) !!}
-                    <div class="form-group"><label>{{ trans('file.Logo') }} *</label><input type="file" name="image" class="form-control" accept="image/*" required></div>
-                    <div class="form-group"><label>{{ trans('file.name') }}</label><input type="text" name="name" class="form-control" placeholder="{{ trans('file.Partner name') }}"></div>
-                    <div class="form-group"><label>{{ trans('file.Link') }}</label><input type="url" name="link" class="form-control" placeholder="https://example.com"></div>
-                    <div class="form-group"><label>{{ trans('file.Sort Order') }}</label><input type="number" name="sort_order" class="form-control" value="0" min="0"></div>
-                    <div class="form-group">
-                        <label>{{ trans('file.Status') }}</label>
-                        <select name="is_active" class="form-control">
-                            <option value="1">{{ trans('file.Active') }}</option>
-                            <option value="0">{{ trans('file.Inactive') }}</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary">{{ trans('file.submit') }}</button>
-                    {!! Form::close() !!}
-                </div>
-            </div></div>
-        </div>
-
-        <div id="editPartnerModal" class="modal fade text-left" tabindex="-1" role="dialog">
-            <div class="modal-dialog" role="document"><div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">{{ trans('file.Edit Logo') }}</h5>
-                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
-                </div>
-                <div class="modal-body">
-                    {!! Form::open(['route' => 'partner.update', 'method' => 'post', 'files' => true]) !!}
-                    <input type="hidden" name="partner_id" id="edit-partner-id">
-                    <div class="form-group"><label>{{ trans('file.Logo') }}</label><input type="file" name="image" class="form-control" accept="image/*"><small class="text-muted">{{ trans('file.Leave empty to keep current logo') }}</small></div>
-                    <div class="form-group"><label>{{ trans('file.name') }}</label><input type="text" name="name" id="edit-partner-name" class="form-control"></div>
-                    <div class="form-group"><label>{{ trans('file.Link') }}</label><input type="url" name="link" id="edit-partner-link" class="form-control"></div>
-                    <div class="form-group"><label>{{ trans('file.Sort Order') }}</label><input type="number" name="sort_order" id="edit-partner-sort-order" class="form-control" min="0"></div>
-                    <div class="form-group">
-                        <label>{{ trans('file.Status') }}</label>
-                        <select name="is_active" id="edit-partner-is-active" class="form-control">
-                            <option value="1">{{ trans('file.Active') }}</option>
-                            <option value="0">{{ trans('file.Inactive') }}</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary">{{ trans('file.submit') }}</button>
-                    {!! Form::close() !!}
-                </div>
-            </div></div>
         </div>
         @endif
 
         {{-- Side menu order --}}
-        <div class="row" id="sc-menu_order">
+        <div class="tab-pane fade" id="sc-menu_order" role="tabpanel">
+        <div class="row">
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header d-flex align-items-center">
@@ -515,11 +494,71 @@
                 </div>
             </div>
         </div>
+        </div>
 
+        </div>{{-- /.tab-content --}}
     </div>
 </section>
 
+@if(in_array('employees-index', $all_permission ?? []))
+<div id="addPartnerModal" class="modal fade text-left" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document"><div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">{{ trans('file.Add Logo') }}</h5>
+            <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+        </div>
+        <div class="modal-body">
+            {!! Form::open(['route' => 'partner.store', 'method' => 'post', 'files' => true]) !!}
+            <div class="form-group"><label>{{ trans('file.Logo') }} *</label><input type="file" name="image" class="form-control" accept="image/*" required></div>
+            <div class="form-group"><label>{{ trans('file.name') }}</label><input type="text" name="name" class="form-control" placeholder="{{ trans('file.Partner name') }}"></div>
+            <div class="form-group"><label>{{ trans('file.Link') }}</label><input type="url" name="link" class="form-control" placeholder="https://example.com"></div>
+            <div class="form-group"><label>{{ trans('file.Sort Order') }}</label><input type="number" name="sort_order" class="form-control" value="0" min="0"></div>
+            <div class="form-group">
+                <label>{{ trans('file.Status') }}</label>
+                <select name="is_active" class="form-control">
+                    <option value="1">{{ trans('file.Active') }}</option>
+                    <option value="0">{{ trans('file.Inactive') }}</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">{{ trans('file.submit') }}</button>
+            {!! Form::close() !!}
+        </div>
+    </div></div>
+</div>
+
+<div id="editPartnerModal" class="modal fade text-left" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document"><div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">{{ trans('file.Edit Logo') }}</h5>
+            <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+        </div>
+        <div class="modal-body">
+            {!! Form::open(['route' => 'partner.update', 'method' => 'post', 'files' => true]) !!}
+            <input type="hidden" name="partner_id" id="edit-partner-id">
+            <div class="form-group"><label>{{ trans('file.Logo') }}</label><input type="file" name="image" class="form-control" accept="image/*"><small class="text-muted">{{ trans('file.Leave empty to keep current logo') }}</small></div>
+            <div class="form-group"><label>{{ trans('file.name') }}</label><input type="text" name="name" id="edit-partner-name" class="form-control"></div>
+            <div class="form-group"><label>{{ trans('file.Link') }}</label><input type="url" name="link" id="edit-partner-link" class="form-control"></div>
+            <div class="form-group"><label>{{ trans('file.Sort Order') }}</label><input type="number" name="sort_order" id="edit-partner-sort-order" class="form-control" min="0"></div>
+            <div class="form-group">
+                <label>{{ trans('file.Status') }}</label>
+                <select name="is_active" id="edit-partner-is-active" class="form-control">
+                    <option value="1">{{ trans('file.Active') }}</option>
+                    <option value="0">{{ trans('file.Inactive') }}</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">{{ trans('file.submit') }}</button>
+            {!! Form::close() !!}
+        </div>
+    </div></div>
+</div>
+@endif
+
 <style>
+    .sc-tabs { border-bottom:2px solid #e3e9f4; margin-bottom:22px; flex-wrap:wrap; }
+    .sc-tabs .nav-link { color:#5a6b8c; font-weight:600; border:none; border-bottom:3px solid transparent; padding:12px 18px; }
+    .sc-tabs .nav-link i { margin-right:6px; }
+    .sc-tabs .nav-link:hover { color:#1d4ed8; border-color:transparent; background:transparent; }
+    .sc-tabs .nav-link.active { color:#1d4ed8; background:transparent; border-color:#1d4ed8; }
     .sc-toggle { display:flex; align-items:center; gap:12px; padding:12px 0; }
     .sc-toggle-label { font-weight:600; color:#14223f; }
     .sc-switch { position:relative; display:inline-block; width:50px; height:27px; margin:0; flex:0 0 50px; }
@@ -541,6 +580,25 @@
     $("#site-content-top-menu").addClass("active");
 
     (function () {
+        // Open the tab referenced in the URL hash (e.g. after saving a section).
+        function activateTabFromHash() {
+            var hash = window.location.hash;
+            if (hash && $('.sc-tabs a[href="' + hash + '"]').length) {
+                $('.sc-tabs a[href="' + hash + '"]').tab('show');
+            }
+        }
+        activateTabFromHash();
+        window.addEventListener('hashchange', activateTabFromHash);
+
+        // Keep the hash in sync so a refresh / save stays on the same tab.
+        $('.sc-tabs a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+            if (history.replaceState) {
+                history.replaceState(null, null, $(e.target).attr('href'));
+            } else {
+                window.location.hash = $(e.target).attr('href');
+            }
+        });
+
         function castingRow() {
             var idx = $('#casting-table tbody tr').length;
             return '<tr>' +
@@ -658,10 +716,14 @@
             $('#edit-partner-is-active').val(String($(this).data('is_active')) === '0' ? '0' : '1');
         });
         if ($.fn.DataTable && $('#partner-table').length) {
-            $('#partner-table').DataTable({
+            var partnerTable = $('#partner-table').DataTable({
                 "order": [[3, 'asc']],
                 'columnDefs': [{ "orderable": false, 'targets': [0, 5] }],
                 'lengthMenu': [[10, 25, 50, -1], [10, 25, 50, "All"]]
+            });
+            // Fix column widths when the Logos tab becomes visible.
+            $('.sc-tabs a[href="#sc-partners"]').on('shown.bs.tab', function () {
+                partnerTable.columns.adjust();
             });
         }
     })();
