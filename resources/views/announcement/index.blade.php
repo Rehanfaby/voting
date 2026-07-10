@@ -16,12 +16,14 @@
         @if(in_array("announcement_add", $all_permission))
             <a href="{{route('announcement.create')}}" class="btn btn-info"><i class="dripicons-plus"></i> {{trans('file.Create Announcement')}} </a>
         @endif
+        <a href="{{ route('announcement.templates') }}" class="btn btn-secondary"><i class="dripicons-document"></i> {{ trans('file.Templates') }}</a>
     </div>
     <div class="table-responsive">
         <table id="role-table" class="table">
             <thead>
             <tr>
                 <th>ID</th>
+                <th>{{ trans('file.Reference') }}</th>
                 <th>{{trans('file.Subject')}}</th>
                 <th>{{trans('file.Created By')}}</th>
                 <th>{{trans('file.Date')}}</th>
@@ -33,6 +35,7 @@
             @foreach($data as $key=>$item)
                 <tr  data-id="{{$item->id}}" class="clickable-row" style="cursor: pointer" data-href="{{ route('announcement.show', $item->id) }}">
                     <td>{{$item->id}}</td>
+                    <td>{{ $item->reference ?: '—' }}</td>
                     <td>{{ $item->subject }}</td>
                     <td>{{ $item->createdBy ? $item->createdBy->name : 'N/N'}}</td>
                     <td>{{ $item->created_at->format('d-M, Y')}}</td>

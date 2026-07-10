@@ -89,7 +89,7 @@
 </div>
 <br><br><br><br>
 
-<div>Ref: {{ $data->id }} <br>
+<div>Ref: {{ $data->reference ?: $data->id }} <br>
     {{ date('M d, Y') }}</div><br>
 <div>Dear:
     @if($data->people_type != 'csv')

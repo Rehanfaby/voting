@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Announcement;
 use App\AnnouncementAttachment;
+use App\AnnouncementTemplate;
 use App\Customer;
 use App\GeneralSetting;
 use App\Helpers\AnnouncementRecipient;
 use App\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -24,12 +26,61 @@ class AnnouncementController extends Controller
     public function create(Request $request)
     {
         $categories = AnnouncementRecipient::categories();
+        AnnouncementTemplate::seedDefaults();
+        $templates = AnnouncementTemplate::where('is_active', true)->orderBy('sort_order')->orderBy('id')->get();
         $clone = null;
         if ($request->filled('clone')) {
             $clone = Announcement::with('attachmentLib')->find($request->clone);
         }
 
-        return view('announcement.create', compact('categories', 'clone'));
+        return view('announcement.create', compact('categories', 'clone', 'templates'));
+    }
+
+    public function templates()
+    {
+        AnnouncementTemplate::seedDefaults();
+        $templates = AnnouncementTemplate::orderBy('sort_order')->orderBy('id')->get();
+
+        return view('announcement.templates', compact('templates'));
+    }
+
+    public function templateEdit($id)
+    {
+        $template = AnnouncementTemplate::findOrFail($id);
+
+        return view('announcement.template_edit', compact('template'));
+    }
+
+    public function templateUpdate(Request $request, $id)
+    {
+        $request->validate([
+            'name' => 'required|string|max:150',
+            'subject' => 'nullable|string|max:255',
+        ]);
+
+        $template = AnnouncementTemplate::findOrFail($id);
+        $template->update([
+            'name' => $request->name,
+            'subject' => $request->subject,
+            'header' => $request->header,
+            'body' => $request->body,
+            'footer' => $request->footer,
+            'is_active' => $request->boolean('is_active'),
+        ]);
+
+        return redirect()->route('announcement.templates')->with('message', 'Template updated successfully');
+    }
+
+    public function templateContent($id)
+    {
+        $template = AnnouncementTemplate::findOrFail($id);
+
+        return response()->json([
+            'subject' => $template->subject,
+            'header' => $template->header,
+            'body' => $template->body,
+            'footer' => $template->footer,
+        ]);
     }
 
     public function cloneAnnouncement($id)
@@ -210,8 +261,43 @@ class AnnouncementController extends Controller
         return redirect()->back()->with('message', 'Announcement has been sent');
     }
 
+    /**
+     * Allocate a persistent, incrementing reference such as MGT/S02/ADMIN/L-001.
+     * The prefix, season and next counter live on general_settings so they persist.
+     */
+    private function assignReference(Announcement $announcement): void
+    {
+        if (!empty($announcement->reference)) {
+            return;
+        }
+
+        $reference = DB::transaction(function () use ($announcement) {
+            $setting = GeneralSetting::lockForUpdate()->first();
+            $prefix = $setting->announcement_ref_prefix ?? 'MGT';
+            $season = $setting->announcement_ref_season ?? 'S02';
+            $next = (int) ($setting->announcement_ref_next ?? 1);
+            if ($next < 1) {
+                $next = 1;
+            }
+
+            $sender = strtoupper(optional($announcement->createdBy)->name ?: optional(Auth::user())->name ?: 'ADMIN');
+            $sender = preg_replace('/[^A-Z0-9]+/', '', $sender) ?: 'ADMIN';
+
+            $ref = sprintf('%s/%s/%s/L-%03d', $prefix, $season, $sender, $next);
+
+            $setting->announcement_ref_next = $next + 1;
+            $setting->save();
+
+            return $ref;
+        });
+
+        $announcement->reference = $reference;
+        $announcement->save();
+    }
+
     public function deliverAnnouncement(Announcement $announcement): void
     {
+        $this->assignReference($announcement);
         $announcement->load('attachmentLib');
         $recipients = AnnouncementRecipient::resolveForAnnouncement($announcement);
 
@@ -342,7 +428,7 @@ class AnnouncementController extends Controller
     public function sendAnnouncementMsg($announcement, $lims_customer_data)
     {
         $msg = strip_tags(html_entity_decode($announcement->header)) . "\r\n\n";
-        $msg .= "Ref: " . $announcement->id . "\r\n";
+        $msg .= "Ref: " . ($announcement->reference ?: $announcement->id) . "\r\n";
         $msg .= "Date: " . $announcement->created_at . "\r\n\n";
         $msg .= "Subject: " . $announcement->subject . "\r\n\n";
         $msg .= "Dear: " . $lims_customer_data->name . "\r\n\n";

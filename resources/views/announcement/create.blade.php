@@ -40,6 +40,21 @@
                             <p class="italic"><small>{{trans('file.The field labels marked with * are required input fields')}}.</small></p>
                             <form id="product-form" enctype="multipart/form-data">
                                 <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label>{{ trans('file.Use a template') }}</label>
+                                            <div class="d-flex align-items-center" style="gap:10px;">
+                                                <select id="template-picker" class="form-control" style="max-width:420px;">
+                                                    <option value="">{{ trans('file.Start from scratch') }}</option>
+                                                    @foreach($templates as $tpl)
+                                                        <option value="{{ $tpl->id }}">{{ $tpl->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                                <a href="{{ route('announcement.templates') }}" class="btn btn-outline-secondary btn-sm">{{ trans('file.Manage templates') }}</a>
+                                            </div>
+                                            <small class="text-muted">{{ trans('file.Template load help') }}</small>
+                                        </div>
+                                    </div>
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label>{{ trans('file.Send to') }}</label>
@@ -303,6 +318,18 @@
         });
 
         $("#announcement-top-menu").addClass("active");
+
+        var templateContentUrl = @json(url('announcement/template'));
+        $('#template-picker').on('change', function () {
+            var id = $(this).val();
+            if (!id) { return; }
+            $.get(templateContentUrl + '/' + id + '/content', function (res) {
+                $('input[name="subject"]').val(res.subject || '');
+                if (tinymce.get('header')) { tinymce.get('header').setContent(res.header || ''); }
+                if (tinymce.get('body')) { tinymce.get('body').setContent(res.body || ''); }
+                if (tinymce.get('footer')) { tinymce.get('footer').setContent(res.footer || ''); }
+            });
+        });
 
         tinymce.init({
             selector: '#header', height: 130,

@@ -296,6 +296,10 @@ Route::group(['middleware' => ['auth', 'active', 'checkOtp']], function() {
     Route::post('coins/deletebyselection', 'CoinController@deleteBySelection');
 
     Route::get('/announcement/recipients', 'AnnouncementController@recipients')->name('announcement.recipients');
+    Route::get('/announcement/templates', 'AnnouncementController@templates')->name('announcement.templates');
+    Route::get('/announcement/template/{id}/edit', 'AnnouncementController@templateEdit')->name('announcement.template.edit');
+    Route::post('/announcement/template/{id}/update', 'AnnouncementController@templateUpdate')->name('announcement.template.update');
+    Route::get('/announcement/template/{id}/content', 'AnnouncementController@templateContent')->name('announcement.template.content');
     Route::get('/announcement/{id}/clone', 'AnnouncementController@cloneAnnouncement')->name('announcement.clone');
     Route::get('/announcement/index', 'AnnouncementController@index')->name('announcement.index');
     Route::get('/announcement/create', 'AnnouncementController@create')->name('announcement.create');

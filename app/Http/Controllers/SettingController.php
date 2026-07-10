@@ -102,6 +102,15 @@ class SettingController extends Controller
         if (Schema::hasColumn('general_settings', 'require_contestant_approval')) {
             $general_setting->require_contestant_approval = self::checkboxInt($request, 'require_contestant_approval');
         }
+        if (Schema::hasColumn('general_settings', 'announcement_ref_prefix') && $request->filled('announcement_ref_prefix')) {
+            $general_setting->announcement_ref_prefix = strtoupper(trim($request->announcement_ref_prefix));
+        }
+        if (Schema::hasColumn('general_settings', 'announcement_ref_season') && $request->filled('announcement_ref_season')) {
+            $general_setting->announcement_ref_season = strtoupper(trim($request->announcement_ref_season));
+        }
+        if (Schema::hasColumn('general_settings', 'announcement_ref_next') && $request->filled('announcement_ref_next')) {
+            $general_setting->announcement_ref_next = max(1, (int) $request->announcement_ref_next);
+        }
         $logo = $request->site_logo;
         $email_header = $request->email_header;
         $email_footer = $request->email_footer;

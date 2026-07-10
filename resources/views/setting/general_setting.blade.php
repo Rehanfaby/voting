@@ -202,6 +202,30 @@
                                 </div>
                                 <div class="col-md-12">
                                     <hr>
+                                    <h5 class="mb-3">{{ trans('file.Announcement Reference') }}</h5>
+                                    <p class="alert alert-info py-2 small mb-3"><i class="dripicons-information"></i> {{ trans('file.Reference format help') }} <strong>{{ ($lims_general_setting_data->announcement_ref_prefix ?? 'MGT') }}/{{ ($lims_general_setting_data->announcement_ref_season ?? 'S02') }}/ADMIN/L-{{ str_pad(($lims_general_setting_data->announcement_ref_next ?? 1), 3, '0', STR_PAD_LEFT) }}</strong></p>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>{{ trans('file.Reference prefix') }}</label>
+                                        <input type="text" name="announcement_ref_prefix" class="form-control" value="{{ $lims_general_setting_data->announcement_ref_prefix ?? 'MGT' }}" placeholder="MGT">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>{{ trans('file.Season code') }}</label>
+                                        <input type="text" name="announcement_ref_season" class="form-control" value="{{ $lims_general_setting_data->announcement_ref_season ?? 'S02' }}" placeholder="S02">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>{{ trans('file.Next reference number') }}</label>
+                                        <input type="number" min="1" name="announcement_ref_next" class="form-control" value="{{ $lims_general_setting_data->announcement_ref_next ?? 1 }}">
+                                        <small class="form-text text-muted">{{ trans('file.Next reference help') }}</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <hr>
                                     <h5 class="mb-3">Voting &amp; Contestants</h5>
                                     <p class="alert alert-info py-2 small mb-3"><i class="dripicons-information"></i> These toggles only change voting visibility and contestant workflow. They are safe — they will not take the site offline.</p>
                                 </div>
