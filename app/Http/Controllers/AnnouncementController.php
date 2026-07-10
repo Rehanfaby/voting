@@ -425,15 +425,43 @@ class AnnouncementController extends Controller
         return $message;
     }
 
+    /** Build a nicely formatted bilingual WhatsApp announcement, matching other system messages. */
+    private function buildAnnouncementMessage($announcement, $lims_customer_data): string
+    {
+        $title = \App\Helpers\WhatsAppFormatter::announcementTitle();
+        $name = trim((string) ($lims_customer_data->name ?? '')) ?: 'Recipient';
+
+        $header = trim(strip_tags(html_entity_decode((string) $announcement->header)));
+        $body = trim(strip_tags(html_entity_decode((string) $announcement->body)));
+        $footer = trim(strip_tags(html_entity_decode((string) $announcement->footer)));
+
+        $date = $announcement->created_at ? $announcement->created_at->format('d M Y, H:i') : date('d M Y, H:i');
+
+        $msg = "🔗 *{$title}*\n\n";
+        $msg .= \App\Helpers\WhatsAppFormatter::bilingualHeading('📢', 'ANNONCE', 'ANNOUNCEMENT');
+        if ($header !== '') {
+            $msg .= $header . "\n\n";
+        }
+        $msg .= "*Réf / Ref:* " . ($announcement->reference ?: $announcement->id) . "\n";
+        $msg .= "*Date:* " . $date . "\n\n";
+        if (!empty($announcement->subject)) {
+            $msg .= "*Objet / Subject:* " . $announcement->subject . "\n\n";
+        }
+        $msg .= \App\Helpers\WhatsAppFormatter::bilingualGreeting($name);
+        if ($body !== '') {
+            $msg .= $body . "\n\n";
+        }
+        if ($footer !== '') {
+            $msg .= $footer . "\n";
+        }
+        $msg .= "\n🌐 " . $title;
+
+        return $msg;
+    }
+
     public function sendAnnouncementMsg($announcement, $lims_customer_data)
     {
-        $msg = strip_tags(html_entity_decode($announcement->header)) . "\r\n\n";
-        $msg .= "Ref: " . ($announcement->reference ?: $announcement->id) . "\r\n";
-        $msg .= "Date: " . $announcement->created_at . "\r\n\n";
-        $msg .= "Subject: " . $announcement->subject . "\r\n\n";
-        $msg .= "Dear: " . $lims_customer_data->name . "\r\n\n";
-        $msg .= strip_tags(html_entity_decode($announcement->body)) . "\r\n\n";
-        $msg .= strip_tags(html_entity_decode($announcement->footer)) . "\r\n";
+        $msg = $this->buildAnnouncementMessage($announcement, $lims_customer_data);
 
         try{
             $this->wpMessage($lims_customer_data->phone, $msg);

@@ -9,6 +9,12 @@ class WhatsAppFormatter
         return 'Mulemagc';
     }
 
+    /** Full system title used in announcement messages. */
+    public static function announcementTitle(): string
+    {
+        return 'Mulema Gospel Talent 2.0';
+    }
+
     public static function siteUrl(): string
     {
         $url = rtrim((string) config('app.url', url('/')), '/');
