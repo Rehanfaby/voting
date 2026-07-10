@@ -152,9 +152,7 @@
     <script type="text/javascript">
 
 
-        $("ul#setting").siblings('a').attr('aria-expanded','true');
-        $("ul#setting").addClass("show");
-        $("ul#setting #announcement-menu").addClass("active");
+        $("#announcement-top-menu").addClass("active");
         tinymce.init({
             selector: 'textarea',
             height: 130,

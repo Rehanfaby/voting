@@ -92,9 +92,7 @@
         $('.approve-btn').show();
     });
 
-    $("ul#setting").siblings('a').attr('aria-expanded','true');
-    $("ul#setting").addClass("show");
-    $("ul#setting #announcement-menu").addClass("active");
+    $("#announcement-top-menu").addClass("active");
 
     $(document).ready(function() {
         $(document).on('click', '.open-EditroleDialog', function() {

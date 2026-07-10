@@ -302,9 +302,7 @@
             $(this).closest('.reminder-row').remove();
         });
 
-        $("ul#setting").siblings('a').attr('aria-expanded','true');
-        $("ul#setting").addClass("show");
-        $("ul#setting #announcement-menu").addClass("active");
+        $("#announcement-top-menu").addClass("active");
 
         tinymce.init({
             selector: '#header', height: 130,

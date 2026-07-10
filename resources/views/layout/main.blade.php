@@ -374,6 +374,16 @@
                 @if($general_setting_permission_active)
                     <li data-menu-key="site-content" id="site-content-top-menu"><a href="{{ route('setting.site_content') }}"><i class="dripicons-view-apps"></i><span>{{ trans('file.Site Content') }}</span></a></li>
                 @endif
+                <?php
+                $announcement_permission = DB::table('permissions')->where('name', 'announcement_index')->first();
+                $announcement_menu_active = $announcement_permission ? DB::table('role_has_permissions')->where([
+                    ['permission_id', $announcement_permission->id],
+                    ['role_id', $role->id]
+                ])->first() : null;
+                ?>
+                @if($announcement_menu_active)
+                    <li data-menu-key="announcement" id="announcement-top-menu"><a href="{{ route('announcement.index') }}"><i class="dripicons-message"></i><span>{{ trans('file.Announcement') }}</span></a></li>
+                @endif
                 <li data-menu-key="setting"><a href="#setting" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-gear"></i><span>{{trans('file.settings')}}</span></a>
                     <ul id="setting" class="collapse list-unstyled ">
                         <?php
@@ -425,14 +435,6 @@
                             ['permission_id', $warehouse_permission->id],
                             ['role_id', $role->id]
                         ])->first();
-
-                        $announcement_permission = DB::table('permissions')->where('name', 'announcement_index')->first();
-                        $announcement_permission_active = $announcement_permission ? DB::table('role_has_permissions')->where([
-                            ['permission_id', $announcement_permission->id],
-                            ['role_id', $role->id]
-                        ])->first() : null;
-
-
                         ?>
                         @if($role->name == 'Admin')
                             <li id="role-menu"><a href="{{route('role.index')}}">{{trans('file.Role Permission')}}</a></li>
@@ -440,11 +442,6 @@
                         @if($send_notification_permission_active)
                             <li id="notification-menu">
                                 <a href="" id="send-notification">{{trans('file.Send Notification')}}</a>
-                            </li>
-                        @endif
-                        @if($announcement_permission_active)
-                            <li id="announcement-menu">
-                                <a href="{{ route('announcement.index') }}">{{ trans('file.Announcement') }}</a>
                             </li>
                         @endif
                         @if($currency_permission_active)
