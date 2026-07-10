@@ -276,6 +276,11 @@ Route::group(['middleware' => ['auth', 'active', 'checkOtp']], function() {
     Route::post('judge/deletebyselection', 'JudgeController@deleteBySelection');
     Route::resource('ambassador', 'AmbassadorController');
     Route::post('ambassador/deletebyselection', 'AmbassadorController@deleteBySelection');
+    Route::get('partner', 'PartnerController@index')->name('partner.index');
+    Route::post('partner', 'PartnerController@store')->name('partner.store');
+    Route::post('partner/update', 'PartnerController@update')->name('partner.update');
+    Route::delete('partner/{id}', 'PartnerController@destroy')->name('partner.destroy');
+    Route::post('partner/deletebyselection', 'PartnerController@deleteBySelection');
     Route::get('about-us', 'AboutUsController@index')->name('about_us.index');
     Route::get('about-us/settings', 'AboutUsController@settings')->name('about_us.settings');
     Route::post('about-us/settings', 'AboutUsController@settingsStore')->name('about_us.settings.store');

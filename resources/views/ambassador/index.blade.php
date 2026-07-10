@@ -33,6 +33,7 @@
                     <th>{{trans('file.Email')}}</th>
                     <th>{{trans('file.Phone Number')}}</th>
                     <th>{{trans('file.Address')}}</th>
+                    <th>{{trans('file.Sort Order')}}</th>
                     <th class="not-exported">{{trans('file.action')}}</th>
                 </tr>
             </thead>
@@ -55,6 +56,7 @@
                             @if($employee->state){{ ', '.$employee->state}}@endif
                             @if($employee->postal_code){{ ', '.$employee->postal_code}}@endif
                             @if($employee->country){{ ', '.$employee->country}}@endif</td>
+                    <td>{{ $employee->sort_order }}</td>
                     <td>
                         <div class="btn-group">
                             <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{trans('file.action')}}
@@ -64,7 +66,7 @@
                             <ul class="dropdown-menu edit-options dropdown-menu-right dropdown-default" user="menu">
                                 @if(in_array("employees-edit", $all_permission))
                                 <li>
-                                    <button type="button" data-id="{{$employee->id}}" data-name="{{$employee->name}}" data-email="{{$employee->email}}" data-phone_number="{{$employee->phone_number}}" data-address="{{$employee->address}}" data-city="{{$employee->city}}" data-country="{{$employee->country}}" class="edit-btn btn btn-link" data-toggle="modal" data-target="#editModal"><i class="dripicons-document-edit"></i> {{trans('file.edit')}}</button>
+                                    <button type="button" data-id="{{$employee->id}}" data-name="{{$employee->name}}" data-email="{{$employee->email}}" data-phone_number="{{$employee->phone_number}}" data-address="{{$employee->address}}" data-city="{{$employee->city}}" data-country="{{$employee->country}}" data-sort_order="{{$employee->sort_order}}" class="edit-btn btn btn-link" data-toggle="modal" data-target="#editModal"><i class="dripicons-document-edit"></i> {{trans('file.edit')}}</button>
                                 </li>
                                 @endif
                                 <li class="divider"></li>
@@ -124,6 +126,10 @@
                         <label>{{trans('file.Country')}}</label>
                         <input type="text" name="country" class="form-control">
                     </div>
+                    <div class="col-md-6 form-group">
+                        <label>{{trans('file.Sort Order')}}</label>
+                        <input type="number" name="sort_order" class="form-control" value="0" min="0">
+                    </div>
                 </div>
                 <div class="form-group">
                     <button type="submit" class="btn btn-primary">{{trans('file.submit')}}</button>
@@ -174,6 +180,10 @@
                         <label>{{trans('file.Country')}}</label>
                         <input type="text" name="country" class="form-control">
                     </div>
+                    <div class="col-md-6 form-group">
+                        <label>{{trans('file.Sort Order')}}</label>
+                        <input type="number" name="sort_order" class="form-control" value="0" min="0">
+                    </div>
                 </div>
                 <div class="form-group">
                     <button type="submit" class="btn btn-primary">{{trans('file.submit')}}</button>
@@ -214,6 +224,7 @@
         $("#editModal input[name='address']").val( $(this).data('address') );
         $("#editModal input[name='city']").val( $(this).data('city') );
         $("#editModal input[name='country']").val( $(this).data('country') );
+        $("#editModal input[name='sort_order']").val( $(this).data('sort_order') );
         $('.selectpicker').selectpicker('refresh');
     });
 
@@ -237,7 +248,7 @@
         'columnDefs': [
             {
                 "orderable": false,
-                'targets': [0, 1, 6]
+                'targets': [0, 1, 7]
             },
             {
                 'render': function(data, type, row, meta){

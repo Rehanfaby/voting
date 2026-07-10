@@ -139,8 +139,9 @@ class HomeController extends Controller
         // Admins reach the dashboard via '/admin' (see HomeController@admin).
 
         $musicians = Employee::where('is_active', true)->where('is_approve', true)->get();
-        $judges = Judge::where('is_active', true)->get();
-        $ambassadors = Ambassador::where('is_active', true)->get();
+        $judges = Judge::where('is_active', true)->orderBy('sort_order')->orderBy('id')->get();
+        $ambassadors = Ambassador::where('is_active', true)->orderBy('sort_order')->orderBy('id')->get();
+        $partners = \App\Partner::where('is_active', true)->orderBy('sort_order')->orderBy('id')->get();
 
 //        $judges = User::where('is_active', true)->where('role_id', $judge_role_id)->get();
 //        $ambassadors = User::where('is_active', true)->where('role_id', $ambassador_role_id)->get();
@@ -210,7 +211,7 @@ class HomeController extends Controller
             ->pluck('total_vote', 'musician_id')
             ->toArray();
 
-        return view('frontend.home', compact('musicians', 'judges', 'best_musician', 'see_votes', 'ambassadors', 'best_musicians', 'best_musician_data', 'vote_counts', 'weekly_top'));
+        return view('frontend.home', compact('musicians', 'judges', 'best_musician', 'see_votes', 'ambassadors', 'partners', 'best_musicians', 'best_musician_data', 'vote_counts', 'weekly_top'));
     }
 
     public function signup()

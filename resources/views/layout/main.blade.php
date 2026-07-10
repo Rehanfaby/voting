@@ -388,6 +388,9 @@
                 @if($general_setting_permission_active)
                     <li data-menu-key="site-content" id="site-content-top-menu"><a href="{{ route('setting.site_content') }}"><i class="dripicons-view-apps"></i><span>{{ trans('file.Site Content') }}</span></a></li>
                 @endif
+                @if($index_employee_active)
+                    <li data-menu-key="partners" id="partner-top-menu"><a href="{{ route('partner.index') }}"><i class="fa fa-images"></i><span>{{ trans('file.Logos') }}</span></a></li>
+                @endif
                 <li data-menu-key="setting"><a href="#setting" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-gear"></i><span>{{trans('file.settings')}}</span></a>
                     <ul id="setting" class="collapse list-unstyled ">
                         <?php

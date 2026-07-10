@@ -807,20 +807,29 @@
 
                 <div class="mg-partner-grid partner-logos">
                     @php
-                        $partnerLogos = [
-                            ['src' => url('public/logo/' . $general_setting->site_logo), 'alt' => 'Site Logo'],
-                            ['src' => url('public/logo/Beyond.png'), 'alt' => 'Beyond Logo'],
-                            ['src' => url('public/logo/Elfa.png'), 'alt' => 'Elfa Logo'],
-                            ['src' => url('public/logo/MBS.png'), 'alt' => 'MBS Logo'],
-                            ['src' => url('public/logo/HimFirst.png'), 'alt' => 'HimFirst Logo'],
-                            ['src' => url('public/logo/Nafi.png'), 'alt' => 'Nafi Logo'],
-                            ['src' => url('public/logo/OFCC.png'), 'alt' => 'OFCC Logo'],
-                            ['src' => url('public/logo/DEXDESIGN.png'), 'alt' => 'DEXDESIGN Logo'],
-                        ];
+                        $partnerList = (isset($partners) && count($partners)) ? $partners : collect([
+                            (object) ['image' => null, 'link' => null, 'name' => 'Site Logo', 'fallback' => url('public/logo/' . $general_setting->site_logo)],
+                            (object) ['image' => null, 'link' => null, 'name' => 'Beyond', 'fallback' => url('public/logo/Beyond.png')],
+                            (object) ['image' => null, 'link' => null, 'name' => 'Elfa', 'fallback' => url('public/logo/Elfa.png')],
+                            (object) ['image' => null, 'link' => null, 'name' => 'MBS', 'fallback' => url('public/logo/MBS.png')],
+                            (object) ['image' => null, 'link' => null, 'name' => 'HimFirst', 'fallback' => url('public/logo/HimFirst.png')],
+                            (object) ['image' => null, 'link' => null, 'name' => 'Nafi', 'fallback' => url('public/logo/Nafi.png')],
+                            (object) ['image' => null, 'link' => null, 'name' => 'OFCC', 'fallback' => url('public/logo/OFCC.png')],
+                            (object) ['image' => null, 'link' => null, 'name' => 'DEXDESIGN', 'fallback' => url('public/logo/DEXDESIGN.png')],
+                        ]);
                     @endphp
-                    @foreach($partnerLogos as $logo)
+                    @foreach($partnerList as $logo)
+                        @php
+                            $logoSrc = !empty($logo->image) ? url('public/images/partners', $logo->image) : ($logo->fallback ?? '');
+                        @endphp
                         <div class="mg-partner-logo">
-                            <img src="{{ $logo['src'] }}" alt="{{ $logo['alt'] }}" loading="lazy" decoding="async">
+                            @if(!empty($logo->link))
+                                <a href="{{ $logo->link }}" target="_blank" rel="noopener noreferrer">
+                                    <img src="{{ $logoSrc }}" alt="{{ $logo->name ?? 'Partner' }}" loading="lazy" decoding="async">
+                                </a>
+                            @else
+                                <img src="{{ $logoSrc }}" alt="{{ $logo->name ?? 'Partner' }}" loading="lazy" decoding="async">
+                            @endif
                         </div>
                     @endforeach
                 </div>
