@@ -50,14 +50,13 @@
         @elseif($previewSection === 'winners')
             <h5 class="text-white mb-3">{{ \App\Helpers\SiteContent::aboutField('winners_heading', $previewYear . ' ' . trans('file.Winners')) }}</h5>
             <div class="row g-3">
-                @foreach(\App\AboutWinner::PLACEMENTS as $placement => $placementLabel)
-                    @php $winner = $previewWinners[$placement] ?? null; @endphp
+                @foreach($previewWinners as $winner)
                     @if($winner && trim((string) $winner->name) !== '')
                         <div class="col-md-4 text-center">
                             @if($winner->image)
                                 <img src="{{ url('public/images/employee', $winner->image) }}" alt="" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:2px solid #f59e0b;">
                             @endif
-                            <div class="small mt-2"><span class="badge badge-warning">{{ $placementLabel }}</span></div>
+                            <div class="small mt-2"><span class="badge badge-warning">{{ $winner->placementLabel() }}</span></div>
                             <div class="font-weight-bold">{{ $winner->name }}</div>
                         </div>
                     @endif

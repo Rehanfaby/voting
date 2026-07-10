@@ -41,6 +41,7 @@ Route::get('/payment-cancel', [StripePaymentController::class, 'paymentCancel'])
 Route::group([], function() {
     Route::get('/', 'HomeController@index')->name('home');
     Route::get('/about', 'HomeController@about')->name('about');
+    Route::get('/gallery', 'HomeController@gallery')->name('gallery.page');
     Route::get('/contact', 'HomeController@contact')->name('contact');
     Route::post('/contact/message', 'HomeController@contactMessage')->name('contact.message');
     Route::get('user/contentant', 'HomeController@userContentant')->name('user.contentant')->middleware('auth');

@@ -43,6 +43,14 @@
             <div class="form-group"><label>{{ trans('file.Regions comma separated') }}</label><input type="text" name="regions" class="form-control" value="{{ $about['regions'] ?? '' }}"></div>
 
             <hr>
+            <h5>{{ trans('file.Follow Us') }}</h5>
+            <div class="row">
+                <div class="col-md-4"><div class="form-group"><label><i class="fa-brands fa-facebook-f"></i> Facebook</label><input type="url" name="facebook" class="form-control" value="{{ $about['facebook'] ?? '' }}" placeholder="https://www.facebook.com/..."></div></div>
+                <div class="col-md-4"><div class="form-group"><label><i class="fa-brands fa-instagram"></i> Instagram</label><input type="url" name="instagram" class="form-control" value="{{ $about['instagram'] ?? '' }}" placeholder="https://www.instagram.com/..."></div></div>
+                <div class="col-md-4"><div class="form-group"><label><i class="fa-brands fa-tiktok"></i> TikTok</label><input type="url" name="tiktok" class="form-control" value="{{ $about['tiktok'] ?? '' }}" placeholder="https://www.tiktok.com/@..."></div></div>
+            </div>
+
+            <hr>
             <h5>{{ trans('file.Our Leaders') }}</h5>
             <div class="form-group"><label>{{ trans('file.Section heading') }}</label><input type="text" name="leaders_heading" class="form-control" value="{{ $about['leaders_heading'] ?? '' }}" placeholder="{{ trans('file.Our Leaders') }}"></div>
             <div class="form-group"><label>{{ trans('file.Section subheading') }}</label><input type="text" name="leaders_subheading" class="form-control" value="{{ $about['leaders_subheading'] ?? '' }}" placeholder="{{ trans('file.Leaders subheading default') }}"></div>

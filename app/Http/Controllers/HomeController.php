@@ -75,9 +75,19 @@ class HomeController extends Controller
             ->get();
 
         $winnersYear = \App\Helpers\SiteContent::aboutWinnersYear();
-        $winners = AboutWinner::where('year', $winnersYear)->get()->keyBy('placement');
+        $winners = AboutWinner::where('year', $winnersYear)
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
 
         return view('frontend.about', compact('team', 'winners', 'winnersYear'));
+    }
+
+    public function gallery()
+    {
+        $images = \App\Helpers\SiteContent::galleryItems();
+
+        return view('frontend.gallery', compact('images'));
     }
 
     public function contact()
@@ -1616,8 +1626,23 @@ class HomeController extends Controller
     {
         $request->validate(['phone' => 'required']);
 
-        $user = User::where("phone", $request->phone)
-            ->where("is_active", true)
+        // Match the number in any stored format (raw, +237…, or last 9 local digits)
+        // against both the phone and whatsapp_number columns.
+        $raw = trim($request->phone);
+        $e164 = \App\Helpers\PhoneHelper::forUltraMsg($raw);
+        $local = ltrim(preg_replace('/^237/', '', preg_replace('/\D/', '', $raw)), '0');
+
+        $user = User::where('is_active', true)
+            ->where(function ($q) use ($raw, $e164, $local) {
+                $q->where('phone', $raw)->orWhere('whatsapp_number', $raw);
+                if ($e164) {
+                    $q->orWhere('phone', $e164)->orWhere('whatsapp_number', $e164);
+                }
+                if ($local !== '') {
+                    $q->orWhere('phone', 'like', '%' . $local)
+                      ->orWhere('whatsapp_number', 'like', '%' . $local);
+                }
+            })
             ->first();
 
         if (!$user) {
@@ -1625,10 +1650,14 @@ class HomeController extends Controller
         }
 
         $otp = $this->sendOTP($user);
-        if (!$otp) {
+        // false = delivery failed; null = within 1-min cooldown (reuse existing code).
+        if ($otp === false) {
             return back()->with("not_permitted", trans('file.OTP delivery failed'));
         }
         $user->refresh();
+        if (empty($user->otp)) {
+            return back()->with("not_permitted", trans('file.OTP delivery failed'));
+        }
         Session::put("reset_otp", $user->otp);
         Session::put("reset_user_id", $user->id);
 

@@ -140,7 +140,7 @@ class AboutUsController extends Controller
         $data = SiteContent::all();
         $about = $data['about_page'] ?? [];
 
-        foreach (['hero_subtitle', 'mission_title', 'mission_p1', 'mission_p2', 'mission_p3', 'heart_badge', 'intro_title', 'intro_text', 'regions', 'leaders_heading', 'leaders_subheading'] as $field) {
+        foreach (['hero_subtitle', 'mission_title', 'mission_p1', 'mission_p2', 'mission_p3', 'heart_badge', 'intro_title', 'intro_text', 'regions', 'leaders_heading', 'leaders_subheading', 'facebook', 'instagram', 'tiktok'] as $field) {
             $about[$field] = $request->input($field, '');
         }
 
@@ -199,9 +199,9 @@ class AboutUsController extends Controller
 
         $about = SiteContent::get('about_page', []);
         $year = SiteContent::aboutWinnersYear();
-        $winners = $this->winnersForYear($year);
+        $entries = $this->winnersForYear($year);
 
-        return view('about_us.winners', compact('about', 'year', 'winners'));
+        return view('about_us.winners', compact('about', 'year', 'entries'));
     }
 
     public function winnersStore(Request $request)
@@ -222,36 +222,74 @@ class AboutUsController extends Controller
         $data['about_page'] = $about;
         SiteContent::save($data);
 
-        foreach (AboutWinner::PLACEMENTS as $placement => $label) {
-            $entry = AboutWinner::firstOrNew(['year' => $year, 'placement' => $placement]);
-            $entry->name = $request->input("name_{$placement}");
-            $entry->bio = $request->input("bio_{$placement}");
+        $names = (array) $request->input('w_name', []);
+        $labels = (array) $request->input('w_label', []);
+        $bios = (array) $request->input('w_bio', []);
+        $sorts = (array) $request->input('w_sort', []);
+        $existingImages = (array) $request->input('w_image_existing', []);
+        $linkUrls = (array) $request->input('w_link_url', []);
+        $linkDescs = (array) $request->input('w_link_desc', []);
 
-            if ($request->hasFile("image_{$placement}")) {
-                $request->validate([
-                    "image_{$placement}" => 'image|mimes:jpg,jpeg,png,gif,webp|max:8192',
-                ]);
-                $entry->image = $this->storeAboutImage($request->file("image_{$placement}"), $placement . $year);
+        // Rebuild all entries for the year from the submitted cards.
+        AboutWinner::where('year', $year)->delete();
+
+        foreach ($names as $i => $name) {
+            $name = trim((string) $name);
+            $label = trim((string) ($labels[$i] ?? ''));
+            if ($name === '' && $label === '') {
+                continue;
             }
 
-            $entry->save();
+            $image = trim((string) ($existingImages[$i] ?? ''));
+            $file = $request->file("w_image.$i");
+            if ($file && $file->isValid()) {
+                $request->validate([
+                    "w_image.$i" => 'image|mimes:jpg,jpeg,png,gif,webp|max:8192',
+                ]);
+                $image = $this->storeAboutImage($file, ($label ?: $name) . $year);
+            }
+
+            $links = [];
+            $urls = (array) ($linkUrls[$i] ?? []);
+            $descs = (array) ($linkDescs[$i] ?? []);
+            foreach ($urls as $k => $u) {
+                $u = trim((string) $u);
+                if ($u === '') {
+                    continue;
+                }
+                $links[] = ['url' => $u, 'label' => trim((string) ($descs[$k] ?? ''))];
+            }
+
+            AboutWinner::create([
+                'year' => $year,
+                'placement' => \Illuminate\Support\Str::slug($label ?: $name, '_') ?: ('entry_' . $i),
+                'label' => $label ?: null,
+                'name' => $name,
+                'bio' => $bios[$i] ?? '',
+                'links' => $links,
+                'sort_order' => (int) ($sorts[$i] ?? $i),
+                'image' => $image ?: null,
+            ]);
         }
 
         return redirect()->route('about_us.winners')->with('message', trans('file.Winners updated successfully'));
     }
 
+    /** Existing entries for the year, or default Winner + two runner-ups when empty. */
     private function winnersForYear($year)
     {
-        $rows = AboutWinner::where('year', $year)->get()->keyBy('placement');
-        $winners = [];
-        foreach (AboutWinner::PLACEMENTS as $placement => $label) {
-            $winners[$placement] = $rows->get($placement) ?: new AboutWinner([
-                'year' => $year,
-                'placement' => $placement,
-            ]);
+        $entries = AboutWinner::where('year', $year)
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
+
+        if ($entries->isEmpty()) {
+            $entries = collect(AboutWinner::PLACEMENTS)->map(function ($label, $placement) use ($year) {
+                return new AboutWinner(['year' => $year, 'placement' => $placement, 'label' => $label]);
+            })->values();
         }
 
-        return $winners;
+        return $entries;
     }
 
     private function storeAboutImage($image, $slug)

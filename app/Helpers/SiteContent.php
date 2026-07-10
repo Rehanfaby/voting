@@ -96,6 +96,14 @@ class SiteContent
             ],
             // Uploaded popup image (relative to public/), null = fall back to default flyer.
             'popup_image' => null,
+            // Optional link opened when the popup image is clicked.
+            'popup_link' => '',
+            // Optional countdown shown on the popup (closes with the popup).
+            'popup_countdown' => false,
+            'popup_countdown_at' => null,
+            'popup_countdown_label' => '',
+            // Homepage / site gallery images: [ ['image' => 'uploads/gallery/x.jpg', 'caption' => ''], ... ]
+            'gallery' => [],
             // Countdown toggles (checkboxes in Settings > Site Content).
             'casting_countdown' => true,
             'primes_countdown'  => true,
@@ -146,6 +154,10 @@ class SiteContent
                 'leaders_subheading' => '',
                 'winners_year' => '2025',
                 'winners_heading' => '',
+                'facebook' => 'https://www.facebook.com/mulemagospeltalent/',
+                'instagram' => 'https://www.instagram.com/mulemagospeltalent',
+                'tiktok' => 'https://www.tiktok.com/@mulemagospel',
+                'socials_heading' => '',
             ],
         ];
     }
@@ -173,7 +185,7 @@ class SiteContent
             $merged['sections'] = array_merge($defaults['sections'], $data['sections']);
         }
         // arrays of rows must replace, not merge by index
-        foreach (['casting_rows', 'primes', 'menu_order'] as $listKey) {
+        foreach (['casting_rows', 'primes', 'menu_order', 'gallery'] as $listKey) {
             if (isset($data[$listKey]) && is_array($data[$listKey])) {
                 $merged[$listKey] = array_values($data[$listKey]);
             }
@@ -222,6 +234,60 @@ class SiteContent
     {
         $img = self::get('popup_image');
         return !empty($img) && self::uploadExists($img);
+    }
+
+    /** Optional link opened when the popup image is clicked (empty = not clickable). */
+    public static function popupLink()
+    {
+        $link = trim((string) self::get('popup_link', ''));
+        return $link !== '' ? $link : null;
+    }
+
+    /** Popup countdown target as an ISO string, or null when disabled/unset. */
+    public static function popupCountdownIso()
+    {
+        if (empty(self::get('popup_countdown'))) {
+            return null;
+        }
+        $dt = self::parseEventDate(self::get('popup_countdown_at'));
+        if (!$dt || $dt->lte(\Carbon\Carbon::now())) {
+            return null;
+        }
+        return $dt->toIso8601String();
+    }
+
+    /** Site gallery items: array of ['url' => ..., 'caption' => ...]. */
+    public static function galleryItems()
+    {
+        $items = self::get('gallery', []);
+        if (!is_array($items)) {
+            return [];
+        }
+        $out = [];
+        foreach ($items as $item) {
+            if (is_string($item)) {
+                $item = ['image' => $item, 'caption' => ''];
+            }
+            if (!is_array($item) || empty($item['image']) || !self::uploadExists($item['image'])) {
+                continue;
+            }
+            $out[] = [
+                'url' => self::publicUploadUrl($item['image']),
+                'caption' => trim((string) ($item['caption'] ?? '')),
+            ];
+        }
+        return $out;
+    }
+
+    /** An About-page social link (facebook/instagram/tiktok), or null. */
+    public static function aboutSocial($key)
+    {
+        $page = self::get('about_page', []);
+        if (!is_array($page)) {
+            return null;
+        }
+        $val = trim((string) ($page[$key] ?? ''));
+        return $val !== '' ? $val : null;
     }
 
     /** Build a public URL for files stored under /public on this install. */
@@ -426,6 +492,29 @@ class SiteContent
         $val = $page[$key] ?? null;
         if ($val !== null && trim((string) $val) !== '') {
             return $val;
+        }
+        return $fallback;
+    }
+
+    /**
+     * About-page text that must stay translatable. The admin stores content in a
+     * single language (English). On non-default locales we prefer a per-locale
+     * override (e.g. mission_p1_fr) and otherwise fall back to the translated
+     * language string, so French visitors never see the English admin text.
+     */
+    public static function aboutTranslatable($key, $fallback = '')
+    {
+        $page = self::get('about_page', []);
+        $locale = \App::getLocale();
+        if (is_array($page)) {
+            $localeVal = $page[$key . '_' . $locale] ?? null;
+            if ($localeVal !== null && trim((string) $localeVal) !== '') {
+                return $localeVal;
+            }
+            $base = $page[$key] ?? null;
+            if ($locale === 'en' && $base !== null && trim((string) $base) !== '') {
+                return $base;
+            }
         }
         return $fallback;
     }

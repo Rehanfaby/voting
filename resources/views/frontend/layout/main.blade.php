@@ -111,6 +111,9 @@
                     <a class="user__name" href="{{ route('about') }}"><i class="fa-solid fa-plus"></i> {{trans('file.About Us')}}</a>
                 </div>
                 <div class="offcanvas__btn mb-30">
+                    <a class="user__name" href="{{ route('gallery.page') }}"><i class="fa-solid fa-plus"></i> {{trans('file.Gallery')}}</a>
+                </div>
+                <div class="offcanvas__btn mb-30">
                     <a class="user__name" href="{{ route('contact') }}"><i class="fa-solid fa-plus"></i> {{trans('file.Contact Us')}}</a>
                 </div>
 
@@ -173,6 +176,9 @@
                                                 </li>
                                                 <li>
                                                     <a href="{{ route('about') }}">{{trans('file.About Us')}}</a>
+                                                </li>
+                                                <li>
+                                                    <a href="{{ route('gallery.page') }}">{{trans('file.Gallery')}}</a>
                                                 </li>
                                                 <li>
                                                     <a href="{{ route('contact') }}">{{trans('file.Contact Us')}}</a>

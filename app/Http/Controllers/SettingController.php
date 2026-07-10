@@ -190,6 +190,19 @@ class SettingController extends Controller
                 $popupPosted = (array) $request->input('sections', []);
                 $data['sections']['popup'] = !empty($popupPosted['popup']);
 
+                $data['popup_link'] = trim((string) $request->input('popup_link', ''));
+                $data['popup_countdown'] = $request->has('popup_countdown');
+                $data['popup_countdown_label'] = trim((string) $request->input('popup_countdown_label', ''));
+                $cdAt = trim((string) $request->input('popup_countdown_at', ''));
+                if ($cdAt !== '') {
+                    try {
+                        $cdAt = \Carbon\Carbon::parse(str_replace('T', ' ', $cdAt))->format('Y-m-d H:i:s');
+                    } catch (\Throwable $e) {
+                        // keep raw value
+                    }
+                }
+                $data['popup_countdown_at'] = $cdAt ?: null;
+
                 if ($request->has('delete_popup_image')) {
                     $data['popup_image'] = null;
                     $message = 'Popup image removed.';
@@ -303,6 +316,42 @@ class SettingController extends Controller
                 $message = 'Finals schedule saved.';
                 break;
 
+            case 'gallery':
+                $gallery = [];
+                $existing = (array) $request->input('gallery_existing', []);
+                $captions = (array) $request->input('gallery_caption', []);
+                $removed = (array) $request->input('gallery_remove', []);
+                foreach ($existing as $i => $path) {
+                    $path = trim((string) $path);
+                    if ($path === '' || in_array((string) $i, array_map('strval', $removed), true)) {
+                        continue;
+                    }
+                    $gallery[] = ['image' => $path, 'caption' => trim((string) ($captions[$i] ?? ''))];
+                }
+                $galleryDir = public_path('uploads/gallery');
+                if (!is_dir($galleryDir)) {
+                    @mkdir($galleryDir, 0755, true);
+                }
+                $files = $request->file('gallery_images', []);
+                if (is_array($files)) {
+                    foreach ($files as $file) {
+                        if (!$file || !$file->isValid()) {
+                            continue;
+                        }
+                        $ext = strtolower($file->getClientOriginalExtension());
+                        if (!in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'], true)) {
+                            continue;
+                        }
+                        $name = 'gallery-' . time() . '-' . mt_rand(1000, 9999) . '.' . $ext;
+                        $file->move($galleryDir, $name);
+                        ImageOptimizer::afterUpload($galleryDir . '/' . $name, 'banner');
+                        $gallery[] = ['image' => 'uploads/gallery/' . $name, 'caption' => ''];
+                    }
+                }
+                $data['gallery'] = array_values($gallery);
+                $message = 'Gallery saved.';
+                break;
+
             case 'menu_order':
                 $postedOrder = (array) $request->input('menu_order', []);
                 $validKeys = array_keys(SiteContent::menuKeys());
@@ -329,7 +378,18 @@ class SettingController extends Controller
 
         SiteContent::save($data);
 
-        return redirect()->back()->with('message', $message);
+        $anchors = [
+            'homepage_sections' => 'sc-homepage_sections',
+            'popup' => 'sc-popup',
+            'most_voted_hero' => 'sc-most_voted_hero',
+            'casting' => 'sc-casting',
+            'primes' => 'sc-primes',
+            'gallery' => 'sc-gallery',
+            'menu_order' => 'sc-menu_order',
+        ];
+        $fragment = isset($anchors[$section]) ? '#' . $anchors[$section] : '';
+
+        return redirect(route('setting.site_content') . $fragment)->with('message', $message);
     }
 
     /** @deprecated Use siteContentStoreSection — kept so old bookmarks still work. */

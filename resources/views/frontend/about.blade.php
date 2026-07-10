@@ -14,7 +14,7 @@
                             <span class="mg-about__accent">{{ trans('file.Gospel') }}</span>
                             {{ trans('file.Talent') }}
                         </h1>
-                        <p class="mg-about__sub">{{ \App\Helpers\SiteContent::aboutField('hero_subtitle', trans('file.About hero subtitle')) }}</p>
+                        <p class="mg-about__sub">{{ \App\Helpers\SiteContent::aboutTranslatable('hero_subtitle', trans('file.About hero subtitle')) }}</p>
                     </div>
                 </div>
             </div>
@@ -31,17 +31,17 @@
                             </div>
                             <div class="mg-about__media-badge">
                                 <i class="fa-solid fa-heart"></i>
-                                <span>{{ \App\Helpers\SiteContent::aboutField('heart_badge', trans('file.Mulema means The Heart')) }}</span>
+                                <span>{{ \App\Helpers\SiteContent::aboutTranslatable('heart_badge', trans('file.Mulema means The Heart')) }}</span>
                             </div>
                         </div>
                     </div>
                     <div class="col-lg-7">
                         <span class="mg-about__label">{{ trans('file.Our Mission') }}</span>
-                        <h2 class="mg-about__title">{{ \App\Helpers\SiteContent::aboutField('mission_title', trans('file.Raising true worshipers across Cameroon')) }}</h2>
+                        <h2 class="mg-about__title">{{ \App\Helpers\SiteContent::aboutTranslatable('mission_title', trans('file.Raising true worshipers across Cameroon')) }}</h2>
                         <div class="mg-about__prose">
-                            <p>{{ \App\Helpers\SiteContent::aboutField('mission_p1', trans('file.About mission paragraph 1')) }}</p>
-                            <p>{{ \App\Helpers\SiteContent::aboutField('mission_p2', trans('file.About mission paragraph 2')) }}</p>
-                            <p>{{ \App\Helpers\SiteContent::aboutField('mission_p3', trans('file.About mission paragraph 3')) }}</p>
+                            <p>{{ \App\Helpers\SiteContent::aboutTranslatable('mission_p1', trans('file.About mission paragraph 1')) }}</p>
+                            <p>{{ \App\Helpers\SiteContent::aboutTranslatable('mission_p2', trans('file.About mission paragraph 2')) }}</p>
+                            <p>{{ \App\Helpers\SiteContent::aboutTranslatable('mission_p3', trans('file.About mission paragraph 3')) }}</p>
                         </div>
                     </div>
                 </div>
@@ -59,6 +59,25 @@
                 </ul>
             </div>
         </section>
+
+        {{-- Follow us --}}
+        @php
+            $fb = \App\Helpers\SiteContent::aboutSocial('facebook');
+            $ig = \App\Helpers\SiteContent::aboutSocial('instagram');
+            $tk = \App\Helpers\SiteContent::aboutSocial('tiktok');
+        @endphp
+        @if($fb || $ig || $tk)
+        <section class="mg-about__social pb-70">
+            <div class="container text-center">
+                <span class="mg-about__label mg-about__label--center">{{ trans('file.Follow Us') }}</span>
+                <div class="mg-about__socials">
+                    @if($fb)<a href="{{ $fb }}" target="_blank" rel="noopener noreferrer" class="mg-social mg-social--fb" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>@endif
+                    @if($ig)<a href="{{ $ig }}" target="_blank" rel="noopener noreferrer" class="mg-social mg-social--ig" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>@endif
+                    @if($tk)<a href="{{ $tk }}" target="_blank" rel="noopener noreferrer" class="mg-social mg-social--tk" aria-label="TikTok"><i class="fa-brands fa-tiktok"></i></a>@endif
+                </div>
+            </div>
+        </section>
+        @endif
 
         {{-- Stats band --}}
         <section class="mg-about__stats-band">
@@ -90,8 +109,8 @@
                 <div class="row justify-content-center">
                     <div class="col-xl-9 text-center">
                         <span class="mg-about__label mg-about__label--center">{{ trans('file.Hello Cameroon') }}</span>
-                        <h2 class="mg-about__title mg-about__title--center">{{ \App\Helpers\SiteContent::aboutField('intro_title', trans('file.Cameroon gospel capital')) }}</h2>
-                        <p class="mg-about__intro">{{ \App\Helpers\SiteContent::aboutField('intro_text', trans('file.About intro footer text')) }}</p>
+                        <h2 class="mg-about__title mg-about__title--center">{{ \App\Helpers\SiteContent::aboutTranslatable('intro_title', trans('file.Cameroon gospel capital')) }}</h2>
+                        <p class="mg-about__intro">{{ \App\Helpers\SiteContent::aboutTranslatable('intro_text', trans('file.About intro footer text')) }}</p>
                         <div class="mg-about__regions">
                             @foreach(\App\Helpers\SiteContent::aboutRegions() as $region)
                                 <span class="mg-about__region">{{ $region }}</span>
@@ -151,7 +170,7 @@
         @php
             $winnerRows = collect($winners ?? [])->filter(function ($row) {
                 return $row && trim((string) $row->name) !== '';
-            });
+            })->values();
         @endphp
         @if($winnerRows->isNotEmpty())
         <section class="mg-about__winners pb-90">
@@ -163,26 +182,44 @@
                     </h2>
                 </div>
                 <div class="row justify-content-center g-4">
-                    @foreach(\App\AboutWinner::PLACEMENTS as $placement => $placementLabel)
-                        @php $winner = $winners[$placement] ?? null; @endphp
-                        @if($winner && trim((string) $winner->name) !== '')
+                    @foreach($winnerRows as $winner)
+                        @php
+                            $isChampion = $loop->first;
+                            $firstLink = method_exists($winner, 'firstLinkUrl') ? $winner->firstLinkUrl() : null;
+                            $links = method_exists($winner, 'linkList') ? $winner->linkList() : [];
+                        @endphp
                         <div class="col-xl-4 col-lg-4 col-md-6">
-                            <article class="mg-about__winner mg-about__winner--{{ $placement }}">
-                                <span class="mg-about__winner-badge">{{ $placementLabel }}</span>
-                                <div class="mg-about__winner-photo">
-                                    @if($winner->image)
-                                        <img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($winner->image) }}" alt="{{ $winner->name }}" loading="lazy" decoding="async">
-                                    @else
-                                        <span class="mg-about__person-initial">{{ strtoupper(substr($winner->name, 0, 1)) }}</span>
-                                    @endif
+                            <article class="mg-winner {{ $isChampion ? 'mg-winner--champion' : '' }}">
+                                @if($isChampion)<span class="mg-winner__crown"><i class="fa-solid fa-crown"></i></span>@endif
+                                <span class="mg-winner__badge">{{ $winner->placementLabel() }}</span>
+                                <div class="mg-winner__ring">
+                                    <div class="mg-winner__photo">
+                                        @if($firstLink)<a href="{{ $firstLink }}" target="_blank" rel="noopener noreferrer">@endif
+                                        @if($winner->image)
+                                            <img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($winner->image) }}" alt="{{ $winner->name }}" loading="lazy" decoding="async">
+                                        @else
+                                            <span class="mg-winner__initial">{{ strtoupper(substr($winner->name, 0, 1)) }}</span>
+                                        @endif
+                                        @if($firstLink)</a>@endif
+                                    </div>
                                 </div>
-                                <h3 class="mg-about__winner-name">{{ $winner->name }}</h3>
+                                <h3 class="mg-winner__name">
+                                    @if($firstLink)<a href="{{ $firstLink }}" target="_blank" rel="noopener noreferrer">{{ $winner->name }}</a>@else{{ $winner->name }}@endif
+                                </h3>
                                 @if($winner->bio)
-                                    <p class="mg-about__winner-bio">{{ $winner->bio }}</p>
+                                    <p class="mg-winner__bio">{{ $winner->bio }}</p>
+                                @endif
+                                @if(count($links))
+                                    <div class="mg-winner__links">
+                                        @foreach($links as $link)
+                                            <a href="{{ $link['url'] }}" target="_blank" rel="noopener noreferrer" class="mg-winner__link">
+                                                <i class="fa-solid fa-arrow-up-right-from-square"></i> {{ $link['label'] ?: trans('file.View') }}
+                                            </a>
+                                        @endforeach
+                                    </div>
                                 @endif
                             </article>
                         </div>
-                        @endif
                     @endforeach
                 </div>
             </div>

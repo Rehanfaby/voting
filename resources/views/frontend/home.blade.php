@@ -71,17 +71,55 @@
             background: #fff;
             border-radius: 50%;
             padding: 2px 8px;
+            z-index: 3;
         }
+        .popup-image-link { display: block; cursor: pointer; }
+        .popup-countdown {
+            width: 100%;
+            margin-top: 12px;
+            text-align: center;
+            padding: 14px 12px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #0c2f6b, #0a2350);
+        }
+        .popup-countdown .pcd-label { display:block; color: #ffd27a; font-weight: 700; font-size: 13px; margin-bottom: 10px; letter-spacing:.4px; }
+        .popup-countdown .pcd-label i { margin-right: 6px; }
+        .popup-countdown .pcd-grid { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+        .popup-countdown .pcd-cell { min-width: 60px; padding: 8px 6px; border-radius: 10px; background: rgba(232,119,34,.18); border: 1px solid rgba(232,119,34,.4); }
+        .popup-countdown .pcd-cell b { display: block; font-size: 22px; font-weight: 800; color: #fff; line-height: 1; }
+        .popup-countdown .pcd-cell small { display: block; margin-top: 4px; color: rgba(255,255,255,.7); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
     </style>
 
     <main>
 
         <!-- Popup Overlay (managed from Settings > Site Content > Homepage Popup) -->
         @if(\App\Helpers\SiteContent::enabled('popup'))
+        @php
+            $popupLink = \App\Helpers\SiteContent::popupLink();
+            $popupCountdownIso = \App\Helpers\SiteContent::popupCountdownIso();
+            $popupCountdownLabel = \App\Helpers\SiteContent::get('popup_countdown_label', '');
+        @endphp
         <div class="popup-overlay" id="popup" data-autoshow="1">
             <div class="popup-content">
                 <span class="close-btn" id="closeBtn">&times;</span>
-                <img src="{{ \App\Helpers\SiteContent::popupImageUrl() }}" alt="Announcement" class="popup-image" />
+                @if($popupLink)
+                    <a href="{{ $popupLink }}" target="_blank" rel="noopener noreferrer" class="popup-image-link">
+                        <img src="{{ \App\Helpers\SiteContent::popupImageUrl() }}" alt="Announcement" class="popup-image" />
+                    </a>
+                @else
+                    <img src="{{ \App\Helpers\SiteContent::popupImageUrl() }}" alt="Announcement" class="popup-image" />
+                @endif
+                @if($popupCountdownIso)
+                <div class="popup-countdown" id="popupCountdown" data-deadline="{{ $popupCountdownIso }}">
+                    <span class="pcd-label"><i class="fa-regular fa-clock"></i> {{ $popupCountdownLabel ?: trans('file.Event starts in') }}</span>
+                    <div class="pcd-grid">
+                        <div class="pcd-cell"><b class="pcd-d">00</b><small>{{ trans('file.Days') }}</small></div>
+                        <div class="pcd-cell"><b class="pcd-h">00</b><small>{{ trans('file.Hrs') }}</small></div>
+                        <div class="pcd-cell"><b class="pcd-m">00</b><small>{{ trans('file.Min') }}</small></div>
+                        <div class="pcd-cell"><b class="pcd-s">00</b><small>{{ trans('file.Sec') }}</small></div>
+                    </div>
+                </div>
+                @endif
             </div>
         </div>
         @endif
@@ -1017,14 +1055,33 @@
             var closeBtn = document.getElementById('closeBtn');
             if (!popup) { return; }
             popup.classList.add('active');
+
+            var cdEl = document.getElementById('popupCountdown');
+            var cdTimer = null;
+            function pad(n) { return (n < 10 ? '0' : '') + n; }
+            function cdTick() {
+                if (!cdEl) { return; }
+                var deadline = new Date((cdEl.getAttribute('data-deadline') || '').replace(' ', 'T')).getTime();
+                if (isNaN(deadline)) { return; }
+                var diff = deadline - Date.now();
+                if (diff < 0) { diff = 0; }
+                cdEl.querySelector('.pcd-d').textContent = pad(Math.floor(diff / 86400000));
+                cdEl.querySelector('.pcd-h').textContent = pad(Math.floor((diff % 86400000) / 3600000));
+                cdEl.querySelector('.pcd-m').textContent = pad(Math.floor((diff % 3600000) / 60000));
+                cdEl.querySelector('.pcd-s').textContent = pad(Math.floor((diff % 60000) / 1000));
+            }
+            if (cdEl) { cdTick(); cdTimer = setInterval(cdTick, 1000); }
+
+            function closePopup() {
+                popup.classList.remove('active');
+                if (cdTimer) { clearInterval(cdTimer); cdTimer = null; }
+            }
             if (closeBtn) {
-                closeBtn.addEventListener('click', function () {
-                    popup.classList.remove('active');
-                });
+                closeBtn.addEventListener('click', closePopup);
             }
             popup.addEventListener('click', function (e) {
                 if (e.target === popup) {
-                    popup.classList.remove('active');
+                    closePopup();
                 }
             });
         });

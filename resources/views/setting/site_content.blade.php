@@ -11,7 +11,7 @@
     <div class="container-fluid">
 
         {{-- Homepage section toggles (popup managed separately) --}}
-        <div class="row">
+        <div class="row" id="sc-homepage_sections">
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header d-flex align-items-center">
@@ -44,7 +44,7 @@
         </div>
 
         {{-- Homepage popup --}}
-        <div class="row">
+        <div class="row" id="sc-popup">
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header d-flex align-items-center">
@@ -76,6 +76,36 @@
                                 @endif
                             </div>
                         </div>
+
+                        <hr>
+                        <div class="form-group">
+                            <label><i class="dripicons-link"></i> Popup link (optional)</label>
+                            <input type="url" name="popup_link" class="form-control" value="{{ $content['popup_link'] ?? '' }}" placeholder="https://example.com — clicking the popup image opens this link">
+                            <small class="text-muted">Leave empty if the popup image should not be clickable.</small>
+                        </div>
+
+                        <div class="sc-toggle mb-2">
+                            <label class="sc-switch">
+                                <input type="checkbox" name="popup_countdown" value="1" {{ !empty($content['popup_countdown']) ? 'checked' : '' }}>
+                                <span class="sc-slider"></span>
+                            </label>
+                            <span class="sc-toggle-label">Show a countdown on the popup</span>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Countdown date &amp; time</label>
+                                    <input type="datetime-local" name="popup_countdown_at" class="form-control" value="{{ !empty($content['popup_countdown_at']) ? \App\Helpers\SiteContent::parseEventDate($content['popup_countdown_at'])->format('Y-m-d\TH:i') : '' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Countdown label (optional)</label>
+                                    <input type="text" name="popup_countdown_label" class="form-control" value="{{ $content['popup_countdown_label'] ?? '' }}" placeholder="e.g. Event starts in">
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="sc-section-actions">
                             <button type="submit" class="btn btn-primary">Save</button>
                             @if(\App\Helpers\SiteContent::hasCustomPopup())
@@ -89,7 +119,7 @@
         </div>
 
         {{-- Most voted + hero banners --}}
-        <div class="row">
+        <div class="row" id="sc-most_voted_hero">
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header d-flex align-items-center">
@@ -147,7 +177,7 @@
         </div>
 
         {{-- Provincial casting calendar --}}
-        <div class="row">
+        <div class="row" id="sc-casting">
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header d-flex align-items-center">
@@ -211,7 +241,7 @@
         </div>
 
         {{-- Prime / finals schedule --}}
-        <div class="row">
+        <div class="row" id="sc-primes">
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header d-flex align-items-center">
@@ -271,8 +301,54 @@
             </div>
         </div>
 
+        {{-- Site gallery --}}
+        <div class="row" id="sc-gallery">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h4><i class="dripicons-photo-group"></i> Gallery</h4>
+                    </div>
+                    <div class="card-body">
+                        {!! Form::open(['route' => 'setting.site_content.section', 'method' => 'post', 'files' => true]) !!}
+                        <input type="hidden" name="section" value="gallery">
+                        <p class="italic"><small>Add photos to the public Gallery page. Paste (Ctrl/Cmd+V) or choose files below, then press <strong>Save</strong>.</small></p>
+
+                        <div id="gallery-paste-zone" class="sc-paste-zone mb-3" tabindex="0">
+                            <p class="mb-2"><strong>Paste or upload</strong> — click here and press <kbd>Ctrl+V</kbd> / <kbd>Cmd+V</kbd>, or choose files below.</p>
+                            <input type="file" name="gallery_images[]" id="gallery_images_input" accept="image/*" multiple class="form-control-file">
+                        </div>
+
+                        <div class="row" id="gallery-existing">
+                            @foreach(($content['gallery'] ?? []) as $i => $g)
+                                @php $gimg = is_array($g) ? ($g['image'] ?? '') : $g; @endphp
+                                @if($gimg)
+                                <div class="col-md-3 col-6 mb-3">
+                                    <div class="card h-100">
+                                        <img src="{{ \App\Helpers\SiteContent::publicUploadUrl($gimg) }}?v={{ config('app.version') }}" style="height:120px;object-fit:cover;border-radius:6px 6px 0 0;">
+                                        <div class="card-body p-2">
+                                            <input type="hidden" name="gallery_existing[{{ $i }}]" value="{{ $gimg }}">
+                                            <input type="text" name="gallery_caption[{{ $i }}]" class="form-control form-control-sm mb-2" placeholder="Caption (optional)" value="{{ is_array($g) ? ($g['caption'] ?? '') : '' }}">
+                                            <label class="d-flex align-items-center mb-0" style="gap:6px;font-size:12px;">
+                                                <input type="checkbox" name="gallery_remove[]" value="{{ $i }}"> Remove
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                @endif
+                            @endforeach
+                        </div>
+
+                        <div class="sc-section-actions">
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </div>
+                        {!! Form::close() !!}
+                    </div>
+                </div>
+            </div>
+        </div>
+
         {{-- Side menu order --}}
-        <div class="row">
+        <div class="row" id="sc-menu_order">
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header d-flex align-items-center">
@@ -405,6 +481,36 @@
             if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA') && !popupZone.contains(t)) return;
             if (document.activeElement === popupZone || popupZone.contains(document.activeElement)) {
                 attachPopupPaste(e);
+            }
+        });
+
+        // Gallery: paste appends images to the multiple file input.
+        var galleryInput = document.getElementById('gallery_images_input');
+        var galleryZone = document.getElementById('gallery-paste-zone');
+        function attachGalleryPaste(e) {
+            if (!e.clipboardData || !e.clipboardData.items || !galleryInput) return;
+            var dt = new DataTransfer();
+            if (galleryInput.files) {
+                for (var f = 0; f < galleryInput.files.length; f++) { dt.items.add(galleryInput.files[f]); }
+            }
+            var added = false;
+            for (var i = 0; i < e.clipboardData.items.length; i++) {
+                if (e.clipboardData.items[i].type.indexOf('image') === -1) continue;
+                var file = e.clipboardData.items[i].getAsFile();
+                if (!file) continue;
+                dt.items.add(file);
+                added = true;
+            }
+            if (added) {
+                e.preventDefault();
+                galleryInput.files = dt.files;
+            }
+        }
+        if (galleryZone) galleryZone.addEventListener('paste', attachGalleryPaste);
+        document.addEventListener('paste', function (e) {
+            if (!galleryZone) return;
+            if (document.activeElement === galleryZone || galleryZone.contains(document.activeElement)) {
+                attachGalleryPaste(e);
             }
         });
     })();
