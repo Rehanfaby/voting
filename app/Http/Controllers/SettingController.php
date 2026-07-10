@@ -453,6 +453,42 @@ class SettingController extends Controller
         return redirect(route('setting.site_content') . $fragment)->with('message', $message);
     }
 
+    /** Instantly remove a single gallery image (AJAX from Site Content > Gallery). */
+    public function galleryDelete(Request $request)
+    {
+        $image = trim((string) $request->input('image'));
+        if ($image === '') {
+            return response()->json(['status' => 'error', 'message' => 'No image specified'], 422);
+        }
+
+        $data = SiteContent::all();
+        $gallery = is_array($data['gallery'] ?? null) ? $data['gallery'] : [];
+        $kept = [];
+        $removed = false;
+        foreach ($gallery as $g) {
+            $img = is_array($g) ? ($g['image'] ?? '') : $g;
+            if ((string) $img === $image) {
+                $removed = true;
+                continue;
+            }
+            $kept[] = $g;
+        }
+        $data['gallery'] = array_values($kept);
+        SiteContent::save($data);
+
+        if ($removed) {
+            $path = ltrim(str_replace('\\', '/', $image), '/');
+            foreach ([public_path($path), public_path('public/' . $path)] as $full) {
+                if (is_file($full)) {
+                    @unlink($full);
+                    break;
+                }
+            }
+        }
+
+        return response()->json(['status' => 'ok', 'removed' => $removed]);
+    }
+
     /** Persist a drag/arrow ordering by writing each id's position to sort_order. */
     private function applyModelOrder($modelClass, array $ids)
     {

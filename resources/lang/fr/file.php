@@ -1121,6 +1121,7 @@ return [
     'Could not save ticket' => 'Impossible d\'enregistrer le billet. Vérifiez le formulaire et réessayez.',
     'Please fill in all required fields' => 'Veuillez remplir tous les champs obligatoires.',
     'Landing Menu' => 'Menu de la page d\'accueil',
+    'New photos to be saved' => 'Nouvelles photos à enregistrer — cliquez sur Enregistrer',
     'Logos' => 'Logos',
     'Logo' => 'Logo',
     'Add Logo' => 'Ajouter un logo',

@@ -210,6 +210,7 @@ Route::group(['middleware' => ['auth', 'active', 'checkOtp']], function() {
 
 	Route::get('setting/site_content', 'SettingController@siteContent')->name('setting.site_content');
 	Route::post('setting/site_content/section', 'SettingController@siteContentStoreSection')->name('setting.site_content.section');
+	Route::post('setting/site_content/gallery/delete', 'SettingController@galleryDelete')->name('setting.site_content.gallery.delete');
 	Route::post('setting/site_content_store', 'SettingController@siteContentStore')->name('setting.site_content.store');
 	Route::get('setting/general_setting', 'SettingController@generalSetting')->name('setting.general');
     Route::get('setting/env', 'SettingController@envSetting')->name('setting.env');

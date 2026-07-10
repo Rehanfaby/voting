@@ -348,19 +348,25 @@
                             <input type="file" name="gallery_images[]" id="gallery_images_input" accept="image/*" multiple class="form-control-file">
                         </div>
 
+                        {{-- Thumbnails of newly pasted / chosen images (not yet saved) --}}
+                        <div class="row" id="gallery-new-preview" style="display:none;">
+                            <div class="col-12"><p class="mb-2"><small class="text-info"><i class="dripicons-photo"></i> {{ trans('file.New photos to be saved') }}</small></p></div>
+                            <div class="col-12"><div class="row" id="gallery-new-preview-items"></div></div>
+                        </div>
+
                         <div class="row" id="gallery-existing">
                             @foreach(($content['gallery'] ?? []) as $i => $g)
                                 @php $gimg = is_array($g) ? ($g['image'] ?? '') : $g; @endphp
                                 @if($gimg)
-                                <div class="col-md-3 col-6 mb-3">
+                                <div class="col-md-3 col-6 mb-3 sc-gallery-card" data-image="{{ $gimg }}">
                                     <div class="card h-100">
-                                        <img src="{{ \App\Helpers\SiteContent::publicUploadUrl($gimg) }}?v={{ config('app.version') }}" style="height:120px;object-fit:cover;border-radius:6px 6px 0 0;">
+                                        <div class="sc-gallery-thumb">
+                                            <img src="{{ \App\Helpers\SiteContent::publicUploadUrl($gimg) }}?v={{ config('app.version') }}" style="height:120px;width:100%;object-fit:cover;border-radius:6px 6px 0 0;">
+                                            <button type="button" class="sc-gallery-del" title="{{ trans('file.delete') }}" aria-label="{{ trans('file.delete') }}"><i class="dripicons-trash"></i></button>
+                                        </div>
                                         <div class="card-body p-2">
                                             <input type="hidden" name="gallery_existing[{{ $i }}]" value="{{ $gimg }}">
-                                            <input type="text" name="gallery_caption[{{ $i }}]" class="form-control form-control-sm mb-2" placeholder="Caption (optional)" value="{{ is_array($g) ? ($g['caption'] ?? '') : '' }}">
-                                            <label class="d-flex align-items-center mb-0" style="gap:6px;font-size:12px;">
-                                                <input type="checkbox" name="gallery_remove[]" value="{{ $i }}"> Remove
-                                            </label>
+                                            <input type="text" name="gallery_caption[{{ $i }}]" class="form-control form-control-sm" placeholder="Caption (optional)" value="{{ is_array($g) ? ($g['caption'] ?? '') : '' }}">
                                         </div>
                                     </div>
                                 </div>
@@ -799,6 +805,20 @@
     .sc-section-actions { margin-top:16px; padding-top:12px; border-top:1px solid #e8edf5; display:flex; gap:10px; flex-wrap:wrap; }
     .sc-paste-zone { border:2px dashed #c5d3ea; border-radius:10px; padding:16px; background:#f8fafc; cursor:text; }
     .sc-paste-zone:focus { outline:none; border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.15); }
+    .sc-gallery-thumb { position:relative; }
+    .sc-gallery-del {
+        position:absolute; top:6px; right:6px; z-index:2;
+        width:30px; height:30px; border-radius:50%; border:0;
+        background:rgba(220,38,38,.92); color:#fff; cursor:pointer;
+        display:flex; align-items:center; justify-content:center;
+        box-shadow:0 2px 6px rgba(0,0,0,.25); transition:background .15s, transform .15s;
+    }
+    .sc-gallery-del:hover { background:#b91c1c; transform:scale(1.08); }
+    .sc-gallery-del i { font-size:14px; line-height:1; }
+    .sc-gallery-newitem { position:relative; }
+    .sc-gallery-newitem img { height:110px; width:100%; object-fit:cover; border-radius:8px; border:2px solid #22c55e; }
+    .sc-gallery-newitem .sc-gallery-del { background:rgba(15,23,42,.85); }
+    .sc-gallery-newitem .sc-gallery-del:hover { background:#0f172a; }
 </style>
 
 <script type="text/javascript">
@@ -905,8 +925,56 @@
         // Gallery: paste appends images to the multiple file input.
         var galleryInput = document.getElementById('gallery_images_input');
         var galleryZone = document.getElementById('gallery-paste-zone');
+        var galleryPreview = document.getElementById('gallery-new-preview');
+        var galleryPreviewItems = document.getElementById('gallery-new-preview-items');
+
+        // Re-render thumbnails of the files currently queued in the file input.
+        function renderGalleryPreview() {
+            if (!galleryInput || !galleryPreviewItems) return;
+            galleryPreviewItems.innerHTML = '';
+            var files = galleryInput.files;
+            if (!files || !files.length) {
+                if (galleryPreview) galleryPreview.style.display = 'none';
+                return;
+            }
+            if (galleryPreview) galleryPreview.style.display = 'flex';
+            Array.prototype.forEach.call(files, function (file, idx) {
+                var col = document.createElement('div');
+                col.className = 'col-md-3 col-6 mb-3 sc-gallery-newitem';
+                var img = document.createElement('img');
+                img.alt = file.name || 'preview';
+                var reader = new FileReader();
+                reader.onload = function (ev) { img.src = ev.target.result; };
+                reader.readAsDataURL(file);
+                var del = document.createElement('button');
+                del.type = 'button';
+                del.className = 'sc-gallery-del';
+                del.title = 'Remove';
+                del.innerHTML = '&times;';
+                del.style.fontSize = '18px';
+                del.style.lineHeight = '1';
+                del.addEventListener('click', function () { removeGalleryPendingFile(idx); });
+                col.appendChild(img);
+                col.appendChild(del);
+                galleryPreviewItems.appendChild(col);
+            });
+        }
+
+        // Drop a single queued (not-yet-saved) file by index.
+        function removeGalleryPendingFile(index) {
+            if (!galleryInput || !galleryInput.files) return;
+            var dt = new DataTransfer();
+            Array.prototype.forEach.call(galleryInput.files, function (file, i) {
+                if (i !== index) dt.items.add(file);
+            });
+            galleryInput.files = dt.files;
+            renderGalleryPreview();
+        }
+
         function attachGalleryPaste(e) {
             if (!e.clipboardData || !e.clipboardData.items || !galleryInput) return;
+            // Guard: the same paste event can bubble to more than one listener.
+            if (e.__galleryHandled) return;
             var dt = new DataTransfer();
             if (galleryInput.files) {
                 for (var f = 0; f < galleryInput.files.length; f++) { dt.items.add(galleryInput.files[f]); }
@@ -920,8 +988,10 @@
                 added = true;
             }
             if (added) {
+                e.__galleryHandled = true;
                 e.preventDefault();
                 galleryInput.files = dt.files;
+                renderGalleryPreview();
             }
         }
         if (galleryZone) galleryZone.addEventListener('paste', attachGalleryPaste);
@@ -930,6 +1000,37 @@
             if (document.activeElement === galleryZone || galleryZone.contains(document.activeElement)) {
                 attachGalleryPaste(e);
             }
+        });
+        if (galleryInput) {
+            galleryInput.addEventListener('change', renderGalleryPreview);
+        }
+
+        // Instant delete of an already-saved gallery image.
+        var galleryDeleteUrl = @json(route('setting.site_content.gallery.delete'));
+        var galleryCsrf = @json(csrf_token());
+        document.querySelectorAll('#gallery-existing .sc-gallery-del').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var card = btn.closest('.sc-gallery-card');
+                if (!card) return;
+                if (!window.confirm('Delete this photo? This cannot be undone.')) return;
+                var image = card.getAttribute('data-image');
+                btn.disabled = true;
+                fetch(galleryDeleteUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': galleryCsrf, 'X-Requested-With': 'XMLHttpRequest' },
+                    body: JSON.stringify({ image: image })
+                }).then(function (r) { return r.json(); }).then(function (res) {
+                    if (res && res.status === 'ok') {
+                        card.parentNode.removeChild(card);
+                    } else {
+                        btn.disabled = false;
+                        alert('Could not delete the photo. Please try again.');
+                    }
+                }).catch(function () {
+                    btn.disabled = false;
+                    alert('Could not delete the photo. Please try again.');
+                });
+            });
         });
 
         // Logos / Partners
