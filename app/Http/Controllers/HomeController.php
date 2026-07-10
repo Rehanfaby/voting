@@ -395,7 +395,8 @@ class HomeController extends Controller
 
         $phone = PhoneHelper::fromLocalDigits($request->input('phone_local'))
             ?? PhoneHelper::cameroon($request->phone);
-        $whatsapp = PhoneHelper::fromLocalDigits($request->input('whatsapp_local'))
+        $whatsapp = PhoneHelper::e164($request->input('whatsapp_intl'))
+            ?? PhoneHelper::fromLocalDigits($request->input('whatsapp_local'))
             ?? PhoneHelper::cameroon($request->whatsapp_number ?? $phone);
 
         if (!$phone) {
@@ -462,9 +463,11 @@ class HomeController extends Controller
     public function musicianVotePaymentStripe(Request $request) {
 
         $phone = PhoneHelper::fromLocalDigits($request->input('phone_local'))
+            ?? PhoneHelper::e164($request->input('whatsapp_intl'))
             ?? PhoneHelper::fromLocalDigits($request->input('whatsapp_local'))
             ?? PhoneHelper::cameroon($request->phone);
-        $whatsapp = PhoneHelper::fromLocalDigits($request->input('whatsapp_local'))
+        $whatsapp = PhoneHelper::e164($request->input('whatsapp_intl'))
+            ?? PhoneHelper::fromLocalDigits($request->input('whatsapp_local'))
             ?? PhoneHelper::cameroon($request->whatsapp_number ?? $phone);
 
         if (!$phone) {
@@ -659,7 +662,8 @@ class HomeController extends Controller
         $data['name'] = $request->name;
         $data['phone'] = PhoneHelper::fromLocalDigits($request->input('phone_local'))
             ?? PhoneHelper::cameroon($request->phone);
-        $data['whatsapp_number'] = PhoneHelper::fromLocalDigits($request->input('whatsapp_local'))
+        $data['whatsapp_number'] = PhoneHelper::e164($request->input('whatsapp_intl'))
+            ?? PhoneHelper::fromLocalDigits($request->input('whatsapp_local'))
             ?? PhoneHelper::cameroon($request->whatsapp_number ?? $data['phone']);
         $data['email'] = $request->email ?? 'user@gmail.com';
         $data['role_id'] = 3;

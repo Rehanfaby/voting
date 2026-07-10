@@ -120,11 +120,12 @@
                                     ])
                                 </div>
 
-                                @include('partials.cameroon-phone-field', [
-                                    'id' => 'whatsapp_local',
-                                    'name' => 'whatsapp_local',
+                                @include('partials.intl-phone-field', [
+                                    'id' => 'whatsapp_intl',
+                                    'name' => 'whatsapp_intl',
                                     'label' => '<i class="fab fa-whatsapp"></i> ' . trans('file.Whatsapp number'),
-                                    'value' => $localWhatsapp,
+                                    'value' => ($user && $user->whatsapp_number) ? $user->whatsapp_number : $localWhatsapp,
+                                    'defaultDial' => '237',
                                     'hint' => trans('file.Confirmation will be sent to this WhatsApp number'),
                                 ])
 
@@ -203,7 +204,7 @@
         if (phoneHidden) {
             phoneHidden.required = !isCard;
         }
-        var waHidden = form.querySelector('input[name="whatsapp_local"]');
+        var waHidden = form.querySelector('input[name="whatsapp_intl"]');
         if (waHidden) {
             waHidden.required = !isCard;
         }

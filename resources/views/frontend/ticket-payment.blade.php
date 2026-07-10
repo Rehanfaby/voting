@@ -95,11 +95,12 @@
                                     'label' => trans('file.Momo Number'),
                                     'value' => $localPhone,
                                 ])
-                                @include('partials.cameroon-phone-field', [
-                                    'id' => 'ticket_whatsapp_local',
-                                    'name' => 'whatsapp_local',
+                                @include('partials.intl-phone-field', [
+                                    'id' => 'ticket_whatsapp_intl',
+                                    'name' => 'whatsapp_intl',
                                     'label' => '<i class="fab fa-whatsapp"></i> ' . trans('file.Whatsapp number'),
-                                    'value' => $localWhatsapp,
+                                    'value' => ($user && $user->whatsapp_number) ? $user->whatsapp_number : $localWhatsapp,
+                                    'defaultDial' => '237',
                                     'hint' => trans('file.Confirmation will be sent to this WhatsApp number'),
                                 ])
                                 <input type="hidden" name="ticket_id" value="{{ $ticket->id }}">
