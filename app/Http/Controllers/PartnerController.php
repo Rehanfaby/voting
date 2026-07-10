@@ -35,18 +35,16 @@ class PartnerController extends Controller
         return $all_permission;
     }
 
+    /** Logos are managed inside the Site Content page. */
+    private function logosUrl()
+    {
+        return route('setting.site_content') . '#sc-partners';
+    }
+
     public function index()
     {
-        if ($denied = $this->authorizePartner()) {
-            return $denied;
-        }
-
-        $partners = Partner::orderBy('sort_order')->orderBy('id')->get();
-
-        return view('partner.index', [
-            'partners' => $partners,
-            'all_permission' => $this->permissionList(),
-        ]);
+        // Logos moved into Settings > Site Content.
+        return redirect($this->logosUrl());
     }
 
     public function store(Request $request)
@@ -69,7 +67,7 @@ class PartnerController extends Controller
 
         Partner::create($data);
 
-        return redirect('partner')->with('message', trans('file.Logo added successfully'));
+        return redirect($this->logosUrl())->with('message', trans('file.Logo added successfully'));
     }
 
     public function update(Request $request)
@@ -97,7 +95,7 @@ class PartnerController extends Controller
 
         $partner->update($data);
 
-        return redirect('partner')->with('message', trans('file.Logo updated successfully'));
+        return redirect($this->logosUrl())->with('message', trans('file.Logo updated successfully'));
     }
 
     public function destroy($id)
@@ -111,7 +109,7 @@ class PartnerController extends Controller
             $partner->delete();
         }
 
-        return redirect('partner')->with('message', trans('file.Logo removed successfully'));
+        return redirect($this->logosUrl())->with('message', trans('file.Logo removed successfully'));
     }
 
     public function deleteBySelection(Request $request)

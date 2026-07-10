@@ -162,8 +162,17 @@ class SettingController extends Controller
         $section_labels = SiteContent::homepageSectionKeys();
         $menu_labels = SiteContent::menuKeys();
         $menu_order = SiteContent::menuOrder();
+        $partners = \App\Partner::orderBy('sort_order')->orderBy('id')->get();
 
-        return view('setting.site_content', compact('content', 'section_labels', 'menu_labels', 'menu_order'));
+        $all_permission = [];
+        $role = \Spatie\Permission\Models\Role::find(Auth::user()->role_id);
+        if ($role) {
+            foreach ($role->permissions as $permission) {
+                $all_permission[] = $permission->name;
+            }
+        }
+
+        return view('setting.site_content', compact('content', 'section_labels', 'menu_labels', 'menu_order', 'partners', 'all_permission'));
     }
 
     public function siteContentStoreSection(Request $request)
