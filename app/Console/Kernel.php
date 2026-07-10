@@ -25,13 +25,16 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('reminder:cron')
-            ->everyMinute();
-
         // Safety net: reconcile any debited-but-uncounted votes against Campay.
+        // Scheduled first and in the background so it is unaffected by other
+        // scheduled commands that terminate their own process.
         $schedule->command('votes:reconcile')
             ->everyMinute()
+            ->runInBackground()
             ->withoutOverlapping();
+
+        $schedule->command('reminder:cron')
+            ->everyMinute();
     }
 
     /**
