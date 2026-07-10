@@ -15,6 +15,7 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         Commands\ReminderCron::class,
         Commands\ReconcileVotes::class,
+        Commands\ProcessScheduledAnnouncements::class,
     ];
 
     /**
@@ -35,6 +36,11 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('reminder:cron')
             ->everyMinute();
+
+        $schedule->command('announcements:process-scheduled')
+            ->everyMinute()
+            ->runInBackground()
+            ->withoutOverlapping();
     }
 
     /**

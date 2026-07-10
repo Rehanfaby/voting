@@ -73,7 +73,8 @@
             padding: 2px 8px;
             z-index: 3;
         }
-        .popup-image-link { display: block; cursor: pointer; }
+        .popup-image-link { display: block; cursor: pointer; line-height: 0; }
+        .popup-image-link:hover .popup-image { opacity: .92; }
         .popup-countdown {
             width: 100%;
             margin-top: 12px;
@@ -103,7 +104,7 @@
             <div class="popup-content">
                 <span class="close-btn" id="closeBtn">&times;</span>
                 @if($popupLink)
-                    <a href="{{ $popupLink }}" target="_blank" rel="noopener noreferrer" class="popup-image-link">
+                    <a href="{{ $popupLink }}" class="popup-image-link" id="popupImageLink">
                         <img src="{{ \App\Helpers\SiteContent::popupImageUrl() }}" alt="Announcement" class="popup-image" />
                     </a>
                 @else
@@ -1061,7 +1062,17 @@
                 if (cdTimer) { clearInterval(cdTimer); cdTimer = null; }
             }
             if (closeBtn) {
-                closeBtn.addEventListener('click', closePopup);
+                closeBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    closePopup();
+                });
+            }
+            var popupContent = popup.querySelector('.popup-content');
+            if (popupContent) {
+                popupContent.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                });
             }
             popup.addEventListener('click', function (e) {
                 if (e.target === popup) {

@@ -28,7 +28,7 @@ class SettingController extends Controller
 {
     public function emptyDatabase()
     {
-        if(!env('USER_VERIFIED'))
+        if (!config('app.user_verified'))
             return redirect()->back()->with('not_permitted', 'This feature is disable for demo!');
         $tables = DB::select('SHOW TABLES');
         $str = 'Tables_in_' . env('DB_DATABASE');
@@ -62,7 +62,7 @@ class SettingController extends Controller
 
     public function generalSettingStore(Request $request)
     {
-        if(!env('USER_VERIFIED'))
+        if (!config('app.user_verified'))
             return redirect()->back()->with('not_permitted', 'This feature is disable for demo!');
 
         $this->validate($request, [
@@ -163,8 +163,10 @@ class SettingController extends Controller
         $menu_labels = SiteContent::menuKeys();
         $menu_order = SiteContent::menuOrder();
         $partners = \App\Partner::orderBy('sort_order')->orderBy('id')->get();
-        $judges = \App\Judge::orderBy('sort_order')->orderBy('id')->get();
+        $judges = \App\Judge::orderedForDisplay();
         $ambassadors = \App\Ambassador::orderBy('sort_order')->orderBy('id')->get();
+        $frontend_menu_labels = SiteContent::frontendMenuKeys();
+        $frontend_menu_order = SiteContent::frontendMenuOrder();
 
         $all_permission = [];
         $role = \Spatie\Permission\Models\Role::find(Auth::user()->role_id);
@@ -174,7 +176,7 @@ class SettingController extends Controller
             }
         }
 
-        return view('setting.site_content', compact('content', 'section_labels', 'menu_labels', 'menu_order', 'partners', 'judges', 'ambassadors', 'all_permission'));
+        return view('setting.site_content', compact('content', 'section_labels', 'menu_labels', 'menu_order', 'partners', 'judges', 'ambassadors', 'frontend_menu_labels', 'frontend_menu_order', 'all_permission'));
     }
 
     public function siteContentStoreSection(Request $request)
@@ -363,6 +365,26 @@ class SettingController extends Controller
                 $message = 'Gallery saved.';
                 break;
 
+            case 'frontend_menu_order':
+                $postedOrder = (array) $request->input('frontend_menu_order', []);
+                $validKeys = array_keys(SiteContent::frontendMenuKeys());
+                $order = [];
+                foreach ($postedOrder as $key) {
+                    if (in_array($key, $validKeys, true) && !in_array($key, $order, true)) {
+                        $order[] = $key;
+                    }
+                }
+                foreach ($validKeys as $key) {
+                    if (!in_array($key, $order, true)) {
+                        $order[] = $key;
+                    }
+                }
+                if (!empty($order)) {
+                    $data['frontend_menu_order'] = $order;
+                }
+                $message = 'Frontend menu order saved.';
+                break;
+
             case 'menu_order':
                 $postedOrder = (array) $request->input('menu_order', []);
                 $validKeys = array_keys(SiteContent::menuKeys());
@@ -414,6 +436,7 @@ class SettingController extends Controller
             'judges_order' => 'sc-judges',
             'ambassadors_order' => 'sc-ambassadors',
             'partners_order' => 'sc-partners',
+            'frontend_menu_order' => 'sc-frontend_menu',
             'menu_order' => 'sc-menu_order',
         ];
         $fragment = isset($anchors[$section]) ? '#' . $anchors[$section] : '';
@@ -482,7 +505,7 @@ class SettingController extends Controller
 
     public function backup()
     {
-        if(!env('USER_VERIFIED'))
+        if (!config('app.user_verified'))
             return redirect()->back()->with('not_permitted', 'This feature is disable for demo!');
 
         // Database configuration
@@ -590,7 +613,7 @@ class SettingController extends Controller
 
     public function mailSettingStore(Request $request)
     {
-        if(!env('USER_VERIFIED'))
+        if (!config('app.user_verified'))
             return redirect()->back()->with('not_permitted', 'This feature is disable for demo!');
 
         $data = $request->all();
@@ -613,7 +636,7 @@ class SettingController extends Controller
 
     public function smsSettingStore(Request $request)
     {
-        if(!env('USER_VERIFIED'))
+        if (!config('app.user_verified'))
             return redirect()->back()->with('not_permitted', 'This feature is disable for demo!');
 
         $data = $request->all();
@@ -713,7 +736,7 @@ class SettingController extends Controller
 
     public function posSettingStore(Request $request)
     {
-        if(!env('USER_VERIFIED'))
+        if (!config('app.user_verified'))
             return redirect()->back()->with('not_permitted', 'This feature is disable for demo!');
 
     	$data = $request->all();
@@ -774,7 +797,7 @@ class SettingController extends Controller
             return redirect()->back()->with('not_permitted', 'Environment editor is disabled.');
         }
 
-        if (!env('USER_VERIFIED')) {
+        if (!config('app.user_verified')) {
             return redirect()->back()->with('not_permitted', 'This feature is disabled for demo!');
         }
 
@@ -790,7 +813,7 @@ class SettingController extends Controller
             return redirect()->back()->with('not_permitted', 'Environment editor is disabled.');
         }
 
-        if (!env('USER_VERIFIED')) {
+        if (!config('app.user_verified')) {
             return redirect()->back()->with('not_permitted', 'This feature is disabled for demo!');
         }
 

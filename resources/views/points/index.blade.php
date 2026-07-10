@@ -31,6 +31,10 @@
             </div>
         </div>
 
+        @if(!empty($grading_disabled))
+            <div class="alert alert-warning">{{ trans('file.Grading is not enabled yet') }}</div>
+        @endif
+
         @if(session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
@@ -50,8 +54,8 @@
             @foreach($points as $point)
                 <tr data-id="{{ $point->id }}">
                     <td>{{ $point->id }}</td>
-                    <td>{{ $point->judge->name }}</td>
-                    <td>{{ $point->contestant->name }}</td>
+                    <td>{{ optional($point->judge)->name ?? '—' }}</td>
+                    <td>{{ optional($point->contestant)->name ?? '—' }}</td>
                     <td>{{ $point->total }}</td>
                     <td>{{ $point->created_at->format('Y-m-d H:i') }}</td>
                     <td>

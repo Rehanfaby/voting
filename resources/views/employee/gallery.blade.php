@@ -36,7 +36,7 @@
                 @foreach($lims_employee_gallery as $employee_gallery)
                     <div class="col-md-4">
                         <div class="card">
-                            <div class="card-body" style="width: 100px; height: 300px">
+                            <div class="card-body" style="min-height: 280px;">
                                 @if($employee_gallery->type == 'image')
                                     <img src="{{asset('public/employee/data/'.$employee_gallery->file)}}" class="img-fluid">
                                 @elseif($employee_gallery->type == 'video')
@@ -49,10 +49,14 @@
                                         <source src="{{asset('public/employee/data/'.$employee_gallery->file)}}" type="audio/ogg">
                                         <source src="{{asset('public/employee/data/'.$employee_gallery->file)}}" type="audio/mpeg">
                                     </audio>
-                                @elseif($employee_gallery->type == 'link')
-                                    <iframe src="{{$employee_gallery->file}}" width="400" height="290"></iframe>
-                                @elseif($employee_gallery->type == 'short')
-                                    <iframe src="{{$employee_gallery->file}}" width="320" height="240"></iframe>
+                                @elseif(in_array($employee_gallery->type, \App\Helpers\SocialEmbed::linkTypes()))
+                                    @php $embedSrc = \App\Helpers\SocialEmbed::embedSrc($employee_gallery->file, $employee_gallery->type); @endphp
+                                    @if($embedSrc)
+                                        <span class="badge badge-info mb-2">{{ \App\Helpers\SocialEmbed::platformLabel($employee_gallery->type) }}</span>
+                                        <iframe src="{{ $embedSrc }}" width="100%" height="220" style="border:0;border-radius:8px;" loading="lazy" allowfullscreen></iframe>
+                                    @else
+                                        <p class="text-muted small">{{ $employee_gallery->file }}</p>
+                                    @endif
                                 @else
                                     <p>File not supported</p>
                                 @endif

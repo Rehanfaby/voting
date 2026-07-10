@@ -52,6 +52,13 @@
                             </div>
                             <form method="post" action="{{ route('contact.message') }}" class="mg-contact-form">
                                 @csrf
+                                {{-- Honeypot: hidden from real users, bots tend to fill these --}}
+                                <div class="mg-hp" aria-hidden="true">
+                                    <label>Website</label>
+                                    <input type="text" name="website" tabindex="-1" autocomplete="off">
+                                    <label>Company URL</label>
+                                    <input type="text" name="company_url" tabindex="-1" autocomplete="off">
+                                </div>
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="mg-field">
@@ -116,6 +123,7 @@
     .mg-contact-form-head h4 { margin:0 0 8px;font-weight:800;font-size:22px; }
     .mg-contact-form-head p { margin:0 0 24px;opacity:.85;font-size:14px; }
     .mg-contact-form { padding:28px 32px 32px; }
+    .mg-hp { position:absolute !important; left:-9999px !important; top:auto; width:1px; height:1px; overflow:hidden; }
     .mg-contact-form .mg-field { margin-bottom:20px; }
     .mg-contact-form label { display:block;font-weight:700;color:#0a2350;margin-bottom:8px;font-size:14px; }
     .mg-contact-form input, .mg-contact-form textarea { width:100%;border:1px solid #dbe4f3;border-radius:12px;padding:14px 16px;font-size:15px;color:#14223f;background:#f7f9fd;transition:border-color .2s,box-shadow .2s; }

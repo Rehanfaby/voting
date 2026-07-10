@@ -56,6 +56,51 @@ class SiteContent
         return $order;
     }
 
+    /** Public site header menu items that can be reordered. */
+    public static function frontendMenuKeys()
+    {
+        return [
+            'buy_tickets' => 'Buy Tickets',
+            'home'        => 'Home',
+            'about'       => 'About Us',
+            'gallery'     => 'Gallery',
+            'contact'     => 'Contact Us',
+            'vote_now'    => 'Vote Now',
+        ];
+    }
+
+    /** Saved frontend menu order (known keys only, missing ones appended). */
+    public static function frontendMenuOrder()
+    {
+        $keys = array_keys(self::frontendMenuKeys());
+        $saved = self::get('frontend_menu_order', []);
+        if (!is_array($saved)) {
+            $saved = [];
+        }
+        $order = array_values(array_intersect($saved, $keys));
+        foreach ($keys as $k) {
+            if (!in_array($k, $order, true)) {
+                $order[] = $k;
+            }
+        }
+        return $order;
+    }
+
+    /** Route + label for each frontend menu key. */
+    public static function frontendMenuItem($key)
+    {
+        $map = [
+            'buy_tickets' => ['route' => 'events', 'label' => 'file.Buy Tickets'],
+            'home'        => ['route' => 'home', 'label' => 'file.Home'],
+            'about'       => ['route' => 'about', 'label' => 'file.About Us'],
+            'gallery'     => ['route' => 'gallery.page', 'label' => 'file.Gallery'],
+            'contact'     => ['route' => 'contact', 'label' => 'file.Contact Us'],
+            'vote_now'    => ['route' => 'team', 'label' => 'file.Vote Now'],
+        ];
+
+        return $map[$key] ?? null;
+    }
+
     /** Sections that can be toggled on/off from the admin. */
     /** Homepage section toggles (popup is managed in its own card). */
     public static function homepageSectionKeys()
@@ -129,6 +174,9 @@ class SiteContent
                 'grading-setting', 'coin', 'expense', 'people', 'contestants',
                 'account', 'report', 'about-us', 'site-content', 'setting',
             ],
+            'frontend_menu_order' => [
+                'buy_tickets', 'home', 'about', 'gallery', 'contact', 'vote_now',
+            ],
             'primes_title' => 'Finals Schedule',
             // date is ISO (YYYY-MM-DD HH:MM) so the front-end can count down.
             'primes' => [
@@ -185,7 +233,7 @@ class SiteContent
             $merged['sections'] = array_merge($defaults['sections'], $data['sections']);
         }
         // arrays of rows must replace, not merge by index
-        foreach (['casting_rows', 'primes', 'menu_order', 'gallery'] as $listKey) {
+        foreach (['casting_rows', 'primes', 'menu_order', 'frontend_menu_order', 'gallery'] as $listKey) {
             if (isset($data[$listKey]) && is_array($data[$listKey])) {
                 $merged[$listKey] = array_values($data[$listKey]);
             }

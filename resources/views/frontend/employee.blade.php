@@ -111,10 +111,7 @@
                                         <button class="nav-link" id="video-tab" data-bs-toggle="tab" data-bs-target="#video-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">{{trans('file.Videos')}}</button>
                                     </li>
                                     <li class="nav-item" role="presentation">
-                                        <button class="nav-link" id="shorts-tab" data-bs-toggle="tab" data-bs-target="#shorts-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">{{trans('file.Shorts')}}</button>
-                                    </li>
-                                    <li class="nav-item" role="presentation">
-                                        <button class="nav-link" id="youtube-tab" data-bs-toggle="tab" data-bs-target="#youtube-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">{{trans('file.Youtube Videos')}}</button>
+                                        <button class="nav-link" id="social-tab" data-bs-toggle="tab" data-bs-target="#social-tab-pane" type="button" role="tab" aria-selected="false">{{ trans('file.Social Media') }}</button>
                                     </li>
                                 </ul>
                                 <div class="tab-content" id="myTabContent">
@@ -167,31 +164,19 @@
                                         </div>
                                     </div>
 
-                                    {{--                                    shorts--}}
-                                    <div class="tab-pane fade" id="shorts-tab-pane" role="tabpanel" aria-labelledby="shorts-tab" tabindex="0">
+                                    {{-- Social media embeds --}}
+                                    <div class="tab-pane fade" id="social-tab-pane" role="tabpanel" aria-labelledby="social-tab" tabindex="0">
                                         <div class="ms-product-dcontent">
                                             <div class="ms-product-text mb-60">
-                                                <div class="row">
-                                                    @foreach($shorts as $short)
-                                                        <div class="col-md-3">
-                                                            <iframe src="{{$short->file}}" width="200" height="400"></iframe>
-                                                        </div>
+                                                @if($socialLinks->isEmpty())
+                                                    <p class="text-muted">{{ trans('file.No social links yet') }}</p>
+                                                @else
+                                                <div class="mg-social-embed-grid">
+                                                    @foreach($socialLinks as $social)
+                                                        @include('partials.social-embed', ['item' => $social])
                                                     @endforeach
                                                 </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {{--                                    youtube--}}
-                                    <div class="tab-pane fade" id="youtube-tab-pane" role="tabpanel" aria-labelledby="youtube-tab" tabindex="0">
-                                        <div class="ms-product-dcontent">
-                                            <div class="ms-product-text mb-60">
-                                                <div class="row">
-                                                    @foreach($youtubes as $youtube)
-                                                        <div class="col-md-4">
-                                                            <iframe src="{{$youtube->file}}" width="400" height="290"></iframe>
-                                                        </div>
-                                                    @endforeach
-                                                </div>
+                                                @endif
                                             </div>
                                         </div>
                                     </div>

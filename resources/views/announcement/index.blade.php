@@ -37,7 +37,7 @@
                     <td>{{ $item->createdBy ? $item->createdBy->name : 'N/N'}}</td>
                     <td>{{ $item->created_at->format('d-M, Y')}}</td>
                     @if($item->is_sent == 0)
-                        <td><span class="badge badge-warning">Pending</span></td>
+                        <td><span class="badge badge-warning">{{ ($item->status ?? '') === 'scheduled' ? 'Scheduled' : 'Pending' }}</span></td>
                     @elseif($item->is_sent == 1)
                         <td><span class="badge badge-success">Sent</span></td>
                     @else
@@ -50,6 +50,9 @@
                                 <span class="sr-only">Toggle Dropdown</span>
                             </button>
                             <ul class="dropdown-menu edit-options dropdown-menu-right dropdown-default">
+                                <li>
+                                    <a href="{{ route('announcement.clone', $item->id) }}" class="btn btn-link"><i class="fa fa-copy"></i> {{ trans('file.Clone') }}</a>
+                                </li>
                                 <li>
                                     <a href="{{ route('announcement.send', $item->id) }}" class="btn btn-link"><i class="fa fa-send"></i> {{trans('file.Send')}}</a>
                                 </li>

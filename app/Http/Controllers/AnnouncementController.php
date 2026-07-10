@@ -6,6 +6,7 @@ use App\Announcement;
 use App\AnnouncementAttachment;
 use App\Customer;
 use App\GeneralSetting;
+use App\Helpers\AnnouncementRecipient;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,81 +21,109 @@ class AnnouncementController extends Controller
         $data = Announcement::where('is_active', true)->orderBy('id', 'desc')->get();
         return view('announcement.index', compact('data'));
     }
-    public function create()
+    public function create(Request $request)
     {
-        $user = User::where('is_active', true)->where('role_id', '!=' , 3)->get();
-        $customer = User::where('is_active', true)->where('role_id', 3)->get();
-        return view('announcement.create', compact('user', 'customer'));
+        $categories = AnnouncementRecipient::categories();
+        $clone = null;
+        if ($request->filled('clone')) {
+            $clone = Announcement::with('attachmentLib')->find($request->clone);
+        }
+
+        return view('announcement.create', compact('categories', 'clone'));
+    }
+
+    public function cloneAnnouncement($id)
+    {
+        $source = Announcement::with('attachmentLib')->findOrFail($id);
+
+        return redirect()->route('announcement.create', ['clone' => $source->id]);
+    }
+
+    public function recipients(Request $request)
+    {
+        $category = (string) $request->query('category', 'contestants');
+        $query = $request->query('q');
+
+        return response()->json([
+            'items' => AnnouncementRecipient::listForCategory($category, $query),
+        ]);
     }
 
     public function store(Request $request)
     {
-        $data = $request->all();
+        $data = $request->except(['attachments', 'to_csv', 'recipients', 'schedule_times', 'reminder_times', 'send_now', 'schedule_later']);
+
+        $audience = $request->input('audience_category', $request->input('people_type', 'users'));
+        $data['audience_category'] = $audience;
+        $data['people_type'] = in_array($audience, ['csv'], true) ? 'csv' : 'user';
+
+        $recipientPayload = $request->input('recipients');
+        if (is_string($recipientPayload)) {
+            $recipientPayload = json_decode($recipientPayload, true);
+        }
+        if ($audience === 'csv') {
+            $toCsv = $request->file('to_csv');
+            if ($toCsv) {
+                $csvName = date('Ymdhis') . $toCsv->getClientOriginalName();
+                $toCsv->move('public/announcement/csv', $csvName);
+                $data['to'] = $csvName;
+            }
+            $data['recipients_json'] = null;
+        } elseif (is_array($recipientPayload) && count($recipientPayload)) {
+            $data['recipients_json'] = AnnouncementRecipient::storePayload($recipientPayload);
+            $data['to'] = implode(',', array_map(function ($r) {
+                return AnnouncementRecipient::recipientKey($r);
+            }, json_decode($data['recipients_json'], true)));
+        } elseif ($audience === 'everyone') {
+            $all = AnnouncementRecipient::listForCategory('everyone');
+            $data['recipients_json'] = AnnouncementRecipient::storePayload($all);
+            $data['to'] = implode(',', array_map([AnnouncementRecipient::class, 'recipientKey'], $all));
+        } else {
+            return back()->with('not_permitted', 'Please select at least one recipient.');
+        }
+
+        $scheduleLater = $request->boolean('schedule_later');
+        $scheduleTimes = array_filter((array) $request->input('schedule_times', []));
+        $reminderTimes = array_filter((array) $request->input('reminder_times', []));
+        $data['schedules_json'] = $scheduleLater ? json_encode(AnnouncementRecipient::normalizeSlots($scheduleTimes)) : null;
+        $data['reminders_json'] = count($reminderTimes) ? json_encode(AnnouncementRecipient::normalizeSlots($reminderTimes)) : null;
+
+        $sendNow = $request->boolean('send_now');
+        if ($scheduleLater && count($scheduleTimes)) {
+            $data['status'] = 'scheduled';
+            $data['is_sent'] = false;
+        } else {
+            $data['status'] = $sendNow ? 'draft' : 'draft';
+            $data['is_sent'] = false;
+        }
 
         $image = $request->attachment;
         if (isset($image)) {
-            $imageName = date("Ymdhis").$image->getClientOriginalName();
+            $imageName = date('Ymdhis') . $image->getClientOriginalName();
             $image->move('public/announcement/attachment', $imageName);
             $data['attachment'] = $imageName;
         }
 
-        if($data['people_type'] == "customer") {
-            $data['to_customer'] = array_unique($data['to_customer']);
-            $data['cc_customer'] = isset($data['cc_customer']) ? array_unique($data['cc_customer']) : [];
-            $data['to'] = implode(",", $data['to_customer']);
-            $data['cc'] = isset($data['cc_customer']) ? implode(",", $data['cc_customer']) : null;
-        } else if($data['people_type'] == "user") {
-            $data['to'] = array_unique($data['to']);
-            $data['cc'] = isset($data['cc']) ? array_unique($data['cc']) : [];
-            $data['to'] = implode(",", $data['to']);
-            $data['cc'] = isset($data['cc']) ? implode(",", $data['cc']) : null;
-        } else if($data['people_type'] == "csv") {
-            $to_csv = $request->to_csv;
-            if (isset($to_csv)) {
-                $imageName = date("Ymdhis").$to_csv->getClientOriginalName();
-                $to_csv->move('public/announcement/csv', $imageName);
-                $data['to'] = $imageName;
-            }
-        }
-
-
-        $image = $request->attachments;
-        if (isset($image[0])) {
-            $imageName = date("Ymdhis").$image[0]->getClientOriginalName();
-            $image[0]->move('public/announcement/attachment', $imageName);
-            $data['attachment'] = $imageName;
-        }
-
         $data['created_by'] = Auth::user()->id;
+        unset($data['customer_type'], $data['to_customer_group'], $data['is_template'], $data['to_customer'], $data['cc_customer']);
 
-
-        unset($data['customer_type']);
-        unset($data['to_customer_group']);
-        unset($data['is_template']);
-        unset($data['to_customer']);
-        unset($data['cc_customer']);
-        unset($data['to_csv']);
-        if(isset($data['attachments'])) {
-            $data_multiple['attachments'] = $data['attachments'];
-        }
-        unset($data['attachments']);
-
+        $attachments = $request->file('attachments', []);
         $announcement = Announcement::create($data);
 
-        $attachments = isset($data_multiple['attachments']) ? $data_multiple['attachments'] : [];
         if ($attachments) {
             foreach ($attachments as $key => $attachment) {
-                if($key == 0) {
-                    AnnouncementAttachment::create(['announcement_id' => $announcement->id, 'attachment' => $imageName]);
-                } else {
-                    $attachmentName = date("Ymdhis").$attachments[$key]->getClientOriginalName();
-                    $attachments[$key]->move('public/announcement/attachment', $attachmentName);
-                    AnnouncementAttachment::create(['announcement_id' => $announcement->id, 'attachment' => $attachmentName]);
-                }
+                $attachmentName = date('Ymdhis') . $attachments[$key]->getClientOriginalName();
+                $attachments[$key]->move('public/announcement/attachment', $attachmentName);
+                AnnouncementAttachment::create(['announcement_id' => $announcement->id, 'attachment' => $attachmentName]);
             }
         }
 
-        return redirect()->route('announcement.create')->with('message', 'Announcement created successfully');
+        if ($sendNow && !$scheduleLater) {
+            $this->deliverAnnouncement($announcement);
+            $announcement->update(['is_sent' => true, 'status' => 'sent']);
+        }
+
+        return redirect()->route('announcement.index')->with('message', $sendNow ? 'Announcement sent successfully' : 'Announcement saved successfully');
     }
 
     public function edit($id)
@@ -174,54 +203,26 @@ class AnnouncementController extends Controller
 
     public function send(Announcement $announcement, $id)
     {
-        $announcement = $announcement->find($id);
+        $announcement = $announcement->findOrFail($id);
+        $this->deliverAnnouncement($announcement);
+        $announcement->update(['is_sent' => true, 'status' => 'sent']);
 
-        if ($announcement->people_type == 'csv') {
-
-            $csv_path = public_path('announcement/csv/');
-//            $csv_path = public_path('public/announcement/csv/');
-            $csvFilePath = $csv_path.$announcement->to;
-            $file = fopen($csvFilePath, 'r');
-
-            if ($file !== false) {
-                $firstRow = true;
-                while (($data = fgetcsv($file)) !== false) {
-                    $lims_customer_data = '';
-                    if ($firstRow) {
-                        $firstRow = false; // Set the flag to false after skipping the first row
-                        continue; // Skip processing the first row
-                    }
-                    $lims_customer_data = (object) $data;
-                    $lims_customer_data->name = $data[0];
-                    $lims_customer_data->phone = $data[1];
-                    $lims_customer_data->email = $data[2] ?? '';
-
-                    $this->sendAnnouncementMsg($announcement, $lims_customer_data);
-                }
-            }
-            $announcement->update(['is_sent'=>true]);
-            return redirect()->back()->with('message', 'Announcement has been sent');
-
-        } elseif($announcement->people_type == 'customer') {
-            $customer = User::class;
-        } else {
-            $customer = User::class;
-        }
-
-        foreach (explode(",", $announcement->to) as $to) {
-            $lims_customer_data = $customer::find($to);
-            $this->sendAnnouncementMsg($announcement, $lims_customer_data);
-        }
-        if ($announcement->cc != null) {
-            foreach (explode(",", $announcement->cc) as $cc) {
-                $lims_customer_data = $customer::find($cc);
-                $this->sendAnnouncementMsg($announcement, $lims_customer_data);
-            }
-        }
-
-        $announcement->update(['is_sent'=>true]);
         return redirect()->back()->with('message', 'Announcement has been sent');
+    }
 
+    public function deliverAnnouncement(Announcement $announcement): void
+    {
+        $announcement->load('attachmentLib');
+        $recipients = AnnouncementRecipient::resolveForAnnouncement($announcement);
+
+        foreach ($recipients as $row) {
+            $recipient = AnnouncementRecipient::toRecipientObject($row);
+            if (empty($recipient->phone)) {
+                continue;
+            }
+            $this->sendAnnouncementMsg($announcement, $recipient);
+            usleep(500000);
+        }
     }
 
 

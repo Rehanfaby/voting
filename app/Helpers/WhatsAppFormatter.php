@@ -6,20 +6,23 @@ class WhatsAppFormatter
 {
     public static function siteName(): string
     {
-        return getenv('APP_NAME') ?: config('app.name', 'Mulema GC');
+        return 'Mulemagc';
     }
 
     public static function siteUrl(): string
     {
-        return rtrim(config('app.url', url('/')), '/');
+        $url = rtrim((string) config('app.url', url('/')), '/');
+        if (strpos($url, 'localhost') !== false || strpos($url, '127.0.0.1') !== false) {
+            return 'https://mulemagc.com';
+        }
+
+        return $url;
     }
 
     /** Top brand line (shown like WhatsApp link preview header). */
     public static function brandLine(): string
     {
-        $host = parse_url(self::siteUrl(), PHP_URL_HOST) ?: 'mulemagc.com';
-
-        return "🔗 *" . self::siteName() . "*\n" . $host . "\n\n";
+        return "🔗 *Mulemagc*\n\n";
     }
 
     /** Bilingual section heading with separator. */

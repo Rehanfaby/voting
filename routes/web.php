@@ -43,7 +43,7 @@ Route::group([], function() {
     Route::get('/about', 'HomeController@about')->name('about');
     Route::get('/gallery', 'HomeController@gallery')->name('gallery.page');
     Route::get('/contact', 'HomeController@contact')->name('contact');
-    Route::post('/contact/message', 'HomeController@contactMessage')->name('contact.message');
+    Route::post('/contact/message', 'HomeController@contactMessage')->name('contact.message')->middleware('throttle:5,10');
     Route::get('user/contentant', 'HomeController@userContentant')->name('user.contentant')->middleware('auth');
     Route::get('musician/data/{id}', 'HomeController@employee')->name('musician.data');
     Route::post('musician/find', 'HomeController@employeeFind')->name('musician.find');
@@ -295,6 +295,8 @@ Route::group(['middleware' => ['auth', 'active', 'checkOtp']], function() {
     Route::resource('coins', 'CoinController');
     Route::post('coins/deletebyselection', 'CoinController@deleteBySelection');
 
+    Route::get('/announcement/recipients', 'AnnouncementController@recipients')->name('announcement.recipients');
+    Route::get('/announcement/{id}/clone', 'AnnouncementController@cloneAnnouncement')->name('announcement.clone');
     Route::get('/announcement/index', 'AnnouncementController@index')->name('announcement.index');
     Route::get('/announcement/create', 'AnnouncementController@create')->name('announcement.create');
     Route::get('/announcement/show/{id}', 'AnnouncementController@show')->name('announcement.show');

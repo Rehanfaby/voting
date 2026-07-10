@@ -20,16 +20,36 @@ class AmbassadorPointController extends Controller
 
     public function index()
     {
-        if ($this->isGradingAvailable()) {
-            $role = Auth::user()->role_id;
-            if (Auth::user()->role_id == $this->getJudgeRoleId()) {
-                $points = AmbassadorPoint::with(['ambassador', 'contestant'])->where('ambassador_id', Auth::user()->id)->get();;
-            } else {
-                $points = AmbassadorPoint::with(['ambassador', 'contestant'])->get();
-            }
-        } else {
-            $points = [];
+        if (!$this->isGradingAvailable()) {
+            return view('ambassador_points.index', [
+                'points' => collect(),
+                'grading_disabled' => true,
+            ]);
         }
+
+        $ambassadorRole = Role::where('name', 'ambassador')->first();
+        if (!$ambassadorRole) {
+            return view('ambassador_points.index', [
+                'points' => collect(),
+                'grading_disabled' => true,
+            ]);
+        }
+
+        if (Auth::user()->role_id == $ambassadorRole->id) {
+            $points = AmbassadorPoint::with(['ambassador', 'contestant'])
+                ->whereHas('contestant')
+                ->whereHas('ambassador')
+                ->where('ambassador_id', Auth::user()->id)
+                ->latest()
+                ->get();
+        } else {
+            $points = AmbassadorPoint::with(['ambassador', 'contestant'])
+                ->whereHas('contestant')
+                ->whereHas('ambassador')
+                ->latest()
+                ->get();
+        }
+
         return view('ambassador_points.index', compact('points'));
     }
 
@@ -147,8 +167,6 @@ class AmbassadorPointController extends Controller
     private function isGradingAvailable()
     {
         $setting = GeneralSetting::first();
-        if ($setting->available_grading) {
-            return true;
-        }
+        return $setting && (bool) $setting->available_grading;
     }
 }

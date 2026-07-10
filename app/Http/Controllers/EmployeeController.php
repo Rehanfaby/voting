@@ -340,23 +340,40 @@ class EmployeeController extends Controller
     public function uploadStore(Request $request)
     {
         $data['employee_id'] = $request['employee_id'];
+        $data['type'] = $request['type'];
+        if (!empty($request['employee_name'])) {
+            $data['employee_name'] = $request['employee_name'];
+        }
+
+        $linkTypes = \App\Helpers\SocialEmbed::linkTypes();
+        if (in_array($data['type'], $linkTypes, true)) {
+            $url = trim((string) $request->input('file_path', ''));
+            if ($url === '') {
+                return back()->with('not_permitted', 'Please paste a valid link.');
+            }
+            $normalized = \App\Helpers\SocialEmbed::normalizeForStorage($url, $data['type']);
+            if (!$normalized) {
+                return back()->with('not_permitted', 'Could not recognize that link. Check the URL and try again.');
+            }
+            $data['file'] = $normalized;
+            Gallery::create($data);
+
+            return back()->with('message', 'Link added successfully');
+        }
 
         $file = $request->file;
-        $data['type'] = $request['type'];
-        if($data['type'] == 'link' || $data['type'] == 'short'){
-            $data['file'] = "https://www.youtube.com/embed/" . $request['file_path'];
-        } else {
-            if ($file) {
-                $ext = pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION);
-                $imageName = preg_replace('/[^a-zA-Z0-9]/', '', $request['file']);
-                $imageName = $imageName . '.' . $ext;
-                $file->move('public/employee/data', $imageName);
-                if (in_array(strtolower($ext), ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
-                    \App\Helpers\ImageOptimizer::optimize(public_path('employee/data/' . $imageName), 1280, 80);
-                }
-
-                $data['file'] = $imageName;
+        if ($file) {
+            $ext = pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION);
+            $imageName = preg_replace('/[^a-zA-Z0-9]/', '', $request['file']);
+            $imageName = $imageName . '.' . $ext;
+            $file->move('public/employee/data', $imageName);
+            if (in_array(strtolower($ext), ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+                \App\Helpers\ImageOptimizer::optimize(public_path('employee/data/' . $imageName), 1280, 80);
             }
+
+            $data['file'] = $imageName;
+        } else {
+            return back()->with('not_permitted', 'Please choose a file to upload.');
         }
 
         Gallery::create($data);

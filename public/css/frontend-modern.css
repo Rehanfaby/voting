@@ -1182,3 +1182,50 @@ footer .ms-footer-bg { background-color: transparent !important; }
 @media (min-width: 1400px) {
     .mg-contestant-card__avatar { width: 170px; height: 170px; }
 }
+
+/* Social media embeds on contestant page */
+.mg-social-embed-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.25rem;
+    padding: 1rem 0;
+}
+.mg-social-embed {
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 12px;
+    overflow: hidden;
+}
+.mg-social-embed__badge {
+    display: inline-block;
+    padding: .35rem .75rem;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    color: var(--mg-cosmic-2);
+    background: rgba(255,255,255,.06);
+}
+.mg-social-embed__frame-wrap {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%;
+    background: #000;
+}
+.mg-social-embed--vertical .mg-social-embed__frame-wrap {
+    padding-bottom: 177.78%;
+    max-width: 325px;
+    margin: 0 auto;
+}
+.mg-social-embed__frame-wrap iframe {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    border: 0;
+}
+.popup-image-link {
+    display: block;
+    cursor: pointer;
+    transition: opacity .2s ease;
+}
+.popup-image-link:hover { opacity: .92; }

@@ -426,6 +426,12 @@
                             ['role_id', $role->id]
                         ])->first();
 
+                        $announcement_permission = DB::table('permissions')->where('name', 'announcement_index')->first();
+                        $announcement_permission_active = $announcement_permission ? DB::table('role_has_permissions')->where([
+                            ['permission_id', $announcement_permission->id],
+                            ['role_id', $role->id]
+                        ])->first() : null;
+
 
                         ?>
                         @if($role->name == 'Admin')
@@ -436,9 +442,9 @@
                                 <a href="" id="send-notification">{{trans('file.Send Notification')}}</a>
                             </li>
                         @endif
-                        @if(in_array('announcement_index', $all_permission))
+                        @if($announcement_permission_active)
                             <li id="announcement-menu">
-                                <a href="{{ route('announcement.index') }}">{{trans('file.Announcement')}}</a>
+                                <a href="{{ route('announcement.index') }}">{{ trans('file.Announcement') }}</a>
                             </li>
                         @endif
                         @if($currency_permission_active)

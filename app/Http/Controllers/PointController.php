@@ -21,16 +21,35 @@ class PointController extends Controller
 
     public function index()
     {
-        if ($this->isGradingAvailable()) {
-            if(Auth::user()->role_id == $this->getJudgeRoleId()) {
-                $points = Point::with(['judge','contestant'])->where('judge_id', Auth::user()->id)->latest()->get();
-            } else {
-                $points = Point::with(['judge','contestant'])->latest()->get();
-            }
-        } else {
-            $points = [];
+        if (!$this->isGradingAvailable()) {
+            return view('points.index', [
+                'points' => collect(),
+                'grading_disabled' => true,
+            ]);
         }
 
+        $judgeRole = Role::where('name', 'judge')->first();
+        if (!$judgeRole) {
+            return view('points.index', [
+                'points' => collect(),
+                'grading_disabled' => true,
+            ]);
+        }
+
+        if (Auth::user()->role_id == $judgeRole->id) {
+            $points = Point::with(['judge', 'contestant'])
+                ->whereHas('contestant')
+                ->whereHas('judge')
+                ->where('judge_id', Auth::user()->id)
+                ->latest()
+                ->get();
+        } else {
+            $points = Point::with(['judge', 'contestant'])
+                ->whereHas('contestant')
+                ->whereHas('judge')
+                ->latest()
+                ->get();
+        }
 
         return view('points.index', compact('points'));
     }
@@ -168,9 +187,7 @@ class PointController extends Controller
     private function isGradingAvailable()
     {
         $setting = GeneralSetting::first();
-        if ($setting->available_grading) {
-            return true;
-        }
+        return $setting && (bool) $setting->available_grading;
     }
 
 }

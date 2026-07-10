@@ -22,9 +22,9 @@ return [
     | Bump this on each release. Displayed on the login screen and footer.
     */
 
-    'version' => env('APP_VERSION', '2.1.9'),
+    'version' => env('APP_VERSION', '2.2.0'),
 
-    'version_label' => 'MGC V.' . env('APP_VERSION', '2.1.9'),
+    'version_label' => 'MGC V.' . env('APP_VERSION', '2.2.0'),
 
     /*
     |--------------------------------------------------------------------------
@@ -41,6 +41,16 @@ return [
     |--------------------------------------------------------------------------
     */
     'allow_env_editor' => env('ALLOW_ENV_EDITOR', false),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Demo / write protection
+    |--------------------------------------------------------------------------
+    | When false, destructive settings and profile updates are blocked.
+    | Defaults to true so production installs work even when config is cached
+    | and USER_VERIFIED is not in the cached config.
+    */
+    'user_verified' => filter_var(env('USER_VERIFIED', true), FILTER_VALIDATE_BOOLEAN),
 
     'campay_webhook_secret' => env('CAMPAY_WEBHOOK_SECRET'),
 

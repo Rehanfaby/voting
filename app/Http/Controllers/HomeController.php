@@ -96,12 +96,27 @@ class HomeController extends Controller
     }
 
      public function contactMessage(Request $request){
+        // Honeypot: bots fill hidden fields humans never see. Silently drop.
+        if ($request->filled('website') || $request->filled('company_url')) {
+            return back()->with('message', trans('file.Your message has been sent'));
+        }
+
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:120',
             'number' => 'required|string|max:40',
             'email' => 'nullable|email|max:255',
-            'message' => 'required|string|max:5000',
+            'message' => 'required|string|max:2000',
         ]);
+
+        // Spam heuristics: block link-laden / bot promotional submissions.
+        if ($this->looksLikeSpam($request->name, $request->message, $request->number)) {
+            \Log::info('Blocked spam contact submission', [
+                'ip' => $request->ip(),
+                'name' => $request->name,
+            ]);
+            // Pretend success so bots don't learn they were blocked.
+            return back()->with('message', trans('file.Your message has been sent'));
+        }
 
         $adminNumber = getenv('ADMIN_NUMBER') ?: '237675321739';
         $msg = WhatsAppFormatter::brandLine();
@@ -128,6 +143,43 @@ class HomeController extends Controller
          return back()->with('message', trans('file.Your message has been sent'));
      }
 
+    /**
+     * Lightweight spam detection for the public contact form.
+     * The abuse we see is bot-generated promotional text stuffed with links.
+     */
+    private function looksLikeSpam($name, $message, $number)
+    {
+        $name = (string) $name;
+        $message = (string) $message;
+        $haystack = strtolower($name . ' ' . $message);
+
+        // Any URL / link markup is the strongest signal for this form,
+        // which is meant for short "get in touch" notes, not links.
+        if (preg_match('~(https?://|www\.|\bt\.me/|\[url|\bhref=|</?a\b)~i', $haystack)) {
+            return true;
+        }
+
+        // Multiple domain-like tokens (e.g. site.com, mail.ru) indicate spam.
+        if (preg_match_all('~[a-z0-9-]+\.(com|net|ru|org|info|xyz|top|online|site|shop|biz)\b~i', $haystack) >= 1) {
+            return true;
+        }
+
+        // Common spam keywords across the messages we received.
+        $keywords = ['seo', 'backlink', 'crypto', 'casino', 'viagra', 'loan', 'bitcoin', 'traffic to your', 'rank your', 'guest post'];
+        foreach ($keywords as $kw) {
+            if (strpos($haystack, $kw) !== false) {
+                return true;
+            }
+        }
+
+        // Phone must contain digits; bots sometimes stuff text here.
+        if (!preg_match('~\d~', (string) $number)) {
+            return true;
+        }
+
+        return false;
+    }
+
     public function admin() {
 
         if(Auth::user()) {
@@ -149,7 +201,10 @@ class HomeController extends Controller
         // Admins reach the dashboard via '/admin' (see HomeController@admin).
 
         $musicians = Employee::where('is_active', true)->where('is_approve', true)->get();
-        $judges = Judge::where('is_active', true)->orderBy('sort_order')->orderBy('id')->get();
+        $judges = Judge::where('is_active', true)
+            ->whereNotIn('name', Ambassador::pluck('name'))
+            ->where('name', 'not like', 'Ambassador %')
+            ->orderBy('sort_order')->orderBy('id')->get();
         $ambassadors = Ambassador::where('is_active', true)->orderBy('sort_order')->orderBy('id')->get();
         $partners = \App\Partner::where('is_active', true)->orderBy('sort_order')->orderBy('id')->get();
 
@@ -244,13 +299,14 @@ class HomeController extends Controller
         $images = Gallery::where('employee_id', $id)->where('type', 'image')->get();
         $audios = Gallery::where('employee_id', $id)->where('type', 'audio')->get();
         $videos = Gallery::where('employee_id', $id)->where('type', 'video')->get();
-        $shorts = Gallery::where('employee_id', $id)->where('type', 'short')->get();
-        $youtubes = Gallery::where('employee_id', $id)->where('type', 'link')->get();
+        $socialLinks = Gallery::where('employee_id', $id)
+            ->whereIn('type', \App\Helpers\SocialEmbed::linkTypes())
+            ->get();
         $contentants = Employee::where('is_active', true)->where('is_approve', true)->get();
         $teamData = $this->contestantTeamPageData($contentants);
 
         return view('frontend.employee', array_merge(
-            compact('musician', 'contentants', 'images', 'audios', 'videos', 'shorts', 'youtubes', 'vote_count'),
+            compact('musician', 'contentants', 'images', 'audios', 'videos', 'socialLinks', 'vote_count'),
             $teamData
         ));
     }
