@@ -1114,6 +1114,7 @@ return [
     'Sec' => 'Sec',
     'Could not save ticket' => 'Could not save ticket. Please check the form and try again.',
     'Please fill in all required fields' => 'Please fill in all required fields.',
+    'Landing Menu' => 'Landing Menu',
     'Logos' => 'Logos',
     'Logo' => 'Logo',
     'Add Logo' => 'Add Logo',

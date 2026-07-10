@@ -20,7 +20,7 @@
                 @if(count($images))
                     <div class="mg-gallery-grid">
                         @foreach($images as $image)
-                            <a href="{{ $image['url'] }}" class="mg-gallery-item" @if($image['caption']) title="{{ $image['caption'] }}" @endif>
+                            <a href="{{ $image['url'] }}" class="mg-gallery-item" target="_blank" rel="noopener" @if($image['caption']) title="{{ $image['caption'] }}" @endif>
                                 <img src="{{ $image['url'] }}" alt="{{ $image['caption'] ?: 'Gallery' }}" loading="lazy" decoding="async">
                                 @if($image['caption'])
                                     <span class="mg-gallery-caption">{{ $image['caption'] }}</span>
@@ -53,7 +53,8 @@
         .mg-gallery-item img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
+            object-position: center;
             display: block;
             transition: transform .45s ease;
         }
@@ -69,15 +70,20 @@
     </style>
 
     <script>
-        (function () {
+        // Bind the lightbox after the theme's jQuery + magnificPopup have loaded
+        // (they are included at the very bottom of the layout). Falls back to
+        // opening the image in a new tab (target="_blank") when unavailable.
+        window.addEventListener('load', function () {
             if (window.jQuery && jQuery.fn.magnificPopup) {
                 jQuery('.mg-gallery-grid').magnificPopup({
                     delegate: 'a.mg-gallery-item',
                     type: 'image',
                     gallery: { enabled: true },
-                    image: { titleSrc: 'title' }
+                    image: { titleSrc: 'title' },
+                    mainClass: 'mfp-with-zoom',
+                    closeOnContentClick: true
                 });
             }
-        })();
+        });
     </script>
 @endsection

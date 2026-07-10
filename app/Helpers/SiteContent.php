@@ -33,8 +33,8 @@ class SiteContent
             'contestants'      => 'Contestants',
             'account'          => 'Accounting',
             'report'           => 'Reports',
-            'about-us'         => 'About Us',
             'site-content'     => 'Site Content',
+            'announcement'     => 'Announcements',
             'setting'          => 'Settings',
         ];
     }
@@ -172,7 +172,7 @@ class SiteContent
             'menu_order' => [
                 'dashboard', 'product', 'vote', 'point', 'ambassador-point',
                 'grading-setting', 'coin', 'expense', 'people', 'contestants',
-                'account', 'report', 'about-us', 'site-content', 'setting',
+                'account', 'report', 'site-content', 'announcement', 'setting',
             ],
             'frontend_menu_order' => [
                 'buy_tickets', 'home', 'about', 'gallery', 'contact', 'vote_now',

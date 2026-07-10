@@ -51,7 +51,7 @@
         }
 
 
-        .popup-image {
+        .mg-popup-image {
             max-width: 100%;
             max-height: 80vh; /* Make it responsive to screen height */
             height: auto;
@@ -74,7 +74,7 @@
             z-index: 3;
         }
         .popup-image-link { display: block; cursor: pointer; line-height: 0; }
-        .popup-image-link:hover .popup-image { opacity: .92; }
+        .popup-image-link:hover .mg-popup-image { opacity: .92; }
         .popup-countdown {
             width: 100%;
             margin-top: 12px;
@@ -104,11 +104,11 @@
             <div class="popup-content">
                 <span class="close-btn" id="closeBtn">&times;</span>
                 @if($popupLink)
-                    <a href="{{ $popupLink }}" class="popup-image-link" id="popupImageLink">
-                        <img src="{{ \App\Helpers\SiteContent::popupImageUrl() }}" alt="Announcement" class="popup-image" />
+                    <a href="{{ $popupLink }}" class="popup-image-link" id="popupImageLink" target="_blank" rel="noopener">
+                        <img src="{{ \App\Helpers\SiteContent::popupImageUrl() }}" alt="Announcement" class="mg-popup-image" />
                     </a>
                 @else
-                    <img src="{{ \App\Helpers\SiteContent::popupImageUrl() }}" alt="Announcement" class="popup-image" />
+                    <img src="{{ \App\Helpers\SiteContent::popupImageUrl() }}" alt="Announcement" class="mg-popup-image" />
                 @endif
                 @if($popupCountdownIso)
                 <div class="popup-countdown" id="popupCountdown" data-deadline="{{ $popupCountdownIso }}">
@@ -925,6 +925,9 @@
                     items.forEach(function (item, i) {
                         item.style.animationDelay = (i * 0.12) + 's, ' + (i * 0.08 + 0.85) + 's';
                     });
+                    function revealAll() {
+                        items.forEach(function (item) { item.classList.add('is-visible'); });
+                    }
                     if ('IntersectionObserver' in window) {
                         var obs = new IntersectionObserver(function (entries) {
                             entries.forEach(function (entry) {
@@ -935,8 +938,10 @@
                             });
                         }, { threshold: 0.15 });
                         items.forEach(function (item) { obs.observe(item); });
+                        // Safety net: guarantee logos are shown even if the observer never fires.
+                        setTimeout(revealAll, 2500);
                     } else {
-                        items.forEach(function (item) { item.classList.add('is-visible'); });
+                        revealAll();
                     }
                 })();
             </script>

@@ -173,7 +173,7 @@ class SettingController extends Controller
         $menu_order = SiteContent::menuOrder();
         $partners = \App\Partner::orderBy('sort_order')->orderBy('id')->get();
         $judges = \App\Judge::orderedForDisplay();
-        $ambassadors = \App\Ambassador::orderBy('sort_order')->orderBy('id')->get();
+        $ambassadors = \App\Ambassador::where('is_active', true)->orderBy('sort_order')->orderBy('id')->get();
         $frontend_menu_labels = SiteContent::frontendMenuKeys();
         $frontend_menu_order = SiteContent::frontendMenuOrder();
 

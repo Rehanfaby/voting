@@ -23,6 +23,7 @@
             @if(in_array('employees-index', $all_permission ?? []))
             <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#sc-partners" role="tab"><i class="fa fa-images"></i> {{ trans('file.Logos') }}</a></li>
             @endif
+            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#sc-frontend_menu" role="tab"><i class="dripicons-web"></i> {{ trans('file.Landing Menu') }}</a></li>
             <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#sc-menu_order" role="tab"><i class="dripicons-menu"></i> Side Menu</a></li>
         </ul>
 
@@ -627,6 +628,42 @@
         </div>
         </div>
         @endif
+
+        {{-- Landing page (frontend header) menu order --}}
+        <div class="tab-pane fade" id="sc-frontend_menu" role="tabpanel">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h4><i class="dripicons-web"></i> {{ trans('file.Landing Menu') }} — {{ trans('file.Order') }}</h4>
+                    </div>
+                    <div class="card-body">
+                        {!! Form::open(['route' => 'setting.site_content.section', 'method' => 'post']) !!}
+                        <input type="hidden" name="section" value="frontend_menu_order">
+                        <p class="italic"><small>Reorder the public site header menu with the arrows, then press <strong>Save</strong>. This controls the order they appear on the landing page.</small></p>
+                        <ul class="sc-menu-order list-unstyled" id="sc-frontend-menu-order">
+                            @foreach($frontend_menu_order as $key)
+                                @if(isset($frontend_menu_labels[$key]))
+                                <li class="sc-menu-item" data-key="{{ $key }}">
+                                    <input type="hidden" name="frontend_menu_order[]" value="{{ $key }}">
+                                    <span class="sc-menu-label">{{ trans('file.' . $frontend_menu_labels[$key]) }}</span>
+                                    <span class="sc-menu-actions">
+                                        <button type="button" class="btn btn-sm btn-light sc-move-up" title="Move up"><i class="dripicons-chevron-up"></i></button>
+                                        <button type="button" class="btn btn-sm btn-light sc-move-down" title="Move down"><i class="dripicons-chevron-down"></i></button>
+                                    </span>
+                                </li>
+                                @endif
+                            @endforeach
+                        </ul>
+                        <div class="sc-section-actions">
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </div>
+                        {!! Form::close() !!}
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
 
         {{-- Side menu order --}}
         <div class="tab-pane fade" id="sc-menu_order" role="tabpanel">
