@@ -434,8 +434,7 @@ class HomeController extends Controller
             if ($reference == false) {
                 // Campay rejected the request before any prompt/charge — mark failed (keep the record).
                 $this->markVoteFailed($vote->id);
-                $message = 'Phone Number is incorrect or There is any other issue in payment method';
-                return redirect()->route('home')->with('not_permitted', $message);
+                return redirect()->route('home')->with('not_permitted', $this->momoFailureMessage());
             }
 
             $vote->reference = $reference;
@@ -1048,6 +1047,9 @@ class HomeController extends Controller
     const VOTE_SUCCESS = 1;
     const VOTE_FAILED = 2;
 
+    /** Details of the most recent failed Campay collect (for accurate messaging). */
+    private $lastMomoError = null;
+
     /**
      * Atomically mark a vote as paid/counted. Row-locked and idempotent so the
      * poller, the Campay webhook and the reconciliation cron can never
@@ -1425,10 +1427,17 @@ class HomeController extends Controller
         curl_close($curl);
 
         if($response_decode && isset($response_decode['reference'])) {
+            $this->lastMomoError = null;
             return $response_decode['reference'];
         }
 
-        // Surface the real reason (invalid number, insufficient funds, bad token…)
+        // Remember the real reason so the caller can show an accurate message
+        // instead of always blaming the phone number.
+        $this->lastMomoError = [
+            'http_code' => $httpCode,
+            'message' => is_array($response_decode) ? ($response_decode['message'] ?? '') : '',
+        ];
+
         \Log::warning('Campay collect failed', [
             'http_code' => $httpCode,
             'curl_error' => $curlError,
@@ -1438,6 +1447,23 @@ class HomeController extends Controller
         ]);
 
         return false;
+    }
+
+    /**
+     * Build a voter-facing message from the last MoMo collect failure. Only a
+     * genuinely malformed number is blamed on the phone; account/service issues
+     * (e.g. Campay "Unauthorized. Inactive") get a neutral "try again" message.
+     */
+    private function momoFailureMessage()
+    {
+        $http = $this->lastMomoError['http_code'] ?? null;
+        $msg = strtolower((string) ($this->lastMomoError['message'] ?? ''));
+
+        if (strpos($msg, 'inactive') !== false || strpos($msg, 'unauthorized') !== false || (int) $http === 401 || (int) $http === 403) {
+            return trans('file.Mobile Money payment is temporarily unavailable. Please try again later or contact support.');
+        }
+
+        return trans('file.We could not start the Mobile Money payment. Please check your number and try again.');
     }
 
     /**

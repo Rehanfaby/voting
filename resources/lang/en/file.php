@@ -922,6 +922,8 @@ return [
     'Momo Number' => 'Momo Number',
     'Search country' => 'Search country',
     'No country found' => 'No country found',
+    'Mobile Money payment is temporarily unavailable. Please try again later or contact support.' => 'Mobile Money payment is temporarily unavailable. Please try again later or contact support.',
+    'We could not start the Mobile Money payment. Please check your number and try again.' => 'We could not start the Mobile Money payment. Please check your number and try again.',
     'Checking number…' => 'Checking number…',
     'Name found on this number' => 'Name found on this number',
     'Enter your full name' => 'Enter your full name',

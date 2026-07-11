@@ -139,17 +139,34 @@
     if (window.__intlPhoneInit) { return; }
     window.__intlPhoneInit = true;
 
+    function digitsOnly(v) { return String(v || '').replace(/\D/g, ''); }
+
+    // Pull the local (national) part out of the visible value, dropping the
+    // dial-code prefix if it is present, so callers only type the number.
+    function extractLocal(displayVal, dial) {
+        var d = digitsOnly(displayVal);
+        if (dial && d.indexOf(dial) === 0) { d = d.slice(dial.length); }
+        return d.replace(/^0+/, '');
+    }
+
+    // Always show "+<dial> <local>" so the prefix is added automatically.
+    function formatDisplay(dial, local) {
+        return local ? ('+' + dial + ' ' + local) : ('+' + dial + ' ');
+    }
+
     function sync(wrap) {
         if (!wrap) { return; }
-        var dial = wrap.querySelector('[data-intl-dial]');
+        var dialInput = wrap.querySelector('[data-intl-dial]');
         var label = wrap.querySelector('[data-intl-dial-label]');
         var local = wrap.querySelector('[data-intl-local]');
         var hidden = wrap.querySelector('[data-intl-hidden]');
-        if (!dial || !local || !hidden) { return; }
-        var code = String(dial.value || '').replace(/\D/g, '');
-        var digits = String(local.value || '').replace(/\D/g, '').replace(/^0+/, '');
-        if (label) { label.textContent = '+' + code; }
-        hidden.value = digits ? ('+' + code + digits) : '';
+        if (!dialInput || !local || !hidden) { return; }
+        var dial = digitsOnly(dialInput.value);
+        var localDigits = extractLocal(local.value, dial);
+        if (label) { label.textContent = '+' + dial; }
+        hidden.value = localDigits ? ('+' + dial + localDigits) : '';
+        var formatted = formatDisplay(dial, localDigits);
+        if (local.value !== formatted) { local.value = formatted; }
     }
 
     function closeAll(except) {
@@ -186,16 +203,20 @@
         var option = e.target.closest('[data-intl-option]');
         if (option) {
             var wrap2 = option.closest('[data-intl-phone]');
-            var dial = wrap2.querySelector('[data-intl-dial]');
+            var dialInput = wrap2.querySelector('[data-intl-dial]');
             var flag = wrap2.querySelector('[data-intl-flag]');
-            dial.value = option.getAttribute('data-dial');
+            var localEl = wrap2.querySelector('[data-intl-local]');
+            // Keep the digits already typed while swapping the prefix.
+            var localDigits = extractLocal(localEl ? localEl.value : '', digitsOnly(dialInput.value));
+            var newDial = option.getAttribute('data-dial');
+            dialInput.value = newDial;
+            if (localEl) { localEl.value = formatDisplay(newDial, localDigits); }
             if (flag) { flag.textContent = option.querySelector('.intl-phone-field__opt-flag').textContent; }
             wrap2.querySelectorAll('[data-intl-option]').forEach(function (o) { o.classList.remove('is-selected'); });
             option.classList.add('is-selected');
             sync(wrap2);
             closeAll(null);
-            var local = wrap2.querySelector('[data-intl-local]');
-            if (local) { local.focus(); }
+            if (localEl) { localEl.focus(); }
             return;
         }
 

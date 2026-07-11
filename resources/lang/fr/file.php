@@ -958,6 +958,8 @@ return [
     'Momo Number' => 'Numéro MoMo',
     'Search country' => 'Rechercher un pays',
     'No country found' => 'Aucun pays trouvé',
+    'Mobile Money payment is temporarily unavailable. Please try again later or contact support.' => 'Le paiement Mobile Money est temporairement indisponible. Veuillez réessayer plus tard ou contacter le support.',
+    'We could not start the Mobile Money payment. Please check your number and try again.' => 'Nous n\'avons pas pu démarrer le paiement Mobile Money. Veuillez vérifier votre numéro et réessayer.',
     'Checking number…' => 'Vérification du numéro…',
     'Name found on this number' => 'Nom associé à ce numéro',
     'Enter your full name' => 'Entrez votre nom complet',
