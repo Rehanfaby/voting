@@ -60,7 +60,7 @@ class Controller extends BaseController
                         'product_data' => [
                             'name' => $musician_name,
                         ],
-                        'unit_amount' => $amount,
+                        'unit_amount' => (int) round($amount),
                     ],
                     'quantity' => 1,
                 ]],
@@ -78,10 +78,16 @@ class Controller extends BaseController
             }
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 500);
+            // Returning a JsonResponse here used to break the caller: redirect($link)
+            // would stringify the JSON (with newlines) into the Location header and
+            // throw "Header may not contain more than a single header". Return false
+            // so the caller shows a clean message, and log the real Stripe reason.
+            \Log::error('Stripe vote checkout failed: ' . $e->getMessage(), [
+                'amount' => $amount,
+                'vote_id' => $vote_id,
+            ]);
+
+            return false;
         }
     }
 
@@ -101,7 +107,7 @@ class Controller extends BaseController
                         'product_data' => [
                             'name' => $ticket->name,
                         ],
-                        'unit_amount' => $amount,
+                        'unit_amount' => (int) round($amount),
                     ],
                     'quantity' => 1,
                 ]],
@@ -119,10 +125,12 @@ class Controller extends BaseController
             }
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 500);
+            \Log::error('Stripe ticket checkout failed: ' . $e->getMessage(), [
+                'amount' => $amount,
+                'ticket_id' => $ticket_id,
+            ]);
+
+            return false;
         }
     }
 

@@ -35,7 +35,7 @@
     @endphp
 
     <main>
-        <section class="mg-pay-hero pt-130 pb-24">
+        <section class="mg-pay-hero pt-90 pb-16">
             <div class="container">
                 <div class="row justify-content-center text-center">
                     <div class="col-lg-8">
@@ -47,10 +47,10 @@
             </div>
         </section>
 
-        <section class="mg-pay-body pb-80">
+        <section class="mg-pay-body pb-50">
             <div class="container">
                 <div class="row justify-content-center">
-                    <div class="col-xl-6 col-lg-7">
+                    <div class="col-xl-5 col-lg-6 col-md-9">
                         <div class="mg-pay-card mg-pay-card--compact">
                             <div class="mg-pay-summary mg-pay-summary--compact">
                                 <div class="mg-pay-summary__avatar mg-pay-summary__avatar--sm">
@@ -103,6 +103,7 @@
                                 <div class="mg-field">
                                     <label for="voter_name">{{ trans('file.Voter name') }}</label>
                                     <input id="voter_name" type="text" name="voter_name" class="mg-text-input" placeholder="{{ trans('file.Enter your full name') }}" value="{{ old('voter_name', $voterName) }}" required maxlength="120">
+                                    <small id="voter_name_status" class="mg-pay-name-status" aria-live="polite"></small>
                                 </div>
 
                                 @if($paymentSimulate)
@@ -145,15 +146,15 @@
 @section('styles')
 <style>
     .mg-pay-hero { background: radial-gradient(900px 420px at 50% -20%, rgba(232,119,34,.12), transparent 60%); }
-    .mg-pay-kicker { display:inline-block; color:#e87722; font-weight:800; letter-spacing:2px; text-transform:uppercase; font-size:12px; margin-bottom:8px; }
-    .mg-pay-title { color:#fff; font-size:32px; font-weight:800; margin:0 0 8px; }
-    .mg-pay-lead { color:rgba(255,255,255,.75); font-size:15px; margin:0; }
-    .mg-pay-card { background:#fff; border-radius:20px; border:1px solid rgba(232,119,34,.22); box-shadow:0 24px 60px rgba(3,12,28,.45); overflow:hidden; }
+    .mg-pay-kicker { display:inline-block; color:#e87722; font-weight:800; letter-spacing:2px; text-transform:uppercase; font-size:11px; margin-bottom:6px; }
+    .mg-pay-title { color:#fff; font-size:26px; font-weight:800; margin:0 0 6px; }
+    .mg-pay-lead { color:rgba(255,255,255,.75); font-size:14px; margin:0; }
+    .mg-pay-card { background:#fff; border-radius:18px; border:1px solid rgba(232,119,34,.22); box-shadow:0 20px 50px rgba(3,12,28,.4); overflow:hidden; max-width:440px; margin:0 auto; }
     .mg-pay-summary { display:flex; gap:14px; align-items:center; padding:18px 20px 14px; background:linear-gradient(135deg,#0c2f6b,#0a2350); color:#fff; }
     .mg-pay-summary__avatar--sm { width:64px; height:64px; flex:0 0 64px; border-radius:50%; overflow:hidden; border:2px solid #e87722; box-shadow:0 0 0 4px rgba(232,119,34,.2); }
     .mg-pay-summary__avatar--sm img { width:100%; height:100%; object-fit:cover; display:block; }
     .mg-pay-summary__label { display:block; font-size:11px; letter-spacing:1px; text-transform:uppercase; color:rgba(255,255,255,.65); margin-bottom:2px; }
-    .mg-pay-summary__name { font-size:18px; font-weight:800; margin:0 0 6px; line-height:1.25; }
+    .mg-pay-summary__name { font-size:19px; font-weight:800; margin:0 0 6px; line-height:1.25; color:#ffffff !important; -webkit-text-fill-color:#ffffff; text-shadow:0 1px 2px rgba(0,0,0,.25); }
     .mg-pay-summary__meta { display:flex; flex-wrap:wrap; gap:10px; align-items:center; font-size:13px; }
     .mg-pay-summary__meta i { color:#e87722; margin-right:4px; }
     .mg-pay-summary__amount { background:rgba(232,119,34,.18); border:1px solid rgba(232,119,34,.45); color:#ff9533; font-weight:800; padding:3px 10px; border-radius:20px; font-size:12px; }
@@ -174,8 +175,15 @@
     .mg-text-input { width:100%; border:1px solid #dbe4f3; border-radius:12px; background:#fff !important; padding:11px 14px; font-size:15px; color:#14223f !important; -webkit-text-fill-color:#14223f; outline:none; }
     .mg-text-input::placeholder { color:#94a3b8 !important; -webkit-text-fill-color:#94a3b8; }
     .mg-text-input:focus { background:#fff !important; border-color:#e87722; }
-    .mg-pay-card .cm-phone-field__input { color:#14223f !important; -webkit-text-fill-color:#14223f; }
-    .mg-pay-card .cm-phone-field__input::placeholder { color:#94a3b8 !important; -webkit-text-fill-color:#94a3b8; }
+    .mg-pay-card .cm-phone-field__input,
+    .mg-pay-card .intl-phone-field__input,
+    .mg-pay-card .intl-phone-field__search-input { color:#14223f !important; -webkit-text-fill-color:#14223f; }
+    .mg-pay-card .cm-phone-field__input::placeholder,
+    .mg-pay-card .intl-phone-field__input::placeholder { color:#94a3b8 !important; -webkit-text-fill-color:#94a3b8; }
+    .mg-pay-name-status { display:block; margin-top:4px; font-size:11.5px; min-height:14px; }
+    .mg-pay-name-status.is-loading { color:#6b7a93; }
+    .mg-pay-name-status.is-found { color:#0a7d33; }
+    .mg-pay-name-status.is-error { color:#c2410c; }
     .mg-pay-submit { width:100%; justify-content:center; margin-top:4px; font-size:15px; padding:13px 20px; }
     @media (max-width:575px) {
         .mg-pay-summary { flex-direction:column; text-align:center; }
@@ -212,6 +220,65 @@
 
     radios.forEach(function (r) { r.addEventListener('change', syncMethod); });
     syncMethod();
+
+    // ---- Auto-fill voter name from the MoMo number (Campay holder lookup) ----
+    var lookupUrl = @json(route('musician.vote.payment.holder'));
+    var nameInput = document.getElementById('voter_name');
+    var nameStatus = document.getElementById('voter_name_status');
+    var lookupTimer = null;
+    var lastQueried = '';
+    var autoFilled = false; // only overwrite names we filled ourselves
+
+    function setStatus(text, cls) {
+        if (!nameStatus) { return; }
+        nameStatus.textContent = text || '';
+        nameStatus.className = 'mg-pay-name-status' + (cls ? ' ' + cls : '');
+    }
+
+    function localMomoDigits() {
+        if (!phoneHidden) { return ''; }
+        return String(phoneHidden.value || '').replace(/\D/g, '');
+    }
+
+    function lookupName() {
+        var digits = localMomoDigits();
+        if (digits.length < 9) { return; }
+        if (digits === lastQueried) { return; }
+        lastQueried = digits;
+
+        setStatus('{{ trans('file.Checking number…') }}', 'is-loading');
+        fetch(lookupUrl + '?phone=' + encodeURIComponent(digits), {
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+        })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (data) {
+            if (data && data.name) {
+                if (!nameInput.value.trim() || autoFilled) {
+                    nameInput.value = data.name;
+                    autoFilled = true;
+                }
+                setStatus('{{ trans('file.Name found on this number') }}: ' + data.name, 'is-found');
+            } else {
+                setStatus('', '');
+            }
+        })
+        .catch(function () { setStatus('', ''); });
+    }
+
+    if (phoneHidden) {
+        var momoDisplay = document.querySelector('[data-cm-phone-display]');
+        var trigger = function () {
+            clearTimeout(lookupTimer);
+            lookupTimer = setTimeout(lookupName, 500);
+        };
+        if (momoDisplay) {
+            momoDisplay.addEventListener('input', trigger);
+            momoDisplay.addEventListener('blur', lookupName);
+        }
+    }
+    if (nameInput) {
+        nameInput.addEventListener('input', function () { autoFilled = false; });
+    }
 })();
 </script>
 @endsection

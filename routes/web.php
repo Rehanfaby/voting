@@ -54,6 +54,7 @@ Route::group([], function() {
     Route::get('/musician/vote/payment/check', 'HomeController@musicianVotePaymentCheck')->name('musician.vote.payment.check');
     Route::get('/musician/vote/payment/pending/{id}', 'HomeController@musicianVotePaymentPending')->name('musician.vote.payment.pending');
     Route::get('/musician/vote/payment/poll', 'HomeController@musicianVotePaymentPoll')->name('musician.vote.payment.poll');
+    Route::get('/musician/vote/payment/holder', 'HomeController@musicianVotePaymentHolder')->name('musician.vote.payment.holder');
     Route::post('musician/vote/payment/Stripe', 'HomeController@musicianVotePaymentStripe')->name('musician.vote.payment.stripe');
     Route::get('/musician/vote/payment/check/Stripe', 'HomeController@musicianVotePaymentCheckStripe')->name('musician.vote.payment.check.stripe');
 

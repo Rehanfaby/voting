@@ -937,6 +937,37 @@ class HomeController extends Controller
         return response()->json(['status' => 'PENDING']);
     }
 
+    /**
+     * AJAX: return the account holder name registered on a mobile money number
+     * so the payment form can auto-fill the voter name. Never throws to the UI.
+     */
+    public function musicianVotePaymentHolder(Request $request)
+    {
+        $phone = PhoneHelper::fromLocalDigits($request->input('phone'))
+            ?? PhoneHelper::cameroon($request->input('phone'));
+        if (!$phone) {
+            return response()->json(['name' => null]);
+        }
+
+        $token = PhoneHelper::momoToken();
+        if (!$token) {
+            return response()->json(['name' => null]);
+        }
+
+        try {
+            $name = $this->mobileMoneyHolderInfo($token, ltrim($phone, '+'));
+        } catch (\Throwable $e) {
+            \Log::warning('Holder info lookup failed: ' . $e->getMessage());
+            $name = null;
+        }
+
+        if ($name && PhoneHelper::looksLikePhone($name)) {
+            $name = null;
+        }
+
+        return response()->json(['name' => $name]);
+    }
+
     public function musicianVotePaymentCheck(Request $request)
     {
         $vote = vote::where('id', $request->external_reference)->first();
@@ -1044,6 +1075,14 @@ class HomeController extends Controller
         }
 
         if ($vote) {
+            // Use the account holder name registered on the paying MoMo number as
+            // the authoritative voter name once the payment is confirmed.
+            try {
+                $this->applyHolderNameToVote($vote);
+            } catch (\Throwable $e) {
+                \Log::warning('Applying holder name failed: ' . $e->getMessage(), ['vote_id' => $voteId]);
+            }
+
             try {
                 $this->sendWhatsappMsgVoteMomoSuccess($vote->voters, $vote->vote, $vote->musician_id, $vote);
             } catch (\Throwable $e) {
@@ -1052,6 +1091,33 @@ class HomeController extends Controller
         }
 
         return $vote;
+    }
+
+    /**
+     * After a confirmed payment, look up the MoMo account holder name for the
+     * paying number and store it as the voter's name (Campay is authoritative).
+     */
+    private function applyHolderNameToVote($vote)
+    {
+        $user = $vote->voters;
+        if (!$user || empty($user->phone)) {
+            return;
+        }
+
+        $token = PhoneHelper::momoToken();
+        if (!$token) {
+            return;
+        }
+
+        $holderName = $this->mobileMoneyHolderInfo($token, ltrim($user->phone, '+'));
+        if (!$holderName || PhoneHelper::looksLikePhone($holderName)) {
+            return;
+        }
+
+        if (trim((string) $user->name) !== $holderName) {
+            $user->name = $holderName;
+            $user->save();
+        }
     }
 
     /** Mark a vote as failed — but never override an already-counted (paid) vote. */
@@ -1352,6 +1418,8 @@ class HomeController extends Controller
         ));
 
         $response = curl_exec($curl);
+        $curlError = curl_error($curl);
+        $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         $response_decode = json_decode($response, true);
 
         curl_close($curl);
@@ -1360,7 +1428,57 @@ class HomeController extends Controller
             return $response_decode['reference'];
         }
 
+        // Surface the real reason (invalid number, insufficient funds, bad token…)
+        \Log::warning('Campay collect failed', [
+            'http_code' => $httpCode,
+            'curl_error' => $curlError,
+            'from' => (string) $number,
+            'amount' => (string) $amount,
+            'response' => $response,
+        ]);
+
         return false;
+    }
+
+    /**
+     * Look up the registered account holder name for a mobile money number via
+     * Campay's holder_info endpoint. Returns the full name string or null.
+     */
+    public function mobileMoneyHolderInfo($token, $number)
+    {
+        if (!$token) {
+            return null;
+        }
+        $number = preg_replace('/\D/', '', (string) $number);
+        if ($number === '') {
+            return null;
+        }
+
+        $curl = curl_init();
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => 'https://www.campay.net/api/holder_info/?phone_number=' . $number,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 15,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'GET',
+            CURLOPT_HTTPHEADER => array(
+                'Authorization: Token ' . $token,
+                'Content-Type: application/json'
+            ),
+        ));
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        $decoded = json_decode($response, true);
+        if (is_array($decoded) && !empty($decoded['full_name'])) {
+            return trim($decoded['full_name']);
+        }
+
+        return null;
     }
 
     public function mobileMoneyRequest($token, $number, $amount){

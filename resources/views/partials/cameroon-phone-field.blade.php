@@ -46,7 +46,8 @@
     @endif
 </div>
 
-@once
+@if(empty($GLOBALS['__cmPhoneAssets']))
+@php($GLOBALS['__cmPhoneAssets'] = true)
 <style>
     .cm-phone-field { margin-bottom: 12px; }
     .cm-phone-field__label { display:block; font-weight:700; color:#0a2350; margin-bottom:6px; font-size:13px; }
@@ -134,4 +135,4 @@
     }, true);
 })();
 </script>
-@endonce
+@endif
