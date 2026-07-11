@@ -803,7 +803,9 @@ class Controller extends BaseController
 
     public function sendOTP($phone) {
         $otp = rand(1, 999999);
-        $msg = "Your OTP is: " . $otp . "\n That will be expired after 5 minutes";
+        $msg = "*" . \App\Helpers\WhatsAppFormatter::systemName() . "*\n\n";
+        $msg .= "Your OTP is: *" . $otp . "*\n";
+        $msg .= "This code expires in 5 minutes. Do not share it.";
         try {
             $this->wpMessage($phone, $msg);
         } catch (\Exception $e) {

@@ -9,6 +9,12 @@ class WhatsAppFormatter
         return 'Mulemagc';
     }
 
+    /** Human system/brand name shown at the top of every message. */
+    public static function systemName(): string
+    {
+        return 'Mulema Gospel';
+    }
+
     /** Full system title used in announcement messages. */
     public static function announcementTitle(): string
     {
@@ -25,10 +31,10 @@ class WhatsAppFormatter
         return $url;
     }
 
-    /** Top brand line (shown like WhatsApp link preview header). */
+    /** Top brand line: system name alone on the first line, rest follows below. */
     public static function brandLine(): string
     {
-        return "🔗 *Mulemagc*\n\n";
+        return '*' . self::systemName() . "*\n\n";
     }
 
     /** Bilingual section heading with separator. */

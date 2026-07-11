@@ -60,6 +60,41 @@
         padding-left: 12px;
         flex-shrink: 0;
     }
+    .mg-header-search {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1 1 auto;
+        max-width: 360px;
+        margin: 0 20px;
+        padding: 9px 16px;
+        background: rgba(255,255,255,.10);
+        border: 1px solid rgba(255,255,255,.22);
+        border-radius: 30px;
+        transition: border-color .2s, background .2s;
+    }
+    .mg-header-search:focus-within {
+        background: rgba(255,255,255,.16);
+        border-color: #e87722;
+    }
+    .mg-header-search i { color: #e87722; font-size: 14px; flex: 0 0 auto; }
+    .mg-header-search input {
+        flex: 1 1 auto;
+        min-width: 0;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        color: #fff;
+        font-size: 14px;
+    }
+    .mg-header-search input::placeholder { color: rgba(255,255,255,.6); }
+    @media (max-width: 1199px) {
+        .mg-header-search { max-width: 240px; margin: 0 12px; }
+    }
+    @media (max-width: 575px) {
+        .mg-header-search { margin: 0 8px; padding: 7px 12px; gap: 6px; }
+        .mg-header-search input { font-size: 13px; }
+    }
 </style>
 <!-- Offcanvas area start -->
 <div class="fix">
@@ -159,6 +194,11 @@
                                 <a href="{{ route('home') }}">
                                     <img src="{{url('public/logo', $general_setting->site_logo)}}" alt="{{trans('file.Site Logo')}}" style="height: 70px">
                                 </a>
+                            </div>
+                            <div class="mg-header-search">
+                                <i class="fa fa-search"></i>
+                                <input type="text" id="mg-header-contestant-search" autocomplete="off"
+                                       placeholder="{{ trans('file.Search Your Contestant') }}" aria-label="{{ trans('file.Search Your Contestant') }}">
                             </div>
                             <div class="header__right">
                                 <div class="mean__menu-wrapper">
@@ -439,6 +479,45 @@
                         if (btn) { btn.setAttribute('aria-expanded', 'false'); }
                     });
                 });
+            })();
+
+            // Header contestant search: live-filters contestants on the current
+            // page (home / Vote Now). On pages without a contestant list, Enter
+            // sends the query to the Vote Now page which applies the filter.
+            (function () {
+                var input = document.getElementById('mg-header-contestant-search');
+                if (!input) { return; }
+                var teamUrl = @json(route('team'));
+
+                function items() { return document.querySelectorAll('.js-contestant-item'); }
+
+                function applyFilter() {
+                    var q = input.value.trim().toLowerCase();
+                    items().forEach(function (el) {
+                        var name = (el.getAttribute('data-name') || el.textContent || '').toLowerCase();
+                        el.style.display = (!q || name.indexOf(q) !== -1) ? '' : 'none';
+                    });
+                }
+
+                input.addEventListener('input', function () {
+                    if (items().length) { applyFilter(); }
+                });
+
+                input.addEventListener('keydown', function (e) {
+                    if (e.key !== 'Enter') { return; }
+                    e.preventDefault();
+                    if (items().length) {
+                        applyFilter();
+                    } else {
+                        var q = input.value.trim();
+                        window.location.href = teamUrl + (q ? ('?q=' + encodeURIComponent(q)) : '');
+                    }
+                });
+
+                // Keep the header box in sync with a ?q= deep link.
+                var params = new URLSearchParams(window.location.search);
+                var q = params.get('q');
+                if (q) { input.value = q; if (items().length) { applyFilter(); } }
             })();
             </script>
             @yield('scripts')

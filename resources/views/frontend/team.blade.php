@@ -31,7 +31,7 @@
 
                 <div class="row mg-contestant-grid justify-content-center" id="contestant-grid">
                     @foreach($ranked as $key => $musician)
-                    <div class="col-6 col-sm-4 col-md-3 col-lg-2 contestant-list">
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2 contestant-list js-contestant-item" data-name="{{ strtolower($musician->name) }}">
                         <div class="mg-contestant-card">
                             <div class="mg-contestant-card__avatar">
                                 <span class="mg-contestant-card__badge">{{ $key + 1 }}</span>
@@ -73,6 +73,13 @@
                 $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
             });
         });
+
+        // Prefill from the header search (?q=) and apply the filter immediately.
+        var params = new URLSearchParams(window.location.search);
+        var q = params.get('q');
+        if (q) {
+            $('#contestant-search').val(q).trigger('keyup');
+        }
     });
 </script>
 @endsection

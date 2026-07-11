@@ -192,19 +192,6 @@
                                         </h1>
                                         <h2 class="ms-banner__title msg_title bd-title-anim">{{trans('file.Vote for your favourite Contestant')}}</h2>
                                     </div>
-                                    <div class="ms-banner__form bdFadeUp">
-                                        <form action="{{ route('musician.find') }}" method="post">
-                                            @csrf
-                                            <div class="ms-banner__from-inner white-bg">
-                                                <div class="ms-input2-box white-bg">
-                                                    <input type="text" placeholder="{{trans("file.Search Your Contestant")}}" name="search">
-                                                </div>
-                                                <div class="banner__form-button">
-                                                    <button type="submit" class="input__btn"><i class="flaticon-loupe"></i>{{trans('file.Discover Talents')}}</button>
-                                                </div>
-                                            </div>
-                                        </form>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -231,7 +218,7 @@
                 </div>
                 <div class="ms-fun-brand-wrap bdFadeUp">
                     @foreach($musicians as $key=>$musician)
-                        <a href="{{ route('musician.data', $musician->id) }}">
+                        <a href="{{ route('musician.data', $musician->id) }}" class="js-contestant-item" data-name="{{ strtolower($musician->name) }}">
                             <div class="ms-fun-brand-item ms-fun-border" style="cursor: pointer">
                                 <div class="ms-fun-brand-top mb-20">
                                     <div class="ms-fun-brand-thumb">
