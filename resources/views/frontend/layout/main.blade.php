@@ -95,6 +95,16 @@
         .mg-header-search { margin: 0 8px; padding: 7px 12px; gap: 6px; }
         .mg-header-search input { font-size: 13px; }
     }
+    /* While the header search is active, a Swiper carousel of contestants is
+       turned into a simple centered wrapped grid so matches are easy to see. */
+    .swiper-container.is-filtering .swiper-wrapper {
+        transform: none !important;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px 20px;
+    }
+    .swiper-container.is-filtering .swiper-slide { flex: 0 0 auto; }
 </style>
 <!-- Offcanvas area start -->
 <div class="fix">
@@ -512,6 +522,22 @@
                         var frag = document.createDocumentFragment();
                         g.matched.concat(g.rest).forEach(function (el) { frag.appendChild(el); });
                         g.parent.appendChild(frag);
+
+                        // If the list lives inside a Swiper carousel, switch it to a
+                        // plain wrapped grid while filtering so hidden slides collapse
+                        // and matches are visible; restore the slider when cleared.
+                        var container = g.parent.closest ? g.parent.closest('.swiper-container') : null;
+                        if (container) {
+                            if (q) {
+                                container.classList.add('is-filtering');
+                            } else {
+                                container.classList.remove('is-filtering');
+                                if (container.swiper) {
+                                    container.swiper.update();
+                                    container.swiper.slideTo(0, 0);
+                                }
+                            }
+                        }
                     });
                 }
 

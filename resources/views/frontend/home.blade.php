@@ -136,7 +136,7 @@
                 <div class="swiper-container ms-song-active fix">
                     <div class="swiper-wrapper">
                         @foreach($ranked as $key=>$musician)
-                            <div class="swiper-slide">
+                            <div class="swiper-slide js-contestant-item" data-name="{{ strtolower($musician->name) }}">
                                 <div class="ms-rank-item">
                                     <div class="ms-rank-avatar">
                                         <span class="ms-rank-badge">{{ $key + 1 }}</span>
