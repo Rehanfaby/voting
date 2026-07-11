@@ -489,24 +489,40 @@
                 if (!input) { return; }
                 var teamUrl = @json(route('team'));
 
-                function items() { return document.querySelectorAll('.js-contestant-item'); }
+                // Capture the contestants in their original order once so we can
+                // always restore/rank them consistently.
+                var originalItems = Array.prototype.slice.call(document.querySelectorAll('.js-contestant-item'));
 
                 function applyFilter() {
+                    if (!originalItems.length) { return; }
                     var q = input.value.trim().toLowerCase();
-                    items().forEach(function (el) {
+                    var groups = [];
+                    originalItems.forEach(function (el) {
+                        var g = null;
+                        for (var i = 0; i < groups.length; i++) {
+                            if (groups[i].parent === el.parentNode) { g = groups[i]; break; }
+                        }
+                        if (!g) { g = { parent: el.parentNode, matched: [], rest: [] }; groups.push(g); }
                         var name = (el.getAttribute('data-name') || el.textContent || '').toLowerCase();
-                        el.style.display = (!q || name.indexOf(q) !== -1) ? '' : 'none';
+                        if (!q || name.indexOf(q) !== -1) { el.style.display = ''; g.matched.push(el); }
+                        else { el.style.display = 'none'; g.rest.push(el); }
+                    });
+                    // Move matches to the top of each grid (original order preserved).
+                    groups.forEach(function (g) {
+                        var frag = document.createDocumentFragment();
+                        g.matched.concat(g.rest).forEach(function (el) { frag.appendChild(el); });
+                        g.parent.appendChild(frag);
                     });
                 }
 
                 input.addEventListener('input', function () {
-                    if (items().length) { applyFilter(); }
+                    if (originalItems.length) { applyFilter(); }
                 });
 
                 input.addEventListener('keydown', function (e) {
                     if (e.key !== 'Enter') { return; }
                     e.preventDefault();
-                    if (items().length) {
+                    if (originalItems.length) {
                         applyFilter();
                     } else {
                         var q = input.value.trim();
@@ -517,7 +533,7 @@
                 // Keep the header box in sync with a ?q= deep link.
                 var params = new URLSearchParams(window.location.search);
                 var q = params.get('q');
-                if (q) { input.value = q; if (items().length) { applyFilter(); } }
+                if (q) { input.value = q; if (originalItems.length) { applyFilter(); } }
             })();
             </script>
             @yield('scripts')

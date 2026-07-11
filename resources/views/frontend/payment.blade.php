@@ -91,8 +91,8 @@
                                         </span>
                                     </label>
 
-                                    <label class="mg-pay-method {{ $amount < $stripeMin ? 'is-disabled' : '' }}">
-                                        <input type="radio" name="payment_method" value="card" {{ $amount < $stripeMin ? 'disabled' : '' }}>
+                                    <label class="mg-pay-method">
+                                        <input type="radio" name="payment_method" value="card">
                                         <span class="mg-pay-method__box">
                                             <i class="fa-brands fa-cc-visa"></i>
                                             <span class="mg-pay-method__title">{{ trans('file.Visa / Mastercard') }}</span>

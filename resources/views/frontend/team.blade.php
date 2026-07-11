@@ -67,11 +67,20 @@
 @section('scripts')
 <script>
     $(document).ready(function () {
+        var $grid = $('#contestant-grid');
+        var originalOrder = $grid.children('.contestant-list').toArray();
+
         $('#contestant-search').on('keyup', function () {
             var value = $(this).val().toLowerCase();
-            $('.contestant-list').each(function () {
-                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+            var matched = [], rest = [];
+            originalOrder.forEach(function (el) {
+                var $el = $(el);
+                var name = ($el.data('name') || $el.text()).toString().toLowerCase();
+                if (!value || name.indexOf(value) > -1) { $el.show(); matched.push(el); }
+                else { $el.hide(); rest.push(el); }
             });
+            // Move matches to the top so the exact contestant is easy to find.
+            $grid.append(matched.concat(rest));
         });
 
         // Prefill from the header search (?q=) and apply the filter immediately.
