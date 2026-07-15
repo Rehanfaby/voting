@@ -151,6 +151,7 @@
                                         @if($see_votes)
                                         <span class="ms-rank-votes"><i class="fa fa-vote-yea"></i> {{ number_format($vote_counts[$musician->id] ?? 0) }} {{ trans('file.Votes') }}</span>
                                         @endif
+                                        <a href="{{ route('musician.data', $musician->id) }}" class="ms-rank-vote-btn">{{ trans('file.Vote For Me') }}</a>
                                     </div>
                                 </div>
                             </div>
@@ -173,7 +174,19 @@
                 .ms-rank-name a:hover { color:#ff9533; }
                 .ms-rank-votes { display:inline-block; color:#e87722; font-weight:700; font-size:13px; letter-spacing:.6px; text-transform:uppercase; }
                 .ms-rank-votes i { margin-right:4px; }
-                @media (max-width:575px){ .ms-rank-avatar { width:140px; height:140px; } .ms-rank-name { font-size:16px; } }
+                .ms-rank-vote-btn {
+                    display:inline-flex; align-items:center; justify-content:center;
+                    margin-top:10px; min-height:40px; padding:8px 18px;
+                    border-radius:999px; background:#e87722; color:#fff !important;
+                    font-size:13px; font-weight:800; letter-spacing:.3px; text-transform:uppercase;
+                    box-shadow:0 8px 20px rgba(232,119,34,.35);
+                }
+                .ms-rank-vote-btn:hover { background:#ff9533; color:#fff !important; }
+                @media (max-width:575px){
+                    .ms-rank-avatar { width:140px; height:140px; }
+                    .ms-rank-name { font-size:16px; }
+                    .ms-rank-vote-btn { min-height:44px; padding:10px 20px; font-size:14px; }
+                }
             </style>
         </section>
         <!-- Brand Song Area End Here  -->

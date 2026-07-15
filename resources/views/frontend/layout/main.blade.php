@@ -210,6 +210,7 @@
                                 <input type="text" id="mg-header-contestant-search" autocomplete="off"
                                        placeholder="{{ trans('file.Search Your Contestant') }}" aria-label="{{ trans('file.Search Your Contestant') }}">
                             </div>
+                            <a class="mg-header-vote-btn" href="{{ route('team') }}">{{ trans('file.Vote Now') }}</a>
                             <div class="header__right">
                                 <div class="mean__menu-wrapper">
                                     <div class="main-menu main-menu-ff-space">
@@ -314,14 +315,15 @@
                                         @include('partials.lang_switch')
                                     </div>
                                 </div>
-                                <div class="header__hamburger">
-                                    <div class="sidebar__toggle">
-                                        <a class="bar-icon" href="javascript:void(0)">
-                                            <span></span>
-                                            <span></span>
-                                            <span></span>
-                                        </a>
-                                    </div>
+                            </div>
+                            {{-- Hamburger sits outside .header__right so logo+search cannot push it off-screen --}}
+                            <div class="header__hamburger">
+                                <div class="sidebar__toggle">
+                                    <a class="bar-icon" href="javascript:void(0)" aria-label="Menu">
+                                        <span></span>
+                                        <span></span>
+                                        <span></span>
+                                    </a>
                                 </div>
                             </div>
                         </div>
