@@ -13,9 +13,6 @@ use App\Services\Payments\Support\CameroonNetworkMapper;
 use App\Services\Payments\Support\CameroonPhoneNormalizer;
 use App\Services\Payments\Support\MobileMoneyPaymentLogger;
 use App\Services\Payments\Support\PawaPayFailureMessages;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\ConnectException;
-use GuzzleHttp\Exception\RequestException;
 
 class PawaPayGateway implements MobileMoneyGatewayInterface
 {
@@ -183,40 +180,43 @@ class PawaPayGateway implements MobileMoneyGatewayInterface
 
     protected function request($method, $path, array $payload = null)
     {
-        $client = new Client([
-            'base_uri' => rtrim($this->baseUrl(), '/') . '/',
-            'timeout' => $this->timeout(),
-            'connect_timeout' => $this->connectTimeout(),
-            'verify' => true,
-            'http_errors' => false,
-        ]);
+        $url = rtrim($this->baseUrl(), '/') . '/' . ltrim($path, '/');
+        $curl = curl_init();
+        $headers = [
+            'Authorization: Bearer ' . $this->apiToken(),
+            'Accept: application/json',
+            'Content-Type: application/json',
+        ];
 
         $options = [
-            'headers' => [
-                'Authorization' => 'Bearer ' . $this->apiToken(),
-                'Accept' => 'application/json',
-                'Content-Type' => 'application/json',
-            ],
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => $this->timeout(),
+            CURLOPT_CONNECTTIMEOUT => $this->connectTimeout(),
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => strtoupper($method),
+            CURLOPT_HTTPHEADER => $headers,
         ];
 
         if ($payload !== null) {
-            $options['json'] = $payload;
+            $options[CURLOPT_POSTFIELDS] = json_encode($payload);
         }
 
-        try {
-            $response = $client->request($method, ltrim($path, '/'), $options);
-            $body = json_decode((string) $response->getBody(), true) ?: [];
+        curl_setopt_array($curl, $options);
+        $response = curl_exec($curl);
+        $errno = curl_errno($curl);
+        $error = curl_error($curl);
+        $httpCode = (int) curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        curl_close($curl);
 
-            return [
-                'http_code' => $response->getStatusCode(),
-                'body' => $body,
-                'uncertain' => false,
-            ];
-        } catch (ConnectException $e) {
+        if ($errno) {
             MobileMoneyPaymentLogger::warning('PawaPay connection error', [
                 'provider' => 'pawapay',
                 'path' => $path,
-                'message' => $e->getMessage(),
+                'message' => $error ?: ('curl errno ' . $errno),
             ]);
 
             return [
@@ -224,16 +224,15 @@ class PawaPayGateway implements MobileMoneyGatewayInterface
                 'body' => [],
                 'uncertain' => true,
             ];
-        } catch (RequestException $e) {
-            $response = $e->getResponse();
-            $body = $response ? json_decode((string) $response->getBody(), true) : [];
-
-            return [
-                'http_code' => $response ? $response->getStatusCode() : 0,
-                'body' => is_array($body) ? $body : [],
-                'uncertain' => $response && $response->getStatusCode() >= 500,
-            ];
         }
+
+        $body = json_decode((string) $response, true);
+
+        return [
+            'http_code' => $httpCode,
+            'body' => is_array($body) ? $body : [],
+            'uncertain' => $httpCode >= 500,
+        ];
     }
 
     protected function baseUrl()
