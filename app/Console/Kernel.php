@@ -16,6 +16,8 @@ class Kernel extends ConsoleKernel
         Commands\ReminderCron::class,
         Commands\ReconcileVotes::class,
         Commands\ProcessScheduledAnnouncements::class,
+        Commands\ReconcilePendingPawaPayDeposits::class,
+        Commands\PawaPayCheckCommand::class,
     ];
 
     /**
@@ -39,6 +41,11 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('announcements:process-scheduled')
             ->everyMinute()
+            ->runInBackground()
+            ->withoutOverlapping();
+
+        $schedule->command('payments:reconcile-pawapay')
+            ->everyFiveMinutes()
             ->runInBackground()
             ->withoutOverlapping();
     }

@@ -20,5 +20,10 @@ class VerifyCsrfToken extends Middleware
      */
     protected $except = [
         'campay/webhook',
+        'api/payments/pawapay/callback',
+        'api/payments/pawapay/checkouts/callback',
+        'api/payments/pawapay/deposits/callback',
+        'api/payments/pawapay/payouts/callback',
+        'api/payments/pawapay/refunds/callback',
     ];
 }

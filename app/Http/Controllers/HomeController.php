@@ -427,24 +427,6 @@ class HomeController extends Controller
                     'whatsapp_number' => $whatsapp
                 ]);
 
-        $token = PhoneHelper::momoToken();
-        if($token && $vote) {
-            $campayNumber = ltrim($phone, '+');
-            $reference = $this->mobileMoneyCollect($token, $campayNumber, $amount, $vote->id, 'Mulema Gospel Vote');
-            if ($reference == false) {
-                // Campay rejected the request before any prompt/charge — mark failed (keep the record).
-                $this->markVoteFailed($vote->id);
-                return redirect()->route('home')->with('not_permitted', $this->momoFailureMessage());
-            }
-
-            $vote->reference = $reference;
-            $vote->save();
-
-            $this->sendWhatsappMsgVoteMomo($user, $vote->vote, $vote->musician_id, $whatsapp, $amount);
-
-            return redirect()->route('musician.vote.payment.pending', $vote->id);
-        }
-
         if (PhoneHelper::paymentSimulate() && $vote) {
             $vote->status = true;
             $vote->reference = 'SIM-' . $vote->id;
@@ -454,9 +436,34 @@ class HomeController extends Controller
             return redirect()->route('home')->with('message', trans('file.Thank you for your voting'));
         }
 
-        $this->markVoteFailed($vote->id);
-        $message = 'There is any other issue in payment method, please contact the system administrator';
-        return back()->with('not_permitted', $message);
+        try {
+            $voteMobileMoneyService = app(\App\Services\Payments\VoteMobileMoneyService::class);
+            $initiation = $voteMobileMoneyService->initiate(
+                $vote,
+                $phone,
+                $request->input('payment_method', 'momo')
+            );
+
+            if (!empty($initiation['result']) && !$initiation['result']->success) {
+                $this->markVoteFailed($vote->id);
+                return redirect()->route('home')->with('not_permitted', $initiation['result']->message);
+            }
+
+            $this->sendWhatsappMsgVoteMomo($user, $vote->vote, $vote->musician_id, $whatsapp, $amount);
+
+            return redirect()->route('musician.vote.payment.pending', $vote->id);
+        } catch (\App\Services\Payments\MobileMoneyGatewayConfigurationException $e) {
+            \Log::error('Mobile money configuration error: ' . $e->getMessage());
+            $this->markVoteFailed($vote->id);
+            return redirect()->route('home')->with(
+                'not_permitted',
+                trans('file.Mobile Money payment is temporarily unavailable. Please try again later or contact support.')
+            );
+        } catch (\Throwable $e) {
+            \Log::error('Vote mobile money initiation failed: ' . $e->getMessage(), ['vote_id' => $vote->id]);
+            $this->markVoteFailed($vote->id);
+            return redirect()->route('home')->with('not_permitted', $this->momoFailureMessage());
+        }
     }
 
     public function musicianVotePaymentStripe(Request $request) {
@@ -916,21 +923,22 @@ class HomeController extends Controller
             return response()->json(['status' => 'FAILED']);
         }
 
-        $token = PhoneHelper::momoToken();
-        if (!$token || !$vote->reference || $vote->reference === 'pending') {
-            return response()->json(['status' => 'PENDING']);
-        }
+        try {
+            $voteMobileMoneyService = app(\App\Services\Payments\VoteMobileMoneyService::class);
+            $status = $voteMobileMoneyService->refreshVoteStatus($vote);
 
-        $result = $this->mobileMoneyStatus($token, $vote->reference);
-        if ($result === 1) {
-            $this->markVoteSuccessful($vote->id);
+            if ($status === 'SUCCESSFUL') {
+                $this->markVoteSuccessful($vote->id, $vote->reference);
 
-            return response()->json(['status' => 'SUCCESSFUL']);
-        }
-        if ($result === 2) {
-            $this->markVoteFailed($vote->id);
+                return response()->json(['status' => 'SUCCESSFUL']);
+            }
+            if ($status === 'FAILED') {
+                $this->markVoteFailed($vote->id);
 
-            return response()->json(['status' => 'FAILED']);
+                return response()->json(['status' => 'FAILED']);
+            }
+        } catch (\Throwable $e) {
+            \Log::warning('Vote payment poll failed: ' . $e->getMessage(), ['vote_id' => $vote->id]);
         }
 
         return response()->json(['status' => 'PENDING']);
@@ -948,13 +956,9 @@ class HomeController extends Controller
             return response()->json(['name' => null]);
         }
 
-        $token = PhoneHelper::momoToken();
-        if (!$token) {
-            return response()->json(['name' => null]);
-        }
-
         try {
-            $name = $this->mobileMoneyHolderInfo($token, ltrim($phone, '+'));
+            $voteMobileMoneyService = app(\App\Services\Payments\VoteMobileMoneyService::class);
+            $name = $voteMobileMoneyService->getHolderName(ltrim($phone, '+'));
         } catch (\Throwable $e) {
             \Log::warning('Holder info lookup failed: ' . $e->getMessage());
             $name = null;
@@ -977,30 +981,20 @@ class HomeController extends Controller
             return redirect()->route('home')->with('message', trans('file.Thank you for your voting'));
         }
 
-        // Never trust the redirect status alone — re-verify with Campay so a
-        // debited voter is counted and a spoofed redirect cannot fake a vote.
-        $token = PhoneHelper::momoToken();
-        $reference = ($vote->reference && !in_array($vote->reference, ['pending', 'abc'], true))
-            ? $vote->reference
-            : $request->reference;
+        try {
+            $voteMobileMoneyService = app(\App\Services\Payments\VoteMobileMoneyService::class);
+            $status = $voteMobileMoneyService->refreshVoteStatus($vote);
 
-        $verified = ($request->status === 'SUCCESSFUL');
-        if ($token && $reference) {
-            $result = $this->mobileMoneyStatus($token, $reference);
-            if ($result === 1) {
-                $verified = true;
-            } elseif ($result === 2) {
+            if ($status === 'SUCCESSFUL') {
+                $this->markVoteSuccessful($vote->id, $request->reference ?: $vote->reference);
+                return redirect()->route('home')->with('message', trans('file.Thank you for your voting'));
+            }
+            if ($status === 'FAILED') {
                 $this->markVoteFailed($vote->id);
                 return redirect()->route('home')->with('not_permitted', trans('file.Payment failed please try again'));
-            } else {
-                // Campay not settled yet — keep waiting; the cron will reconcile.
-                $verified = false;
             }
-        }
-
-        if ($verified) {
-            $this->markVoteSuccessful($vote->id, $request->reference ?: $vote->reference);
-            return redirect()->route('home')->with('message', trans('file.Thank you for your voting'));
+        } catch (\Throwable $e) {
+            \Log::warning('Vote payment check failed: ' . $e->getMessage(), ['vote_id' => $vote->id]);
         }
 
         return redirect()->route('musician.vote.payment.pending', $vote->id);
@@ -1008,29 +1002,26 @@ class HomeController extends Controller
 
     public function handleCampayWebhook(Request $request)
     {
-        $secret = config('app.campay_webhook_secret');
-        if ($secret) {
-            $provided = $request->header('X-Campay-Secret') ?? $request->input('secret');
-            if (!hash_equals((string) $secret, (string) $provided)) {
-                Log::warning('Campay webhook rejected: invalid secret');
-                return response()->json(['status' => 'unauthorized'], 401);
-            }
-        }
-
         $data = $request->all();
 
         Log::info('Campay Webhook Received', $data);
 
-        $externalRef = $data['external_reference'] ?? null;
-        $status = $data['status'] ?? '';
+        $gateway = new \App\Services\Payments\Gateways\CampayGateway();
+        if (!$gateway->validateWebhookSecret($request->headers->all(), $data)) {
+            Log::warning('Campay webhook rejected: invalid secret');
+            return response()->json(['status' => 'unauthorized'], 401);
+        }
 
-        if ($externalRef) {
-            if ($status === 'SUCCESSFUL') {
-                if ($this->markVoteSuccessful($externalRef, $data['reference'] ?? 'from_webhook')) {
+        $voteMobileMoneyService = app(\App\Services\Payments\VoteMobileMoneyService::class);
+        $result = $voteMobileMoneyService->handleProviderCallback('campay', $data, $request->headers->all());
+
+        if ($result && !empty($result['vote_id'])) {
+            if (($data['status'] ?? '') === 'SUCCESSFUL' || ($result['status'] ?? null) === 'completed') {
+                if ($this->markVoteSuccessful($result['vote_id'], $data['reference'] ?? 'from_webhook')) {
                     Log::info('Campay Webhook Completed', $data);
                 }
-            } elseif ($status === 'FAILED') {
-                $this->markVoteFailed($externalRef);
+            } elseif (($data['status'] ?? '') === 'FAILED' || ($result['status'] ?? null) === 'failed') {
+                $this->markVoteFailed($result['vote_id']);
             }
         }
 
@@ -1056,6 +1047,16 @@ class HomeController extends Controller
      * double-count or double-notify. Returns the vote only when it was newly
      * confirmed by this call (so the WhatsApp confirmation is sent exactly once).
      */
+    public function markVoteSuccessfulPublic($voteId, $reference = null)
+    {
+        return $this->markVoteSuccessful($voteId, $reference);
+    }
+
+    public function markVoteFailedPublic($voteId)
+    {
+        return $this->markVoteFailed($voteId);
+    }
+
     private function markVoteSuccessful($voteId, $reference = null)
     {
         try {
@@ -1145,10 +1146,8 @@ class HomeController extends Controller
      */
     public function reconcilePendingVotes($days = 3)
     {
-        $token = PhoneHelper::momoToken();
-        if (!$token) {
-            return ['checked' => 0, 'confirmed' => 0, 'failed' => 0, 'note' => 'no momo token'];
-        }
+        $voteMobileMoneyService = app(\App\Services\Payments\VoteMobileMoneyService::class);
+        $providerStats = $voteMobileMoneyService->reconcilePendingPayments($days);
 
         $since = \Carbon\Carbon::now()->subDays((int) $days);
         $pending = vote::where('status', self::VOTE_PENDING)
@@ -1162,23 +1161,27 @@ class HomeController extends Controller
         $failed = 0;
         foreach ($pending as $vote) {
             try {
-                $result = $this->mobileMoneyStatus($token, $vote->reference);
+                $status = $voteMobileMoneyService->refreshVoteStatus($vote);
             } catch (\Throwable $e) {
                 \Log::warning('Vote reconcile status check failed: ' . $e->getMessage(), ['vote_id' => $vote->id]);
                 continue;
             }
-            if ($result === 1) {
+            if ($status === 'SUCCESSFUL') {
                 if ($this->markVoteSuccessful($vote->id)) {
                     $confirmed++;
                     \Log::info('Vote reconciled to SUCCESSFUL', ['vote_id' => $vote->id, 'reference' => $vote->reference]);
                 }
-            } elseif ($result === 2) {
+            } elseif ($status === 'FAILED') {
                 $this->markVoteFailed($vote->id);
                 $failed++;
             }
         }
 
-        return ['checked' => $pending->count(), 'confirmed' => $confirmed, 'failed' => $failed];
+        return [
+            'checked' => $pending->count() + ($providerStats['checked'] ?? 0),
+            'confirmed' => $confirmed + ($providerStats['confirmed'] ?? 0),
+            'failed' => $failed + ($providerStats['failed'] ?? 0),
+        ];
     }
 
     public function musicianVotePaymentCoin(Request $request) {

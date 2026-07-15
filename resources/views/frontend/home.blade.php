@@ -26,15 +26,17 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 9999;
+            z-index: 10050;
             visibility: hidden;
             opacity: 0;
-            transition: opacity 0.3s ease;
+            pointer-events: none;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
         }
 
         .popup-overlay.active {
             visibility: visible;
             opacity: 1;
+            pointer-events: auto;
         }
 
         .popup-content {
@@ -1032,6 +1034,8 @@
             var closeBtn = document.getElementById('closeBtn');
             if (!popup) { return; }
             popup.classList.add('active');
+            popup.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('mg-popup-open');
 
             var cdEl = document.getElementById('popupCountdown');
             var cdTimer = null;
@@ -1051,6 +1055,8 @@
 
             function closePopup() {
                 popup.classList.remove('active');
+                popup.setAttribute('aria-hidden', 'true');
+                document.body.classList.remove('mg-popup-open');
                 if (cdTimer) { clearInterval(cdTimer); cdTimer = null; }
             }
             if (closeBtn) {

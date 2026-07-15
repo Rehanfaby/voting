@@ -13,9 +13,11 @@
 	/*======================================
 	Mobile Menu Js
 	========================================*/
+	// Offcanvas sidebar handles navigation below xl; keep meanmenu disabled
+	// so it does not hide #mobile-menu without a .mobile-menu container.
 	$('#mobile-menu').meanmenu({
 		meanMenuContainer: '.mobile-menu',
-		meanScreenWidth: "1200",
+		meanScreenWidth: "0",
 		meanExpand: ['<i class="fal fa-plus"></i>'],
 	});
 
