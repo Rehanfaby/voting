@@ -108,6 +108,13 @@ class AnnouncementController extends Controller
         $data['audience_category'] = $audience;
         $data['people_type'] = in_array($audience, ['csv'], true) ? 'csv' : 'user';
 
+        if (empty(trim((string) ($data['name'] ?? '')))) {
+            $data['name'] = optional(Auth::user())->name ?: 'Admin';
+        }
+        if (!array_key_exists('cc', $data) || $data['cc'] === null) {
+            $data['cc'] = '';
+        }
+
         $recipientPayload = $request->input('recipients');
         if (is_string($recipientPayload)) {
             $recipientPayload = json_decode($recipientPayload, true);
@@ -118,6 +125,8 @@ class AnnouncementController extends Controller
                 $csvName = date('Ymdhis') . $toCsv->getClientOriginalName();
                 $toCsv->move('public/announcement/csv', $csvName);
                 $data['to'] = $csvName;
+            } else {
+                return $this->announcementStoreError($request, 'Please upload a CSV file.', 422);
             }
             $data['recipients_json'] = null;
         } elseif (is_array($recipientPayload) && count($recipientPayload)) {
@@ -125,26 +134,37 @@ class AnnouncementController extends Controller
             $data['to'] = implode(',', array_map(function ($r) {
                 return AnnouncementRecipient::recipientKey($r);
             }, json_decode($data['recipients_json'], true)));
-        } elseif ($audience === 'everyone') {
-            $all = AnnouncementRecipient::listForCategory('everyone');
+        } elseif (in_array($audience, ['everyone', 'contestants', 'voters', 'users', 'judges', 'ambassadors'], true)) {
+            $all = AnnouncementRecipient::listForCategory($audience);
+            if (!count($all)) {
+                return $this->announcementStoreError($request, 'No recipients found in this category.', 422);
+            }
             $data['recipients_json'] = AnnouncementRecipient::storePayload($all);
             $data['to'] = implode(',', array_map([AnnouncementRecipient::class, 'recipientKey'], $all));
         } else {
-            return back()->with('not_permitted', 'Please select at least one recipient.');
+            return $this->announcementStoreError($request, 'Please select at least one recipient.', 422);
         }
 
         $scheduleLater = $request->boolean('schedule_later');
         $scheduleTimes = array_filter((array) $request->input('schedule_times', []));
         $reminderTimes = array_filter((array) $request->input('reminder_times', []));
-        $data['schedules_json'] = $scheduleLater ? json_encode(AnnouncementRecipient::normalizeSlots($scheduleTimes)) : null;
         $data['reminders_json'] = count($reminderTimes) ? json_encode(AnnouncementRecipient::normalizeSlots($reminderTimes)) : null;
 
         $sendNow = $request->boolean('send_now');
         if ($scheduleLater && count($scheduleTimes)) {
+            $data['schedules_json'] = json_encode(AnnouncementRecipient::normalizeSlots($scheduleTimes));
             $data['status'] = 'scheduled';
             $data['is_sent'] = false;
+        } elseif ($sendNow) {
+            // Queue for the minute cron — never send synchronously (6s throttle would time out the browser).
+            $data['schedules_json'] = json_encode(AnnouncementRecipient::normalizeSlots([
+                now()->toDateTimeString(),
+            ]));
+            $data['status'] = 'queued';
+            $data['is_sent'] = false;
         } else {
-            $data['status'] = $sendNow ? 'draft' : 'draft';
+            $data['schedules_json'] = null;
+            $data['status'] = 'draft';
             $data['is_sent'] = false;
         }
 
@@ -159,7 +179,12 @@ class AnnouncementController extends Controller
         unset($data['customer_type'], $data['to_customer_group'], $data['is_template'], $data['to_customer'], $data['cc_customer']);
 
         $attachments = $request->file('attachments', []);
-        $announcement = Announcement::create($data);
+        try {
+            $announcement = Announcement::create($data);
+        } catch (\Throwable $e) {
+            \Log::error('Announcement save failed', ['error' => $e->getMessage()]);
+            return $this->announcementStoreError($request, 'Could not save announcement: ' . $e->getMessage(), 500);
+        }
 
         if ($attachments) {
             foreach ($attachments as $key => $attachment) {
@@ -170,11 +195,39 @@ class AnnouncementController extends Controller
         }
 
         if ($sendNow && !$scheduleLater) {
-            $this->deliverAnnouncement($announcement);
-            $announcement->update(['is_sent' => true, 'status' => 'sent']);
+            $message = 'Announcement saved and queued for WhatsApp delivery (about 6 seconds between each recipient).';
+        } elseif ($scheduleLater) {
+            $message = 'Announcement scheduled successfully';
+        } else {
+            $message = 'Announcement saved successfully';
         }
 
-        return redirect()->route('announcement.index')->with('message', $sendNow ? 'Announcement sent successfully' : 'Announcement saved successfully');
+        if ($this->isAnnouncementAjax($request)) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'id' => $announcement->id,
+                'redirect' => route('announcement.index'),
+            ]);
+        }
+
+        return redirect()->route('announcement.index')->with('message', $message);
+    }
+
+    private function isAnnouncementAjax(Request $request): bool
+    {
+        return $request->ajax()
+            || $request->wantsJson()
+            || $request->header('X-Requested-With') === 'XMLHttpRequest';
+    }
+
+    private function announcementStoreError(Request $request, string $message, int $status = 422)
+    {
+        if ($this->isAnnouncementAjax($request)) {
+            return response()->json(['success' => false, 'message' => $message], $status);
+        }
+
+        return back()->with('not_permitted', $message);
     }
 
     public function edit($id)
@@ -255,10 +308,19 @@ class AnnouncementController extends Controller
     public function send(Announcement $announcement, $id)
     {
         $announcement = $announcement->findOrFail($id);
-        $this->deliverAnnouncement($announcement);
-        $announcement->update(['is_sent' => true, 'status' => 'sent']);
+        $slots = AnnouncementRecipient::parseSlots($announcement->schedules_json);
+        $slots[] = [
+            'at' => now()->toDateTimeString(),
+            'status' => 'pending',
+            'sent_at' => null,
+        ];
+        $announcement->update([
+            'schedules_json' => json_encode($slots),
+            'status' => 'queued',
+            'is_sent' => false,
+        ]);
 
-        return redirect()->back()->with('message', 'Announcement has been sent');
+        return redirect()->back()->with('message', 'Announcement queued for WhatsApp delivery. Messages go out about every 6 seconds.');
     }
 
     /**
@@ -297,6 +359,9 @@ class AnnouncementController extends Controller
 
     public function deliverAnnouncement(Announcement $announcement): void
     {
+        @set_time_limit(0);
+        ignore_user_abort(true);
+
         $this->assignReference($announcement);
         $announcement->load('attachmentLib');
         $recipients = AnnouncementRecipient::resolveForAnnouncement($announcement);

@@ -16,17 +16,29 @@ class ProcessScheduledAnnouncements extends Command
 
     public function handle()
     {
+        @set_time_limit(0);
+        ignore_user_abort(true);
+
         $controller = app(AnnouncementController::class);
         $now = Carbon::now();
 
         Announcement::where('is_active', true)
             ->where(function ($q) {
                 $q->whereNotNull('schedules_json')
-                    ->orWhereNotNull('reminders_json');
+                    ->orWhereNotNull('reminders_json')
+                    ->orWhere('status', 'queued');
             })
             ->orderBy('id')
             ->chunk(50, function ($items) use ($controller, $now) {
                 foreach ($items as $announcement) {
+                    if ($announcement->status === 'queued' && empty(AnnouncementRecipient::parseSlots($announcement->schedules_json))) {
+                        $announcement->schedules_json = json_encode([[
+                            'at' => $now->toDateTimeString(),
+                            'status' => 'pending',
+                            'sent_at' => null,
+                        ]]);
+                        $announcement->save();
+                    }
                     $this->processSlots($announcement, 'schedules_json', $controller, $now);
                     $this->processSlots($announcement, 'reminders_json', $controller, $now);
                 }

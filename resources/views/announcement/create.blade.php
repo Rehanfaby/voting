@@ -368,11 +368,13 @@
                 $('#submit-btn').on('click', function (e) {
                     e.preventDefault();
                     var cat = $('#audience_category').val();
-                    if (cat !== 'csv' && cat !== 'everyone' && recipients.length === 0) {
-                        alert('{{ trans('file.Please select at least one recipient') }}');
+                    if (cat === 'csv' && !$('.to-csv').val()) {
+                        alert('Please upload a CSV file.');
                         return;
                     }
                     tinymce.triggerSave();
+                    var $btn = $('#submit-btn');
+                    $btn.prop('disabled', true).val('Saving…');
                     if (dz.getAcceptedFiles().length) {
                         dz.processQueue();
                     } else {
@@ -382,7 +384,16 @@
                 this.on('sending', function (file, xhr, formData) {
                     appendAnnouncementFields(formData);
                 });
-                this.on('successmultiple', function () { location.href = '{{ route('announcement.index') }}'; });
+                this.on('successmultiple', function (files, response) {
+                    var redirect = (response && response.redirect) ? response.redirect : '{{ route('announcement.index') }}';
+                    if (response && response.message) { alert(response.message); }
+                    location.href = redirect;
+                });
+                this.on('error', function (file, message) {
+                    $('#submit-btn').prop('disabled', false).val('{{ trans('file.submit') }}');
+                    var msg = (typeof message === 'string') ? message : (message && message.message ? message.message : 'Could not save announcement');
+                    alert(msg);
+                });
             }
         });
 
@@ -397,8 +408,17 @@
             $.ajax({
                 method: 'POST', url: '{{ route('announcement.store') }}',
                 data: formData, processData: false, contentType: false,
-                success: function () { location.href = '{{ route('announcement.index') }}'; },
-                error: function (xhr) { alert(xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Could not save announcement'); }
+                success: function (res) {
+                    if (res && res.message) { alert(res.message); }
+                    location.href = (res && res.redirect) ? res.redirect : '{{ route('announcement.index') }}';
+                },
+                error: function (xhr) {
+                    $('#submit-btn').prop('disabled', false).val('{{ trans('file.submit') }}');
+                    var msg = (xhr.responseJSON && xhr.responseJSON.message)
+                        ? xhr.responseJSON.message
+                        : ('Could not save announcement' + (xhr.status ? ' (HTTP ' + xhr.status + ')' : ''));
+                    alert(msg);
+                }
             });
         }
 

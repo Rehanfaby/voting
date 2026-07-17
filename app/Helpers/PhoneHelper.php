@@ -73,19 +73,44 @@ class PhoneHelper
             return null;
         }
 
+        // Some records store multiple numbers joined with / , ; |
+        $parts = preg_split('/[\/|,;]+/', (string) $phone);
+        foreach ($parts as $part) {
+            $normalized = self::normalizeCameroonPart($part);
+            if ($normalized) {
+                return $normalized;
+            }
+        }
+
+        return null;
+    }
+
+    private static function normalizeCameroonPart($phone)
+    {
         $phone = preg_replace('/[\s\-\.\(\)]/', '', (string) $phone);
+        if ($phone === '') {
+            return null;
+        }
 
         if (strpos($phone, '+') === 0) {
-            return $phone;
+            $digits = preg_replace('/\D/', '', $phone);
+            return $digits !== '' ? '+' . $digits : null;
         }
         if (strpos($phone, '00') === 0) {
-            return '+' . substr($phone, 2);
+            $digits = preg_replace('/\D/', '', substr($phone, 2));
+            return $digits !== '' ? '+' . $digits : null;
         }
         if (strpos($phone, '237') === 0) {
-            return '+' . $phone;
+            $digits = preg_replace('/\D/', '', $phone);
+            return $digits !== '' ? '+' . $digits : null;
         }
 
-        return '+237' . ltrim($phone, '0');
+        $digits = preg_replace('/\D/', '', $phone);
+        if ($digits === '') {
+            return null;
+        }
+
+        return '+237' . ltrim($digits, '0');
     }
 
     /** Build +237 number from a local digits-only input (no country code). */
