@@ -33,6 +33,8 @@ return [
     'ultramsg' => [
         'instance' => env('ULTRAMSG_INSTANCE'),
         'token' => env('ULTRAMSG_TOKEN'),
+        // Minimum seconds between any two UltraMsg API calls (anti-ban).
+        'min_interval_seconds' => (int) env('ULTRAMSG_MIN_INTERVAL_SECONDS', 6),
     ],
 
     'momo' => [

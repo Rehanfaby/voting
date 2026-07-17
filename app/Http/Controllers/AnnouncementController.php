@@ -306,8 +306,8 @@ class AnnouncementController extends Controller
             if (empty($recipient->phone)) {
                 continue;
             }
+            // Spacing between recipients is enforced centrally in Controller::withWhatsAppThrottle (6s).
             $this->sendAnnouncementMsg($announcement, $recipient);
-            usleep(500000);
         }
     }
 

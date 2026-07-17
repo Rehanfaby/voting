@@ -213,6 +213,54 @@ class Controller extends BaseController
         return false;
     }
 
+    /**
+     * Serialize UltraMsg sends so the WhatsApp account is never hit faster
+     * than ULTRAMSG_MIN_INTERVAL_SECONDS (default 6s), including across
+     * concurrent PHP requests (file lock under storage/app).
+     */
+    protected function withWhatsAppThrottle(callable $send)
+    {
+        $interval = (int) config('services.ultramsg.min_interval_seconds', 6);
+        if ($interval < 1) {
+            $interval = 6;
+        }
+
+        $dir = storage_path('app');
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0755, true);
+        }
+
+        $path = $dir . DIRECTORY_SEPARATOR . 'ultramsg_send.lock';
+        $fp = @fopen($path, 'c+');
+        if ($fp === false) {
+            usleep($interval * 1000000);
+            return $send();
+        }
+
+        flock($fp, LOCK_EX);
+        try {
+            rewind($fp);
+            $raw = stream_get_contents($fp);
+            $last = (is_string($raw) && trim($raw) !== '') ? (float) trim($raw) : 0.0;
+            $wait = ($last + $interval) - microtime(true);
+            if ($wait > 0) {
+                usleep((int) round($wait * 1000000));
+            }
+
+            $result = $send();
+
+            ftruncate($fp, 0);
+            rewind($fp);
+            fwrite($fp, sprintf('%.6F', microtime(true)));
+            fflush($fp);
+
+            return $result;
+        } finally {
+            flock($fp, LOCK_UN);
+            fclose($fp);
+        }
+    }
+
     public function wpMessage($number, $msg){
         $instance = config('services.ultramsg.instance');
         $token = config('services.ultramsg.token');
@@ -231,66 +279,68 @@ class Controller extends BaseController
             return false;
         }
 
-        $params = [
-            'token' => $token,
-            'to' => $to,
-            'body' => $msg,
-        ];
-        $curl = curl_init();
-        curl_setopt_array($curl, array(
-            CURLOPT_URL => "https://api.ultramsg.com/{$instance}/messages/chat",
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => "",
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 30,
-            CURLOPT_SSL_VERIFYHOST => 0,
-            CURLOPT_SSL_VERIFYPEER => 0,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => "POST",
-            CURLOPT_POSTFIELDS => http_build_query($params),
-            CURLOPT_HTTPHEADER => array(
-                "content-type: application/x-www-form-urlencoded"
-            ),
-        ));
-
-        $response = curl_exec($curl);
-        $err = curl_error($curl);
-        curl_close($curl);
-
-        if ($err) {
-            \Log::error('UltraMsg curl error', ['error' => $err, 'to' => $to]);
-            return false;
-        }
-
-        $decoded = json_decode((string) $response, true);
-        if (!is_array($decoded)) {
-            \Log::warning('UltraMsg unexpected response', ['response' => $response, 'to' => $to]);
-            return false;
-        }
-
-        if (isset($decoded['error']) && $decoded['error']) {
-            \Log::warning('UltraMsg API error', ['response' => $decoded, 'to' => $to]);
-            return false;
-        }
-
-        // UltraMsg returns HTTP 200 with `sent: true` even when the WhatsApp
-        // instance is not authenticated (message stays queued indefinitely).
-        // Treat that as a delivery failure so callers can surface an error.
-        $note = strtolower((string) ($decoded['message'] ?? ''));
-        if ($note !== '' && (
-            strpos($note, 'not authenticated') !== false
-            || strpos($note, 'will be sent after') !== false
-            || strpos($note, 'instance is not') !== false
-            || strpos($note, 'disconnected') !== false
-        )) {
-            \Log::warning('UltraMsg instance not connected — message queued, not delivered', [
-                'response' => $decoded,
+        return $this->withWhatsAppThrottle(function () use ($instance, $token, $to, $msg) {
+            $params = [
+                'token' => $token,
                 'to' => $to,
-            ]);
-            return false;
-        }
+                'body' => $msg,
+            ];
+            $curl = curl_init();
+            curl_setopt_array($curl, array(
+                CURLOPT_URL => "https://api.ultramsg.com/{$instance}/messages/chat",
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => "",
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 30,
+                CURLOPT_SSL_VERIFYHOST => 0,
+                CURLOPT_SSL_VERIFYPEER => 0,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => "POST",
+                CURLOPT_POSTFIELDS => http_build_query($params),
+                CURLOPT_HTTPHEADER => array(
+                    "content-type: application/x-www-form-urlencoded"
+                ),
+            ));
 
-        return true;
+            $response = curl_exec($curl);
+            $err = curl_error($curl);
+            curl_close($curl);
+
+            if ($err) {
+                \Log::error('UltraMsg curl error', ['error' => $err, 'to' => $to]);
+                return false;
+            }
+
+            $decoded = json_decode((string) $response, true);
+            if (!is_array($decoded)) {
+                \Log::warning('UltraMsg unexpected response', ['response' => $response, 'to' => $to]);
+                return false;
+            }
+
+            if (isset($decoded['error']) && $decoded['error']) {
+                \Log::warning('UltraMsg API error', ['response' => $decoded, 'to' => $to]);
+                return false;
+            }
+
+            // UltraMsg returns HTTP 200 with `sent: true` even when the WhatsApp
+            // instance is not authenticated (message stays queued indefinitely).
+            // Treat that as a delivery failure so callers can surface an error.
+            $note = strtolower((string) ($decoded['message'] ?? ''));
+            if ($note !== '' && (
+                strpos($note, 'not authenticated') !== false
+                || strpos($note, 'will be sent after') !== false
+                || strpos($note, 'instance is not') !== false
+                || strpos($note, 'disconnected') !== false
+            )) {
+                \Log::warning('UltraMsg instance not connected — message queued, not delivered', [
+                    'response' => $decoded,
+                    'to' => $to,
+                ]);
+                return false;
+            }
+
+            return true;
+        });
     }
 
 
@@ -304,29 +354,31 @@ class Controller extends BaseController
         $img_base64 =  base64_encode($data);
         $img_base64 =urlencode($img_base64);
 
-        $curl = curl_init();
-        curl_setopt_array($curl, array(
-            CURLOPT_URL => "https://api.ultramsg.com/$instance/messages/document",
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => "",
-            CURLOPT_SSL_VERIFYHOST =>0,
-            CURLOPT_SSL_VERIFYPEER =>0,
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 30,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => "POST",
-            CURLOPT_POSTFIELDS => "token=$token&to=$to&document=$img_base64&filename=$filename",
-            CURLOPT_HTTPHEADER => array(
-                "content-type: application/x-www-form-urlencoded"
-            ),
-        ));
+        return $this->withWhatsAppThrottle(function () use ($instance, $token, $to, $img_base64, $filename) {
+            $curl = curl_init();
+            curl_setopt_array($curl, array(
+                CURLOPT_URL => "https://api.ultramsg.com/$instance/messages/document",
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => "",
+                CURLOPT_SSL_VERIFYHOST =>0,
+                CURLOPT_SSL_VERIFYPEER =>0,
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 30,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => "POST",
+                CURLOPT_POSTFIELDS => "token=$token&to=$to&document=$img_base64&filename=$filename",
+                CURLOPT_HTTPHEADER => array(
+                    "content-type: application/x-www-form-urlencoded"
+                ),
+            ));
 
-        $response = curl_exec($curl);
-        $err = curl_error($curl);
+            $response = curl_exec($curl);
+            $err = curl_error($curl);
 
-        curl_close($curl);
+            curl_close($curl);
 
-        return true;
+            return true;
+        });
     }
 
 
@@ -340,29 +392,31 @@ class Controller extends BaseController
         $img_base64 =  base64_encode($data);
         $img_base64 =urlencode($img_base64);
 
-        $curl = curl_init();
-        curl_setopt_array($curl, array(
-            CURLOPT_URL => "https://api.ultramsg.com/$instance/messages/document",
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => "",
-            CURLOPT_SSL_VERIFYHOST =>0,
-            CURLOPT_SSL_VERIFYPEER =>0,
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 30,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => "POST",
-            CURLOPT_POSTFIELDS => "token=$token&to=$to&document=$img_base64&filename=$filename",
-            CURLOPT_HTTPHEADER => array(
-                "content-type: application/x-www-form-urlencoded"
-            ),
-        ));
+        return $this->withWhatsAppThrottle(function () use ($instance, $token, $to, $img_base64, $filename) {
+            $curl = curl_init();
+            curl_setopt_array($curl, array(
+                CURLOPT_URL => "https://api.ultramsg.com/$instance/messages/document",
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => "",
+                CURLOPT_SSL_VERIFYHOST =>0,
+                CURLOPT_SSL_VERIFYPEER =>0,
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 30,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => "POST",
+                CURLOPT_POSTFIELDS => "token=$token&to=$to&document=$img_base64&filename=$filename",
+                CURLOPT_HTTPHEADER => array(
+                    "content-type: application/x-www-form-urlencoded"
+                ),
+            ));
 
-        $response = curl_exec($curl);
-        $err = curl_error($curl);
+            $response = curl_exec($curl);
+            $err = curl_error($curl);
 
-        curl_close($curl);
+            curl_close($curl);
 
-        return true;
+            return true;
+        });
     }
 
     public function wpPDFAnnouncement($path, $lims_customer_data, $filename='invoice.pdf'){
@@ -375,29 +429,31 @@ class Controller extends BaseController
         $img_base64 =  base64_encode($data);
         $img_base64 =urlencode($img_base64);
 
-        $curl = curl_init();
-        curl_setopt_array($curl, array(
-            CURLOPT_URL => "https://api.ultramsg.com/$instance/messages/document",
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => "",
-            CURLOPT_SSL_VERIFYHOST =>0,
-            CURLOPT_SSL_VERIFYPEER =>0,
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 30,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => "POST",
-            CURLOPT_POSTFIELDS => "token=$token&to=$to&document=$img_base64&filename=$filename",
-            CURLOPT_HTTPHEADER => array(
-                "content-type: application/x-www-form-urlencoded"
-            ),
-        ));
+        return $this->withWhatsAppThrottle(function () use ($instance, $token, $to, $img_base64, $filename) {
+            $curl = curl_init();
+            curl_setopt_array($curl, array(
+                CURLOPT_URL => "https://api.ultramsg.com/$instance/messages/document",
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => "",
+                CURLOPT_SSL_VERIFYHOST =>0,
+                CURLOPT_SSL_VERIFYPEER =>0,
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 30,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => "POST",
+                CURLOPT_POSTFIELDS => "token=$token&to=$to&document=$img_base64&filename=$filename",
+                CURLOPT_HTTPHEADER => array(
+                    "content-type: application/x-www-form-urlencoded"
+                ),
+            ));
 
-        $response = curl_exec($curl);
-        $err = curl_error($curl);
+            $response = curl_exec($curl);
+            $err = curl_error($curl);
 
-        curl_close($curl);
+            curl_close($curl);
 
-        return true;
+            return true;
+        });
     }
 
     public function sendWhatsappMsgForPlacingOrderToBuyer($order){
