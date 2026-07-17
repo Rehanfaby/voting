@@ -611,6 +611,7 @@ class HomeController extends Controller
             'price' => $product->price,
             'total_amount' => $amount,
             'payment_method' => 1,
+            'locale' => WhatsAppFormatter::currentLocale(),
             'selected_seat_ids' => is_array($seatSelection) ? json_encode($seatSelection['ids']) : null,
         ]);
 
@@ -726,6 +727,7 @@ class HomeController extends Controller
                     'price' => $product->price,
                     'total_amount' => $amount,
                     'payment_method' => 0,
+                    'locale' => WhatsAppFormatter::currentLocale(),
                     'selected_seat_ids' => is_array($seatSelection) ? json_encode($seatSelection['ids']) : null,
                 ]);
 
@@ -1391,7 +1393,12 @@ class HomeController extends Controller
         }
 
         $otp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-        $msg = WhatsAppFormatter::otpMessage($user->name ?? 'User', $otp, 3);
+        $msg = WhatsAppFormatter::otpMessage(
+            $user->name ?? 'User',
+            $otp,
+            3,
+            WhatsAppFormatter::currentLocale()
+        );
 
         if (!$this->wpMessage($recipient, $msg)) {
             \Log::warning('Login OTP WhatsApp delivery failed', [
@@ -1668,7 +1675,8 @@ class HomeController extends Controller
                 ['Mot de passe', 'Password', (string) $password],
             ],
             'Bienvenue à bord !',
-            'Welcome aboard!'
+            'Welcome aboard!',
+            WhatsAppFormatter::currentLocale()
         );
 
         try{
@@ -1795,6 +1803,9 @@ class HomeController extends Controller
             File::makeDirectory($path, 0755, true);
         }
 
+        $locale = WhatsAppFormatter::normalizeLocale(optional($ticket)->locale)
+            ?: WhatsAppFormatter::currentLocale();
+
         foreach ($ticketSeats as $ticketSeat) {
             $user = User::find($ticket->user_id);
             $eventName = $ticket->product->name ?? 'Event';
@@ -1813,7 +1824,8 @@ class HomeController extends Controller
                     ['Quantité', 'Quantity', '1'],
                 ],
                 'Présentez le QR code à l\'entrée.',
-                'Present your QR code at the entrance.'
+                'Present your QR code at the entrance.',
+                $locale
             );
 
             try{
@@ -1923,6 +1935,8 @@ class HomeController extends Controller
             }
             $user = User::find($ticket->user_id);
             if($user) {
+                $locale = WhatsAppFormatter::normalizeLocale(optional($ticket)->locale)
+                    ?: WhatsAppFormatter::currentLocale();
                 $msg = WhatsAppFormatter::compose(
                     '🎟️',
                     'BILLET SCANNÉ',
@@ -1935,7 +1949,10 @@ class HomeController extends Controller
                         ['Siège', 'Seat', (string) $ticketSeat->seat_number],
                         ['Événement', 'Event', $ticket->product->name ?? '—'],
                         ['Date', 'Event date', (string) ($ticket->product->event_day ?? '—')],
-                    ]
+                    ],
+                    '',
+                    '',
+                    $locale
                 );
                 try{
                     $this->wpMessage($user->whatsapp_number ?? $user->phone, $msg);
@@ -1978,7 +1995,8 @@ class HomeController extends Controller
                 ['Nouveau mot de passe', 'New password', (string) $password],
             ],
             'Connectez-vous avec vos nouveaux identifiants.',
-            'Sign in with your new credentials.'
+            'Sign in with your new credentials.',
+            WhatsAppFormatter::currentLocale()
         );
 
         try{
@@ -2038,14 +2056,7 @@ class HomeController extends Controller
         ]);
         Session::forget('user');
 
-        $msg = '*Dear* :'. $user->name .' \n\n';
-        $msg .= '*Your new password is:* '. $password . '\n\n';
-
-        try{
-            $this->wpMessage($user->phone, $msg);
-        }
-        catch(\Exception $e){
-        }
+        $this->sendWhatsappMsgForUpdatePassword($user, $password);
 
         return redirect()->route('user.login')->with('message', 'Congratulaton: Your password has been updated');
     }
@@ -2156,12 +2167,23 @@ class HomeController extends Controller
 
         Session::forget(["reset_otp", "reset_user_id", "reset_otp_verified"]);
 
-        $msg = "*Dear* " . $user->name . " \n\n";
-        $msg .= "Your dashboard password has just been reset successfully. \n\n";
-        $msg .= "If this wasn't you, please contact the administrator immediately. \n\n";
-        $msg .= request()->getHost();
+        $locale = WhatsAppFormatter::currentLocale();
+        $msg = WhatsAppFormatter::compose(
+            '🔑',
+            'MOT DE PASSE RÉINITIALISÉ',
+            'PASSWORD RESET',
+            $user->name ?? 'User',
+            'Votre mot de passe du tableau de bord a été réinitialisé avec succès.',
+            'Your dashboard password has been reset successfully.',
+            [
+                ['Site', 'Site', (string) request()->getHost()],
+            ],
+            'Si ce n\'était pas vous, contactez immédiatement l\'administrateur.',
+            'If this wasn\'t you, contact the administrator immediately.',
+            $locale
+        );
         try {
-            $this->wpMessage($user->phone, $msg);
+            $this->wpMessage($user->whatsapp_number ?? $user->phone, $msg);
         } catch (\Exception $e) {
         }
 
