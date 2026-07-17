@@ -51,7 +51,7 @@
                                     </li>
                                     <li class="{{ ($paymentMethod ?? '') === 'om' ? 'is-active' : '' }}">
                                         <strong>Orange</strong>
-                                        <span>{{ trans('file.Dial') }} <code>#150*50#</code> {{ trans('file.to approve your payment') }}</span>
+                                        <span>{{ trans('file.Dial') }} <code>#150*47#</code> {{ trans('file.to approve your payment') }}</span>
                                     </li>
                                 </ul>
                             </div>

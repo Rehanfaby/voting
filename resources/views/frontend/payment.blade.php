@@ -126,7 +126,7 @@
                                             <strong>MTN:</strong> {{ trans('file.Dial') }} <code>*126#</code> {{ trans('file.to approve your payment') }}
                                         </p>
                                         <p class="mg-pay-ussd-tip__line" id="mg-pay-ussd-om" style="display:none;">
-                                            <strong>Orange:</strong> {{ trans('file.Dial') }} <code>#150*50#</code> {{ trans('file.to approve your payment') }}
+                                            <strong>Orange:</strong> {{ trans('file.Dial') }} <code>#150*47#</code> {{ trans('file.to approve your payment') }}
                                         </p>
                                     </div>
                                 </div>

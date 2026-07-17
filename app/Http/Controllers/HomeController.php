@@ -449,7 +449,15 @@ class HomeController extends Controller
                 return redirect()->route('home')->with('not_permitted', $initiation['result']->message);
             }
 
-            $this->sendWhatsappMsgVoteMomo($user, $vote->vote, $vote->musician_id, $whatsapp, $amount, $vote);
+            $this->sendWhatsappMsgVoteMomo(
+                $user,
+                $vote->vote,
+                $vote->musician_id,
+                $whatsapp,
+                $amount,
+                $vote,
+                $request->input('payment_method', 'momo')
+            );
 
             return redirect()->route('musician.vote.payment.pending', $vote->id);
         } catch (\App\Services\Payments\MobileMoneyGatewayConfigurationException $e) {
@@ -967,7 +975,8 @@ class HomeController extends Controller
                     $vote->musician_id,
                     $vote->whatsapp_number,
                     $vote->grand_total,
-                    $vote
+                    $vote,
+                    $result['payment_method'] ?? 'momo'
                 );
             }
 
@@ -1718,20 +1727,23 @@ class HomeController extends Controller
     }
 
 
-    public function sendWhatsappMsgVoteMomo($user, $vote, $musician_id, $whatsapp = null, $amount = null, $voteModel = null)
+    public function sendWhatsappMsgVoteMomo($user, $vote, $musician_id, $whatsapp = null, $amount = null, $voteModel = null, $paymentMethod = 'momo')
     {
         $musician = Employee::select('name', 'id')->find($musician_id);
         $total_votes = vote::where('musician_id', $musician_id)->where('status', true)->sum('vote');
         $recipient = $whatsapp ?? $user->whatsapp_number ?? $user->phone;
         $amountLine = $amount ? number_format((float) $amount) . ' CFA' : null;
         $pendingUrl = $voteModel ? route('musician.vote.payment.pending', $voteModel->id) : null;
+        $isOrange = strtolower((string) $paymentMethod) === 'om';
+        $ussdCode = $isOrange ? '#150*47#' : '*126#';
+        $networkLabel = $isOrange ? 'Orange Money' : 'MTN Mobile Money';
         $lines = [
             ['Candidat', 'Contestant', $musician->name ?? '—'],
             ['Votes', 'Votes', (string) $vote],
             ['Total actuel', 'Current total', (string) $total_votes],
+            ['Réseau', 'Network', $networkLabel],
             ['Statut', 'Status', 'En attente / Pending'],
-            ['MTN', 'MTN', 'Composez *126# / Dial *126#'],
-            ['Orange', 'Orange', 'Composez #150*50# / Dial #150*50#'],
+            ['Code USSD', 'USSD code', "Composez {$ussdCode} / Dial {$ussdCode}"],
         ];
         if ($amountLine) {
             array_splice($lines, 2, 0, [['Montant', 'Amount', $amountLine]]);
@@ -1745,8 +1757,8 @@ class HomeController extends Controller
             'PAIEMENT DE VOTE EN ATTENTE',
             'VOTE PAYMENT PENDING',
             $user->name ?? 'Voter',
-            'Validez sur votre téléphone. MTN: *126# — Orange: #150*50#. Si rien n’arrive, rouvrez le lien après 4 minutes pour renvoyer la demande.',
-            'Approve on your phone. MTN: dial *126# — Orange: dial #150*50#. If no prompt, reopen the link after 4 minutes to resend.',
+            "Validez sur votre téléphone avec {$networkLabel}. Composez {$ussdCode} pour approuver. Si rien n’arrive, rouvrez le lien après 4 minutes pour renvoyer la demande.",
+            "Approve on your phone with {$networkLabel}. Dial {$ussdCode} to approve. If no prompt, reopen the link after 4 minutes to resend.",
             $lines,
             'Ne fermez pas avant confirmation.',
             'Do not close until payment is confirmed.'

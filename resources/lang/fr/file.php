@@ -985,7 +985,7 @@ return [
     'Copy' => 'Copier',
     'Copied' => 'Copié',
     'Resend available in' => 'Renvoi disponible dans',
-    'New payment prompt sent Approve on your phone' => 'Une nouvelle demande a été envoyée. Validez sur votre téléphone (MTN : *126#).',
+    'New payment prompt sent Approve on your phone' => 'Une nouvelle demande a été envoyée. Validez sur votre téléphone (MTN : *126# / Orange : #150*47#).',
     'We could not restart the Mobile Money payment' => 'Impossible de relancer le paiement Mobile Money. Veuillez réessayer.',
     'Please wait minutes before retrying' => 'Veuillez attendre encore environ :minutes minute(s) avant de réessayer.',
     'This vote can no longer be retried Please start a new vote' => 'Ce vote ne peut plus être relancé. Veuillez recommencer un nouveau vote.',

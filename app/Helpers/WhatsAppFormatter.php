@@ -9,16 +9,25 @@ class WhatsAppFormatter
         return 'Mulemagc';
     }
 
-    /** Human system/brand name shown at the top of every message. */
+    /** Human system/brand name shown at the top of every message (from Settings → Site Title). */
     public static function systemName(): string
     {
+        try {
+            $title = \App\GeneralSetting::query()->value('site_title');
+            if (is_string($title) && trim($title) !== '') {
+                return trim($title);
+            }
+        } catch (\Throwable $e) {
+            // fall through
+        }
+
         return 'Mulema Gospel';
     }
 
     /** Full system title used in announcement messages. */
     public static function announcementTitle(): string
     {
-        return 'Mulema Gospel Talent 2.0';
+        return self::systemName();
     }
 
     public static function siteUrl(): string

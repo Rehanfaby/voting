@@ -949,7 +949,7 @@ return [
     'Copy' => 'Copy',
     'Copied' => 'Copied',
     'Resend available in' => 'Resend available in',
-    'New payment prompt sent Approve on your phone' => 'A new payment prompt was sent. Approve it on your phone (MTN: *126#).',
+    'New payment prompt sent Approve on your phone' => 'A new payment prompt was sent. Approve it on your phone (MTN: *126# / Orange: #150*47#).',
     'We could not restart the Mobile Money payment' => 'We could not restart the Mobile Money payment. Please try again.',
     'Please wait minutes before retrying' => 'Please wait about :minutes more minute(s) before retrying.',
     'This vote can no longer be retried Please start a new vote' => 'This vote can no longer be retried. Please start a new vote.',
