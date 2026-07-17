@@ -195,6 +195,7 @@ class AnnouncementController extends Controller
         }
 
         if ($sendNow && !$scheduleLater) {
+            $this->dispatchAnnouncementDelivery($announcement->id);
             $message = 'Announcement saved and queued for WhatsApp delivery (about 6 seconds between each recipient).';
         } elseif ($scheduleLater) {
             $message = 'Announcement scheduled successfully';
@@ -212,6 +213,22 @@ class AnnouncementController extends Controller
         }
 
         return redirect()->route('announcement.index')->with('message', $message);
+    }
+
+    /** Fire-and-forget CLI delivery so the browser is never blocked by the 6s throttle. */
+    private function dispatchAnnouncementDelivery(int $announcementId): void
+    {
+        $php = defined('PHP_BINARY') && PHP_BINARY ? PHP_BINARY : 'php';
+        $artisan = base_path('artisan');
+        $cmd = sprintf(
+            'cd %s && nohup %s %s announcements:deliver %d > %s 2>&1 &',
+            escapeshellarg(base_path()),
+            escapeshellarg($php),
+            escapeshellarg($artisan),
+            $announcementId,
+            escapeshellarg(storage_path('logs/announcement-deliver-' . $announcementId . '.log'))
+        );
+        @exec($cmd);
     }
 
     private function isAnnouncementAjax(Request $request): bool
@@ -319,6 +336,8 @@ class AnnouncementController extends Controller
             'status' => 'queued',
             'is_sent' => false,
         ]);
+
+        $this->dispatchAnnouncementDelivery((int) $announcement->id);
 
         return redirect()->back()->with('message', 'Announcement queued for WhatsApp delivery. Messages go out about every 6 seconds.');
     }
