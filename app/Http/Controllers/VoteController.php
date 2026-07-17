@@ -6,6 +6,8 @@ use App\Employee;
 use App\User;
 use App\vote;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Auth;
 use Spatie\Permission\Models\Role;
 
@@ -34,10 +36,46 @@ class VoteController extends Controller
             }
 
             $votes = Vote::whereDate('created_at', '>=', $start_date)->whereDate('created_at', '<=', $end_date)->orderBy('id', 'desc')->get();
-            return view('votes.index', compact('votes', 'start_date', 'end_date', 'all_permission'));
+            $lastClearedAt = null;
+            if (Schema::hasColumn('votes', 'cleared_at')) {
+                $lastClearedAt = vote::whereNotNull('cleared_at')->max('cleared_at');
+            }
+            return view('votes.index', compact('votes', 'start_date', 'end_date', 'all_permission', 'lastClearedAt'));
         } else {
             return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
         }
+    }
+
+    /**
+     * Zero completed vote counts without deleting rows or voters.
+     * Public tallies restart from this moment; payment/voter history is kept.
+     */
+    public function clearVotes(Request $request)
+    {
+        $role = Role::find(Auth::user()->role_id);
+        if (!$role || !$role->hasPermissionTo('votes-delete')) {
+            return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
+        }
+
+        if (!Schema::hasColumn('votes', 'cleared_at') || !Schema::hasColumn('votes', 'cleared_vote')) {
+            return redirect()->back()->with('not_permitted', 'Clear Votes is not available yet. Please run migrations.');
+        }
+
+        $cleared = DB::table('votes')
+            ->where('status', 1)
+            ->where('vote', '>', 0)
+            ->whereNull('cleared_at')
+            ->update([
+                'cleared_vote' => DB::raw('vote'),
+                'vote' => 0,
+                'cleared_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+        return redirect()->route('votes.index')->with(
+            'message',
+            trans('file.Votes cleared successfully. Voters kept. New votes will count from now.', ['count' => (int) $cleared])
+        );
     }
 
     /**

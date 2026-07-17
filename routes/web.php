@@ -275,6 +275,7 @@ Route::group(['middleware' => ['auth', 'active', 'checkOtp']], function() {
 
     Route::resource('votes', 'VoteController');
     Route::post('votes/deletebyselection', 'VoteController@deleteBySelection');
+    Route::post('votes/clear', 'VoteController@clearVotes')->name('votes.clear');
     Route::resource('judge', 'JudgeController');
     Route::post('judge/deletebyselection', 'JudgeController@deleteBySelection');
     Route::resource('ambassador', 'AmbassadorController');

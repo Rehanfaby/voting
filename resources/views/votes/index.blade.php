@@ -34,9 +34,28 @@
             </div>
             {!! Form::close() !!}
         </div>
-        @if(in_array("votes-add", $all_permission))
-            <button class="btn btn-info" data-toggle="modal" data-target="#vote-modal"><i class="dripicons-plus"></i> {{trans('file.Add Vote')}}</button>
-        @endif
+        <div class="mb-3">
+            @if(in_array("votes-add", $all_permission))
+                <button class="btn btn-info" data-toggle="modal" data-target="#vote-modal"><i class="dripicons-plus"></i> {{trans('file.Add Vote')}}</button>
+            @endif
+            @if(in_array("votes-delete", $all_permission))
+                <form action="{{ route('votes.clear') }}" method="POST" class="d-inline" onsubmit="return confirmClearVotes();">
+                    @csrf
+                    <button type="submit" class="btn btn-warning">
+                        <i class="dripicons-wrong"></i> {{ trans('file.Clear Votes') }}
+                    </button>
+                </form>
+            @endif
+            @if(!empty($lastClearedAt))
+                <span class="ml-2 text-muted">
+                    {{ trans('file.Last cleared') }}:
+                    <strong>{{ \Carbon\Carbon::parse($lastClearedAt)->format('D d-M-Y H:i') }}</strong>
+                </span>
+            @endif
+        </div>
+        <p class="text-muted small mb-3">
+            {{ trans('file.Clear Votes help') }}
+        </p>
     </div>
     <div class="table-responsive">
         <table id="expense-table" class="table">
@@ -60,9 +79,18 @@
                     <td>{{ $vote->reference }}</td>
                     <td>{{ @$vote->musicians->name }}</td>
                     <td>{{ @$vote->voters->name }}</td>
-                    <td>{{ $vote->vote }}</td>
+                    <td>
+                        @if(!empty($vote->cleared_at))
+                            <span class="text-muted" title="{{ trans('file.Cleared') }}">0</span>
+                            <small class="text-muted">({{ (int) ($vote->cleared_vote ?? 0) }})</small>
+                        @else
+                            {{ $vote->vote }}
+                        @endif
+                    </td>
                     @if($vote->status == 0)
                         <td><span class="badge badge-warning">Pending</span></td>
+                    @elseif(!empty($vote->cleared_at))
+                        <td><span class="badge badge-secondary">{{ trans('file.Cleared') }}</span></td>
                     @else
                         <td><span class="badge badge-success">Complete</span></td>
                     @endif
@@ -191,6 +219,10 @@ function confirmDelete() {
         return true;
     }
     return false;
+}
+
+function confirmClearVotes() {
+    return confirm(@json(trans('file.Clear Votes confirm')));
 }
 
     $('#expense-table').DataTable( {
