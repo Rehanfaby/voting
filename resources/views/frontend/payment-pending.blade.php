@@ -1,6 +1,13 @@
 @extends('frontend.layout.main')
 @section('content')
 
+    @if(session()->has('message'))
+        <div class="alert alert-success alert-dismissible text-center"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>{{ session()->get('message') }}</div>
+    @endif
+    @if(session()->has('not_permitted'))
+        <div class="alert alert-danger alert-dismissible text-center"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>{{ session()->get('not_permitted') }}</div>
+    @endif
+
     @php $amount = $vote->grand_total; @endphp
 
     <main>
@@ -35,11 +42,44 @@
                                 </div>
                             </div>
 
+                            <div class="mg-pay-ussd">
+                                <p class="mg-pay-ussd__title"><i class="fa fa-mobile-screen"></i> {{ trans('file.If you did not get a PIN prompt') }}</p>
+                                <ul class="mg-pay-ussd__list">
+                                    <li class="{{ ($paymentMethod ?? 'momo') === 'momo' ? 'is-active' : '' }}">
+                                        <strong>MTN</strong>
+                                        <span>{{ trans('file.Dial') }} <code>*126#</code> {{ trans('file.to approve your payment') }}</span>
+                                    </li>
+                                    <li class="{{ ($paymentMethod ?? '') === 'om' ? 'is-active' : '' }}">
+                                        <strong>Orange</strong>
+                                        <span>{{ trans('file.Dial') }} <code>#150*50#</code> {{ trans('file.to approve your payment') }}</span>
+                                    </li>
+                                </ul>
+                            </div>
+
                             <div class="mg-pay-pending">
                                 <div class="mg-pay-pending__spinner" aria-hidden="true"></div>
                                 <p class="mg-pay-pending__status" id="mg-pay-status">{{ trans('file.Waiting for payment confirmation') }}…</p>
                                 <p class="mg-pay-pending__hint">{{ trans('file.Do not close this page until payment is confirmed') }}</p>
                             </div>
+
+                            <div class="mg-pay-retry" id="mg-pay-retry" style="{{ !empty($canRetry) ? '' : 'display:none;' }}">
+                                <p class="mg-pay-retry__text">{{ trans('file.Still waiting You can resend the payment prompt') }}</p>
+                                <form method="post" action="{{ route('musician.vote.payment.retry', $vote->id) }}" class="mb-3">
+                                    @csrf
+                                    <button type="submit" class="mg-btn mg-pay-retry__btn">
+                                        <i class="fa fa-rotate"></i> {{ trans('file.Resend payment prompt') }}
+                                    </button>
+                                </form>
+                                <p class="mg-pay-retry__link-label">{{ trans('file.Or open this link later') }}</p>
+                                <div class="mg-pay-retry__link-row">
+                                    <input type="text" readonly class="mg-pay-retry__link" id="mg-pay-link" value="{{ $pendingUrl }}">
+                                    <button type="button" class="mg-pay-retry__copy" id="mg-pay-copy">{{ trans('file.Copy') }}</button>
+                                </div>
+                            </div>
+                            <p class="mg-pay-retry-wait" id="mg-pay-retry-wait" style="{{ empty($canRetry) && (int) $vote->status === 0 ? '' : 'display:none;' }}">
+                                {{ trans('file.Resend available in') }}
+                                <strong id="mg-pay-countdown">{{ (int) ($secondsUntilRetry ?? 240) }}</strong>s
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -63,13 +103,28 @@
     .mg-pay-summary__meta { display:flex; flex-wrap:wrap; gap:10px; align-items:center; font-size:13px; }
     .mg-pay-summary__meta i { color:#e87722; margin-right:4px; }
     .mg-pay-summary__amount { background:rgba(232,119,34,.18); border:1px solid rgba(232,119,34,.45); color:#ff9533; font-weight:800; padding:3px 10px; border-radius:20px; font-size:12px; }
-    .mg-pay-pending { padding:28px 24px 32px; text-align:center; }
+    .mg-pay-ussd { padding:16px 20px 0; }
+    .mg-pay-ussd__title { margin:0 0 10px; font-weight:800; color:#0a2350; font-size:14px; }
+    .mg-pay-ussd__title i { color:#e87722; margin-right:6px; }
+    .mg-pay-ussd__list { list-style:none; margin:0; padding:0; display:grid; gap:8px; }
+    .mg-pay-ussd__list li { display:flex; flex-direction:column; gap:2px; padding:10px 12px; border-radius:12px; background:#f7f9fd; border:1px solid #dbe4f3; font-size:13px; color:#23324d; }
+    .mg-pay-ussd__list li.is-active { background:#fff7f0; border-color:rgba(232,119,34,.45); box-shadow:0 0 0 2px rgba(232,119,34,.12); }
+    .mg-pay-ussd__list code { font-weight:800; color:#e87722; background:rgba(232,119,34,.1); padding:1px 6px; border-radius:6px; }
+    .mg-pay-pending { padding:24px 24px 20px; text-align:center; }
     .mg-pay-pending__spinner { width:44px; height:44px; margin:0 auto 16px; border:3px solid #dbe4f3; border-top-color:#e87722; border-radius:50%; animation:mg-spin .8s linear infinite; }
     @keyframes mg-spin { to { transform: rotate(360deg); } }
     .mg-pay-pending__status { font-weight:700; color:#0a2350; margin:0 0 8px; font-size:15px; }
     .mg-pay-pending__hint { color:#6b7a93; font-size:13px; margin:0; }
     .mg-pay-pending.is-success .mg-pay-pending__spinner { border-color:#28a745; border-top-color:#28a745; animation:none; }
     .mg-pay-pending.is-failed .mg-pay-pending__spinner { border-color:#dc3545; border-top-color:#dc3545; animation:none; }
+    .mg-pay-retry { padding:0 20px 22px; text-align:center; border-top:1px solid #eef2f8; }
+    .mg-pay-retry__text { color:#0a2350; font-weight:700; font-size:14px; margin:16px 0 12px; }
+    .mg-pay-retry__btn { width:100%; justify-content:center; background:#e87722; color:#fff; border:0; border-radius:12px; padding:12px 16px; font-weight:800; }
+    .mg-pay-retry__link-label { color:#6b7a93; font-size:12px; margin:0 0 8px; }
+    .mg-pay-retry__link-row { display:flex; gap:8px; }
+    .mg-pay-retry__link { flex:1; min-width:0; border:1px solid #dbe4f3; border-radius:10px; padding:10px 12px; font-size:12px; color:#14223f; background:#f7f9fd; }
+    .mg-pay-retry__copy { border:0; border-radius:10px; background:#0a2350; color:#fff; font-weight:700; padding:0 14px; }
+    .mg-pay-retry-wait { text-align:center; color:#6b7a93; font-size:13px; padding:0 20px 20px; margin:0; }
 </style>
 @endsection
 
@@ -81,28 +136,80 @@
     var homeUrl = @json(route('home'));
     var statusEl = document.getElementById('mg-pay-status');
     var pending = document.querySelector('.mg-pay-pending');
+    var retryBox = document.getElementById('mg-pay-retry');
+    var waitEl = document.getElementById('mg-pay-retry-wait');
+    var countdownEl = document.getElementById('mg-pay-countdown');
+    var secondsLeft = {{ (int) ($secondsUntilRetry ?? 0) }};
     var attempts = 0;
-    var maxAttempts = 120;
+    var maxAttempts = 160; // ~8 minutes of polling
+    var stopped = false;
+
+    function showRetry() {
+        if (retryBox) { retryBox.style.display = ''; }
+        if (waitEl) { waitEl.style.display = 'none'; }
+    }
+
+    function tickCountdown() {
+        if (secondsLeft <= 0) {
+            showRetry();
+            return;
+        }
+        if (countdownEl) { countdownEl.textContent = String(secondsLeft); }
+        secondsLeft -= 1;
+        setTimeout(tickCountdown, 1000);
+    }
+
+    if (secondsLeft > 0) {
+        tickCountdown();
+    } else {
+        showRetry();
+    }
+
+    var copyBtn = document.getElementById('mg-pay-copy');
+    var linkInput = document.getElementById('mg-pay-link');
+    if (copyBtn && linkInput) {
+        copyBtn.addEventListener('click', function () {
+            linkInput.select();
+            try {
+                document.execCommand('copy');
+                copyBtn.textContent = @json(trans('file.Copied'));
+            } catch (e) {
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(linkInput.value).then(function () {
+                        copyBtn.textContent = @json(trans('file.Copied'));
+                    });
+                }
+            }
+        });
+    }
 
     function poll() {
+        if (stopped) { return; }
         if (attempts++ >= maxAttempts) {
             statusEl.textContent = @json(trans('file.Payment timed out please try again'));
             pending.classList.add('is-failed');
+            showRetry();
             return;
         }
         fetch(pollUrl + '?vote_id=' + voteId, { headers: { 'Accept': 'application/json' } })
             .then(function (r) { return r.json(); })
             .then(function (data) {
                 if (data.status === 'SUCCESSFUL') {
+                    stopped = true;
                     pending.classList.add('is-success');
-                    statusEl.textContent = 'Thank you for your voting';
+                    statusEl.textContent = @json(trans('file.Thank you for your voting'));
+                    if (retryBox) { retryBox.style.display = 'none'; }
+                    if (waitEl) { waitEl.style.display = 'none'; }
                     setTimeout(function () { window.location.href = homeUrl; }, 1200);
                     return;
                 }
                 if (data.status === 'FAILED') {
+                    stopped = true;
                     pending.classList.add('is-failed');
                     statusEl.textContent = @json(trans('file.Payment failed please try again'));
-                    setTimeout(function () { window.location.href = homeUrl; }, 2500);
+                    if (retryBox) { retryBox.style.display = 'none'; }
+                    if (waitEl) { waitEl.style.display = 'none'; }
+                    setTimeout(function () { window.location.href = homeUrl; }, 3000);
                     return;
                 }
                 setTimeout(poll, 3000);

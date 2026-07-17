@@ -449,7 +449,7 @@ class HomeController extends Controller
                 return redirect()->route('home')->with('not_permitted', $initiation['result']->message);
             }
 
-            $this->sendWhatsappMsgVoteMomo($user, $vote->vote, $vote->musician_id, $whatsapp, $amount);
+            $this->sendWhatsappMsgVoteMomo($user, $vote->vote, $vote->musician_id, $whatsapp, $amount, $vote);
 
             return redirect()->route('musician.vote.payment.pending', $vote->id);
         } catch (\App\Services\Payments\MobileMoneyGatewayConfigurationException $e) {
@@ -906,8 +906,78 @@ class HomeController extends Controller
             return redirect()->route('home')->with('message', 'Thank you for your voting');
         }
         $musician = Employee::findOrFail($vote->musician_id);
+        $paymentMethod = 'momo';
+        $payment = \App\MobileMoneyPayment::where('payable_type', vote::class)
+            ->where('payable_id', $vote->id)
+            ->orderByDesc('id')
+            ->first();
+        if ($payment && $payment->request_payload) {
+            $payload = json_decode($payment->request_payload, true);
+            if (!empty($payload['payment_method'])) {
+                $paymentMethod = $payload['payment_method'];
+            }
+        } elseif ($payment && $payment->mobile_network && stripos($payment->mobile_network, 'ORANGE') !== false) {
+            $paymentMethod = 'om';
+        }
+        $lastAttemptAt = $payment && $payment->created_at ? $payment->created_at : $vote->created_at;
+        $retryAfterSeconds = 240;
+        $secondsUntilRetry = max(0, $retryAfterSeconds - now()->diffInSeconds($lastAttemptAt));
+        $canRetry = (int) $vote->status === self::VOTE_PENDING && $secondsUntilRetry === 0;
+        $pendingUrl = route('musician.vote.payment.pending', $vote->id);
 
-        return view('frontend.payment-pending', compact('vote', 'musician'));
+        return view('frontend.payment-pending', compact(
+            'vote',
+            'musician',
+            'paymentMethod',
+            'lastAttemptAt',
+            'retryAfterSeconds',
+            'secondsUntilRetry',
+            'canRetry',
+            'pendingUrl'
+        ));
+    }
+
+    public function musicianVotePaymentRetry($id)
+    {
+        $vote = vote::findOrFail($id);
+        if ((int) $vote->status === self::VOTE_SUCCESS) {
+            return redirect()->route('home')->with('message', trans('file.Thank you for your voting'));
+        }
+        if ((int) $vote->status === self::VOTE_FAILED) {
+            return redirect()->route('musician.data', $vote->musician_id)
+                ->with('not_permitted', trans('file.This vote can no longer be retried Please start a new vote'));
+        }
+
+        try {
+            $result = app(\App\Services\Payments\VoteMobileMoneyService::class)->reinitiate($vote, 240);
+            if (empty($result['ok'])) {
+                $msg = $result['message'] ?? trans('file.We could not restart the Mobile Money payment');
+                if (($result['code'] ?? '') === 'too_soon' && !empty($result['wait_seconds'])) {
+                    $mins = max(1, (int) ceil($result['wait_seconds'] / 60));
+                    $msg = trans('file.Please wait minutes before retrying', ['minutes' => $mins]);
+                }
+                return redirect()->route('musician.vote.payment.pending', $vote->id)->with('not_permitted', $msg);
+            }
+
+            $user = User::find($vote->user_id);
+            if ($user) {
+                $this->sendWhatsappMsgVoteMomo(
+                    $user,
+                    $vote->vote,
+                    $vote->musician_id,
+                    $vote->whatsapp_number,
+                    $vote->grand_total,
+                    $vote
+                );
+            }
+
+            return redirect()->route('musician.vote.payment.pending', $vote->id)
+                ->with('message', trans('file.New payment prompt sent Approve on your phone'));
+        } catch (\Throwable $e) {
+            \Log::error('Vote payment retry failed: ' . $e->getMessage(), ['vote_id' => $vote->id]);
+            return redirect()->route('musician.vote.payment.pending', $vote->id)
+                ->with('not_permitted', trans('file.We could not restart the Mobile Money payment'));
+        }
     }
 
     public function musicianVotePaymentPoll(Request $request)
@@ -1648,20 +1718,26 @@ class HomeController extends Controller
     }
 
 
-    public function sendWhatsappMsgVoteMomo($user, $vote, $musician_id, $whatsapp = null, $amount = null)
+    public function sendWhatsappMsgVoteMomo($user, $vote, $musician_id, $whatsapp = null, $amount = null, $voteModel = null)
     {
         $musician = Employee::select('name', 'id')->find($musician_id);
         $total_votes = vote::where('musician_id', $musician_id)->where('status', true)->sum('vote');
         $recipient = $whatsapp ?? $user->whatsapp_number ?? $user->phone;
         $amountLine = $amount ? number_format((float) $amount) . ' CFA' : null;
+        $pendingUrl = $voteModel ? route('musician.vote.payment.pending', $voteModel->id) : null;
         $lines = [
             ['Candidat', 'Contestant', $musician->name ?? '—'],
             ['Votes', 'Votes', (string) $vote],
             ['Total actuel', 'Current total', (string) $total_votes],
             ['Statut', 'Status', 'En attente / Pending'],
+            ['MTN', 'MTN', 'Composez *126# / Dial *126#'],
+            ['Orange', 'Orange', 'Composez #150*50# / Dial #150*50#'],
         ];
         if ($amountLine) {
             array_splice($lines, 2, 0, [['Montant', 'Amount', $amountLine]]);
+        }
+        if ($pendingUrl) {
+            $lines[] = ['Lien', 'Link', $pendingUrl];
         }
 
         $msg = WhatsAppFormatter::compose(
@@ -1669,11 +1745,11 @@ class HomeController extends Controller
             'PAIEMENT DE VOTE EN ATTENTE',
             'VOTE PAYMENT PENDING',
             $user->name ?? 'Voter',
-            'Veuillez finaliser votre paiement Mobile Money dans les 30 minutes.',
-            'Please complete your Mobile Money payment within 30 minutes.',
+            'Validez sur votre téléphone. MTN: *126# — Orange: #150*50#. Si rien n’arrive, rouvrez le lien après 4 minutes pour renvoyer la demande.',
+            'Approve on your phone. MTN: dial *126# — Orange: dial #150*50#. If no prompt, reopen the link after 4 minutes to resend.',
             $lines,
-            'Validez la demande MoMo sur votre téléphone.',
-            'Approve the MoMo prompt on your phone.'
+            'Ne fermez pas avant confirmation.',
+            'Do not close until payment is confirmed.'
         );
 
         try{

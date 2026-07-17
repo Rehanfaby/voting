@@ -119,6 +119,16 @@
                                         'label' => trans('file.Momo Number'),
                                         'value' => $localPhone,
                                     ])
+
+                                    <div class="mg-pay-ussd-tip" id="mg-pay-ussd-tip">
+                                        <p class="mg-pay-ussd-tip__title"><i class="fa fa-info-circle"></i> {{ trans('file.After you tap Pay') }}</p>
+                                        <p class="mg-pay-ussd-tip__line" id="mg-pay-ussd-momo">
+                                            <strong>MTN:</strong> {{ trans('file.Dial') }} <code>*126#</code> {{ trans('file.to approve your payment') }}
+                                        </p>
+                                        <p class="mg-pay-ussd-tip__line" id="mg-pay-ussd-om" style="display:none;">
+                                            <strong>Orange:</strong> {{ trans('file.Dial') }} <code>#150*50#</code> {{ trans('file.to approve your payment') }}
+                                        </p>
+                                    </div>
                                 </div>
 
                                 @include('partials.intl-phone-field', [
@@ -185,6 +195,11 @@
     .mg-pay-name-status.is-found { color:#0a7d33; }
     .mg-pay-name-status.is-error { color:#c2410c; }
     .mg-pay-submit { width:100%; justify-content:center; margin-top:4px; font-size:15px; padding:13px 20px; }
+    .mg-pay-ussd-tip { margin:4px 0 14px; padding:12px 14px; border-radius:12px; background:#fff7f0; border:1px solid rgba(232,119,34,.35); }
+    .mg-pay-ussd-tip__title { margin:0 0 6px; font-weight:800; color:#0a2350; font-size:13px; }
+    .mg-pay-ussd-tip__title i { color:#e87722; margin-right:4px; }
+    .mg-pay-ussd-tip__line { margin:0; color:#23324d; font-size:13px; line-height:1.4; }
+    .mg-pay-ussd-tip__line code { font-weight:800; color:#e87722; background:rgba(232,119,34,.12); padding:1px 6px; border-radius:6px; }
     @media (max-width:575px) {
         .mg-pay-summary { flex-direction:column; text-align:center; }
         .mg-pay-title { font-size:26px; }
@@ -207,7 +222,8 @@
 
     function syncMethod() {
         var method = form.querySelector('input[name="payment_method"]:checked');
-        var isCard = method && method.value === 'card';
+        var value = method ? method.value : 'momo';
+        var isCard = value === 'card';
         mobileFields.style.display = isCard ? 'none' : 'block';
         if (phoneHidden) {
             phoneHidden.required = !isCard;
@@ -215,6 +231,12 @@
         var waHidden = form.querySelector('input[name="whatsapp_intl"]');
         if (waHidden) {
             waHidden.required = !isCard;
+        }
+        var tipMomo = document.getElementById('mg-pay-ussd-momo');
+        var tipOm = document.getElementById('mg-pay-ussd-om');
+        if (tipMomo && tipOm) {
+            tipMomo.style.display = value === 'om' ? 'none' : '';
+            tipOm.style.display = value === 'om' ? '' : 'none';
         }
     }
 

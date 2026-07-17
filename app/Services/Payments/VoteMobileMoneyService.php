@@ -106,6 +106,88 @@ class VoteMobileMoneyService
         ];
     }
 
+    /**
+     * Start a new MoMo prompt for a still-pending vote (e.g. after ~4 minutes).
+     * Keeps the same vote/voter row; creates a fresh provider transaction.
+     */
+    public function reinitiate(vote $vote, $minSecondsSinceLast = 240)
+    {
+        if ((int) $vote->status === 1) {
+            return [
+                'ok' => false,
+                'code' => 'already_paid',
+                'message' => 'This vote is already paid.',
+            ];
+        }
+        if ((int) $vote->status === 2) {
+            return [
+                'ok' => false,
+                'code' => 'failed',
+                'message' => 'This vote can no longer be retried. Please start a new vote.',
+            ];
+        }
+
+        $payment = $this->resolvePaymentForVote($vote);
+        $lastAt = $payment && $payment->created_at
+            ? $payment->created_at
+            : $vote->created_at;
+        $elapsed = $lastAt ? now()->diffInSeconds($lastAt) : 0;
+
+        if ($elapsed < (int) $minSecondsSinceLast) {
+            return [
+                'ok' => false,
+                'code' => 'too_soon',
+                'wait_seconds' => (int) $minSecondsSinceLast - $elapsed,
+                'message' => 'Please wait a few more minutes before retrying.',
+            ];
+        }
+
+        $phone = $payment
+            ? $payment->phone_number
+            : optional($vote->voters)->phone;
+        if (!$phone) {
+            return [
+                'ok' => false,
+                'code' => 'missing_phone',
+                'message' => 'No mobile money number found for this vote.',
+            ];
+        }
+
+        $paymentMethod = 'momo';
+        if ($payment && $payment->request_payload) {
+            $payload = json_decode($payment->request_payload, true);
+            if (!empty($payload['payment_method'])) {
+                $paymentMethod = $payload['payment_method'];
+            }
+        } elseif ($payment && $payment->mobile_network) {
+            $network = strtoupper((string) $payment->mobile_network);
+            if (strpos($network, 'ORANGE') !== false) {
+                $paymentMethod = 'om';
+            }
+        }
+
+        $initiation = $this->initiate($vote, $phone, $paymentMethod);
+        if (!empty($initiation['result']) && !$initiation['result']->success) {
+            return [
+                'ok' => false,
+                'code' => 'initiate_failed',
+                'message' => $initiation['result']->message
+                    ?: 'We could not restart the Mobile Money payment.',
+                'result' => $initiation['result'],
+            ];
+        }
+
+        return [
+            'ok' => true,
+            'code' => 'restarted',
+            'message' => 'A new payment prompt has been sent to your phone.',
+            'payment' => $initiation['payment'] ?? null,
+            'result' => $initiation['result'] ?? null,
+            'payment_method' => $paymentMethod,
+            'phone' => $phone,
+        ];
+    }
+
     public function refreshVoteStatus(vote $vote)
     {
         if ((int) $vote->status === 1) {
