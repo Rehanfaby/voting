@@ -424,7 +424,8 @@ class HomeController extends Controller
                     'reference' => 'pending',
                     'price' => $general_setting,
                     'grand_total' => $amount,
-                    'whatsapp_number' => $whatsapp
+                    'whatsapp_number' => $whatsapp,
+                    'locale' => WhatsAppFormatter::currentLocale(),
                 ]);
 
         if (PhoneHelper::paymentSimulate() && $vote) {
@@ -509,8 +510,8 @@ class HomeController extends Controller
             'reference' => 'abc',
             'price' => $general_setting,
             'grand_total' => $amount,
-            'whatsapp_number' => $whatsapp
-
+            'whatsapp_number' => $whatsapp,
+            'locale' => WhatsAppFormatter::currentLocale(),
         ]);
 
         if($vote) {
@@ -1311,7 +1312,8 @@ class HomeController extends Controller
                 'reference' => rand(1, 999999),
                 'price' => $general_setting,
                 'grand_total' => $request->amount,
-                'whatsapp_number' => $user->whatsapp_number ?? $user->phone
+                'whatsapp_number' => $user->whatsapp_number ?? $user->phone,
+                'locale' => WhatsAppFormatter::currentLocale(),
             ]);
             $remaining_coin = $coin_check->coin - $request->amount;
 
@@ -1698,6 +1700,7 @@ class HomeController extends Controller
 
 
         $voteLabel = $vote > 1 ? "{$vote} votes" : '1 vote';
+        $locale = WhatsAppFormatter::currentLocale();
 
         $msg = WhatsAppFormatter::compose(
             '🗳️',
@@ -1713,7 +1716,8 @@ class HomeController extends Controller
                 ['Coins restants', 'Remaining coins', (string) $remaining_coin],
             ],
             'Continuez à soutenir votre candidat !',
-            'Keep supporting your favourite contestant!'
+            'Keep supporting your favourite contestant!',
+            $locale
         );
 
         try{
@@ -1737,13 +1741,19 @@ class HomeController extends Controller
         $isOrange = strtolower((string) $paymentMethod) === 'om';
         $ussdCode = $isOrange ? '#150*47#' : '*126#';
         $networkLabel = $isOrange ? 'Orange Money' : 'MTN Mobile Money';
+        $locale = WhatsAppFormatter::normalizeLocale(optional($voteModel)->locale)
+            ?: WhatsAppFormatter::currentLocale();
+        $ussdValue = $locale === 'fr'
+            ? "Composez {$ussdCode}"
+            : "Dial {$ussdCode}";
+        $statusValue = $locale === 'fr' ? 'En attente' : 'Pending';
         $lines = [
             ['Candidat', 'Contestant', $musician->name ?? '—'],
             ['Votes', 'Votes', (string) $vote],
             ['Total actuel', 'Current total', (string) $total_votes],
             ['Réseau', 'Network', $networkLabel],
-            ['Statut', 'Status', 'En attente / Pending'],
-            ['Code USSD', 'USSD code', "Composez {$ussdCode} / Dial {$ussdCode}"],
+            ['Statut', 'Status', $statusValue],
+            ['Code USSD', 'USSD code', $ussdValue],
         ];
         if ($amountLine) {
             array_splice($lines, 2, 0, [['Montant', 'Amount', $amountLine]]);
@@ -1761,7 +1771,8 @@ class HomeController extends Controller
             "Approve on your phone with {$networkLabel}. Dial {$ussdCode} to approve. If no prompt, reopen the link after 4 minutes to resend.",
             $lines,
             'Ne fermez pas avant confirmation.',
-            'Do not close until payment is confirmed.'
+            'Do not close until payment is confirmed.',
+            $locale
         );
 
         try{
@@ -1844,6 +1855,10 @@ class HomeController extends Controller
 //        $msg .= $musician->name . '`s total votes are  '.$total_votes.'\n\n';
 
 
+        $locale = WhatsAppFormatter::normalizeLocale(optional($vote_data)->locale)
+            ?: WhatsAppFormatter::currentLocale();
+        $statusValue = $locale === 'fr' ? 'Confirmé ✓' : 'Confirmed ✓';
+
         $msg = WhatsAppFormatter::compose(
             '✅',
             'VOTE CONFIRMÉ',
@@ -1855,10 +1870,11 @@ class HomeController extends Controller
                 ['Candidat', 'Contestant', $musician->name ?? '—'],
                 ['Votes', 'Votes cast', (string) $vote],
                 ['Nouveau total', 'New total votes', (string) $total_votes],
-                ['Statut', 'Status', 'Confirmé ✓ / Confirmed ✓'],
+                ['Statut', 'Status', $statusValue],
             ],
             'Chaque vote compte — merci pour votre soutien !',
-            'Every vote counts — thank you for your support!'
+            'Every vote counts — thank you for your support!',
+            $locale
         );
 
         try{
