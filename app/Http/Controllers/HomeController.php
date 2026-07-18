@@ -450,6 +450,9 @@ class HomeController extends Controller
                 return redirect()->route('home')->with('not_permitted', $initiation['result']->message);
             }
 
+            // Extra safety: watcher is also started inside VoteMobileMoneyService::initiate.
+            $voteMobileMoneyService->dispatchVoteWatcher($vote->id);
+
             $this->sendWhatsappMsgVoteMomo(
                 $user,
                 $vote->vote,
@@ -1099,7 +1102,11 @@ class HomeController extends Controller
 
         if ($result && !empty($result['vote_id'])) {
             if (($data['status'] ?? '') === 'SUCCESSFUL' || ($result['status'] ?? null) === 'completed') {
-                if ($this->markVoteSuccessful($result['vote_id'], $data['reference'] ?? 'from_webhook')) {
+                $reference = $data['reference']
+                    ?? $data['operator_reference']
+                    ?? $result['reference']
+                    ?? 'from_webhook';
+                if ($this->markVoteSuccessful($result['vote_id'], $reference)) {
                     Log::info('Campay Webhook Completed', $data);
                 }
             } elseif (($data['status'] ?? '') === 'FAILED' || ($result['status'] ?? null) === 'failed') {
@@ -1226,18 +1233,42 @@ class HomeController extends Controller
      * every still-pending vote that already has a real transaction reference and
      * settle it against Campay's authoritative status. Run on a schedule.
      */
-    public function reconcilePendingVotes($days = 3)
+    public function reconcilePendingVotes($days = 3, $phone = null)
     {
         $voteMobileMoneyService = app(\App\Services\Payments\VoteMobileMoneyService::class);
         $providerStats = $voteMobileMoneyService->reconcilePendingPayments($days);
 
         $since = \Carbon\Carbon::now()->subDays((int) $days);
-        $pending = vote::where('status', self::VOTE_PENDING)
+        $query = vote::where('status', self::VOTE_PENDING)
             ->where('created_at', '>=', $since)
-            ->whereNotNull('reference')
-            ->whereNotIn('reference', ['pending', 'abc', ''])
-            ->where('reference', 'not like', 'SIM-%')
-            ->get();
+            ->where(function ($q) {
+                $q->where(function ($q2) {
+                    $q2->whereNotNull('reference')
+                        ->whereNotIn('reference', ['pending', 'abc', ''])
+                        ->where('reference', 'not like', 'SIM-%');
+                })->orWhereNotNull('mobile_money_payment_id');
+            });
+
+        if ($phone) {
+            $digits = preg_replace('/\D+/', '', (string) $phone);
+            $local = ltrim(preg_replace('/^237/', '', $digits), '0');
+            $query->where(function ($q) use ($digits, $local) {
+                $q->where('whatsapp_number', 'like', '%' . $local . '%');
+                if ($digits !== '') {
+                    $q->orWhere('whatsapp_number', 'like', '%' . $digits . '%');
+                }
+                $q->orWhereHas('voters', function ($uq) use ($digits, $local) {
+                    $uq->where('phone', 'like', '%' . $local . '%')
+                        ->orWhere('whatsapp_number', 'like', '%' . $local . '%');
+                    if ($digits !== '') {
+                        $uq->orWhere('phone', 'like', '%' . $digits . '%')
+                            ->orWhere('whatsapp_number', 'like', '%' . $digits . '%');
+                    }
+                });
+            });
+        }
+
+        $pending = $query->orderBy('id')->get();
 
         $confirmed = 0;
         $failed = 0;
@@ -1249,7 +1280,7 @@ class HomeController extends Controller
                 continue;
             }
             if ($status === 'SUCCESSFUL') {
-                if ($this->markVoteSuccessful($vote->id)) {
+                if ($this->markVoteSuccessful($vote->id, $vote->reference)) {
                     $confirmed++;
                     \Log::info('Vote reconciled to SUCCESSFUL', ['vote_id' => $vote->id, 'reference' => $vote->reference]);
                 }
@@ -1264,6 +1295,26 @@ class HomeController extends Controller
             'confirmed' => $confirmed + ($providerStats['confirmed'] ?? 0),
             'failed' => $failed + ($providerStats['failed'] ?? 0),
         ];
+    }
+
+    /**
+     * Hostinger-friendly HTTP cron: hit every minute with ?token=CRON_SECRET
+     * so pending MoMo votes are settled without needing crontab CLI.
+     */
+    public function cronReconcileVotes(Request $request)
+    {
+        $secret = (string) env('CRON_SECRET', '');
+        $token = (string) $request->query('token', '');
+        if ($secret === '' || !hash_equals($secret, $token)) {
+            return response()->json(['ok' => false, 'message' => 'unauthorized'], 401);
+        }
+
+        @set_time_limit(0);
+        $days = max(1, (int) $request->query('days', 14));
+        $phone = $request->query('phone');
+        $result = $this->reconcilePendingVotes($days, $phone);
+
+        return response()->json(['ok' => true] + $result);
     }
 
     public function musicianVotePaymentCoin(Request $request) {

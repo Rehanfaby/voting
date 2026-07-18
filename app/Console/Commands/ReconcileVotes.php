@@ -11,7 +11,7 @@ class ReconcileVotes extends Command
     /**
      * @var string
      */
-    protected $signature = 'votes:reconcile {--days=3}';
+    protected $signature = 'votes:reconcile {--days=14} {--phone= : Optional phone filter (e.g. 698677954)}';
 
     /**
      * @var string
@@ -20,11 +20,13 @@ class ReconcileVotes extends Command
 
     public function handle()
     {
+        @set_time_limit(0);
         $days = (int) $this->option('days');
+        $phone = $this->option('phone');
 
         try {
-            $home = new HomeController();
-            $result = $home->reconcilePendingVotes($days);
+            $home = app(HomeController::class);
+            $result = $home->reconcilePendingVotes($days, $phone);
         } catch (\Throwable $e) {
             Log::error('votes:reconcile failed: ' . $e->getMessage());
             $this->error('Reconcile failed: ' . $e->getMessage());

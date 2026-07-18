@@ -937,6 +937,7 @@ return [
     'Check your phone for the MoMo prompt and enter your PIN' => 'Check your phone for the MoMo prompt and enter your PIN',
     'Waiting for payment confirmation' => 'Waiting for payment confirmation',
     'Do not close this page until payment is confirmed' => 'Do not close this page until payment is confirmed',
+    'You can leave this page Your vote will still count once payment is confirmed' => 'You can leave this page — your vote will still count once payment is confirmed.',
     'Payment timed out please try again' => 'Payment timed out. Please try again.',
     'Payment failed please try again' => 'Payment failed. Please try again.',
     'After you tap Pay' => 'After you tap Pay',

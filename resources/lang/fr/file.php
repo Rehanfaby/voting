@@ -973,6 +973,7 @@ return [
     'Check your phone for the MoMo prompt and enter your PIN' => 'Vérifiez votre téléphone pour la demande MoMo et saisissez votre code PIN',
     'Waiting for payment confirmation' => 'En attente de confirmation du paiement',
     'Do not close this page until payment is confirmed' => 'Ne fermez pas cette page avant la confirmation du paiement',
+    'You can leave this page Your vote will still count once payment is confirmed' => 'Vous pouvez quitter cette page — votre vote sera tout de même compté une fois le paiement confirmé.',
     'Payment timed out please try again' => 'Délai de paiement dépassé. Veuillez réessayer.',
     'Payment failed please try again' => 'Paiement échoué. Veuillez réessayer.',
     'After you tap Pay' => 'Après avoir cliqué sur Payer',

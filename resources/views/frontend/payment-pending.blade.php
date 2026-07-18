@@ -51,7 +51,7 @@
                                     </li>
                                     <li class="{{ ($paymentMethod ?? '') === 'om' ? 'is-active' : '' }}">
                                         <strong>Orange</strong>
-                                        <span>{{ trans('file.Dial') }} <code>#150*47#</code> {{ trans('file.to approve your payment') }}</span>
+                                        <span>{{ trans('file.Dial') }} <code>#150*50#</code> {{ trans('file.to approve your payment') }}</span>
                                     </li>
                                 </ul>
                             </div>
@@ -59,7 +59,7 @@
                             <div class="mg-pay-pending">
                                 <div class="mg-pay-pending__spinner" aria-hidden="true"></div>
                                 <p class="mg-pay-pending__status" id="mg-pay-status">{{ trans('file.Waiting for payment confirmation') }}…</p>
-                                <p class="mg-pay-pending__hint">{{ trans('file.Do not close this page until payment is confirmed') }}</p>
+                                <p class="mg-pay-pending__hint">{{ trans('file.You can leave this page Your vote will still count once payment is confirmed') }}</p>
                             </div>
 
                             <div class="mg-pay-retry" id="mg-pay-retry" style="{{ !empty($canRetry) ? '' : 'display:none;' }}">

@@ -100,10 +100,39 @@ class VoteMobileMoneyService
             'status' => $payment->status,
         ]);
 
+        if ($result->success) {
+            $this->dispatchVoteWatcher((int) $vote->id);
+        }
+
         return [
             'payment' => $payment,
             'result' => $result,
         ];
+    }
+
+    /**
+     * Keep polling the provider in a background PHP process so the vote is
+     * counted even if the voter closes the browser (common on poor networks).
+     */
+    public function dispatchVoteWatcher($voteId)
+    {
+        $voteId = (int) $voteId;
+        if ($voteId < 1) {
+            return;
+        }
+
+        $php = defined('PHP_BINARY') && PHP_BINARY ? PHP_BINARY : 'php';
+        $artisan = base_path('artisan');
+        $log = storage_path('logs/vote-watch-' . $voteId . '.log');
+        $cmd = sprintf(
+            'cd %s && nohup %s %s votes:watch %d > %s 2>&1 &',
+            escapeshellarg(base_path()),
+            escapeshellarg($php),
+            escapeshellarg($artisan),
+            $voteId,
+            escapeshellarg($log)
+        );
+        @exec($cmd);
     }
 
     /**
@@ -205,9 +234,11 @@ class VoteMobileMoneyService
             $payment = $this->statusProcessor->applyStatusResult($payment, $statusResult);
 
             if ($payment && $payment->status === PaymentStatus::COMPLETED) {
+                $this->settleVoteFromPayment($payment);
                 return 'SUCCESSFUL';
             }
             if ($payment && $payment->status === PaymentStatus::FAILED) {
+                $this->failVoteFromPayment($payment);
                 return 'FAILED';
             }
 
@@ -261,9 +292,14 @@ class VoteMobileMoneyService
     public function reconcilePendingPayments($days = 3)
     {
         $since = now()->subDays((int) $days);
-        $pending = MobileMoneyPayment::whereIn('status', [PaymentStatus::PENDING, PaymentStatus::PROCESSING])
+        $pending = MobileMoneyPayment::whereIn('status', [
+                PaymentStatus::PENDING,
+                PaymentStatus::PROCESSING,
+                PaymentStatus::CREATED,
+            ])
             ->where('created_at', '>=', $since)
             ->whereNotNull('provider_transaction_id')
+            ->where('provider_transaction_id', '!=', 'pending')
             ->get();
 
         $checked = 0;
@@ -278,8 +314,11 @@ class VoteMobileMoneyService
                 $checked++;
 
                 if ($payment && $payment->status === PaymentStatus::COMPLETED) {
-                    $confirmed++;
+                    if ($this->settleVoteFromPayment($payment)) {
+                        $confirmed++;
+                    }
                 } elseif ($payment && $payment->status === PaymentStatus::FAILED) {
+                    $this->failVoteFromPayment($payment);
                     $failed++;
                 }
             } catch (\Throwable $e) {
@@ -291,7 +330,56 @@ class VoteMobileMoneyService
             }
         }
 
+        // Payments already completed at provider but vote row still pending (missed webhook).
+        $orphans = MobileMoneyPayment::where('status', PaymentStatus::COMPLETED)
+            ->where('created_at', '>=', $since)
+            ->where('payable_type', vote::class)
+            ->get();
+
+        foreach ($orphans as $payment) {
+            $vote = vote::find($payment->payable_id);
+            if ($vote && (int) $vote->status !== 1) {
+                if ($this->settleVoteFromPayment($payment)) {
+                    $confirmed++;
+                    $checked++;
+                }
+            }
+        }
+
         return compact('checked', 'confirmed', 'failed');
+    }
+
+    /** @return bool true when the vote was newly confirmed */
+    public function settleVoteFromPayment(MobileMoneyPayment $payment)
+    {
+        if (!$this->paymentIsForVote($payment)) {
+            return false;
+        }
+
+        $reference = $payment->provider_reference
+            ?: $payment->provider_transaction_id
+            ?: null;
+
+        $home = app(\App\Http\Controllers\HomeController::class);
+        $vote = $home->markVoteSuccessfulPublic($payment->payable_id, $reference);
+
+        return (bool) $vote;
+    }
+
+    public function failVoteFromPayment(MobileMoneyPayment $payment)
+    {
+        if (!$this->paymentIsForVote($payment)) {
+            return;
+        }
+
+        app(\App\Http\Controllers\HomeController::class)->markVoteFailedPublic($payment->payable_id);
+    }
+
+    protected function paymentIsForVote(MobileMoneyPayment $payment)
+    {
+        return $payment
+            && (int) $payment->payable_id > 0
+            && in_array($payment->payable_type, [vote::class, 'App\\vote', 'App\vote'], true);
     }
 
     public function getHolderName($phone)
