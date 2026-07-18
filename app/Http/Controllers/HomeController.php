@@ -1314,6 +1314,11 @@ class HomeController extends Controller
         $phone = $request->query('phone');
         $result = $this->reconcilePendingVotes($days, $phone);
 
+        @file_put_contents(storage_path('app/cron-reconcile.heartbeat'), json_encode([
+            'at' => date('Y-m-d H:i:s'),
+            'result' => $result,
+        ]) . PHP_EOL, FILE_APPEND);
+
         return response()->json(['ok' => true] + $result);
     }
 
