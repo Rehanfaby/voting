@@ -41,9 +41,12 @@ class ReconcileVotes extends Command
             isset($result['note']) ? ' (' . $result['note'] . ')' : ''
         );
 
-        if (($result['confirmed'] ?? 0) > 0 || ($result['failed'] ?? 0) > 0) {
-            Log::info($summary);
-        }
+        // Always log + heartbeat so Hostinger cron can be verified even when nothing changed.
+        Log::info($summary);
+        @file_put_contents(storage_path('app/votes-reconcile.heartbeat'), json_encode([
+            'at' => date('Y-m-d H:i:s'),
+            'result' => $result,
+        ]) . PHP_EOL, FILE_APPEND);
         $this->info($summary);
 
         return 0;
