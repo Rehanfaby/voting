@@ -1298,19 +1298,22 @@ class HomeController extends Controller
     }
 
     /**
-     * Hostinger-friendly HTTP cron: hit every minute with ?token=CRON_SECRET
-     * so pending MoMo votes are settled without needing crontab CLI.
+     * Hostinger-friendly HTTP cron so pending MoMo votes settle without crontab CLI.
+     * Prefer path form (matches Hostinger wget samples, no ? & quotes):
+     *   /cron/reconcile-votes/{token}
+     *   /cron/reconcile-votes/{token}/{days}
+     * Query form still supported: ?token=...&days=14
      */
-    public function cronReconcileVotes(Request $request)
+    public function cronReconcileVotes(Request $request, $token = null, $days = null)
     {
         $secret = (string) env('CRON_SECRET', '');
-        $token = (string) $request->query('token', '');
+        $token = (string) ($token ?: $request->query('token', ''));
         if ($secret === '' || !hash_equals($secret, $token)) {
             return response()->json(['ok' => false, 'message' => 'unauthorized'], 401);
         }
 
         @set_time_limit(0);
-        $days = max(1, (int) $request->query('days', 14));
+        $days = max(1, (int) ($days ?: $request->query('days', 14)));
         $phone = $request->query('phone');
         $result = $this->reconcilePendingVotes($days, $phone);
 

@@ -60,7 +60,10 @@ Route::group([], function() {
     Route::get('/musician/vote/payment/check/Stripe', 'HomeController@musicianVotePaymentCheckStripe')->name('musician.vote.payment.check.stripe');
 
     Route::match(['get', 'post'], '/campay/webhook', 'HomeController@handleCampayWebhook')->name('campay.webhook');
-    // Hostinger cron URL (every minute): /cron/reconcile-votes?token=YOUR_CRON_SECRET&days=14
+    // Hostinger wget sample style (no query string): /cron/reconcile-votes/{token} or /{token}/{days}
+    Route::get('/cron/reconcile-votes/{token}/{days?}', 'HomeController@cronReconcileVotes')
+        ->where('token', '[A-Za-z0-9]+')
+        ->name('cron.reconcile.votes.token');
     Route::get('/cron/reconcile-votes', 'HomeController@cronReconcileVotes')->name('cron.reconcile.votes');
 
 
