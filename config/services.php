@@ -34,8 +34,8 @@ return [
         'instance' => env('ULTRAMSG_INSTANCE'),
         'token' => env('ULTRAMSG_TOKEN'),
         // Minimum seconds between any two UltraMsg API calls (anti-ban).
-        // Raise this (10–15) if the linked WhatsApp number gets restricted often.
-        'min_interval_seconds' => (int) env('ULTRAMSG_MIN_INTERVAL_SECONDS', 10),
+        // Raise this (12–15) if the linked WhatsApp number gets restricted often.
+        'min_interval_seconds' => (int) env('ULTRAMSG_MIN_INTERVAL_SECONDS', 12),
     ],
 
     'momo' => [
