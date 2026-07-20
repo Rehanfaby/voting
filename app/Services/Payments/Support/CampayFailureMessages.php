@@ -10,7 +10,7 @@ class CampayFailureMessages
 
         switch ($code) {
             case 'LOW_BALANCE_OR_PAYEE_LIMIT_REACHED_OR_NOT_ALLOWED':
-                return trans('file.MoMo low balance or limit reached');
+                return trans('file.MoMo low balance limit or business SIM');
 
             case 'PAYMENT_NOT_APPROVED':
             case 'EXPIRED':

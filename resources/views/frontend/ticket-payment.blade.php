@@ -95,6 +95,9 @@
                                     'label' => trans('file.Momo Number'),
                                     'value' => $localPhone,
                                 ])
+                                <p class="mg-field-hint" style="margin:-6px 0 12px;color:#9a3412;font-weight:600;">
+                                    {{ trans('file.Personal MoMo only tip') }}
+                                </p>
                                 @include('partials.intl-phone-field', [
                                     'id' => 'ticket_whatsapp_intl',
                                     'name' => 'whatsapp_intl',

@@ -128,6 +128,9 @@
                                         <p class="mg-pay-ussd-tip__line" id="mg-pay-ussd-om" style="display:none;">
                                             <strong>Orange:</strong> {{ trans('file.Dial') }} <code>#150*47#</code> {{ trans('file.to approve your payment') }}
                                         </p>
+                                        <p class="mg-pay-ussd-tip__line mg-pay-ussd-tip__warn">
+                                            {{ trans('file.Personal MoMo only tip') }}
+                                        </p>
                                     </div>
                                 </div>
 
@@ -211,6 +214,8 @@
     .mg-pay-ussd-tip__title { margin:0 0 6px; font-weight:800; color:#0a2350; font-size:13px; }
     .mg-pay-ussd-tip__title i { color:#e87722; margin-right:4px; }
     .mg-pay-ussd-tip__line { margin:0; color:#23324d; font-size:13px; line-height:1.4; }
+    .mg-pay-ussd-tip__line + .mg-pay-ussd-tip__line { margin-top:6px; }
+    .mg-pay-ussd-tip__warn { color:#9a3412; font-weight:600; }
     .mg-pay-ussd-tip__line code { font-weight:800; color:#e87722; background:rgba(232,119,34,.12); padding:1px 6px; border-radius:6px; }
     @media (max-width:575px) {
         .mg-pay-summary { flex-direction:column; text-align:center; }

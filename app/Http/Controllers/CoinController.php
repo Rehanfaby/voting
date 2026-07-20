@@ -69,12 +69,6 @@ class CoinController extends Controller
             $data['email'] = 'user@gmail.com';
             $data['role_id'] = 3;
             $user = User::create($data);
-
-            $msg .= '*Congrats:* Your account has been created \n\n';
-            $msg .= '*User name:* '. $user->name . '\n\n';
-            $msg .= '*Phone number:* '. $user->phone . '\n\n';
-            $msg .= '*Password:* '. $password . '\n\n';
-
         }
 
 

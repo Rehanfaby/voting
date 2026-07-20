@@ -941,6 +941,8 @@ return [
     'Payment timed out please try again' => 'Payment timed out. Please try again.',
     'Payment failed please try again' => 'Payment failed. Please try again.',
     'MoMo low balance or limit reached' => 'Payment failed: insufficient Mobile Money balance, or your wallet daily limit was reached. Top up or try another number.',
+    'MoMo low balance limit or business SIM' => 'Payment failed: low balance, daily limit reached, or this number may be a business SIM (MTN business lines usually cannot pay). Use a personal MTN or Orange Money number.',
+    'Personal MoMo only tip' => 'Use a personal Mobile Money number. MTN/Orange business SIMs usually cannot approve payments.',
     'MoMo payment not approved or expired' => 'Payment failed: the request was not approved on the phone in time. Please try again.',
     'MoMo unsupported carrier' => 'Payment failed: this phone number is not supported for Mobile Money. Use an MTN or Orange Cameroon number.',
     'MoMo invalid phone number' => 'Payment failed: the Mobile Money account could not be found. Check the number and try again.',

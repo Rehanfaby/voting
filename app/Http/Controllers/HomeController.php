@@ -454,15 +454,7 @@ class HomeController extends Controller
             // Extra safety: watcher is also started inside VoteMobileMoneyService::initiate.
             $voteMobileMoneyService->dispatchVoteWatcher($vote->id);
 
-            $this->sendWhatsappMsgVoteMomo(
-                $user,
-                $vote->vote,
-                $vote->musician_id,
-                $whatsapp,
-                $amount,
-                $vote,
-                $request->input('payment_method', 'momo')
-            );
+            // No WhatsApp on pending payment — confirmation is sent after success only.
 
             return redirect()->route('musician.vote.payment.pending', $vote->id);
         } catch (\App\Services\Payments\MobileMoneyGatewayConfigurationException $e) {
@@ -586,7 +578,6 @@ class HomeController extends Controller
 
         if($user == null) {
             $user = User::create($data);
-            $this->sendWhatsappMsg($user, $password);
         }
 
         $product = Product::findOrFail($request->ticket_id);
@@ -703,7 +694,6 @@ class HomeController extends Controller
 
         if($user == null) {
             $user = User::create($data);
-            $this->sendWhatsappMsg($user, $password);
         }
         $product = Product::findOrFail($request->ticket_id);
         $seatSelection = $this->resolveTicketSeatSelection($product, $request);
@@ -972,19 +962,6 @@ class HomeController extends Controller
                     $msg = trans('file.Please wait minutes before retrying', ['minutes' => $mins]);
                 }
                 return redirect()->route('musician.vote.payment.pending', $vote->id)->with('not_permitted', $msg);
-            }
-
-            $user = User::find($vote->user_id);
-            if ($user) {
-                $this->sendWhatsappMsgVoteMomo(
-                    $user,
-                    $vote->vote,
-                    $vote->musician_id,
-                    $vote->whatsapp_number,
-                    $vote->grand_total,
-                    $vote,
-                    $result['payment_method'] ?? 'momo'
-                );
             }
 
             return redirect()->route('musician.vote.payment.pending', $vote->id)
@@ -1386,7 +1363,6 @@ class HomeController extends Controller
             $data['email'] = 'user@gmail.com';
             $data['role_id'] = 3;
             $user = User::create($data);
-            $this->sendWhatsappMsg($user, $password);
         }
 
         $general_setting = GeneralSetting::pluck('vote_coin')->first();
@@ -1746,31 +1722,7 @@ class HomeController extends Controller
 //    }
 
     public function sendWhatsappMsg($user, $password){
-
-        $msg = WhatsAppFormatter::compose(
-            '🎉',
-            'COMPTE CRÉÉ',
-            'ACCOUNT CREATED',
-            $user->name ?? 'User',
-            'Félicitations ! Votre compte a été créé avec succès.',
-            'Congratulations! Your account has been created successfully.',
-            [
-                ['Nom d\'utilisateur', 'Username', $user->name ?? '—'],
-                ['Téléphone', 'Phone', $user->phone ?? '—'],
-                ['Mot de passe', 'Password', (string) $password],
-            ],
-            'Bienvenue à bord !',
-            'Welcome aboard!',
-            WhatsAppFormatter::currentLocale()
-        );
-
-        try{
-            $this->wpMessage($user->whatsapp_number ?? $user->phone, $msg);
-        }
-        catch(\Exception $e){
-
-        }
-
+        // Account-creation WhatsApp disabled to reduce UltraMsg load / bans.
         return true;
     }
 
@@ -1826,55 +1778,7 @@ class HomeController extends Controller
 
     public function sendWhatsappMsgVoteMomo($user, $vote, $musician_id, $whatsapp = null, $amount = null, $voteModel = null, $paymentMethod = 'momo')
     {
-        $musician = Employee::select('name', 'id')->find($musician_id);
-        $total_votes = vote::where('musician_id', $musician_id)->where('status', true)->sum('vote');
-        $recipient = $whatsapp ?? $user->whatsapp_number ?? $user->phone;
-        $amountLine = $amount ? number_format((float) $amount) . ' CFA' : null;
-        $pendingUrl = $voteModel ? route('musician.vote.payment.pending', $voteModel->id) : null;
-        $isOrange = strtolower((string) $paymentMethod) === 'om';
-        $ussdCode = $isOrange ? '#150*47#' : '*126#';
-        $networkLabel = $isOrange ? 'Orange Money' : 'MTN Mobile Money';
-        $locale = WhatsAppFormatter::normalizeLocale(optional($voteModel)->locale)
-            ?: WhatsAppFormatter::currentLocale();
-        $ussdValue = $locale === 'fr'
-            ? "Composez {$ussdCode}"
-            : "Dial {$ussdCode}";
-        $statusValue = $locale === 'fr' ? 'En attente' : 'Pending';
-        $lines = [
-            ['Candidat', 'Contestant', $musician->name ?? '—'],
-            ['Votes', 'Votes', (string) $vote],
-            ['Total actuel', 'Current total', (string) $total_votes],
-            ['Réseau', 'Network', $networkLabel],
-            ['Statut', 'Status', $statusValue],
-            ['Code USSD', 'USSD code', $ussdValue],
-        ];
-        if ($amountLine) {
-            array_splice($lines, 2, 0, [['Montant', 'Amount', $amountLine]]);
-        }
-        if ($pendingUrl) {
-            $lines[] = ['Lien', 'Link', $pendingUrl];
-        }
-
-        $msg = WhatsAppFormatter::compose(
-            '💳',
-            'PAIEMENT DE VOTE EN ATTENTE',
-            'VOTE PAYMENT PENDING',
-            $user->name ?? 'Voter',
-            "Validez sur votre téléphone avec {$networkLabel}. Composez {$ussdCode} pour approuver. Si rien n’arrive, rouvrez le lien après 4 minutes pour renvoyer la demande.",
-            "Approve on your phone with {$networkLabel}. Dial {$ussdCode} to approve. If no prompt, reopen the link after 4 minutes to resend.",
-            $lines,
-            'Ne fermez pas avant confirmation.',
-            'Do not close until payment is confirmed.',
-            $locale
-        );
-
-        try{
-            $this->wpMessage($recipient, $msg);
-        }
-        catch(\Exception $e){
-
-        }
-
+        // Pending-payment WhatsApp disabled — only payment confirmation is sent.
         return true;
     }
 
@@ -2327,7 +2231,6 @@ class HomeController extends Controller
             'email' => 'user@gmail.com',
             'role_id' => 3,
         ]);
-        $this->sendWhatsappMsg($user, $password);
 
         return $user;
     }

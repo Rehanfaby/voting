@@ -205,16 +205,7 @@ class EmployeeController extends Controller
                 $data['is_approve'] = VoteSettings::initialContestantApproval();
                 Employee::create($data);
 
-                if ($password !== null) {
-                    $msg  = '*Congrats:* Your account has been created \n\n';
-                    $msg .= '*User name:* '. $user->name . '\n\n';
-                    $msg .= '*Phone number:* '. $user->phone . '\n\n';
-                    $msg .= '*Password:* '. $password . '\n\n';
-                    try {
-                        $this->wpMessage($user->phone, $msg);
-                    } catch (\Exception $e) {
-                    }
-                }
+                // Account-creation WhatsApp disabled to reduce UltraMsg load / bans.
             });
         } catch (\Throwable $e) {
             if ($imagePath && is_file($imagePath)) {

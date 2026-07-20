@@ -872,21 +872,7 @@ class Controller extends BaseController
 
 
     public function sendWhatsappMsgForAccount($user, $password){
-
-        $msg = '*Congrats:* Your account has been created' . '\n\n';
-        $msg .= '*User name:* '. $user->name . '\n\n';
-        $msg .= '*Phone number:* '. $user->phone . '\n\n';
-        $msg .= '*Password:* '. $password . '\n\n';
-        $msg .= request()->getHost() . '\n\n';
-
-
-        try{
-            $this->wpMessage($user->phone, $msg);
-        }
-        catch(\Exception $e){
-
-        }
-
+        // Account-creation WhatsApp disabled to reduce UltraMsg load / bans.
         return true;
     }
 

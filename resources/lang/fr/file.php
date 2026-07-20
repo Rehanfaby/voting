@@ -977,6 +977,8 @@ return [
     'Payment timed out please try again' => 'Délai de paiement dépassé. Veuillez réessayer.',
     'Payment failed please try again' => 'Paiement échoué. Veuillez réessayer.',
     'MoMo low balance or limit reached' => 'Paiement échoué : solde Mobile Money insuffisant, ou limite journalière du portefeuille atteinte. Rechargez ou utilisez un autre numéro.',
+    'MoMo low balance limit or business SIM' => 'Paiement échoué : solde insuffisant, limite journalière atteinte, ou ce numéro est peut‑être une SIM professionnelle (les lignes business MTN ne peuvent généralement pas payer). Utilisez un numéro personnel MTN ou Orange Money.',
+    'Personal MoMo only tip' => 'Utilisez un numéro Mobile Money personnel. Les SIM professionnelles MTN/Orange ne peuvent généralement pas valider les paiements.',
     'MoMo payment not approved or expired' => 'Paiement échoué : la demande n’a pas été validée à temps sur le téléphone. Veuillez réessayer.',
     'MoMo unsupported carrier' => 'Paiement échoué : ce numéro n’est pas pris en charge pour Mobile Money. Utilisez un numéro MTN ou Orange Cameroun.',
     'MoMo invalid phone number' => 'Paiement échoué : le compte Mobile Money est introuvable. Vérifiez le numéro et réessayez.',
