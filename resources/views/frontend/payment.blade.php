@@ -116,7 +116,7 @@
                                     @include('partials.cameroon-phone-field', [
                                         'id' => 'phone_local',
                                         'name' => 'phone_local',
-                                        'label' => trans('file.Momo Number'),
+                                        'label' => 'MOMO',
                                         'value' => $localPhone,
                                     ])
 
@@ -181,13 +181,13 @@
     .mg-pay-method--om .mg-pay-method__box i { color:#ff6600; }
     .mg-pay-method--card .mg-pay-method__box i { color:#1a1f71; }
     .mg-pay-method--mtn input:checked + .mg-pay-method__box {
-        border-color:#ffcc00; background:#fffbeb; box-shadow:0 0 0 3px rgba(255,204,0,.28);
+        border-color:#ffcc00 !important; background:#fff9db !important; box-shadow:0 0 0 3px rgba(255,204,0,.35) !important;
     }
     .mg-pay-method--om input:checked + .mg-pay-method__box {
-        border-color:#ff6600; background:#fff4eb; box-shadow:0 0 0 3px rgba(255,102,0,.16);
+        border-color:#ff6600 !important; background:#fff4eb !important; box-shadow:0 0 0 3px rgba(255,102,0,.16) !important;
     }
     .mg-pay-method--card input:checked + .mg-pay-method__box {
-        border-color:#1a1f71; background:#eef1fb; box-shadow:0 0 0 3px rgba(26,31,113,.14);
+        border-color:#1a1f71 !important; background:#eef1fb !important; box-shadow:0 0 0 3px rgba(26,31,113,.14) !important;
     }
     .mg-pay-method--card input:checked + .mg-pay-method__box i { color:#f7b600; }
     .mg-pay-method.is-disabled { opacity:.55; cursor:not-allowed; }
@@ -232,8 +232,8 @@
     var phoneHidden = document.querySelector('#phone_local[data-cm-phone-hidden], input[name="phone_local"]');
     var phoneLabel = mobileFields ? mobileFields.querySelector('.cm-phone-field__label') : null;
     var radios = form.querySelectorAll('input[name="payment_method"]');
-    var labelMtn = @json(trans('file.Momo Number'));
-    var labelOm = @json(trans('file.Orange Money'));
+    var labelMtn = 'MOMO';
+    var labelOm = 'OM';
 
     function syncMethod() {
         var method = form.querySelector('input[name="payment_method"]:checked');
