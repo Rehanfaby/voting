@@ -14,6 +14,7 @@ use App\Judge;
 use App\Helpers\SiteContent;
 use App\Helpers\PhoneHelper;
 use App\Helpers\WhatsAppFormatter;
+use App\MobileMoneyPayment;
 use App\ProductSeat;
 use App\ProductSeatZone;
 use App\TicketSeat;
@@ -1005,7 +1006,10 @@ class HomeController extends Controller
             return response()->json(['status' => 'SUCCESSFUL']);
         }
         if ((int) $vote->status === self::VOTE_FAILED) {
-            return response()->json(['status' => 'FAILED']);
+            return response()->json([
+                'status' => 'FAILED',
+                'message' => $this->votePaymentFailureMessage($vote),
+            ]);
         }
 
         try {
@@ -1019,14 +1023,36 @@ class HomeController extends Controller
             }
             if ($status === 'FAILED') {
                 $this->markVoteFailed($vote->id);
+                $vote->refresh();
 
-                return response()->json(['status' => 'FAILED']);
+                return response()->json([
+                    'status' => 'FAILED',
+                    'message' => $this->votePaymentFailureMessage($vote),
+                ]);
             }
         } catch (\Throwable $e) {
             \Log::warning('Vote payment poll failed: ' . $e->getMessage(), ['vote_id' => $vote->id]);
         }
 
         return response()->json(['status' => 'PENDING']);
+    }
+
+    protected function votePaymentFailureMessage(vote $vote)
+    {
+        $payment = null;
+        if ($vote->mobile_money_payment_id) {
+            $payment = MobileMoneyPayment::find($vote->mobile_money_payment_id);
+        }
+
+        if ($payment && !empty($payment->failure_message)) {
+            return $payment->failure_message;
+        }
+
+        if ($payment && !empty($payment->failure_code)) {
+            return \App\Services\Payments\Support\CampayFailureMessages::customerMessage($payment->failure_code);
+        }
+
+        return trans('file.Payment failed please try again');
     }
 
     /**

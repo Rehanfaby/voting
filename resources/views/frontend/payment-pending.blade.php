@@ -206,10 +206,10 @@
                 if (data.status === 'FAILED') {
                     stopped = true;
                     pending.classList.add('is-failed');
-                    statusEl.textContent = @json(trans('file.Payment failed please try again'));
+                    statusEl.textContent = data.message || @json(trans('file.Payment failed please try again'));
                     if (retryBox) { retryBox.style.display = 'none'; }
                     if (waitEl) { waitEl.style.display = 'none'; }
-                    setTimeout(function () { window.location.href = homeUrl; }, 3000);
+                    setTimeout(function () { window.location.href = homeUrl; }, 5000);
                     return;
                 }
                 setTimeout(poll, 3000);

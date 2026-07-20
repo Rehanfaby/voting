@@ -11,6 +11,7 @@ use App\Services\Payments\Data\PaymentStatusResult;
 use App\Services\Payments\Data\RefundResult;
 use App\Services\Payments\Enums\PaymentStatus;
 use App\Services\Payments\Support\CameroonPhoneNormalizer;
+use App\Services\Payments\Support\CampayFailureMessages;
 use App\Services\Payments\Support\MobileMoneyPaymentLogger;
 
 class CampayGateway implements MobileMoneyGatewayInterface
@@ -94,27 +95,43 @@ class CampayGateway implements MobileMoneyGatewayInterface
             $token
         );
 
-        $providerStatus = strtoupper((string) ($response['body']['status'] ?? 'PENDING'));
+        $body = $response['body'];
+        $providerStatus = strtoupper((string) ($body['status'] ?? 'PENDING'));
+        $failureCode = $body['reason'] ?? ($body['code'] ?? null);
+        $status = PaymentStatus::fromCampayStatus($providerStatus);
 
         return new PaymentStatusResult([
-            'status' => PaymentStatus::fromCampayStatus($providerStatus),
+            'status' => $status,
             'providerStatus' => $providerStatus,
             'providerReference' => $providerTransactionId,
-            'rawResponse' => $response['body'],
+            'failureCode' => $status === PaymentStatus::FAILED ? $failureCode : null,
+            'failureMessage' => $status === PaymentStatus::FAILED && $failureCode
+                ? CampayFailureMessages::customerMessage($failureCode)
+                : null,
+            'rawResponse' => $body,
         ]);
     }
 
     public function processCallback(array $payload, array $headers = [])
     {
+        $providerStatus = strtoupper((string) ($payload['status'] ?? ''));
+        $status = PaymentStatus::fromCampayStatus($providerStatus);
+        $failureCode = $payload['reason'] ?? ($payload['code'] ?? null);
+
         $result = new PaymentCallbackResult([
             'handled' => true,
             'providerTransactionId' => $payload['reference'] ?? null,
             'providerReference' => $payload['reference'] ?? null,
-            'providerStatus' => strtoupper((string) ($payload['status'] ?? '')),
+            'providerStatus' => $providerStatus,
+            'status' => $status,
+            'amount' => isset($payload['amount']) ? (int) round((float) $payload['amount']) : null,
+            'currency' => $payload['currency'] ?? null,
+            'failureCode' => $status === PaymentStatus::FAILED ? $failureCode : null,
+            'failureMessage' => $status === PaymentStatus::FAILED && $failureCode
+                ? CampayFailureMessages::customerMessage($failureCode)
+                : null,
             'rawPayload' => $payload,
         ]);
-
-        $result->status = PaymentStatus::fromCampayStatus($result->providerStatus);
 
         return $result;
     }

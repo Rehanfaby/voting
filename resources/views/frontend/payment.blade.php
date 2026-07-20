@@ -75,7 +75,7 @@
                                 <fieldset class="mg-pay-methods mg-pay-methods--grid">
                                     <legend>{{ trans('file.Payment method') }}</legend>
 
-                                    <label class="mg-pay-method">
+                                    <label class="mg-pay-method mg-pay-method--mtn">
                                         <input type="radio" name="payment_method" value="momo" checked>
                                         <span class="mg-pay-method__box">
                                             <i class="fa-solid fa-mobile-screen"></i>
@@ -83,7 +83,7 @@
                                         </span>
                                     </label>
 
-                                    <label class="mg-pay-method">
+                                    <label class="mg-pay-method mg-pay-method--om">
                                         <input type="radio" name="payment_method" value="om">
                                         <span class="mg-pay-method__box">
                                             <i class="fa-solid fa-signal"></i>
@@ -91,7 +91,7 @@
                                         </span>
                                     </label>
 
-                                    <label class="mg-pay-method">
+                                    <label class="mg-pay-method mg-pay-method--card">
                                         <input type="radio" name="payment_method" value="card">
                                         <span class="mg-pay-method__box">
                                             <i class="fa-brands fa-cc-visa"></i>
@@ -175,9 +175,21 @@
     .mg-pay-method { display:block; margin:0; cursor:pointer; }
     .mg-pay-method input { position:absolute; opacity:0; pointer-events:none; }
     .mg-pay-method__box { display:flex; flex-direction:column; align-items:center; text-align:center; gap:4px; padding:10px 8px; border:2px solid #dbe4f3; border-radius:12px; background:#f7f9fd; transition:border-color .2s, box-shadow .2s, background .2s; min-height:72px; justify-content:center; }
-    .mg-pay-method__box i { color:#e87722; font-size:18px; margin:0; }
+    .mg-pay-method__box i { font-size:18px; margin:0; }
     .mg-pay-method__title { font-weight:700; color:#0a2350; font-size:12px; line-height:1.2; }
-    .mg-pay-method input:checked + .mg-pay-method__box { border-color:#e87722; background:#fff7f0; box-shadow:0 0 0 3px rgba(232,119,34,.12); }
+    .mg-pay-method--mtn .mg-pay-method__box i { color:#ffcc00; }
+    .mg-pay-method--om .mg-pay-method__box i { color:#ff6600; }
+    .mg-pay-method--card .mg-pay-method__box i { color:#1a1f71; }
+    .mg-pay-method--mtn input:checked + .mg-pay-method__box {
+        border-color:#ffcc00; background:#fffbeb; box-shadow:0 0 0 3px rgba(255,204,0,.28);
+    }
+    .mg-pay-method--om input:checked + .mg-pay-method__box {
+        border-color:#ff6600; background:#fff4eb; box-shadow:0 0 0 3px rgba(255,102,0,.16);
+    }
+    .mg-pay-method--card input:checked + .mg-pay-method__box {
+        border-color:#1a1f71; background:#eef1fb; box-shadow:0 0 0 3px rgba(26,31,113,.14);
+    }
+    .mg-pay-method--card input:checked + .mg-pay-method__box i { color:#f7b600; }
     .mg-pay-method.is-disabled { opacity:.55; cursor:not-allowed; }
     .mg-field { margin-bottom:12px; }
     .mg-field label { display:block; font-weight:700; color:#0a2350; margin-bottom:6px; font-size:13px; }
@@ -218,7 +230,10 @@
 
     var mobileFields = document.getElementById('mg-pay-mobile-fields');
     var phoneHidden = document.querySelector('#phone_local[data-cm-phone-hidden], input[name="phone_local"]');
+    var phoneLabel = mobileFields ? mobileFields.querySelector('.cm-phone-field__label') : null;
     var radios = form.querySelectorAll('input[name="payment_method"]');
+    var labelMtn = @json(trans('file.Momo Number'));
+    var labelOm = @json(trans('file.Orange Money'));
 
     function syncMethod() {
         var method = form.querySelector('input[name="payment_method"]:checked');
@@ -231,6 +246,9 @@
         var waHidden = form.querySelector('input[name="whatsapp_intl"]');
         if (waHidden) {
             waHidden.required = !isCard;
+        }
+        if (phoneLabel) {
+            phoneLabel.textContent = value === 'om' ? labelOm : labelMtn;
         }
         var tipMomo = document.getElementById('mg-pay-ussd-momo');
         var tipOm = document.getElementById('mg-pay-ussd-om');
