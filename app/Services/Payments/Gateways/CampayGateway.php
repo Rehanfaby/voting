@@ -159,9 +159,80 @@ class CampayGateway implements MobileMoneyGatewayInterface
             return true;
         }
 
-        $provided = $headers['X-Campay-Secret'][0] ?? $headers['x-campay-secret'][0] ?? ($payload['secret'] ?? null);
+        // Legacy/header secret (if Campay ever sends it).
+        $provided = $this->headerValue($headers, 'X-Campay-Secret')
+            ?: ($payload['secret'] ?? null);
+        if (is_string($provided) && $provided !== '') {
+            return hash_equals((string) $secret, $provided);
+        }
 
-        return hash_equals((string) $secret, (string) $provided);
+        // Live Campay webhooks send a JWT in "signature", signed with the webhook key.
+        $jwt = $payload['signature'] ?? $this->headerValue($headers, 'Signature');
+        if (!is_string($jwt) || $jwt === '') {
+            return false;
+        }
+
+        return $this->verifyCampayJwt($jwt, (string) $secret);
+    }
+
+    protected function headerValue(array $headers, $name)
+    {
+        foreach ($headers as $key => $value) {
+            if (strcasecmp((string) $key, (string) $name) !== 0) {
+                continue;
+            }
+            if (is_array($value)) {
+                return isset($value[0]) ? (string) $value[0] : null;
+            }
+
+            return (string) $value;
+        }
+
+        return null;
+    }
+
+    /** HS256 JWT verify (Campay callback signature). */
+    protected function verifyCampayJwt($jwt, $secret)
+    {
+        $parts = explode('.', $jwt);
+        if (count($parts) !== 3) {
+            return false;
+        }
+
+        list($header64, $payload64, $signature64) = $parts;
+        $signingInput = $header64 . '.' . $payload64;
+        $expected = $this->base64UrlEncode(hash_hmac('sha256', $signingInput, $secret, true));
+
+        if (!hash_equals($expected, $signature64)) {
+            return false;
+        }
+
+        $json = json_decode($this->base64UrlDecode($payload64), true);
+        if (!is_array($json)) {
+            return false;
+        }
+
+        // Reject clearly expired tokens when exp is present.
+        if (isset($json['exp']) && (int) $json['exp'] < time() - 60) {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function base64UrlEncode($data)
+    {
+        return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
+    }
+
+    protected function base64UrlDecode($data)
+    {
+        $remainder = strlen($data) % 4;
+        if ($remainder) {
+            $data .= str_repeat('=', 4 - $remainder);
+        }
+
+        return (string) base64_decode(strtr($data, '-_', '+/'));
     }
 
     protected function token()
