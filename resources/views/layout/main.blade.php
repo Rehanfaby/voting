@@ -176,7 +176,10 @@
                 @if($index_permission_active)
                     <li data-menu-key="vote"><a href="#vote" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-mail"></i><span>{{trans('file.Vote')}}</span></a>
                         <ul id="vote" class="collapse list-unstyled ">
-                            <li id="vote-menu"><a href="{{route('votes.index')}}">{{trans('file.Votes List')}}</a></li>
+                            <li id="vote-menu"><a href="{{ route('votes.index', ['status' => 'all']) }}">{{ trans('file.Votes List') }}</a></li>
+                            <li id="vote-menu-success"><a href="{{ route('votes.index', ['status' => 'success']) }}">{{ trans('file.Successful Votes') }}</a></li>
+                            <li id="vote-menu-pending"><a href="{{ route('votes.index', ['status' => 'pending']) }}">{{ trans('file.Pending Votes') }}</a></li>
+                            <li id="vote-menu-failed"><a href="{{ route('votes.index', ['status' => 'failed']) }}">{{ trans('file.Failed Votes') }}</a></li>
                             <li id="vote-menu-create"><a id="add-vote" href="">{{trans('file.Create Vote')}}</a></li>
                         </ul>
                     </li>

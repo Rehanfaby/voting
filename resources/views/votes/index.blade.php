@@ -6,13 +6,37 @@
   <div class="alert alert-danger alert-dismissible text-center"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>{{ session()->get('not_permitted') }}</div>
 @endif
 
+@php
+    $statusFilter = $statusFilter ?? 'all';
+    $statusCounts = $statusCounts ?? ['all' => 0, 'success' => 0, 'pending' => 0, 'failed' => 0];
+    $tabTitles = [
+        'all' => trans('file.Votes List'),
+        'success' => trans('file.Successful Votes'),
+        'pending' => trans('file.Pending Votes'),
+        'failed' => trans('file.Failed Votes'),
+    ];
+@endphp
 <section>
     <div class="container-fluid">
         <div class="card">
             <div class="card-header mt-2">
-                <h3 class="text-center">Votes List</h3>
+                <h3 class="text-center">{{ $tabTitles[$statusFilter] ?? trans('file.Votes List') }}</h3>
+            </div>
+            <div class="px-3 pt-3">
+                <ul class="nav nav-pills flex-wrap mb-3 vote-status-tabs">
+                    @foreach(['all','success','pending','failed'] as $tab)
+                        <li class="nav-item mr-2 mb-2">
+                            <a class="nav-link {{ $statusFilter === $tab ? 'active' : '' }}"
+                               href="{{ route('votes.index', ['status' => $tab, 'start_date' => $start_date, 'end_date' => $end_date]) }}">
+                                {{ $tabTitles[$tab] }}
+                                <span class="badge badge-light ml-1">{{ number_format($statusCounts[$tab] ?? 0) }}</span>
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
             </div>
             {!! Form::open(['route' => 'votes.index', 'method' => 'get']) !!}
+            <input type="hidden" name="status" value="{{ $statusFilter }}" />
             <div class="row mb-3">
                 <div class="col-md-4 offset-md-2 mt-3">
                     <div class="form-group row">
@@ -87,12 +111,14 @@
                             {{ $vote->vote }}
                         @endif
                     </td>
-                    @if($vote->status == 0)
+                    @if((int) $vote->status === 0)
                         <td><span class="badge badge-warning">Pending</span></td>
+                    @elseif((int) $vote->status === 2)
+                        <td><span class="badge badge-danger">Failed</span></td>
                     @elseif(!empty($vote->cleared_at))
                         <td><span class="badge badge-secondary">{{ trans('file.Cleared') }}</span></td>
                     @else
-                        <td><span class="badge badge-success">Complete</span></td>
+                        <td><span class="badge badge-success">Successful</span></td>
                     @endif
                     <td>
                         <div class="btn-group">
@@ -168,11 +194,36 @@
 
     $("ul#vote").siblings('a').attr('aria-expanded','true');
     $("ul#vote").addClass("show");
-    $("ul#vote #vote-menu").addClass("active");
+    @if(($statusFilter ?? 'all') === 'success')
+        $("ul#vote #vote-menu-success").addClass("active");
+    @elseif(($statusFilter ?? 'all') === 'pending')
+        $("ul#vote #vote-menu-pending").addClass("active");
+    @elseif(($statusFilter ?? 'all') === 'failed')
+        $("ul#vote #vote-menu-failed").addClass("active");
+    @else
+        $("ul#vote #vote-menu").addClass("active");
+    @endif
 
     var expense_id = [];
     var user_verified = <?php echo json_encode(env('USER_VERIFIED')) ?>;
     var all_permission = <?php echo json_encode($all_permission) ?>;
+    var statusFilter = @json($statusFilter ?? 'all');
+    var filterStartDate = @json($start_date);
+    var filterEndDate = @json($end_date);
+    var filterTotal = {{ (int) ($statusCounts[$statusFilter ?? 'all'] ?? count($votes)) }};
+
+    function collectSelectedVoteIds() {
+        var ids = [];
+        var table = $('#expense-table').DataTable();
+        table.$('tr').each(function () {
+            var $row = $(this);
+            var $cb = $row.find('input.dt-checkboxes').first();
+            if (!$cb.length || !$cb.prop('checked')) { return; }
+            var id = $row.attr('data-id');
+            if (id) { ids.push(String(id)); }
+        });
+        return ids.filter(function (v, i, a) { return a.indexOf(v) === i; });
+    }
 
     $.ajaxSetup({
         headers: {
@@ -251,13 +302,15 @@ function confirmClearVotes() {
                 },
                 'checkboxes': {
                    'selectRow': true,
+                   'selectAllPages': false,
                    'selectAllRender': '<div class="checkbox"><input type="checkbox" class="dt-checkboxes"><label></label></div>'
                 },
                 'targets': [0]
             }
         ],
-        'select': { style: 'multi',  selector: 'td:first-child'},
-        'lengthMenu': [[10, 25, 50, -1], [10, 25, 50, "All"]],
+        'select': { style: 'multi',  selector: 'td:first-child', info: false },
+        'lengthMenu': [[10, 25, 50], [10, 25, 50]],
+        'pageLength': 25,
         dom: '<"row"lfB>rtip',
         buttons: [
             {
@@ -303,42 +356,67 @@ function confirmClearVotes() {
                 footer:true
             },
             {
-                text: '<i title="delete" class="dripicons-cross"></i>',
+                text: '<i class="dripicons-cross"></i> {{ trans('file.Delete Selected') }}',
                 className: 'buttons-delete',
                 action: function ( e, dt, node, config ) {
-                    if(user_verified == '1') {
-                        expense_id = [];
-                        dt.rows({ selected: true }).every(function () {
-                            var id = $(this.node()).data('id');
-                            if (id) expense_id.push(id);
-                        });
-                        if (!expense_id.length) {
-                            $('#expense-table tbody tr').each(function () {
-                                if ($(this).find('input[type="checkbox"]').is(':checked')) {
-                                    var id = $(this).data('id');
-                                    if (id) expense_id.push(id);
-                                }
-                            });
-                        }
-                        if(expense_id.length && confirm("Are you sure want to delete?")) {
-                            $.ajax({
-                                type:'POST',
-                                url:'{{ url("votes/deletebyselection") }}',
-                                data:{
-                                    expenseIdArray: expense_id
-                                },
-                                success:function(data){
-                                    alert(data);
-                                    location.reload();
-                                }
-                            });
-                            dt.rows({ page: 'current', selected: true }).remove().draw(false);
-                        }
-                        else if(!expense_id.length)
-                            alert('No vote is selected!');
-                    }
-                    else
+                    if(user_verified != '1') {
                         alert('This feature is disable for demo!');
+                        return;
+                    }
+                    var ids = collectSelectedVoteIds();
+                    if (!ids.length) {
+                        alert('No vote is selected! Tick the checkbox next to each vote you want to delete.');
+                        return;
+                    }
+                    if (!confirm('Delete ' + ids.length + ' selected vote(s)?')) {
+                        return;
+                    }
+                    $.ajax({
+                        type:'POST',
+                        url:'{{ url("votes/deletebyselection") }}',
+                        data:{ voteIdArray: ids, expenseIdArray: ids },
+                        success:function(data){
+                            alert(data);
+                            location.reload();
+                        },
+                        error: function () {
+                            alert('Delete failed. No votes were changed.');
+                        }
+                    });
+                }
+            },
+            {
+                text: '<i class="dripicons-trash"></i> {{ trans('file.Delete All in Filter') }}',
+                className: 'buttons-delete-all',
+                action: function () {
+                    if(user_verified != '1') {
+                        alert('This feature is disable for demo!');
+                        return;
+                    }
+                    if (!filterTotal) {
+                        alert('No votes in this filter.');
+                        return;
+                    }
+                    var msg = 'WARNING: Delete ALL ' + filterTotal + ' vote(s) in the current tab/date filter?\n\nThis cannot be undone.';
+                    if (!confirm(msg)) { return; }
+                    if (!confirm('Confirm again: permanently delete ' + filterTotal + ' vote(s)?')) { return; }
+                    $.ajax({
+                        type:'POST',
+                        url:'{{ url("votes/deletebyselection") }}',
+                        data:{
+                            delete_all: 1,
+                            status: statusFilter,
+                            start_date: filterStartDate,
+                            end_date: filterEndDate
+                        },
+                        success:function(data){
+                            alert(data);
+                            location.reload();
+                        },
+                        error: function () {
+                            alert('Delete failed. No votes were changed.');
+                        }
+                    });
                 }
             },
             {
@@ -359,12 +437,34 @@ function confirmClearVotes() {
             $( dt_selector.column( 5 ).footer() ).html(dt_selector.cells( rows, 5, { page: 'current' } ).data().sum().toFixed(2));
         }
         else {
-            $( dt_selector.column( 5 ).footer() ).html(dt_selector.cells( rows, 5, { page: 'current' } ).data().sum().toFixed(2));
+            $( dt_selector.column( 5 ).footer() ).html(dt_selector.column( 5, { page: 'current' } ).data().sum().toFixed(2));
         }
     }
 
-    if(all_permission.indexOf("expenses-delete") == -1)
-        $('.buttons-delete').addClass('d-none');
+    if(all_permission.indexOf("votes-delete") == -1) {
+        $('.buttons-delete, .buttons-delete-all').addClass('d-none');
+    }
+
+    try {
+        var votesTable = $('#expense-table').DataTable();
+        votesTable.rows().deselect();
+        votesTable.$('input.dt-checkboxes').prop('checked', false).prop('indeterminate', false);
+        $('#expense-table thead input.dt-checkboxes').prop('checked', false).prop('indeterminate', false);
+    } catch (e) {}
 
 </script>
+<style>
+.vote-status-tabs .nav-link {
+    border: 1px solid #dbe4f3;
+    color: #0a2350;
+    font-weight: 700;
+    background: #f7f9fd;
+}
+.vote-status-tabs .nav-link.active {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+    color: #fff;
+}
+.vote-status-tabs .nav-link.active .badge { color: #0a2350; }
+</style>
 @endsection

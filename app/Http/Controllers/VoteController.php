@@ -35,12 +35,46 @@ class VoteController extends Controller
                 $end_date = date("Y-m-d");
             }
 
-            $votes = Vote::whereDate('created_at', '>=', $start_date)->whereDate('created_at', '<=', $end_date)->orderBy('id', 'desc')->get();
+            $statusFilter = strtolower((string) $request->input('status', 'all'));
+            if (!in_array($statusFilter, ['all', 'success', 'pending', 'failed'], true)) {
+                $statusFilter = 'all';
+            }
+
+            $dated = function () use ($start_date, $end_date) {
+                return vote::whereDate('created_at', '>=', $start_date)
+                    ->whereDate('created_at', '<=', $end_date);
+            };
+
+            $statusCounts = [
+                'all' => $dated()->count(),
+                'success' => $dated()->where('status', 1)->count(),
+                'pending' => $dated()->where('status', 0)->count(),
+                'failed' => $dated()->where('status', 2)->count(),
+            ];
+
+            $votesQuery = $dated();
+            if ($statusFilter === 'success') {
+                $votesQuery->where('status', 1);
+            } elseif ($statusFilter === 'pending') {
+                $votesQuery->where('status', 0);
+            } elseif ($statusFilter === 'failed') {
+                $votesQuery->where('status', 2);
+            }
+
+            $votes = $votesQuery->orderBy('id', 'desc')->get();
             $lastClearedAt = null;
             if (Schema::hasColumn('votes', 'cleared_at')) {
                 $lastClearedAt = vote::whereNotNull('cleared_at')->max('cleared_at');
             }
-            return view('votes.index', compact('votes', 'start_date', 'end_date', 'all_permission', 'lastClearedAt'));
+            return view('votes.index', compact(
+                'votes',
+                'start_date',
+                'end_date',
+                'all_permission',
+                'lastClearedAt',
+                'statusFilter',
+                'statusCounts'
+            ));
         } else {
             return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
         }
@@ -157,16 +191,55 @@ class VoteController extends Controller
 
     public function deleteBySelection(Request $request)
     {
-        $vote_id = $request['expenseIdArray'] ?? $request['ids'] ?? [];
-        foreach ($vote_id as $id) {
-            if($id == null) {
-                continue;
+        $role = Role::find(Auth::user()->role_id);
+        if (!$role || !$role->hasPermissionTo('votes-delete')) {
+            return response('Not permitted', 403);
+        }
+
+        // Delete all rows matching the current date + status filter.
+        if ($request->boolean('delete_all')) {
+            $start = $request->input('start_date', date('Y-m-01', strtotime('-1 year')));
+            $end = $request->input('end_date', date('Y-m-d'));
+            $statusFilter = strtolower((string) $request->input('status', 'all'));
+
+            $query = vote::whereDate('created_at', '>=', $start)
+                ->whereDate('created_at', '<=', $end);
+
+            if ($statusFilter === 'success') {
+                $query->where('status', 1);
+            } elseif ($statusFilter === 'pending') {
+                $query->where('status', 0);
+            } elseif ($statusFilter === 'failed') {
+                $query->where('status', 2);
             }
+
+            $count = $query->count();
+            $query->delete();
+
+            return $count . ' vote(s) deleted successfully!';
+        }
+
+        $vote_id = $request['expenseIdArray'] ?? $request['voteIdArray'] ?? $request['ids'] ?? [];
+        if (!is_array($vote_id)) {
+            $vote_id = [$vote_id];
+        }
+        $vote_id = array_values(array_unique(array_filter(array_map(function ($id) {
+            return (is_numeric($id) && (int) $id > 0) ? (int) $id : null;
+        }, $vote_id))));
+
+        if (count($vote_id) === 0) {
+            return 'No vote was selected.';
+        }
+
+        $count = 0;
+        foreach ($vote_id as $id) {
             $vote = vote::find($id);
-            if($vote) {
+            if ($vote) {
                 $vote->delete();
+                $count++;
             }
         }
-        return 'Votes deleted successfully!';
+
+        return $count . ' vote(s) deleted successfully!';
     }
 }
