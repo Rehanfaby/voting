@@ -171,28 +171,28 @@
         <div class="ms-stat-icon"><i class="fa fa-check-square-o"></i></div>
         <div class="ms-stat-body">
           <div class="ms-stat-value">{{ number_format($totalVoteTxns) }}</div>
-          <div class="ms-stat-label">Total Votes <small>({{ number_format($totalVoteUnits) }} vote units)</small></div>
+          <div class="ms-stat-label">Total Votes</div>
         </div>
       </a>
       <a href="{{ route('votes.index', ['status' => 'success']) }}" class="ms-stat" style="--ms-accent:#15803d;">
         <div class="ms-stat-icon"><i class="fa fa-thumbs-up"></i></div>
         <div class="ms-stat-body">
           <div class="ms-stat-value">{{ number_format($voteTxns) }}</div>
-          <div class="ms-stat-label">Successful Votes <small>({{ number_format($voteUnitsSuccess) }} vote units)</small></div>
+          <div class="ms-stat-label">Successful Votes</div>
         </div>
       </a>
       <a href="{{ route('votes.index', ['status' => 'failed']) }}" class="ms-stat" style="--ms-accent:#ef4444;">
         <div class="ms-stat-icon"><i class="fa fa-times-circle"></i></div>
         <div class="ms-stat-body">
           <div class="ms-stat-value">{{ number_format($failedTxns) }}</div>
-          <div class="ms-stat-label">Votes Failed @if($voteUnitsFailed !== $failedTxns)<small>({{ number_format($voteUnitsFailed) }} vote units)</small>@endif</div>
+          <div class="ms-stat-label">Votes Failed</div>
         </div>
       </a>
       <a href="{{ route('votes.index', ['status' => 'pending']) }}" class="ms-stat" style="--ms-accent:#f59e0b;">
         <div class="ms-stat-icon"><i class="fa fa-clock-o"></i></div>
         <div class="ms-stat-body">
           <div class="ms-stat-value">{{ number_format($pendingTxns) }}</div>
-          <div class="ms-stat-label">Votes Pending @if($voteUnitsPending !== $pendingTxns)<small>({{ number_format($voteUnitsPending) }} vote units)</small>@endif</div>
+          <div class="ms-stat-label">Votes Pending</div>
         </div>
       </a>
       <a href="{{ route('voter.index') }}" class="ms-stat" style="--ms-accent:#f59e0b;">
