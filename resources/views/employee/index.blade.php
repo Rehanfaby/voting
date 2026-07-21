@@ -262,30 +262,39 @@
         return false;
     }
 
-    // Only rows the user actually checked (never "all contestants" unless they checked each one).
-    function rowContestantId(rowNode) {
-        if (!rowNode) { return null; }
-        var id = $(rowNode).attr('data-id');
-        return id ? String(id) : null;
-    }
+    // IMPORTANT: use only checked checkboxes — DataTables Select can mark every
+    // row "selected" after header select-all, which made Delete claim "all 62".
     function collectSelectedIds() {
         var ids = [];
         var table = $('#employee-table').DataTable();
-        // Prefer Select API selected rows (can span pages if user checked them manually).
-        table.rows({ selected: true }).every(function () {
-            var id = rowContestantId(this.node());
-            if (id) ids.push(id);
+        // table.$ covers rows on all pages (cached nodes), not only the current page.
+        table.$('tr').each(function () {
+            var $row = $(this);
+            var $cb = $row.find('input.dt-checkboxes').first();
+            if (!$cb.length || !$cb.prop('checked')) {
+                return;
+            }
+            var id = $row.attr('data-id');
+            if (id) {
+                ids.push(String(id));
+            }
         });
-        // Fallback: checked boxes currently in the DOM.
-        if (!ids.length) {
-            $('#employee-table tbody tr').each(function () {
-                if ($(this).find('input.dt-checkboxes').prop('checked')) {
-                    var id = rowContestantId(this);
-                    if (id) ids.push(id);
-                }
-            });
-        }
         return ids.filter(function (v, i, a) { return a.indexOf(v) === i; });
+    }
+
+    function collectSelectedNames(ids) {
+        var names = [];
+        var table = $('#employee-table').DataTable();
+        var want = {};
+        ids.forEach(function (id) { want[String(id)] = true; });
+        table.$('tr').each(function () {
+            var $row = $(this);
+            var id = $row.attr('data-id');
+            if (!id || !want[String(id)]) { return; }
+            var name = $.trim($row.find('td').eq(2).text() || '');
+            if (name) { names.push(name); }
+        });
+        return names;
     }
 
     $(document).on('click', '.edit-btn', function() {
@@ -333,7 +342,7 @@
                 },
                 'checkboxes': {
                    'selectRow': true,
-                   // Header checkbox must NOT select every page — that deleted all contestants by mistake.
+                   // Header checkbox = current page only (never every contestant in the table).
                    'selectAllPages': false,
                    'selectAllRender': '<div class="checkbox"><input type="checkbox" class="dt-checkboxes"><label></label></div>'
                 },
@@ -427,13 +436,14 @@
                     if(user_verified == '1') {
                         var ids = collectSelectedIds();
                         if(!ids.length) {
-                            alert('No contestant is selected!');
+                            alert('No contestant is selected! Tick the checkbox next to each contestant you want to delete.');
                             return;
                         }
-                        var totalRows = dt.rows().count();
-                        var msg = "Delete ONLY these " + ids.length + " selected contestant(s)?\n\nIDs: " + ids.join(", ");
-                        if (ids.length === totalRows && totalRows > 1) {
-                            msg = "WARNING: You selected ALL " + totalRows + " contestants. This will remove everyone from the public site. Continue?";
+                        var names = collectSelectedNames(ids);
+                        var msg = "Delete " + ids.length + " selected contestant(s)?\n\n"
+                            + (names.length ? names.join("\n") : ("IDs: " + ids.join(", ")));
+                        if (ids.length === dt.rows().count() && ids.length > 1) {
+                            msg = "WARNING: You checked ALL " + ids.length + " contestants.\n\nThis removes everyone from the public site. Continue?";
                         }
                         if(confirm(msg)) {
                             $.ajax({
@@ -463,5 +473,13 @@
             },
         ],
     } );
+
+    // Clear any stale Select-all state left over from a previous visit / plugin quirk.
+    try {
+        var employeeTable = $('#employee-table').DataTable();
+        employeeTable.rows().deselect();
+        employeeTable.$('input.dt-checkboxes').prop('checked', false).prop('indeterminate', false);
+        $('#employee-table thead input.dt-checkboxes').prop('checked', false).prop('indeterminate', false);
+    } catch (e) {}
 </script>
 @endsection
