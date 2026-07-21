@@ -16,59 +16,92 @@
     };
 
     $totalContestants   = (int) $__safe(function () { return \App\Employee::where('is_active', true)->where('is_approve', true)->count(); });
-    $pendingContestants = (int) $__safe(function () { return \App\Employee::where('is_approve', false)->count(); });
-    $totalVotes         = (int) $__safe(function () { return \DB::table('votes')->where('status', true)->sum('vote'); });
-    $voteTxns           = (int) $__safe(function () { return \DB::table('votes')->where('status', true)->count(); });
-    $totalVoters        = (int) $__safe(function () { return \DB::table('votes')->where('status', true)->distinct('user_id')->count('user_id'); });
-    $totalJudges        = (int) $__safe(function () { return \App\Judge::count(); });
-    $totalAmbassadors   = (int) $__safe(function () { return \App\Ambassador::count(); });
+    $pendingContestants = (int) $__safe(function () { return \App\Employee::where('is_active', true)->where('is_approve', false)->count(); });
 
-    /* Votes trend — last 14 days */
-    $rawTrend = $__safe(function () {
-        return \DB::table('votes')->where('status', true)
-            ->where('created_at', '>=', \Carbon\Carbon::now()->subDays(13)->startOfDay())
-            ->select(\DB::raw('DATE(created_at) as d'), \DB::raw('SUM(vote) as t'))
-            ->groupBy('d')->pluck('t', 'd');
-    }, collect());
-    $trendLabels = []; $trendData = [];
-    for ($i = 13; $i >= 0; $i--) {
-        $day = \Carbon\Carbon::now()->subDays($i);
-        $trendLabels[] = $day->format('M j');
-        $trendData[]   = (int) ($rawTrend[$day->format('Y-m-d')] ?? 0);
-    }
+    // Votes on the dashboard = successful only (status = 1 / true).
+    $totalVotes         = (int) $__safe(function () { return \DB::table('votes')->where('status', 1)->sum('vote'); });
+    $voteTxns           = (int) $__safe(function () { return \DB::table('votes')->where('status', 1)->count(); });
+    $totalVoters        = (int) $__safe(function () { return \DB::table('votes')->where('status', 1)->distinct('user_id')->count('user_id'); });
+    $failedVotes        = (int) $__safe(function () { return \DB::table('votes')->where('status', 2)->sum('vote'); });
+    $failedTxns         = (int) $__safe(function () { return \DB::table('votes')->where('status', 2)->count(); });
+    $pendingVotes       = (int) $__safe(function () { return \DB::table('votes')->where('status', 0)->sum('vote'); });
+    $pendingTxns        = (int) $__safe(function () { return \DB::table('votes')->where('status', 0)->count(); });
 
-    /* Top 5 contestants by votes */
+    // Active judges only (exclude soft-deleted ambassador rows still in judges table).
+    $totalJudges        = (int) $__safe(function () { return \App\Judge::where('is_active', true)->count(); });
+    $totalAmbassadors   = (int) $__safe(function () {
+        $q = \App\Ambassador::query();
+        if (\Schema::hasColumn('ambassadors', 'is_active')) {
+            $q->where('is_active', true);
+        }
+        return $q->count();
+    });
+
+    $buildTrend = function ($status) use ($__safe) {
+        $raw = $__safe(function () use ($status) {
+            return \DB::table('votes')->where('status', $status)
+                ->where('created_at', '>=', \Carbon\Carbon::now()->subDays(13)->startOfDay())
+                ->select(\DB::raw('DATE(created_at) as d'), \DB::raw('SUM(vote) as t'))
+                ->groupBy('d')->pluck('t', 'd');
+        }, collect());
+        $labels = []; $data = [];
+        for ($i = 13; $i >= 0; $i--) {
+            $day = \Carbon\Carbon::now()->subDays($i);
+            $labels[] = $day->format('M j');
+            $data[]   = (int) ($raw[$day->format('Y-m-d')] ?? 0);
+        }
+        return [$labels, $data];
+    };
+
+    list($trendLabels, $trendSuccess) = $buildTrend(1);
+    list(, $trendFailed) = $buildTrend(2);
+    list(, $trendPending) = $buildTrend(0);
+
+    /* Top 5 contestants by successful votes */
     $topRows = $__safe(function () {
         return \DB::table('votes')
             ->join('employees', 'employees.id', '=', 'votes.musician_id')
-            ->where('votes.status', true)
+            ->where('votes.status', 1)
+            ->where('employees.is_active', true)
             ->select('employees.name', \DB::raw('SUM(votes.vote) as t'))
             ->groupBy('employees.name')->orderByDesc('t')->limit(5)->get();
     }, collect());
 
-    /* Contestants per region (department) */
-    $deptRows = $__safe(function () {
+    /* Contestants per Cameroon region (stored in employees.city) */
+    $regionRows = $__safe(function () {
         return \DB::table('employees')
-            ->leftJoin('departments', 'departments.id', '=', 'employees.department_id')
-            ->where('employees.is_active', true)->where('employees.is_approve', true)
-            ->select(\DB::raw('COALESCE(departments.name, "Unassigned") as name'), \DB::raw('COUNT(*) as c'))
-            ->groupBy('name')->orderByDesc('c')->limit(8)->get();
+            ->where('is_active', true)->where('is_approve', true)
+            ->select(\DB::raw('COALESCE(NULLIF(TRIM(city), ""), "Unassigned") as name'), \DB::raw('COUNT(*) as c'))
+            ->groupBy('name')->orderByDesc('c')->get();
     }, collect());
 
+    /* Successful votes per region */
     $votesByRegion = $__safe(function () {
         return \DB::table('votes')
             ->join('employees', 'employees.id', '=', 'votes.musician_id')
-            ->leftJoin('departments', 'departments.id', '=', 'employees.department_id')
-            ->where('votes.status', true)
-            ->select(\DB::raw('COALESCE(departments.name, "Unassigned") as name'), \DB::raw('SUM(votes.vote) as t'))
-            ->groupBy('name')->orderByDesc('t')->limit(8)->get();
+            ->where('votes.status', 1)
+            ->where('employees.is_active', true)
+            ->select(\DB::raw('COALESCE(NULLIF(TRIM(employees.city), ""), "Unassigned") as name'), \DB::raw('SUM(votes.vote) as t'))
+            ->groupBy('name')->orderByDesc('t')->get();
     }, collect());
+
+    /* Contestant names per region (for elimination tracking) */
+    $contestantsByRegionList = $__safe(function () {
+        $rows = \DB::table('employees')
+            ->where('is_active', true)->where('is_approve', true)
+            ->orderBy('city')->orderBy('name')
+            ->get(['id', 'name', 'city']);
+        $grouped = [];
+        foreach ($rows as $row) {
+            $region = trim((string) $row->city) !== '' ? $row->city : 'Unassigned';
+            $grouped[$region][] = $row->name;
+        }
+        ksort($grouped);
+        return $grouped;
+    }, []);
 
     $totalTicketsSold = (int) $__safe(function () {
         return \DB::table('tickets')->where('status', 1)->sum('qty');
-    });
-    $ticketRevenue = (float) $__safe(function () {
-        return \DB::table('tickets')->where('status', 1)->sum('total_amount');
     });
     $ticketsByEvent = $__safe(function () {
         return \DB::table('tickets')
@@ -78,6 +111,9 @@
             ->select(\DB::raw('COALESCE(categories.name, "General") as name'), \DB::raw('SUM(tickets.qty) as c'))
             ->groupBy('name')->orderByDesc('c')->limit(8)->get();
     }, collect());
+
+    $voteStatusLabels = ['Succeeded', 'Failed', 'Pending'];
+    $voteStatusData = [$totalVotes, $failedVotes, $pendingVotes];
 @endphp
 
 <div class="row">
@@ -102,7 +138,21 @@
         <div class="ms-stat-icon"><i class="fa fa-check-square-o"></i></div>
         <div class="ms-stat-body">
           <div class="ms-stat-value">{{ number_format($totalVotes) }}</div>
-          <div class="ms-stat-label">Total Votes</div>
+          <div class="ms-stat-label">Total Votes Succeeded</div>
+        </div>
+      </a>
+      <a href="{{ route('votes.index') }}" class="ms-stat" style="--ms-accent:#ef4444;">
+        <div class="ms-stat-icon"><i class="fa fa-times-circle"></i></div>
+        <div class="ms-stat-body">
+          <div class="ms-stat-value">{{ number_format($failedVotes) }}</div>
+          <div class="ms-stat-label">Votes Failed <small>({{ number_format($failedTxns) }} txns)</small></div>
+        </div>
+      </a>
+      <a href="{{ route('votes.index') }}" class="ms-stat" style="--ms-accent:#f59e0b;">
+        <div class="ms-stat-icon"><i class="fa fa-clock-o"></i></div>
+        <div class="ms-stat-body">
+          <div class="ms-stat-value">{{ number_format($pendingVotes) }}</div>
+          <div class="ms-stat-label">Votes Pending <small>({{ number_format($pendingTxns) }} txns)</small></div>
         </div>
       </a>
       <a href="{{ route('voter.index') }}" class="ms-stat" style="--ms-accent:#f59e0b;">
@@ -144,23 +194,60 @@
 
     <div class="ms-chart-grid">
       <div class="ms-panel">
-        <h3><i class="fa fa-line-chart"></i> Votes — Last 14 Days <small class="text-muted" style="font-weight:600;font-size:13px;">({{ number_format($voteTxns) }} transactions)</small></h3>
+        <h3><i class="fa fa-line-chart"></i> Successful Votes — Last 14 Days <small class="text-muted" style="font-weight:600;font-size:13px;">({{ number_format($voteTxns) }} transactions)</small></h3>
         <canvas id="msVotesTrend" height="120"></canvas>
       </div>
       <div class="ms-panel">
-        <h3><i class="fa fa-pie-chart"></i> Contestants by Region</h3>
-        <canvas id="msDeptChart" height="200"></canvas>
+        <h3><i class="fa fa-pie-chart"></i> Votes by Status</h3>
+        <canvas id="msVoteStatusChart" height="200"></canvas>
       </div>
     </div>
 
     <div class="ms-chart-grid">
       <div class="ms-panel">
-        <h3><i class="fa fa-bar-chart"></i> Votes by Region</h3>
-        <canvas id="msVotesRegionChart" height="130"></canvas>
+        <h3><i class="fa fa-line-chart"></i> Failed Votes — Last 14 Days <small class="text-muted" style="font-weight:600;font-size:13px;">({{ number_format($failedTxns) }} transactions)</small></h3>
+        <canvas id="msVotesFailedTrend" height="120"></canvas>
       </div>
       <div class="ms-panel">
-        <h3><i class="fa fa-ticket"></i> Tickets Sold by Event</h3>
-        <canvas id="msTicketsEventChart" height="130"></canvas>
+        <h3><i class="fa fa-line-chart"></i> Pending Votes — Last 14 Days <small class="text-muted" style="font-weight:600;font-size:13px;">({{ number_format($pendingTxns) }} transactions)</small></h3>
+        <canvas id="msVotesPendingTrend" height="120"></canvas>
+      </div>
+    </div>
+
+    <div class="ms-chart-grid">
+      <div class="ms-panel">
+        <h3><i class="fa fa-pie-chart"></i> Contestants by Region <small class="text-muted" style="font-weight:600;font-size:13px;">({{ number_format($totalContestants) }} total)</small></h3>
+        <canvas id="msRegionChart" height="200"></canvas>
+      </div>
+      <div class="ms-panel">
+        <h3><i class="fa fa-bar-chart"></i> Successful Votes by Region</h3>
+        <canvas id="msVotesRegionChart" height="200"></canvas>
+      </div>
+    </div>
+
+    <div class="ms-panel" style="margin-bottom:20px;">
+      <h3><i class="fa fa-map-marker"></i> Contestants per Region <small class="text-muted" style="font-weight:600;font-size:13px;">(for eliminations)</small></h3>
+      <div class="table-responsive">
+        <table class="table table-sm table-striped mb-0">
+          <thead>
+            <tr>
+              <th>Region</th>
+              <th>Count</th>
+              <th>Contestants</th>
+            </tr>
+          </thead>
+          <tbody>
+            @forelse($contestantsByRegionList as $region => $names)
+              <tr>
+                <td><strong>{{ $region }}</strong></td>
+                <td>{{ count($names) }}</td>
+                <td>{{ implode(', ', $names) }}</td>
+              </tr>
+            @empty
+              <tr><td colspan="3" class="text-muted">No contestants found.</td></tr>
+            @endforelse
+          </tbody>
+        </table>
       </div>
     </div>
 
@@ -185,6 +272,13 @@
       </div>
     </div>
 
+    <div class="ms-chart-grid">
+      <div class="ms-panel">
+        <h3><i class="fa fa-ticket"></i> Tickets Sold by Event</h3>
+        <canvas id="msTicketsEventChart" height="130"></canvas>
+      </div>
+    </div>
+
   </div>
 </div>
 @endsection
@@ -197,30 +291,37 @@
     Chart.defaults.font.family = "'Nunito','Segoe UI',system-ui,sans-serif";
     Chart.defaults.color = '#64748b';
 
-    var BLUE = '#1d4ed8', YELLOW = '#f5c518';
-    var palette = ['#1d4ed8', '#f5c518', '#16a34a', '#a855f7', '#0ea5e9', '#ef4444', '#f59e0b', '#14b8a6'];
+    var BLUE = '#1d4ed8', YELLOW = '#f5c518', GREEN = '#16a34a', RED = '#ef4444', AMBER = '#f59e0b';
+    var palette = ['#1d4ed8', '#f5c518', '#16a34a', '#a855f7', '#0ea5e9', '#ef4444', '#f59e0b', '#14b8a6', '#6366f1', '#db2777'];
 
-    var trendEl = document.getElementById('msVotesTrend');
-    if (trendEl) {
-        var ctx = trendEl.getContext('2d');
+    function hexAlpha(h, a) {
+        var c = h.replace('#','');
+        if (c.length === 3) c = c[0]+c[0]+c[1]+c[1]+c[2]+c[2];
+        var r = parseInt(c.slice(0,2),16), g = parseInt(c.slice(2,4),16), b = parseInt(c.slice(4,6),16);
+        return 'rgba('+r+','+g+','+b+','+a+')';
+    }
+    function lineChart(elId, labels, data, color, label) {
+        var el = document.getElementById(elId);
+        if (!el) return;
+        var ctx = el.getContext('2d');
         var grad = ctx.createLinearGradient(0, 0, 0, 260);
-        grad.addColorStop(0, 'rgba(29,78,216,.28)');
-        grad.addColorStop(1, 'rgba(29,78,216,0)');
+        grad.addColorStop(0, hexAlpha(color, 0.28));
+        grad.addColorStop(1, hexAlpha(color, 0));
         new Chart(ctx, {
             type: 'line',
             data: {
-                labels: @json($trendLabels),
+                labels: labels,
                 datasets: [{
-                    label: 'Votes',
-                    data: @json($trendData),
-                    borderColor: BLUE,
+                    label: label,
+                    data: data,
+                    borderColor: color,
                     backgroundColor: grad,
                     borderWidth: 3,
                     fill: true,
                     tension: .38,
                     pointRadius: 3,
                     pointBackgroundColor: YELLOW,
-                    pointBorderColor: BLUE
+                    pointBorderColor: color
                 }]
             },
             options: {
@@ -234,17 +335,69 @@
         });
     }
 
-    var deptEl = document.getElementById('msDeptChart');
-    if (deptEl) {
-        new Chart(deptEl.getContext('2d'), {
+    var labels = @json($trendLabels);
+    lineChart('msVotesTrend', labels, @json($trendSuccess), GREEN, 'Succeeded');
+    lineChart('msVotesFailedTrend', labels, @json($trendFailed), RED, 'Failed');
+    lineChart('msVotesPendingTrend', labels, @json($trendPending), AMBER, 'Pending');
+
+    var statusEl = document.getElementById('msVoteStatusChart');
+    if (statusEl) {
+        new Chart(statusEl.getContext('2d'), {
             type: 'doughnut',
             data: {
-                labels: @json($deptRows->pluck('name')),
-                datasets: [{ data: @json($deptRows->pluck('c')), backgroundColor: palette, borderWidth: 2, borderColor: '#fff' }]
+                labels: @json($voteStatusLabels),
+                datasets: [{
+                    data: @json($voteStatusData),
+                    backgroundColor: [GREEN, RED, AMBER],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
             },
             options: {
                 responsive: true, maintainAspectRatio: true, cutout: '62%',
                 plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 12 } } }
+            }
+        });
+    }
+
+    var regionEl = document.getElementById('msRegionChart');
+    if (regionEl) {
+        new Chart(regionEl.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: @json($regionRows->pluck('name')),
+                datasets: [{ data: @json($regionRows->pluck('c')), backgroundColor: palette, borderWidth: 2, borderColor: '#fff' }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: true, cutout: '55%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 12, padding: 10 } },
+                    tooltip: {
+                        callbacks: {
+                            label: function (ctx) {
+                                var total = ctx.dataset.data.reduce(function (a, b) { return a + b; }, 0);
+                                var pct = total ? Math.round((ctx.raw / total) * 100) : 0;
+                                return ctx.label + ': ' + ctx.raw + ' (' + pct + '%)';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    var votesRegionEl = document.getElementById('msVotesRegionChart');
+    if (votesRegionEl) {
+        new Chart(votesRegionEl.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: @json($votesByRegion->pluck('name')),
+                datasets: [{ label: 'Successful votes', data: @json($votesByRegion->pluck('t')), backgroundColor: GREEN, borderRadius: 8 }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, x: { grid: { display: false } } }
             }
         });
     }
@@ -265,22 +418,6 @@
                     x: { beginAtZero: true, grid: { color: '#eef2f7' }, ticks: { precision: 0 } },
                     y: { grid: { display: false } }
                 }
-            }
-        });
-    }
-
-    var votesRegionEl = document.getElementById('msVotesRegionChart');
-    if (votesRegionEl) {
-        new Chart(votesRegionEl.getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: @json($votesByRegion->pluck('name')),
-                datasets: [{ label: 'Votes', data: @json($votesByRegion->pluck('t')), backgroundColor: '#16a34a', borderRadius: 8 }]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: true,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, x: { grid: { display: false } } }
             }
         });
     }
