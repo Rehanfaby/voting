@@ -134,6 +134,16 @@
                                     </div>
                                 </div>
 
+                                <div class="mg-pay-card-tip" id="mg-pay-card-tip" style="display:none;">
+                                    <p class="mg-pay-card-tip__title"><i class="fa-brands fa-cc-visa"></i> {{ trans('file.Card payment important') }}</p>
+                                    <p class="mg-pay-card-tip__line mg-pay-card-tip__warn">
+                                        {{ trans('file.Card payment stay on page') }}
+                                    </p>
+                                    <p class="mg-pay-card-tip__line">
+                                        {{ trans('file.Card payment confirmation note') }}
+                                    </p>
+                                </div>
+
                                 @include('partials.intl-phone-field', [
                                     'id' => 'whatsapp_intl',
                                     'name' => 'whatsapp_intl',
@@ -154,6 +164,12 @@
             </div>
         </section>
     </main>
+    <div class="mg-pay-leaving" id="mg-pay-leaving" aria-live="polite">
+        <div class="mg-pay-leaving__box">
+            <i class="fa-solid fa-lock"></i>
+            <p>{{ trans('file.Card payment redirecting') }}</p>
+        </div>
+    </div>
 @endsection
 
 @section('styles')
@@ -217,6 +233,17 @@
     .mg-pay-ussd-tip__line + .mg-pay-ussd-tip__line { margin-top:6px; }
     .mg-pay-ussd-tip__warn { color:#9a3412; font-weight:600; }
     .mg-pay-ussd-tip__line code { font-weight:800; color:#e87722; background:rgba(232,119,34,.12); padding:1px 6px; border-radius:6px; }
+    .mg-pay-card-tip { margin:4px 0 14px; padding:12px 14px; border-radius:12px; background:#eef1fb; border:1px solid rgba(26,31,113,.35); }
+    .mg-pay-card-tip__title { margin:0 0 6px; font-weight:800; color:#0a2350; font-size:13px; }
+    .mg-pay-card-tip__title i { color:#1a1f71; margin-right:4px; }
+    .mg-pay-card-tip__line { margin:0; color:#23324d; font-size:13px; line-height:1.45; }
+    .mg-pay-card-tip__line + .mg-pay-card-tip__line { margin-top:6px; }
+    .mg-pay-card-tip__warn { color:#1a1f71; font-weight:700; }
+    .mg-pay-leaving { position:fixed; inset:0; z-index:9999; background:rgba(10,35,80,.82); display:none; align-items:center; justify-content:center; padding:24px; }
+    .mg-pay-leaving.is-on { display:flex; }
+    .mg-pay-leaving__box { max-width:360px; background:#fff; border-radius:16px; padding:22px 20px; text-align:center; box-shadow:0 20px 50px rgba(0,0,0,.35); }
+    .mg-pay-leaving__box i { font-size:28px; color:#1a1f71; margin-bottom:10px; }
+    .mg-pay-leaving__box p { margin:0; color:#0a2350; font-weight:700; font-size:15px; line-height:1.4; }
     @media (max-width:575px) {
         .mg-pay-summary { flex-direction:column; text-align:center; }
         .mg-pay-title { font-size:26px; }
@@ -234,6 +261,8 @@
     if (!form) { return; }
 
     var mobileFields = document.getElementById('mg-pay-mobile-fields');
+    var cardTip = document.getElementById('mg-pay-card-tip');
+    var leaving = document.getElementById('mg-pay-leaving');
     var phoneHidden = document.querySelector('#phone_local[data-cm-phone-hidden], input[name="phone_local"]');
     var phoneLabel = mobileFields ? mobileFields.querySelector('.cm-phone-field__label') : null;
     var radios = form.querySelectorAll('input[name="payment_method"]');
@@ -244,13 +273,19 @@
         var method = form.querySelector('input[name="payment_method"]:checked');
         var value = method ? method.value : 'momo';
         var isCard = value === 'card';
-        mobileFields.style.display = isCard ? 'none' : 'block';
+        if (mobileFields) {
+            mobileFields.style.display = isCard ? 'none' : 'block';
+        }
+        if (cardTip) {
+            cardTip.style.display = isCard ? 'block' : 'none';
+        }
         if (phoneHidden) {
             phoneHidden.required = !isCard;
         }
+        // WhatsApp stays required for all methods (vote confirmation).
         var waHidden = form.querySelector('input[name="whatsapp_intl"]');
         if (waHidden) {
-            waHidden.required = !isCard;
+            waHidden.required = true;
         }
         if (phoneLabel) {
             phoneLabel.textContent = value === 'om' ? labelOm : labelMtn;
@@ -265,6 +300,13 @@
 
     radios.forEach(function (r) { r.addEventListener('change', syncMethod); });
     syncMethod();
+
+    form.addEventListener('submit', function () {
+        var method = form.querySelector('input[name="payment_method"]:checked');
+        if (method && method.value === 'card' && leaving) {
+            leaving.classList.add('is-on');
+        }
+    });
 
     // ---- Auto-fill voter name from the MoMo number (Campay holder lookup) ----
     var lookupUrl = @json(route('musician.vote.payment.holder'));

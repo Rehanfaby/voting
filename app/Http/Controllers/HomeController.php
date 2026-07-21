@@ -504,6 +504,7 @@ class HomeController extends Controller
             'vote' => $voteCount,
             'status' => false,
             'reference' => 'abc',
+            'payment_provider' => 'stripe',
             'price' => $general_setting,
             'grand_total' => $amount,
             'whatsapp_number' => $whatsapp,
@@ -529,29 +530,39 @@ class HomeController extends Controller
 
     public function musicianVotePaymentCheckStripe(Request $request)
     {
-
         Stripe::setApiKey(config('services.stripe.secret') ?: env('STRIPE_SECRET'));
 
+        $sessionId = $request->query('session_id');
+        if (!$sessionId) {
+            return redirect()->route('home')->with('not_permitted', trans('file.Payment failed please try again'));
+        }
+
         try {
-            $session = \Stripe\Checkout\Session::retrieve($request->session_id);
+            $session = \Stripe\Checkout\Session::retrieve($sessionId);
         } catch (\Throwable $e) {
             // We could not confirm with Stripe — do NOT delete; leave pending for review.
-            \Log::error('Stripe vote check failed: ' . $e->getMessage(), ['session' => $request->session_id]);
+            \Log::error('Stripe vote check failed: ' . $e->getMessage(), ['session' => $sessionId]);
             return redirect()->route('home')->with('not_permitted', trans('file.Payment failed please try again'));
         }
 
-        $voteId = $session->metadata->vote_id ?? null;
-        $vote = $voteId ? vote::find($voteId) : null;
-        if (!$vote) {
-            return redirect()->route('home')->with('not_permitted', trans('file.Payment record not found'));
-        }
-
-        if ($session->payment_status !== 'paid') {
-            $this->markVoteFailed($vote->id);
+        if (($session->payment_status ?? '') !== 'paid') {
+            $voteId = $session->metadata->vote_id ?? null;
+            if ($voteId) {
+                $this->markVoteFailed($voteId);
+            }
             return redirect()->route('home')->with('not_permitted', trans('file.Payment failed please try again'));
         }
 
-        $this->markVoteSuccessful($vote->id, $session->payment_intent);
+        // Settle only after Stripe confirms paid — same path as the webhook.
+        $vote = app(\App\Services\Payments\StripeVoteSettlementService::class)
+            ->settleCheckoutSession($session);
+
+        if (!$vote || (int) $vote->status !== self::VOTE_SUCCESS) {
+            return redirect()->route('home')->with(
+                'not_permitted',
+                trans('file.Payment received but vote not confirmed yet. Please contact support with your receipt.')
+            );
+        }
 
         return redirect()->route('home')->with('message', trans('file.Thank you for your voting'));
     }

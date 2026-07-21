@@ -36,6 +36,7 @@ Route::post('/admin/forgot-password/reset', 'HomeController@adminForgotPasswordR
 
 Route::get('language_switch/{locale}', 'LanguageController@switchLanguage');
 Route::get('/payment-cancel', [StripePaymentController::class, 'paymentCancel'])->name('payment.cancel');
+Route::post('/stripe/webhook', 'StripeWebhookController@handle')->name('stripe.webhook');
 
 //frontend
 Route::group([], function() {

@@ -67,8 +67,17 @@ class Controller extends BaseController
                 'mode' => 'payment',
                 'success_url' => $route . '?session_id={CHECKOUT_SESSION_ID}',
                 'cancel_url' => route('payment.cancel'),
+                // Rich metadata so the Stripe webhook can settle (or recreate) the vote
+                // even if the browser never returns or the pending row was deleted.
                 'metadata' => [
-                    'vote_id' => $vote_id,
+                    'vote_id' => (string) $vote_id,
+                    'user_id' => (string) $vote->user_id,
+                    'musician_id' => (string) $vote->musician_id,
+                    'vote_count' => (string) $vote->vote,
+                    'amount' => (string) (int) round($amount),
+                    'price' => (string) (int) $vote->price,
+                    'whatsapp' => (string) ($vote->whatsapp_number ?? ''),
+                    'locale' => (string) ($vote->locale ?? 'en'),
                 ],
             ]);
             if ($session) {
