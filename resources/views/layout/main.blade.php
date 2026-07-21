@@ -530,12 +530,6 @@
                   </span>
 
                 <ul class="nav-menu list-unstyled d-flex flex-md-row align-items-md-center ms-header-nav">
-                    <li class="nav-item">
-                        <a href="{{ route('home') }}" class="ms-view-site" data-toggle="tooltip" title="{{ trans('file.Home Page') }}">
-                            <i class="dripicons-home"></i>
-                            <span class="ms-view-site__label">{{ trans('file.Home Page') }}</span>
-                        </a>
-                    </li>
                     <li class="nav-item"><a id="btnFullscreen" data-toggle="tooltip" title="{{trans('file.Full Screen')}}"><i class="dripicons-expand"></i></a></li>
 
                     <li class="nav-item ms-lang-switch ms-lang-switch--header-end">
