@@ -454,17 +454,62 @@ function confirmClearVotes() {
 
 </script>
 <style>
+.vote-status-tabs {
+    gap: 8px;
+}
+.vote-status-tabs .nav-item {
+    margin: 0 !important;
+}
 .vote-status-tabs .nav-link {
-    border: 1px solid #dbe4f3;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: 2px solid #c7d7f5;
+    border-radius: 12px;
     color: #0a2350;
     font-weight: 700;
-    background: #f7f9fd;
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgba(10, 35, 80, .06);
+    transition: border-color .2s, background .2s, box-shadow .2s, color .2s;
+}
+.vote-status-tabs .nav-link .badge {
+    background: #eef3ff;
+    color: #1d4ed8;
+    border: 1px solid #c7d7f5;
+    font-weight: 800;
+    border-radius: 999px;
+    padding: 4px 8px;
+}
+.vote-status-tabs .nav-link:hover {
+    border-color: #1d4ed8;
+    background: #f5f8ff;
+    color: #0a2350;
+    text-decoration: none;
+    box-shadow: 0 4px 12px rgba(29, 78, 216, .12);
 }
 .vote-status-tabs .nav-link.active {
     background: #1d4ed8;
-    border-color: #1d4ed8;
+    border-color: #163ea8;
     color: #fff;
+    box-shadow: 0 6px 16px rgba(29, 78, 216, .28);
 }
-.vote-status-tabs .nav-link.active .badge { color: #0a2350; }
+.vote-status-tabs .nav-link.active .badge {
+    background: #fff;
+    color: #1d4ed8;
+    border-color: #fff;
+}
+.vote-status-tabs .nav-link[href*="status=success"] { border-color: #86efac; }
+.vote-status-tabs .nav-link[href*="status=success"]:hover,
+.vote-status-tabs .nav-link[href*="status=success"].active { border-color: #15803d; }
+.vote-status-tabs .nav-link[href*="status=success"].active { background: #16a34a; box-shadow: 0 6px 16px rgba(22, 163, 74, .28); }
+.vote-status-tabs .nav-link[href*="status=pending"] { border-color: #fcd34d; }
+.vote-status-tabs .nav-link[href*="status=pending"]:hover,
+.vote-status-tabs .nav-link[href*="status=pending"].active { border-color: #b45309; }
+.vote-status-tabs .nav-link[href*="status=pending"].active { background: #f59e0b; box-shadow: 0 6px 16px rgba(245, 158, 11, .28); }
+.vote-status-tabs .nav-link[href*="status=failed"] { border-color: #fca5a5; }
+.vote-status-tabs .nav-link[href*="status=failed"]:hover,
+.vote-status-tabs .nav-link[href*="status=failed"].active { border-color: #b91c1c; }
+.vote-status-tabs .nav-link[href*="status=failed"].active { background: #ef4444; box-shadow: 0 6px 16px rgba(239, 68, 68, .28); }
 </style>
 @endsection
