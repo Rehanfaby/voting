@@ -67,47 +67,49 @@
             ->groupBy('employees.name')->orderByDesc('t')->limit(5)->get();
     }, collect());
 
-    // Region expression must appear in GROUP BY (MySQL ONLY_FULL_GROUP_BY).
-    $regionExprEmployee = 'COALESCE(NULLIF(TRIM(employees.city), ""), "Unassigned")';
-    $regionExprCity     = 'COALESCE(NULLIF(TRIM(city), ""), "Unassigned")';
-
-    /* Contestants per Cameroon region (stored in employees.city) */
-    $regionRows = $__safe(function () use ($regionExprCity) {
-        return \DB::table('employees')
+    // Aggregate in PHP — Hostinger MySQL ONLY_FULL_GROUP_BY rejects region expressions.
+    $regionRows = $__safe(function () {
+        $counts = [];
+        $rows = \DB::table('employees')
             ->where('is_active', true)->where('is_approve', true)
-            ->select(\DB::raw($regionExprCity . ' as name'), \DB::raw('COUNT(*) as c'))
-            ->groupBy(\DB::raw($regionExprCity))
-            ->orderByDesc('c')
-            ->get();
+            ->get(['city']);
+        foreach ($rows as $row) {
+            $region = trim((string) $row->city);
+            if ($region === '') {
+                $region = 'Unassigned';
+            }
+            $counts[$region] = ($counts[$region] ?? 0) + 1;
+        }
+        arsort($counts);
+        $out = collect();
+        foreach ($counts as $name => $c) {
+            $out->push((object) ['name' => $name, 'c' => (int) $c]);
+        }
+        return $out;
     }, collect());
 
-    /* Successful votes per region */
-    $votesByRegion = $__safe(function () use ($regionExprEmployee) {
-        return \DB::table('votes')
+    /* Successful votes credited to each contestant's region (city). */
+    $votesByRegion = $__safe(function () {
+        $totals = [];
+        $rows = \DB::table('votes')
             ->join('employees', 'employees.id', '=', 'votes.musician_id')
             ->where('votes.status', 1)
             ->where('employees.is_active', true)
-            ->select(\DB::raw($regionExprEmployee . ' as name'), \DB::raw('SUM(votes.vote) as t'))
-            ->groupBy(\DB::raw($regionExprEmployee))
-            ->orderByDesc('t')
-            ->get();
-    }, collect());
-
-    /* Contestant names per region (for elimination tracking) */
-    $contestantsByRegionList = $__safe(function () {
-        $rows = \DB::table('employees')
-            ->where('is_active', true)->where('is_approve', true)
-            ->orderBy('city')->orderBy('name')
-            ->get(['id', 'name', 'city']);
-        $grouped = [];
+            ->get(['employees.city', 'votes.vote']);
         foreach ($rows as $row) {
-            $region = trim((string) $row->city) !== '' ? $row->city : 'Unassigned';
-            $grouped[$region][] = $row->name;
+            $region = trim((string) $row->city);
+            if ($region === '') {
+                $region = 'Unassigned';
+            }
+            $totals[$region] = ($totals[$region] ?? 0) + (int) $row->vote;
         }
-        // Sort by contestant count desc for elimination planning.
-        uasort($grouped, function ($a, $b) { return count($b) <=> count($a); });
-        return $grouped;
-    }, []);
+        arsort($totals);
+        $out = collect();
+        foreach ($totals as $name => $t) {
+            $out->push((object) ['name' => $name, 't' => (int) $t]);
+        }
+        return $out;
+    }, collect());
 
     // Only count paid tickets for currently active events/products.
     // Old inactive "Registration" tickets were inflating this to ~296.
@@ -242,32 +244,26 @@
       <div class="ms-panel">
         <h3><i class="fa fa-pie-chart"></i> Contestants by Region <small class="text-muted" style="font-weight:600;font-size:13px;">({{ number_format($totalContestants) }} total)</small></h3>
         @if(count($regionContestantLabels))
-          <canvas id="msRegionChart" height="200"></canvas>
+          <canvas id="msRegionChart" height="220"></canvas>
         @else
           <p class="text-muted mb-0">No region data yet. Set each contestant’s city/region.</p>
         @endif
       </div>
       <div class="ms-panel">
-        <h3><i class="fa fa-bar-chart"></i> Top Regions by Contestants</h3>
-        <ul class="ms-rank-list">
-          @forelse($regionRows as $i => $row)
-            <li>
-              <span class="ms-rank-pos">{{ $i + 1 }}</span>
-              <span class="ms-rank-name">{{ $row->name }}</span>
-              <span class="ms-rank-votes">{{ number_format($row->c) }}</span>
-            </li>
-          @empty
-            <li><span class="ms-rank-name text-muted">No contestants found.</span></li>
-          @endforelse
-        </ul>
+        <h3><i class="fa fa-bar-chart"></i> Contestants per Region</h3>
+        @if(count($regionContestantLabels))
+          <canvas id="msRegionBarChart" height="220"></canvas>
+        @else
+          <p class="text-muted mb-0">No contestants found.</p>
+        @endif
       </div>
     </div>
 
     <div class="ms-chart-grid">
       <div class="ms-panel">
-        <h3><i class="fa fa-bar-chart"></i> Successful Votes by Region</h3>
+        <h3><i class="fa fa-bar-chart"></i> Votes per Region <small class="text-muted" style="font-weight:600;font-size:13px;">(successful votes for contestants in each region)</small></h3>
         @if(count($regionVoteLabels))
-          <canvas id="msVotesRegionChart" height="200"></canvas>
+          <canvas id="msVotesRegionChart" height="220"></canvas>
         @else
           <p class="text-muted mb-0">No successful votes with region data yet.</p>
         @endif
@@ -275,56 +271,10 @@
       <div class="ms-panel">
         <h3><i class="fa fa-pie-chart"></i> Votes Share by Region</h3>
         @if(count($regionVoteLabels))
-          <canvas id="msVotesRegionPie" height="200"></canvas>
+          <canvas id="msVotesRegionPie" height="220"></canvas>
         @else
           <p class="text-muted mb-0">No successful votes with region data yet.</p>
         @endif
-      </div>
-    </div>
-
-    <div class="ms-chart-grid">
-      <div class="ms-panel">
-        <h3><i class="fa fa-trophy"></i> Top Regions by Votes <small class="text-muted" style="font-weight:600;font-size:13px;">(who is voting well)</small></h3>
-        <ul class="ms-rank-list">
-          @forelse($votesByRegion as $i => $row)
-            <li>
-              <span class="ms-rank-pos">{{ $i + 1 }}</span>
-              <span class="ms-rank-name">{{ $row->name }}</span>
-              <span class="ms-rank-votes">{{ number_format($row->t) }}</span>
-            </li>
-          @empty
-            <li><span class="ms-rank-name text-muted">No votes recorded yet.</span></li>
-          @endforelse
-        </ul>
-      </div>
-      <div class="ms-panel">
-        <h3><i class="fa fa-map-marker"></i> Contestants per Region <small class="text-muted" style="font-weight:600;font-size:13px;">(for eliminations)</small></h3>
-        <div class="table-responsive" style="max-height:320px;overflow:auto;">
-          <table class="table table-sm table-striped mb-0">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Region</th>
-                <th>Contestants</th>
-                <th>Names</th>
-              </tr>
-            </thead>
-            <tbody>
-              @php $ri = 0; @endphp
-              @forelse($contestantsByRegionList as $region => $names)
-                @php $ri++; @endphp
-                <tr>
-                  <td>{{ $ri }}</td>
-                  <td><strong>{{ $region }}</strong></td>
-                  <td>{{ count($names) }}</td>
-                  <td>{{ implode(', ', $names) }}</td>
-                </tr>
-              @empty
-                <tr><td colspan="4" class="text-muted">No contestants found.</td></tr>
-              @endforelse
-            </tbody>
-          </table>
-        </div>
       </div>
     </div>
 
@@ -468,6 +418,22 @@
                     legend: { position: 'bottom', labels: { boxWidth: 12, padding: 10 } },
                     tooltip: pctTooltip()
                 }
+            }
+        });
+    }
+
+    var regionBarEl = document.getElementById('msRegionBarChart');
+    if (regionBarEl && regionLabels.length) {
+        new Chart(regionBarEl.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: regionLabels,
+                datasets: [{ label: 'Contestants', data: regionCounts, backgroundColor: BLUE, borderRadius: 8 }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, x: { grid: { display: false } } }
             }
         });
     }
