@@ -262,24 +262,29 @@
         return false;
     }
 
-    // Collect ids of selected rows on the current page only.
+    // Only rows the user actually checked (never "all contestants" unless they checked each one).
+    function rowContestantId(rowNode) {
+        if (!rowNode) { return null; }
+        var id = $(rowNode).attr('data-id');
+        return id ? String(id) : null;
+    }
     function collectSelectedIds() {
         var ids = [];
         var table = $('#employee-table').DataTable();
-        table.rows({ page: 'current', selected: true }).every(function () {
-            var id = $(this.node()).data('id');
-            if (id) ids.push(String(id));
+        // Prefer Select API selected rows (can span pages if user checked them manually).
+        table.rows({ selected: true }).every(function () {
+            var id = rowContestantId(this.node());
+            if (id) ids.push(id);
         });
+        // Fallback: checked boxes currently in the DOM.
         if (!ids.length) {
-            table.rows({ page: 'current' }).every(function () {
-                var $row = $(this.node());
-                if ($row.find('input.dt-checkboxes').is(':checked')) {
-                    var id = $row.data('id');
-                    if (id) ids.push(String(id));
+            $('#employee-table tbody tr').each(function () {
+                if ($(this).find('input.dt-checkboxes').prop('checked')) {
+                    var id = rowContestantId(this);
+                    if (id) ids.push(id);
                 }
             });
         }
-        // Unique
         return ids.filter(function (v, i, a) { return a.indexOf(v) === i; });
     }
 
@@ -336,7 +341,9 @@
             }
         ],
         'select': { style: 'multi',  selector: 'td:first-child', info: false },
-        'lengthMenu': [[10, 25, 50, -1], [10, 25, 50, "All"]],
+        // No "All" page size — showing every row + header select-all can wipe the whole list.
+        'lengthMenu': [[10, 25, 50], [10, 25, 50]],
+        'pageLength': 25,
         dom: '<"row"lfB>rtip',
         buttons: [
             {
@@ -424,9 +431,9 @@
                             return;
                         }
                         var totalRows = dt.rows().count();
-                        var msg = "Delete " + ids.length + " selected contestant(s)? Their votes stay in the database but they disappear from the public site.";
+                        var msg = "Delete ONLY these " + ids.length + " selected contestant(s)?\n\nIDs: " + ids.join(", ");
                         if (ids.length === totalRows && totalRows > 1) {
-                            msg = "WARNING: This will delete ALL " + totalRows + " contestants on the list. Continue?";
+                            msg = "WARNING: You selected ALL " + totalRows + " contestants. This will remove everyone from the public site. Continue?";
                         }
                         if(confirm(msg)) {
                             $.ajax({
@@ -438,6 +445,9 @@
                                 success:function(data){
                                     alert(data);
                                     location.reload();
+                                },
+                                error: function () {
+                                    alert('Delete failed. No contestants were changed.');
                                 }
                             });
                         }
