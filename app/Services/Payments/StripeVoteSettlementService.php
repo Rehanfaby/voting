@@ -51,8 +51,16 @@ class StripeVoteSettlementService
             return null;
         }
 
+        $dirty = false;
         if (Schema::hasColumn('votes', 'payment_provider') && empty($vote->payment_provider)) {
             $vote->payment_provider = 'stripe';
+            $dirty = true;
+        }
+        if (Schema::hasColumn('votes', 'payment_method') && empty($vote->payment_method)) {
+            $vote->payment_method = 'card';
+            $dirty = true;
+        }
+        if ($dirty) {
             $vote->save();
         }
 
@@ -112,6 +120,9 @@ class StripeVoteSettlementService
 
         if (Schema::hasColumn('votes', 'payment_provider')) {
             $payload['payment_provider'] = 'stripe';
+        }
+        if (Schema::hasColumn('votes', 'payment_method')) {
+            $payload['payment_method'] = 'card';
         }
 
         $vote = vote::create($payload);

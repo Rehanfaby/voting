@@ -62,7 +62,9 @@ class VoteController extends Controller
                 $votesQuery->where('status', 2);
             }
 
-            $votes = $votesQuery->orderBy('id', 'desc')->get();
+            $votes = $votesQuery->with(['musicians', 'voters', 'mobileMoneyPayment'])
+                ->orderBy('id', 'desc')
+                ->get();
             $lastClearedAt = null;
             if (Schema::hasColumn('votes', 'cleared_at')) {
                 $lastClearedAt = vote::whereNotNull('cleared_at')->max('cleared_at');

@@ -86,6 +86,7 @@ class VoteMobileMoneyService
         $payment->save();
 
         $vote->payment_provider = $provider;
+        $vote->payment_method = in_array($paymentMethod, ['om', 'momo'], true) ? $paymentMethod : 'momo';
         $vote->mobile_money_payment_id = $payment->id;
         $vote->reference = $result->providerTransactionId ?: 'pending';
         $vote->save();

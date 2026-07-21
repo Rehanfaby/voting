@@ -417,12 +417,18 @@ class HomeController extends Controller
         $voteCount = $this->validatedVoteCount($request);
         $general_setting = GeneralSetting::pluck('vote_price')->first();
         $amount = $general_setting * $voteCount;
+        $payMethod = strtolower((string) $request->input('payment_method', 'momo'));
+        if (!in_array($payMethod, ['momo', 'om'], true)) {
+            $payMethod = 'momo';
+        }
+
         $vote = vote::create([
                     'user_id' => $user->id,
                     'musician_id' => $request->musician_id,
                     'vote' => $voteCount,
                     'status' => false,
                     'reference' => 'pending',
+                    'payment_method' => $payMethod,
                     'price' => $general_setting,
                     'grand_total' => $amount,
                     'whatsapp_number' => $whatsapp,
@@ -505,6 +511,7 @@ class HomeController extends Controller
             'status' => false,
             'reference' => 'abc',
             'payment_provider' => 'stripe',
+            'payment_method' => 'card',
             'price' => $general_setting,
             'grand_total' => $amount,
             'whatsapp_number' => $whatsapp,

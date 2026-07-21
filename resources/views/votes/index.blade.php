@@ -91,12 +91,17 @@
                     <th>{{trans('file.Contestant')}}</th>
                     <th>{{trans('file.Voter name')}}</th>
                     <th>{{trans('file.Votes')}}</th>
+                    <th>{{trans('file.Payment method')}}</th>
                     <th>{{trans('file.Status')}}</th>
                     <th class="not-exported">{{trans('file.action')}}</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($votes as $key=>$vote)
+                @php
+                    $payMethod = $vote->resolvedPaymentMethod();
+                    $payLabel = $vote->paymentMethodLabel();
+                @endphp
                 <tr data-id="{{$vote->id}}">
                     <td>{{$key}}</td>
                     <td>{{date('D d-M-Y', strtotime($vote->created_at->toDateString())) . ' '. $vote->created_at->toTimeString() }}</td>
@@ -109,6 +114,17 @@
                             <small class="text-muted">({{ (int) ($vote->cleared_vote ?? 0) }})</small>
                         @else
                             {{ $vote->vote }}
+                        @endif
+                    </td>
+                    <td>
+                        @if($payMethod === 'card')
+                            <span class="badge badge-primary">{{ $payLabel }}</span>
+                        @elseif($payMethod === 'om')
+                            <span class="badge badge-warning" style="background:#ff6600;border-color:#ff6600;">{{ $payLabel }}</span>
+                        @elseif($payMethod === 'momo')
+                            <span class="badge badge-warning" style="background:#ffcc00;border-color:#ffcc00;color:#1a1a1a;">{{ $payLabel }}</span>
+                        @else
+                            <span class="text-muted">{{ $payLabel }}</span>
                         @endif
                     </td>
                     @if((int) $vote->status === 0)
@@ -147,6 +163,7 @@
             <tfoot class="tfoot active">
                 <th></th>
                 <th>{{trans('file.Total')}}</th>
+                <th></th>
                 <th></th>
                 <th></th>
                 <th></th>
@@ -282,7 +299,7 @@ function confirmClearVotes() {
         'columnDefs': [
             {
                 "orderable": false,
-                'targets': [0, 7]
+                'targets': [0, 8]
             },
             {
                 'render': function(data, type, row, meta){

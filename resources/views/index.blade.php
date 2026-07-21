@@ -147,6 +147,69 @@
 
     $voteStatusLabels = ['Succeeded', 'Failed', 'Pending'];
     $voteStatusData = [$voteTxns, $failedTxns, $pendingTxns];
+
+    // Successful vote transactions by payment channel (MoMo / OM / Card).
+    $paymentMethodStats = $__safe(function () {
+        $counts = ['momo' => 0, 'om' => 0, 'card' => 0, 'other' => 0];
+        $units = ['momo' => 0, 'om' => 0, 'card' => 0, 'other' => 0];
+        $hasMethodCol = \Schema::hasColumn('votes', 'payment_method');
+        $hasProviderCol = \Schema::hasColumn('votes', 'payment_provider');
+        $hasMmpId = \Schema::hasColumn('votes', 'mobile_money_payment_id');
+
+        $q = \DB::table('votes')->where('votes.status', 1);
+        if ($hasMmpId && \Schema::hasTable('mobile_money_payments')) {
+            $q->leftJoin('mobile_money_payments', 'mobile_money_payments.id', '=', 'votes.mobile_money_payment_id');
+        }
+        $select = ['votes.vote', 'votes.reference'];
+        if ($hasMethodCol) {
+            $select[] = 'votes.payment_method';
+        }
+        if ($hasProviderCol) {
+            $select[] = 'votes.payment_provider';
+        }
+        if ($hasMmpId && \Schema::hasTable('mobile_money_payments')) {
+            $select[] = 'mobile_money_payments.mobile_network';
+            $select[] = 'mobile_money_payments.request_payload';
+        }
+        $rows = $q->get($select);
+
+        foreach ($rows as $row) {
+            $method = strtolower(trim((string) ($row->payment_method ?? '')));
+            if (!in_array($method, ['momo', 'om', 'card'], true)) {
+                $provider = strtolower(trim((string) ($row->payment_provider ?? '')));
+                $ref = (string) ($row->reference ?? '');
+                $network = strtoupper((string) ($row->mobile_network ?? ''));
+                $payload = (string) ($row->request_payload ?? '');
+                if ($provider === 'stripe' || strpos($ref, 'pi_') === 0) {
+                    $method = 'card';
+                } elseif (strpos($network, 'ORANGE') !== false || strpos($payload, '"payment_method":"om"') !== false) {
+                    $method = 'om';
+                } elseif ($provider !== '' || $network !== '' || strpos($payload, '"payment_method":"momo"') !== false) {
+                    $method = 'momo';
+                } else {
+                    $method = 'other';
+                }
+            }
+            $counts[$method] = ($counts[$method] ?? 0) + 1;
+            $units[$method] = ($units[$method] ?? 0) + (int) $row->vote;
+        }
+
+        return [
+            'labels' => ['MTN MoMo', 'Orange Money', 'Visa / Mastercard'],
+            'keys' => ['momo', 'om', 'card'],
+            'txns' => [(int) $counts['momo'], (int) $counts['om'], (int) $counts['card']],
+            'units' => [(int) $units['momo'], (int) $units['om'], (int) $units['card']],
+        ];
+    }, [
+        'labels' => ['MTN MoMo', 'Orange Money', 'Visa / Mastercard'],
+        'keys' => ['momo', 'om', 'card'],
+        'txns' => [0, 0, 0],
+        'units' => [0, 0, 0],
+    ]);
+    $payMethodLabels = $paymentMethodStats['labels'];
+    $payMethodTxns = $paymentMethodStats['txns'];
+    $payMethodUnits = $paymentMethodStats['units'];
+    $payMethodTotalTxns = array_sum($payMethodTxns);
 @endphp
 
 <div class="row">
@@ -310,6 +373,25 @@
             <li><span class="ms-rank-name text-muted">No votes recorded yet.</span></li>
           @endforelse
         </ul>
+      </div>
+    </div>
+
+    <div class="ms-chart-grid">
+      <div class="ms-panel">
+        <h3><i class="fa fa-pie-chart"></i> Votes by Payment Method <small class="text-muted" style="font-weight:600;font-size:13px;">({{ number_format($payMethodTotalTxns) }} successful transactions)</small></h3>
+        @if($payMethodTotalTxns > 0)
+          <canvas id="msPayMethodPie" height="220"></canvas>
+        @else
+          <p class="text-muted mb-0">No successful payments yet.</p>
+        @endif
+      </div>
+      <div class="ms-panel">
+        <h3><i class="fa fa-bar-chart"></i> Payment Methods <small class="text-muted" style="font-weight:600;font-size:13px;">(successful vote units)</small></h3>
+        @if($payMethodTotalTxns > 0)
+          <canvas id="msPayMethodBar" height="220"></canvas>
+        @else
+          <p class="text-muted mb-0">No successful payments yet.</p>
+        @endif
       </div>
     </div>
 
@@ -556,6 +638,47 @@
                     x: { beginAtZero: true, grid: { color: '#eef2f7' }, ticks: { precision: 0 } },
                     y: { grid: { display: false } }
                 }
+            }
+        });
+    }
+
+    var payLabels = @json($payMethodLabels);
+    var payTxns = @json($payMethodTxns);
+    var payUnits = @json($payMethodUnits);
+    var payColors = ['#ffcc00', '#ff6600', '#1a1f71'];
+
+    var payPieEl = document.getElementById('msPayMethodPie');
+    if (payPieEl && payTxns.reduce(function (a, b) { return a + b; }, 0) > 0) {
+        new Chart(payPieEl.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: payLabels,
+                datasets: [{ data: payTxns, backgroundColor: payColors, borderWidth: 2, borderColor: '#fff' }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: true, cutout: '55%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 12, padding: 10 } },
+                    tooltip: pctTooltip(),
+                    datalabels: pieLabels(0)
+                }
+            }
+        });
+    }
+
+    var payBarEl = document.getElementById('msPayMethodBar');
+    if (payBarEl && payUnits.reduce(function (a, b) { return a + b; }, 0) > 0) {
+        new Chart(payBarEl.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: payLabels,
+                datasets: [{ label: 'Vote units', data: payUnits, backgroundColor: payColors, borderRadius: 8 }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: true,
+                layout: { padding: { top: 22 } },
+                plugins: { legend: { display: false }, datalabels: barTopLabels() },
+                scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, x: { grid: { display: false } } }
             }
         });
     }
