@@ -309,7 +309,7 @@ function confirmClearVotes() {
             }
         ],
         'select': { style: 'multi',  selector: 'td:first-child', info: false },
-        'lengthMenu': [[10, 25, 50], [10, 25, 50]],
+        'lengthMenu': [[10, 25, 50, -1], [10, 25, 50, "All"]],
         'pageLength': 25,
         dom: '<"row"lfB>rtip',
         buttons: [
