@@ -262,23 +262,25 @@
         return false;
     }
 
-    // Collect ids of all selected rows (across the whole table, not just the current page).
+    // Collect ids of selected rows on the current page only.
     function collectSelectedIds() {
         var ids = [];
         var table = $('#employee-table').DataTable();
-        table.rows({ selected: true }).every(function () {
+        table.rows({ page: 'current', selected: true }).every(function () {
             var id = $(this.node()).data('id');
-            if (id) ids.push(id);
+            if (id) ids.push(String(id));
         });
         if (!ids.length) {
-            $('#employee-table tbody tr').each(function () {
-                if ($(this).find('input[type="checkbox"]').is(':checked')) {
-                    var id = $(this).data('id');
-                    if (id) ids.push(id);
+            table.rows({ page: 'current' }).every(function () {
+                var $row = $(this.node());
+                if ($row.find('input.dt-checkboxes').is(':checked')) {
+                    var id = $row.data('id');
+                    if (id) ids.push(String(id));
                 }
             });
         }
-        return ids;
+        // Unique
+        return ids.filter(function (v, i, a) { return a.indexOf(v) === i; });
     }
 
     $(document).on('click', '.edit-btn', function() {
@@ -326,12 +328,14 @@
                 },
                 'checkboxes': {
                    'selectRow': true,
+                   // Header checkbox must NOT select every page — that deleted all contestants by mistake.
+                   'selectAllPages': false,
                    'selectAllRender': '<div class="checkbox"><input type="checkbox" class="dt-checkboxes"><label></label></div>'
                 },
                 'targets': [0]
             }
         ],
-        'select': { style: 'multi',  selector: 'td:first-child'},
+        'select': { style: 'multi',  selector: 'td:first-child', info: false },
         'lengthMenu': [[10, 25, 50, -1], [10, 25, 50, "All"]],
         dom: '<"row"lfB>rtip',
         buttons: [
@@ -396,7 +400,7 @@
                 className: 'buttons-approve btn-approve-selected',
                 action: function ( e, dt, node, config ) {
                     var ids = collectSelectedIds();
-                    if(ids.length && confirm("Approve the selected contestant(s)?")) {
+                    if(ids.length && confirm("Approve " + ids.length + " selected contestant(s)?")) {
                         $.ajax({
                             type:'POST',
                             url:'{{ url("musician/approvebyselection") }}',
@@ -415,7 +419,16 @@
                 action: function ( e, dt, node, config ) {
                     if(user_verified == '1') {
                         var ids = collectSelectedIds();
-                        if(ids.length && confirm("Are you sure want to delete?")) {
+                        if(!ids.length) {
+                            alert('No contestant is selected!');
+                            return;
+                        }
+                        var totalRows = dt.rows().count();
+                        var msg = "Delete " + ids.length + " selected contestant(s)? Their votes stay in the database but they disappear from the public site.";
+                        if (ids.length === totalRows && totalRows > 1) {
+                            msg = "WARNING: This will delete ALL " + totalRows + " contestants on the list. Continue?";
+                        }
+                        if(confirm(msg)) {
                             $.ajax({
                                 type:'POST',
                                 url:'{{ url("musician/deletebyselection") }}',
@@ -427,10 +440,7 @@
                                     location.reload();
                                 }
                             });
-                            dt.rows({ page: 'current', selected: true }).remove().draw(false);
                         }
-                        else if(!ids.length)
-                            alert('No contestant is selected!');
                     }
                     else
                         alert('This feature is disable for demo!');

@@ -256,20 +256,32 @@ class EmployeeController extends Controller
     public function deleteBySelection(Request $request)
     {
         $employee_id = $request['employeeIdArray'] ?? $request['ids'] ?? [];
+        if (!is_array($employee_id)) {
+            $employee_id = [$employee_id];
+        }
+
+        // Only accept positive integer ids — never treat empty/malformed input as "all".
+        $employee_id = array_values(array_unique(array_filter(array_map(function ($id) {
+            return (is_numeric($id) && (int) $id > 0) ? (int) $id : null;
+        }, $employee_id))));
+
+        if (count($employee_id) === 0) {
+            return 'No contestant was selected.';
+        }
+
+        $count = 0;
         foreach ($employee_id as $id) {
-            if($id == null) {
-                continue;
-            }
             $lims_employee_data = Employee::find($id);
-            if(!$lims_employee_data) {
+            if (!$lims_employee_data || !$lims_employee_data->is_active) {
                 continue;
             }
-            // Only deactivate the contestant profile. The linked user account is
-            // left intact because the same person may also be a voter/judge.
+            // Soft-delete only: keep votes and the linked user account.
             $lims_employee_data->is_active = false;
             $lims_employee_data->save();
+            $count++;
         }
-        return 'Contestant deleted successfully!';
+
+        return $count . ' contestant(s) deleted successfully!';
     }
 
     public function approveBySelection(Request $request)
