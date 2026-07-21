@@ -18,14 +18,21 @@
     $totalContestants   = (int) $__safe(function () { return \App\Employee::where('is_active', true)->where('is_approve', true)->count(); });
     $pendingContestants = (int) $__safe(function () { return \App\Employee::where('is_active', true)->where('is_approve', false)->count(); });
 
-    // Votes on the dashboard = successful only (status = 1 / true).
-    $totalVotes         = (int) $__safe(function () { return \DB::table('votes')->where('status', 1)->sum('vote'); });
+    // Transaction counts match Votes List tab badges (one row = one payment).
+    // Vote units = sum of the `vote` column (votes purchased in that payment).
     $voteTxns           = (int) $__safe(function () { return \DB::table('votes')->where('status', 1)->count(); });
+    $voteUnitsSuccess   = (int) $__safe(function () { return \DB::table('votes')->where('status', 1)->sum('vote'); });
     $totalVoters        = (int) $__safe(function () { return \DB::table('votes')->where('status', 1)->distinct('user_id')->count('user_id'); });
-    $failedVotes        = (int) $__safe(function () { return \DB::table('votes')->where('status', 2)->sum('vote'); });
     $failedTxns         = (int) $__safe(function () { return \DB::table('votes')->where('status', 2)->count(); });
-    $pendingVotes       = (int) $__safe(function () { return \DB::table('votes')->where('status', 0)->sum('vote'); });
+    $voteUnitsFailed    = (int) $__safe(function () { return \DB::table('votes')->where('status', 2)->sum('vote'); });
     $pendingTxns        = (int) $__safe(function () { return \DB::table('votes')->where('status', 0)->count(); });
+    $voteUnitsPending   = (int) $__safe(function () { return \DB::table('votes')->where('status', 0)->sum('vote'); });
+    $totalVoteTxns      = $voteTxns + $pendingTxns + $failedTxns;
+    $totalVoteUnits     = $voteUnitsSuccess + $voteUnitsPending + $voteUnitsFailed;
+    // Charts / trends: successful vote units unless noted otherwise.
+    $totalVotes         = $voteUnitsSuccess;
+    $failedVotes        = $failedTxns;
+    $pendingVotes       = $pendingTxns;
 
     // Active judges only (exclude soft-deleted ambassador rows still in judges table).
     $totalJudges        = (int) $__safe(function () { return \App\Judge::where('is_active', true)->count(); });
@@ -139,7 +146,7 @@
     $regionVoteData         = $votesByRegion->pluck('t')->map(function ($v) { return (int) $v; })->values()->all();
 
     $voteStatusLabels = ['Succeeded', 'Failed', 'Pending'];
-    $voteStatusData = [$totalVotes, $failedVotes, $pendingVotes];
+    $voteStatusData = [$voteTxns, $failedTxns, $pendingTxns];
 @endphp
 
 <div class="row">
@@ -160,25 +167,32 @@
           <div class="ms-stat-label">Total Contestants</div>
         </div>
       </a>
-      <a href="{{ route('votes.index') }}" class="ms-stat" style="--ms-accent:#16a34a;">
+      <a href="{{ route('votes.index', ['status' => 'all']) }}" class="ms-stat" style="--ms-accent:#16a34a;">
         <div class="ms-stat-icon"><i class="fa fa-check-square-o"></i></div>
         <div class="ms-stat-body">
-          <div class="ms-stat-value">{{ number_format($totalVotes) }}</div>
-          <div class="ms-stat-label">Total Votes Succeeded</div>
+          <div class="ms-stat-value">{{ number_format($totalVoteTxns) }}</div>
+          <div class="ms-stat-label">Total Votes <small>({{ number_format($totalVoteUnits) }} vote units)</small></div>
         </div>
       </a>
-      <a href="{{ route('votes.index') }}" class="ms-stat" style="--ms-accent:#ef4444;">
+      <a href="{{ route('votes.index', ['status' => 'success']) }}" class="ms-stat" style="--ms-accent:#15803d;">
+        <div class="ms-stat-icon"><i class="fa fa-thumbs-up"></i></div>
+        <div class="ms-stat-body">
+          <div class="ms-stat-value">{{ number_format($voteTxns) }}</div>
+          <div class="ms-stat-label">Successful Votes <small>({{ number_format($voteUnitsSuccess) }} vote units)</small></div>
+        </div>
+      </a>
+      <a href="{{ route('votes.index', ['status' => 'failed']) }}" class="ms-stat" style="--ms-accent:#ef4444;">
         <div class="ms-stat-icon"><i class="fa fa-times-circle"></i></div>
         <div class="ms-stat-body">
-          <div class="ms-stat-value">{{ number_format($failedVotes) }}</div>
-          <div class="ms-stat-label">Votes Failed <small>({{ number_format($failedTxns) }} txns)</small></div>
+          <div class="ms-stat-value">{{ number_format($failedTxns) }}</div>
+          <div class="ms-stat-label">Votes Failed @if($voteUnitsFailed !== $failedTxns)<small>({{ number_format($voteUnitsFailed) }} vote units)</small>@endif</div>
         </div>
       </a>
-      <a href="{{ route('votes.index') }}" class="ms-stat" style="--ms-accent:#f59e0b;">
+      <a href="{{ route('votes.index', ['status' => 'pending']) }}" class="ms-stat" style="--ms-accent:#f59e0b;">
         <div class="ms-stat-icon"><i class="fa fa-clock-o"></i></div>
         <div class="ms-stat-body">
-          <div class="ms-stat-value">{{ number_format($pendingVotes) }}</div>
-          <div class="ms-stat-label">Votes Pending <small>({{ number_format($pendingTxns) }} txns)</small></div>
+          <div class="ms-stat-value">{{ number_format($pendingTxns) }}</div>
+          <div class="ms-stat-label">Votes Pending @if($voteUnitsPending !== $pendingTxns)<small>({{ number_format($voteUnitsPending) }} vote units)</small>@endif</div>
         </div>
       </a>
       <a href="{{ route('voter.index') }}" class="ms-stat" style="--ms-accent:#f59e0b;">
@@ -312,14 +326,60 @@
 
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <script type="text/javascript">
 (function () {
     if (typeof Chart === 'undefined') return;
+    if (typeof ChartDataLabels !== 'undefined') {
+        Chart.register(ChartDataLabels);
+    }
     Chart.defaults.font.family = "'Nunito','Segoe UI',system-ui,sans-serif";
     Chart.defaults.color = '#64748b';
+    Chart.defaults.plugins = Chart.defaults.plugins || {};
+    Chart.defaults.plugins.datalabels = { display: false };
 
     var BLUE = '#1d4ed8', YELLOW = '#f5c518', GREEN = '#16a34a', RED = '#ef4444', AMBER = '#f59e0b';
     var palette = ['#1d4ed8', '#f5c518', '#16a34a', '#a855f7', '#0ea5e9', '#ef4444', '#f59e0b', '#14b8a6', '#6366f1', '#db2777'];
+
+    function fmtNum(v) {
+        return Number(v || 0).toLocaleString();
+    }
+    function pieLabels(minPct) {
+        minPct = minPct || 0;
+        return {
+            display: true,
+            color: '#0f172a',
+            font: { weight: '700', size: 11 },
+            formatter: function (value, ctx) {
+                var total = ctx.chart.data.datasets[0].data.reduce(function (a, b) { return a + b; }, 0);
+                var pct = total ? (value / total) * 100 : 0;
+                if (value <= 0 || pct < minPct) return '';
+                return fmtNum(value);
+            }
+        };
+    }
+    function barTopLabels() {
+        return {
+            display: true,
+            anchor: 'end',
+            align: 'top',
+            offset: 2,
+            color: '#0f172a',
+            font: { weight: '700', size: 11 },
+            formatter: function (v) { return v > 0 ? fmtNum(v) : ''; }
+        };
+    }
+    function barEndLabels() {
+        return {
+            display: true,
+            anchor: 'end',
+            align: 'right',
+            offset: 6,
+            color: '#0f172a',
+            font: { weight: '700', size: 12 },
+            formatter: function (v) { return v > 0 ? fmtNum(v) : ''; }
+        };
+    }
 
     function hexAlpha(h, a) {
         var c = h.replace('#','');
@@ -353,7 +413,7 @@
             },
             options: {
                 responsive: true, maintainAspectRatio: true,
-                plugins: { legend: { display: false } },
+                plugins: { legend: { display: false }, datalabels: { display: false } },
                 scales: {
                     y: { beginAtZero: true, grid: { color: '#eef2f7' }, ticks: { precision: 0 } },
                     x: { grid: { display: false } }
@@ -382,7 +442,10 @@
             },
             options: {
                 responsive: true, maintainAspectRatio: true, cutout: '62%',
-                plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 12 } } }
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 12, padding: 12 } },
+                    datalabels: pieLabels(0)
+                }
             }
         });
     }
@@ -393,7 +456,7 @@
                 label: function (ctx) {
                     var total = ctx.dataset.data.reduce(function (a, b) { return a + b; }, 0);
                     var pct = total ? Math.round((ctx.raw / total) * 100) : 0;
-                    return ctx.label + ': ' + ctx.raw + ' (' + pct + '%)';
+                    return ctx.label + ': ' + fmtNum(ctx.raw) + ' (' + pct + '%)';
                 }
             }
         };
@@ -416,7 +479,8 @@
                 responsive: true, maintainAspectRatio: true, cutout: '55%',
                 plugins: {
                     legend: { position: 'bottom', labels: { boxWidth: 12, padding: 10 } },
-                    tooltip: pctTooltip()
+                    tooltip: pctTooltip(),
+                    datalabels: pieLabels(3)
                 }
             }
         });
@@ -432,7 +496,8 @@
             },
             options: {
                 responsive: true, maintainAspectRatio: true,
-                plugins: { legend: { display: false } },
+                layout: { padding: { top: 18 } },
+                plugins: { legend: { display: false }, datalabels: barTopLabels() },
                 scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, x: { grid: { display: false } } }
             }
         });
@@ -448,7 +513,8 @@
             },
             options: {
                 responsive: true, maintainAspectRatio: true,
-                plugins: { legend: { display: false } },
+                layout: { padding: { top: 22 } },
+                plugins: { legend: { display: false }, datalabels: barTopLabels() },
                 scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, x: { grid: { display: false } } }
             }
         });
@@ -466,7 +532,8 @@
                 responsive: true, maintainAspectRatio: true,
                 plugins: {
                     legend: { position: 'bottom', labels: { boxWidth: 12, padding: 10 } },
-                    tooltip: pctTooltip()
+                    tooltip: pctTooltip(),
+                    datalabels: pieLabels(2)
                 }
             }
         });
@@ -483,7 +550,8 @@
             options: {
                 indexAxis: 'y',
                 responsive: true, maintainAspectRatio: true,
-                plugins: { legend: { display: false } },
+                layout: { padding: { right: 36 } },
+                plugins: { legend: { display: false }, datalabels: barEndLabels() },
                 scales: {
                     x: { beginAtZero: true, grid: { color: '#eef2f7' }, ticks: { precision: 0 } },
                     y: { grid: { display: false } }
@@ -503,7 +571,8 @@
             options: {
                 indexAxis: 'y',
                 responsive: true, maintainAspectRatio: true,
-                plugins: { legend: { display: false } },
+                layout: { padding: { right: 28 } },
+                plugins: { legend: { display: false }, datalabels: barEndLabels() },
                 scales: { x: { beginAtZero: true, ticks: { precision: 0 } }, y: { grid: { display: false } } }
             }
         });

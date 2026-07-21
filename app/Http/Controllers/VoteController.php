@@ -26,13 +26,14 @@ class VoteController extends Controller
             foreach ($permissions as $permission)
                 $all_permission[] = $permission->name;
 
-            if($request->start_date) {
+            if ($request->start_date) {
                 $start_date = $request->start_date;
                 $end_date = $request->end_date;
-            }
-            else {
-                $start_date = date('Y-m-01', strtotime('-1 year', strtotime(date('Y-m-d'))));
-                $end_date = date("Y-m-d");
+            } else {
+                // Default to full history so tab badges match the dashboard.
+                $earliest = vote::min(DB::raw('DATE(created_at)'));
+                $start_date = $earliest ?: date('Y-m-01', strtotime('-1 year', strtotime(date('Y-m-d'))));
+                $end_date = date('Y-m-d');
             }
 
             $statusFilter = strtolower((string) $request->input('status', 'all'));

@@ -194,15 +194,7 @@
 
     $("ul#vote").siblings('a').attr('aria-expanded','true');
     $("ul#vote").addClass("show");
-    @if(($statusFilter ?? 'all') === 'success')
-        $("ul#vote #vote-menu-success").addClass("active");
-    @elseif(($statusFilter ?? 'all') === 'pending')
-        $("ul#vote #vote-menu-pending").addClass("active");
-    @elseif(($statusFilter ?? 'all') === 'failed')
-        $("ul#vote #vote-menu-failed").addClass("active");
-    @else
-        $("ul#vote #vote-menu").addClass("active");
-    @endif
+    $("ul#vote #vote-menu").addClass("active");
 
     var expense_id = [];
     var user_verified = <?php echo json_encode(env('USER_VERIFIED')) ?>;
