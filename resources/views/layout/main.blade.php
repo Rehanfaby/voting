@@ -480,13 +480,11 @@
             </ul>
         </div>
 
-        @php $sabRoleName = $role->name ?? 'Staff'; @endphp
         <div class="side-admin-block">
             <div class="sab-user">
                 <div class="sab-avatar">{{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}</div>
                 <div class="sab-info">
                     <div class="sab-name">{{ Auth::user()->name }}</div>
-                    <span class="sab-role">{{ ucwords(str_replace('_', ' ', $sabRoleName)) }}</span>
                 </div>
             </div>
             <div class="sab-links">
