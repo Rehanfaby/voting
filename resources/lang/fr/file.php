@@ -13,6 +13,7 @@ return [
     'profile' => 'Profil',
     'My Account' => 'Mon compte',
     'Admin Dashboard' => 'Tableau de bord admin',
+    'Home Page' => 'Page d\'accueil',
     'Get in Touch' => 'Contactez-nous',
     'We would love to hear from you' => 'Nous serions ravis de vous entendre. Envoyez-nous un message.',
     'Send us a message and our team will respond as soon as possible.' => 'Envoyez-nous un message et notre équipe vous répondra dès que possible.',

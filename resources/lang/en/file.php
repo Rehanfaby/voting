@@ -17,6 +17,7 @@ return [
     'profile' => 'Profile',
     'My Account' => 'My Account',
     'Admin Dashboard' => 'Admin Dashboard',
+    'Home Page' => 'Home Page',
     'Get in Touch' => 'Get in Touch',
     'We would love to hear from you' => 'We would love to hear from you. Send us a message anytime.',
     'Send us a message and our team will respond as soon as possible.' => 'Send us a message and our team will respond as soon as possible.',

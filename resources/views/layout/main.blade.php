@@ -89,7 +89,7 @@
     <!-- Custom stylesheet - for your changes-->
     <link rel="stylesheet" href="<?php echo asset('public/css/custom-'.$general_setting->theme) ?>" type="text/css" id="custom-style">
     <!-- Modern admin theme overlay (Alpha Bridge inspired) -->
-    <link rel="stylesheet" href="<?php echo asset('public/css/admin-modern.css') ?>?v=20260702-v3" type="text/css" id="admin-modern-style">
+    <link rel="stylesheet" href="<?php echo asset('public/css/admin-modern.css') ?>?v=20260721-home-switch" type="text/css" id="admin-modern-style">
     <style>
         /* Header layout guarantee: logo top-left ALONE, fullscreen + language top-right.
            Inline so it always wins over any cached copy of the base theme / admin-modern.css. */
@@ -489,6 +489,7 @@
                 </div>
             </div>
             <div class="sab-links">
+                <a href="{{ route('home') }}" class="sab-home" target="_self"><i class="dripicons-home"></i> <span>{{ trans('file.Home Page') }}</span></a>
                 <a href="{{ route('user.profile', Auth::user()->id) }}"><i class="dripicons-user"></i> <span>{{trans('file.profile')}}</span></a>
                 <a href="#" class="sab-signout" onclick="event.preventDefault(); document.getElementById('sab-logout-form').submit();"><i class="dripicons-export"></i> <span>{{trans('file.logout')}}</span></a>
                 <form id="sab-logout-form" action="{{ route('logout') }}" method="POST" style="display:none">@csrf</form>
@@ -529,6 +530,12 @@
                   </span>
 
                 <ul class="nav-menu list-unstyled d-flex flex-md-row align-items-md-center ms-header-nav">
+                    <li class="nav-item">
+                        <a href="{{ route('home') }}" class="ms-view-site" data-toggle="tooltip" title="{{ trans('file.Home Page') }}">
+                            <i class="dripicons-home"></i>
+                            <span class="ms-view-site__label">{{ trans('file.Home Page') }}</span>
+                        </a>
+                    </li>
                     <li class="nav-item"><a id="btnFullscreen" data-toggle="tooltip" title="{{trans('file.Full Screen')}}"><i class="dripicons-expand"></i></a></li>
 
                     <li class="nav-item ms-lang-switch ms-lang-switch--header-end">

@@ -223,6 +223,9 @@ nav.side-navbar .main-menu::-webkit-scrollbar-thumb {
 }
 .side-admin-block .sab-links a i { color: var(--ma-yellow); width: 20px; text-align: center; font-size: 16px; }
 .side-admin-block .sab-links a:hover { background: rgba(255, 255, 255, .08); color: #fff; }
+.side-admin-block .sab-links a.sab-home { color: #fff; background: rgba(245, 197, 24, .14); }
+.side-admin-block .sab-links a.sab-home i { color: var(--ma-yellow); }
+.side-admin-block .sab-links a.sab-home:hover { background: rgba(245, 197, 24, .24); }
 .side-admin-block .sab-links a.sab-signout { color: #ffb4b4; }
 .side-admin-block .sab-links a.sab-signout i { color: #ff8a8a; }
 /* hide block when sidebar is shrunk to icons */
@@ -273,6 +276,30 @@ header.header .navbar,
 .header .navbar-holder .brand-big h1 {
     color: #fff !important;
     margin: 0;
+}
+
+/* Switch to public site from admin header */
+.header .nav-menu .ms-view-site {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: rgba(245, 197, 24, .18);
+    border: 1px solid rgba(245, 197, 24, .45);
+    color: #fff !important;
+    font-weight: 700;
+    font-size: 13px;
+    text-decoration: none !important;
+    white-space: nowrap;
+}
+.header .nav-menu .ms-view-site i { color: var(--ma-yellow); font-size: 16px; }
+.header .nav-menu .ms-view-site:hover {
+    background: rgba(245, 197, 24, .3);
+    color: #fff !important;
+}
+@media (max-width: 767px) {
+    .header .nav-menu .ms-view-site__label { display: none; }
 }
 
 /* EN / FR language toggle in the admin header (Beyond style) */

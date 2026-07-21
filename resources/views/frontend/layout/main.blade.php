@@ -299,6 +299,7 @@
                                             <div class="mg-fe-user-menu">
                                                 <div class="mg-fe-user-menu__head">{{ trans('file.My Account') }}</div>
                                                 <a href="{{ url('/admin') }}"><i class="fa fa-th-large"></i> {{ trans('file.Admin Dashboard') }}</a>
+                                                <a href="{{ route('home') }}"><i class="fa fa-home"></i> {{ trans('file.Home Page') }}</a>
                                                 <a href="{{ route('user.profile', $user->id) }}"><i class="fa fa-user"></i> {{ trans('file.profile') }}</a>
                                                 <hr>
                                                 <a href="#" class="mg-fe-user-logout" onclick="event.preventDefault(); document.getElementById('frontend-admin-logout-form').submit();">
