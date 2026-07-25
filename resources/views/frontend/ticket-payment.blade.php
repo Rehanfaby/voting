@@ -45,6 +45,9 @@
                             @if($seatLabels)
                                 <p class="mb-0"><i class="fa-solid fa-chair"></i> {{ trans('file.Seats') }}: {{ $seatLabels }}</p>
                             @endif
+                            @if(!empty($data['hold_token']))
+                                <p class="mb-0 text-warning"><i class="fa-regular fa-clock"></i> Seats held for 10 minutes — complete payment before the hold expires.</p>
+                            @endif
                             <span>{{ trans('file.Qty') }}: {{ $data['vote'] }}</span>
                         </div>
                         <div class="mg-ticket-summary__amount">
@@ -112,6 +115,9 @@
                                 @if(!empty($data['seat_ids']))
                                     <input type="hidden" name="seat_ids" value="{{ $data['seat_ids'] }}">
                                 @endif
+                                @if(!empty($data['hold_token']))
+                                    <input type="hidden" name="hold_token" value="{{ $data['hold_token'] }}">
+                                @endif
                                 <button type="submit" class="mg-btn mg-ticket-buy w-100">
                                     {{ trans('file.Pay') }} {{ number_format($payAmount) }} {{ $currency->code }}
                                 </button>
@@ -153,6 +159,9 @@
                                 <input type="hidden" name="amount" value="{{ $payAmount }}">
                                 @if(!empty($data['seat_ids']))
                                     <input type="hidden" name="seat_ids" value="{{ $data['seat_ids'] }}">
+                                @endif
+                                @if(!empty($data['hold_token']))
+                                    <input type="hidden" name="hold_token" value="{{ $data['hold_token'] }}">
                                 @endif
                                 <button type="submit" class="mg-btn mg-ticket-buy w-100" @if($payAmount < env('STRIPE_MINIMUM_AMOUNT')) disabled @endif>
                                     {{ trans('file.Pay') }} {{ number_format($payAmount) }} {{ $currency->code }}

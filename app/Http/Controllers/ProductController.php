@@ -1437,7 +1437,7 @@ class ProductController extends Controller
             if($user) {
                 $msg = '*Ticket Scan Alert:* Your ticket has been scanned successfully' . '\n\n';
                 $msg .= '*Ticket number:* '. $token . '\n\n';
-                $msg .= '*Seat number:* '. $ticketSeat->seat_number . '\n\n';
+                $msg .= '*Seat:* '. ($ticketSeat->seat_location ?: ($ticketSeat->seat_label ?: $ticketSeat->seat_number)) . '\n\n';
                 $msg .= '*Event name:* '. $ticket->product->name . '\n\n';
                 $msg .= '*Event date:* '. $ticket->product->event_day . '\n\n';
                 try{

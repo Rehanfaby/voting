@@ -18,6 +18,7 @@ class Kernel extends ConsoleKernel
         Commands\ProcessScheduledAnnouncements::class,
         Commands\ReconcilePendingPawaPayDeposits::class,
         Commands\PawaPayCheckCommand::class,
+        Commands\ReleaseExpiredSeatHolds::class,
     ];
 
     /**
@@ -46,6 +47,11 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('payments:reconcile-pawapay')
             ->everyFiveMinutes()
+            ->runInBackground()
+            ->withoutOverlapping();
+
+        $schedule->command('seats:release-expired-holds')
+            ->everyMinute()
             ->runInBackground()
             ->withoutOverlapping();
     }

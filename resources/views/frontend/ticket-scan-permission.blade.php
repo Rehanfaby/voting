@@ -82,7 +82,7 @@
                             </tr>
                             <tr>
                                 <th>{{trans("file.Seat")}}</th>
-                                <th class="text-white">{{ $ticketSeat->seat_number }}</th>
+                                <th class="text-white">{{ $ticketSeat->seat_location ?: ($ticketSeat->seat_label ?: $ticketSeat->seat_number) }}</th>
                             </tr>
 
                         </table>

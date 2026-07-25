@@ -26,7 +26,7 @@
                             <span class="text-success">{{ $success }}</span><br>
 
                             <b>Ticket Scan Alert:</b> Your ticket has been scanned successfully and is valid for entry. Please proceed to the event.
-                            Your seat number is: <span class="text-success">{{ $ticketSeat->seat_number }}</span>
+                            Your seat: <span class="text-success">{{ $ticketSeat->seat_location ?: ($ticketSeat->seat_label ?: $ticketSeat->seat_number) }}</span>
                         @else
                             <span class="text-danger">{{ $error }}</span>
                     @endif

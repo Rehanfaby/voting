@@ -61,6 +61,11 @@ class Product extends Model
         return $this->hasMany(ProductSeatZone::class, 'product_id');
     }
 
+    public function eventSeatMap()
+    {
+        return $this->hasOne(EventSeatMap::class, 'product_id');
+    }
+
     public function variant()
     {
         return $this->belongsToMany('App\Variant', 'product_variants')->withPivot('id', 'item_code', 'additional_price');

@@ -73,7 +73,9 @@ Route::group([], function() {
 
 	Route::get('/tickets/{id}', 'HomeController@tickets')->name('tickets');
 	Route::get('/ticket/data/{id}', 'HomeController@ticket')->name('ticket.data');
-	Route::get('/api/ticket/{id}/seats', 'ProductSeatMapController@publicSeats')->name('ticket.seats.public');
+	Route::get('/api/ticket/{id}/seats', 'EventSeatMapController@publicSeats')->name('ticket.seats.public');
+	Route::post('/api/ticket/{id}/holds', 'EventSeatMapController@createHold')->middleware('throttle:30,1')->name('ticket.holds.create');
+	Route::delete('/api/ticket/{id}/holds/{token}', 'EventSeatMapController@releaseHold')->middleware('throttle:60,1')->name('ticket.holds.release');
 	Route::post('/purchase/ticket', 'HomeController@purchaseTicket')->name('purchase.ticket');
 
 	Route::post('/ticket/payment', 'HomeController@ticketPayment')->name('ticket.payment');
@@ -148,6 +150,31 @@ Route::group(['middleware' => ['auth', 'active', 'checkOtp']], function() {
     Route::post('products/{id}/seat-map/zones', 'ProductSeatMapController@saveZone')->name('products.seat_map.zones');
     Route::delete('products/seat-zones/{zoneId}', 'ProductSeatMapController@deleteZone')->name('products.seat_zones.destroy');
     Route::post('products/{id}/seat-map/seats', 'ProductSeatMapController@saveSeats')->name('products.seat_map.seats');
+
+    // Dynamic hall seating (Hall → Layout → Event map)
+    Route::get('admin/halls', 'HallController@index')->name('halls.index');
+    Route::get('admin/halls/create', 'HallController@create')->name('halls.create');
+    Route::post('admin/halls', 'HallController@store')->name('halls.store');
+    Route::get('admin/halls/{id}/edit', 'HallController@edit')->name('halls.edit');
+    Route::put('admin/halls/{id}', 'HallController@update')->name('halls.update');
+    Route::get('admin/halls/{hallId}/layouts/{layoutId}', 'HallLayoutController@edit')->name('halls.layouts.edit');
+    Route::post('admin/halls/{hallId}/layouts/{layoutId}/settings', 'HallLayoutController@saveSettings')->name('halls.layouts.settings');
+    Route::post('admin/halls/{hallId}/layouts/{layoutId}/levels', 'HallLayoutController@saveLevel')->name('halls.layouts.levels');
+    Route::post('admin/halls/{hallId}/layouts/{layoutId}/sections', 'HallLayoutController@saveSection')->name('halls.layouts.sections');
+    Route::post('admin/halls/{hallId}/layouts/{layoutId}/seats', 'HallLayoutController@saveSeats')->name('halls.layouts.seats');
+    Route::post('admin/halls/{hallId}/layouts/{layoutId}/generate-rows', 'HallLayoutController@generateRows')->name('halls.layouts.generate');
+    Route::post('admin/halls/{hallId}/layouts/{layoutId}/publish', 'HallLayoutController@publish')->name('halls.layouts.publish');
+    Route::post('admin/halls/{hallId}/layouts/{layoutId}/fork', 'HallLayoutController@fork')->name('halls.layouts.fork');
+    Route::post('admin/halls/{hallId}/layouts/{layoutId}/background', 'HallLayoutController@uploadBackground')->name('halls.layouts.background');
+
+    Route::get('admin/products/{id}/event-seat-map', 'EventSeatMapController@adminAttachForm')->name('products.event_seat_map');
+    Route::post('admin/products/{id}/event-seat-map', 'EventSeatMapController@adminAttach')->name('products.event_seat_map.attach');
+    Route::get('admin/products/{id}/event-seat-map/inventory', 'EventSeatMapController@adminInventory')->name('products.event_seat_inventory');
+    Route::post('admin/products/{id}/event-seat-map/categories', 'EventSeatMapController@saveCategory')->name('products.event_seat_map.categories');
+    Route::post('admin/products/{id}/event-seat-map/assign-category', 'EventSeatMapController@assignCategory')->name('products.event_seat_map.assign');
+    Route::post('admin/products/{id}/event-seat-map/refund', 'EventSeatMapController@refund')->name('products.event_seat_map.refund');
+    Route::post('admin/products/{id}/event-seat-map/reissue', 'EventSeatMapController@reissue')->name('products.event_seat_map.reissue');
+    Route::post('admin/products/{id}/event-seat-map/relocate', 'EventSeatMapController@relocate')->name('products.event_seat_map.relocate');
 
     Route::get('/admin/tickets/index', 'TicketController@index')->name('admin.ticket.index');
     Route::post('/tickets/deletebyselection', 'TicketController@deleteBySelection')->name('tickets.deleteBySelection');

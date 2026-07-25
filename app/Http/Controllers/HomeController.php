@@ -15,8 +15,11 @@ use App\Helpers\SiteContent;
 use App\Helpers\PhoneHelper;
 use App\Helpers\WhatsAppFormatter;
 use App\MobileMoneyPayment;
+use App\EventSeatInventory;
+use App\EventSeatMap;
 use App\ProductSeat;
 use App\ProductSeatZone;
+use App\Services\Halls\SeatHoldService;
 use App\TicketSeat;
 use App\User;
 use App\vote;
@@ -344,6 +347,12 @@ class HomeController extends Controller
             $data['seat_labels'] = implode(', ', $seatSelection['labels']);
             $data['vote'] = count($seatSelection['ids']);
             $data['amount'] = $seatSelection['total'];
+            if (!empty($seatSelection['hold_token'])) {
+                $data['hold_token'] = $seatSelection['hold_token'];
+            }
+            if (!empty($seatSelection['held_until'])) {
+                $data['held_until'] = $seatSelection['held_until'];
+            }
         } else {
             $qty = max(1, (int) ($data['vote'] ?? 1));
             $data['vote'] = $qty;
@@ -626,10 +635,11 @@ class HomeController extends Controller
             'payment_method' => 1,
             'locale' => WhatsAppFormatter::currentLocale(),
             'selected_seat_ids' => is_array($seatSelection) ? json_encode($seatSelection['ids']) : null,
+            'hold_token' => is_array($seatSelection) ? ($seatSelection['hold_token'] ?? null) : null,
         ]);
 
         if (is_array($seatSelection)) {
-            $this->reserveTicketSeats($ticket, $seatSelection['ids']);
+            $this->reserveTicketSeats($ticket, $seatSelection['ids'], $seatSelection['hold_token'] ?? null);
         }
 
         if($ticket) {
@@ -639,6 +649,8 @@ class HomeController extends Controller
 
             $link = $this->createCheckoutSessionForTicket($amount, $route, $ticket->id);
             if ($link == false) {
+                $this->releaseTicketSeats($ticket);
+                $ticket->delete();
                 $message = 'There is any other issue in payment method';
                 return back()->with('not_permitted', $message);
             }
@@ -741,10 +753,11 @@ class HomeController extends Controller
                     'payment_method' => 0,
                     'locale' => WhatsAppFormatter::currentLocale(),
                     'selected_seat_ids' => is_array($seatSelection) ? json_encode($seatSelection['ids']) : null,
+                    'hold_token' => is_array($seatSelection) ? ($seatSelection['hold_token'] ?? null) : null,
                 ]);
 
         if (is_array($seatSelection)) {
-            $this->reserveTicketSeats($ticket, $seatSelection['ids']);
+            $this->reserveTicketSeats($ticket, $seatSelection['ids'], $seatSelection['hold_token'] ?? null);
         }
         $token = PhoneHelper::momoToken();
         if($token && $ticket) {
@@ -803,6 +816,48 @@ class HomeController extends Controller
         $ticket->status = true;
         $ticket->reference = $reference;
 
+        $map = EventSeatMap::where('product_id', $ticket->product_id)->first();
+        if ($map && $ticket->hold_token) {
+            $holds = app(SeatHoldService::class);
+            $holds->markSold($ticket->hold_token, $ticket->id);
+            $inventory = EventSeatInventory::where('ticket_id', $ticket->id)
+                ->where('status', 'sold')
+                ->get();
+            if ($inventory->isEmpty()) {
+                $ids = json_decode($ticket->selected_seat_ids, true) ?: [];
+                $inventory = EventSeatInventory::where('event_seat_map_id', $map->id)
+                    ->whereIn('id', $ids)
+                    ->get();
+                foreach ($inventory as $seat) {
+                    $seat->status = 'sold';
+                    $seat->ticket_id = $ticket->id;
+                    $seat->held_until = null;
+                    $seat->save();
+                }
+            }
+            $labels = [];
+            foreach ($inventory as $seat) {
+                $labels[] = $seat->label;
+                TicketSeat::create([
+                    'ticket_id' => $ticket->id,
+                    'product_id' => $ticket->product_id,
+                    'seat_number' => $seat->id,
+                    'seat_label' => $seat->label,
+                    'seat_location' => $seat->locationLabel(),
+                    'event_seat_inventory_id' => $seat->id,
+                    'token' => Str::random(6),
+                ]);
+            }
+            $ticket->seat_numbers = json_encode($labels);
+            $ticket->save();
+            if ($map->status !== 'locked') {
+                $map->status = 'locked';
+                $map->save();
+            }
+            $this->sendWhatsappMsgTicketMomoSuccess($ticket);
+            return true;
+        }
+
         $seatIds = json_decode($ticket->selected_seat_ids, true);
         if (is_array($seatIds) && count($seatIds)) {
             $seats = ProductSeat::where('product_id', $ticket->product_id)
@@ -819,6 +874,7 @@ class HomeController extends Controller
                     'product_id' => $ticket->product_id,
                     'seat_number' => $seat->id,
                     'seat_label' => $seat->label,
+                    'seat_location' => $seat->label,
                     'product_seat_id' => $seat->id,
                     'token' => Str::random(6),
                 ]);
@@ -880,6 +936,51 @@ class HomeController extends Controller
             return null;
         }
 
+        $map = EventSeatMap::where('product_id', $product->id)->first();
+        if ($map) {
+            $holds = app(SeatHoldService::class);
+            $token = trim((string) $request->input('hold_token', ''));
+            if ($token === '') {
+                // Create a hold from selected inventory ids (purchase step).
+                $raw = $request->input('seat_ids', '');
+                $ids = array_values(array_unique(array_filter(array_map('intval', explode(',', (string) $raw)))));
+                if (empty($ids)) {
+                    return false;
+                }
+                try {
+                    $hold = $holds->createHold($product, $ids);
+                } catch (\Throwable $e) {
+                    return false;
+                }
+                return [
+                    'ids' => $hold['ids'],
+                    'labels' => $hold['labels'],
+                    'total' => $hold['total'],
+                    'hold_token' => $hold['hold_token'],
+                    'held_until' => $hold['held_until'],
+                    'mode' => 'event_map',
+                ];
+            }
+
+            $seats = $holds->getHoldSeats($token);
+            if ($seats->isEmpty()) {
+                return false;
+            }
+            // Ensure hold belongs to this product map.
+            if ($seats->first()->event_seat_map_id !== $map->id) {
+                return false;
+            }
+
+            return [
+                'ids' => $seats->pluck('id')->all(),
+                'labels' => $seats->pluck('label')->all(),
+                'total' => (float) $seats->sum('price'),
+                'hold_token' => $token,
+                'held_until' => optional($seats->first()->held_until)->toIso8601String(),
+                'mode' => 'event_map',
+            ];
+        }
+
         $raw = $request->input('seat_ids', '');
         $ids = array_values(array_unique(array_filter(array_map('intval', explode(',', (string) $raw)))));
         if (empty($ids)) {
@@ -904,11 +1005,17 @@ class HomeController extends Controller
             'ids' => $seats->pluck('id')->all(),
             'labels' => $seats->pluck('label')->all(),
             'total' => $total,
+            'mode' => 'legacy',
         ];
     }
 
-    private function reserveTicketSeats(Ticket $ticket, array $seatIds)
+    private function reserveTicketSeats(Ticket $ticket, array $seatIds, $holdToken = null)
     {
+        if ($holdToken) {
+            app(SeatHoldService::class)->attachHoldToTicket($holdToken, $ticket->id);
+            return;
+        }
+
         ProductSeat::where('product_id', $ticket->product_id)
             ->whereIn('id', $seatIds)
             ->where('status', 'available')
@@ -917,9 +1024,17 @@ class HomeController extends Controller
 
     private function releaseTicketSeats(Ticket $ticket)
     {
+        if ($ticket->hold_token) {
+            app(SeatHoldService::class)->releaseHold($ticket->hold_token);
+            app(SeatHoldService::class)->releaseByTicket($ticket->id);
+            return;
+        }
+
         ProductSeat::where('ticket_id', $ticket->id)
             ->whereIn('status', ['reserved'])
             ->update(['status' => 'available', 'ticket_id' => null]);
+
+        app(SeatHoldService::class)->releaseByTicket($ticket->id);
     }
 
     public function musicianVotePaymentPending($id)
@@ -1827,7 +1942,7 @@ class HomeController extends Controller
                 [
                     ['Événement', 'Event', $eventName],
                     ['N° billet', 'Ticket no.', (string) $ticketSeat->token],
-                    ['Siège', 'Seat', (string) $ticketSeat->seat_label ?? (string) $ticketSeat->seat_number],
+                    ['Siège', 'Seat', (string) ($ticketSeat->seat_location ?: ($ticketSeat->seat_label ?: $ticketSeat->seat_number))],
                     ['Quantité', 'Quantity', '1'],
                 ],
                 'Présentez le QR code à l\'entrée.',
@@ -1953,7 +2068,7 @@ class HomeController extends Controller
                     'Your ticket has been scanned successfully at the entrance.',
                     [
                         ['N° billet', 'Ticket no.', (string) $token],
-                        ['Siège', 'Seat', (string) $ticketSeat->seat_number],
+                        ['Siège', 'Seat', (string) ($ticketSeat->seat_location ?: ($ticketSeat->seat_label ?: $ticketSeat->seat_number))],
                         ['Événement', 'Event', $ticket->product->name ?? '—'],
                         ['Date', 'Event date', (string) ($ticket->product->event_day ?? '—')],
                     ],

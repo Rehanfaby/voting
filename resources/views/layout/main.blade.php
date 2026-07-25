@@ -162,6 +162,16 @@
                                 @if($category_permission_active)
                                     <li id="ticket-index"><a href="{{route('admin.ticket.index')}}">{{__('file.Tickets Sold')}}</a></li>
                                 @endif
+                                <?php
+                                $halls_permission = DB::table('permissions')->where('name', 'halls-index')->first();
+                                $halls_permission_active = $halls_permission ? DB::table('role_has_permissions')->where([
+                                    ['permission_id', $halls_permission->id],
+                                    ['role_id', $role->id]
+                                ])->first() : null;
+                                ?>
+                                @if($halls_permission_active)
+                                    <li id="halls-menu"><a href="{{ route('halls.index') }}">{{ __('file.Halls') }}</a></li>
+                                @endif
                             </ul>
                         </li>
                     @endif
