@@ -23,6 +23,7 @@ class SiteContent
         return [
             'dashboard'        => 'Dashboard',
             'product'          => 'Ticket / Product',
+            'halls'            => 'Halls',
             'vote'             => 'Vote',
             'point'            => 'Judge Grading',
             'ambassador-point' => 'Ambassador Grading',

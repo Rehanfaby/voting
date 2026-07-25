@@ -33,4 +33,19 @@ class User extends Authenticatable
         return $this->hasMany(Point::class, 'judge_id', 'id');
     }
 
+    /** App role row (Admin / Voter / …) via users.role_id — not Spatie's roles() pivot. */
+    public function role()
+    {
+        return $this->belongsTo(\Spatie\Permission\Models\Role::class, 'role_id');
+    }
+
+    public function isAdmin()
+    {
+        if ((int) $this->role_id === 1) {
+            return true;
+        }
+        $name = optional($this->role)->name;
+        return $name && strcasecmp($name, 'Admin') === 0;
+    }
+
 }

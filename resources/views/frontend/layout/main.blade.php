@@ -164,7 +164,7 @@
 
                 @if($user)
                 <div class="hr-1 mt-30 mb-30 d-xl-none"></div>
-                @if($user->role_id == 3)
+                @if($user->role_id == 3 && !$user->isAdmin())
                 <div class="offcanvas__btn mb-30">
                     <a class="user__name" href="{{ route('user.contentant') }}"><i class="fa-solid fa-plus"></i> {{trans('file.My Votes')}}</a>
                 </div>
@@ -249,7 +249,7 @@
                                             </span>
                                     </div>
                                     @else
-                                        @if($user->role_id == 3)
+                                        @if($user->role_id == 3 && !$user->isAdmin())
                                         <div class="enquiry__list ml-10 mr-10 ms-browse-act-wrap p-relative">
                                             <div class="ms-enquiry-box p-relative d-none d-xl-inline-flex">
                                                 <a href="#"><i class="flaticon-star icon"></i>
@@ -299,6 +299,7 @@
                                             <div class="mg-fe-user-menu">
                                                 <div class="mg-fe-user-menu__head">{{ trans('file.My Account') }}</div>
                                                 <a href="{{ url('/admin') }}"><i class="fa fa-th-large"></i> {{ trans('file.Admin Dashboard') }}</a>
+                                                <a href="{{ route('admin.index') }}"><i class="fa fa-user-shield"></i> {{ trans('file.Admin') }}</a>
                                                 <a href="{{ route('home') }}"><i class="fa fa-home"></i> {{ trans('file.Home Page') }}</a>
                                                 <a href="{{ route('user.profile', $user->id) }}"><i class="fa fa-user"></i> {{ trans('file.profile') }}</a>
                                                 <hr>

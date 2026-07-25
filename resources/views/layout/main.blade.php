@@ -162,19 +162,21 @@
                                 @if($category_permission_active)
                                     <li id="ticket-index"><a href="{{route('admin.ticket.index')}}">{{__('file.Tickets Sold')}}</a></li>
                                 @endif
-                                <?php
-                                $halls_permission = DB::table('permissions')->where('name', 'halls-index')->first();
-                                $halls_permission_active = $halls_permission ? DB::table('role_has_permissions')->where([
-                                    ['permission_id', $halls_permission->id],
-                                    ['role_id', $role->id]
-                                ])->first() : null;
-                                ?>
-                                @if($halls_permission_active)
-                                    <li id="halls-menu"><a href="{{ route('halls.index') }}">{{ __('file.Halls') }}</a></li>
-                                @endif
                             </ul>
                         </li>
                     @endif
+                <?php
+                $halls_permission = DB::table('permissions')->where('name', 'halls-index')->first();
+                $halls_permission_active = $halls_permission ? DB::table('role_has_permissions')->where([
+                    ['permission_id', $halls_permission->id],
+                    ['role_id', $role->id]
+                ])->first() : null;
+                ?>
+                @if($halls_permission_active)
+                    <li data-menu-key="halls" id="halls-menu">
+                        <a href="{{ route('halls.index') }}"><i class="dripicons-map"></i><span>{{ __('file.Halls') }}</span></a>
+                    </li>
+                @endif
                 <?php
                 $role = DB::table('roles')->find(Auth::user()->role_id);
                 $index_permission = DB::table('permissions')->where('name', 'votes-index')->first();
@@ -306,12 +308,14 @@
                                     ?>
                                 @if($user_add_permission_active)
                                     <li id="user-create-menu"><a href="{{route('user.create')}}">{{trans('file.Add User')}}</a></li>
+                                @endif
+                                @if($user_index_permission_active)
                                     <li id="user-list-menu"><a href="{{route('user.index')}}">{{trans('file.User List')}}</a></li>
                                     <li id="admin-menu"><a href="{{route('admin.index')}}">{{trans('file.Admin')}}</a></li>
                                     <li id="judge-menu"><a href="{{route('judge.index')}}">{{trans('file.Judges')}}</a></li>
                                     <li id="ambassador-menu"><a href="{{route('ambassador.index')}}">{{trans('file.Ambassadors')}}</a></li>
                                     <li id="voter-menu"><a href="{{route('voter.index')}}">{{trans('file.Voters')}}</a></li>
-                            @endif
+                                @endif
                         </ul>
                     </li>
                 @endif
@@ -490,14 +494,24 @@
             </ul>
         </div>
 
+        @php
+            $sabRoleName = optional(Auth::user()->role)->name
+                ?: optional(DB::table('roles')->find(Auth::user()->role_id))->name
+                ?: 'Staff';
+        @endphp
         <div class="side-admin-block">
             <div class="sab-user">
                 <div class="sab-avatar">{{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}</div>
                 <div class="sab-info">
                     <div class="sab-name">{{ Auth::user()->name }}</div>
+                    <span class="sab-role">{{ strtoupper(str_replace('_', ' ', $sabRoleName)) }}</span>
                 </div>
             </div>
             <div class="sab-links">
+                <a href="{{ url('/admin') }}"><i class="dripicons-meter"></i> <span>{{ __('file.dashboard') }}</span></a>
+                @if(Auth::user()->isAdmin() || $user_index_permission_active)
+                    <a href="{{ route('admin.index') }}"><i class="dripicons-user-group"></i> <span>{{ trans('file.Admin') }}</span></a>
+                @endif
                 <a href="{{ route('home') }}" class="sab-home" target="_self"><i class="dripicons-home"></i> <span>{{ trans('file.Home Page') }}</span></a>
                 <a href="{{ route('user.profile', Auth::user()->id) }}"><i class="dripicons-user"></i> <span>{{trans('file.profile')}}</span></a>
                 <a href="#" class="sab-signout" onclick="event.preventDefault(); document.getElementById('sab-logout-form').submit();"><i class="dripicons-export"></i> <span>{{trans('file.logout')}}</span></a>
