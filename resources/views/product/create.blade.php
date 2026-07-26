@@ -120,7 +120,7 @@
     $("ul#product #product-create-menu").addClass("active");
 
     // Ensure Event dropdown (bootstrap-select) syncs the native <select> value.
-    var $eventSelect = $('select[name="category_id"]');
+    var $eventSelect = $('#product-form select[name="category_id"]');
     if ($eventSelect.length && typeof $eventSelect.selectpicker === 'function') {
         $eventSelect.selectpicker('refresh');
         if (!$eventSelect.val()) {
@@ -131,8 +131,8 @@
         }
     }
 
-    $('input[name="price"]').on('input', function () {
-        $('#ticket-cost-hidden').val(this.value || 0);
+    $('#product-form input[name="price"]').on('input', function () {
+        $('#product-form #ticket-cost-hidden').val(this.value || 0);
     });
 
     $.ajaxSetup({
@@ -263,18 +263,24 @@
 
             $('#submit-btn').on("click", function (e) {
                 e.preventDefault();
-                $('#ticket-cost-hidden').val($('input[name="price"]').val() || 0);
+                // Scope to #product-form — the admin layout also has input[name=name]
+                // (e.g. expense modal), and a page-wide selector reads that empty field first.
+                var $form = $('#product-form');
+                $form.find('#ticket-cost-hidden').val($form.find('input[name="price"]').val() || 0);
                 if (typeof tinyMCE !== 'undefined' && tinyMCE.triggerSave) {
                     tinyMCE.triggerSave();
                 }
 
                 // bootstrap-select sometimes leaves the native <select> empty even when
                 // the UI shows an event — read via plugin API first, then fall back.
-                var $cat = $('select[name="category_id"]');
+                var $cat = $form.find('select[name="category_id"]');
                 if ($cat.data('selectpicker') && typeof $cat.selectpicker === 'function') {
                     try { $cat.selectpicker('refresh'); } catch (err) {}
                 }
-                var category = $cat.selectpicker ? $cat.selectpicker('val') : null;
+                var category = null;
+                if (typeof $cat.selectpicker === 'function') {
+                    try { category = $cat.selectpicker('val'); } catch (err) {}
+                }
                 if (category === null || category === undefined || category === '') {
                     category = $cat.val();
                 }
@@ -282,11 +288,11 @@
                     category = category.length ? category[0] : '';
                 }
 
-                var name = $.trim($('input[name="name"]').val() || '');
-                var code = $.trim($('input[name="code"]').val() || '');
-                var price = $('input[name="price"]').val();
-                var qty = $('input[name="qty"]').val();
-                var eventDay = $('input[name="event_day"]').val();
+                var name = $.trim($form.find('input[name="name"]').val() || '');
+                var code = $.trim($form.find('input[name="code"]').val() || '');
+                var price = $form.find('input[name="price"]').val();
+                var qty = $form.find('input[name="qty"]').val();
+                var eventDay = $form.find('input[name="event_day"]').val();
 
                 var missing = [];
                 if (!name) missing.push('{{ trans('file.Product Name') }}');
@@ -312,7 +318,7 @@
                     $.ajax({
                         type: 'POST',
                         url: '{{ route('products.store') }}',
-                        data: $("#product-form").serialize(),
+                        data: $form.serialize(),
                         success: redirectAfterSave,
                         error: function (xhr) {
                             $('#submit-btn').prop('disabled', false).removeClass('is-saving');
