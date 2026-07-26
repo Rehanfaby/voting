@@ -119,6 +119,18 @@
     $("ul#product").addClass("show");
     $("ul#product #product-create-menu").addClass("active");
 
+    // Ensure Event dropdown (bootstrap-select) syncs the native <select> value.
+    var $eventSelect = $('select[name="category_id"]');
+    if ($eventSelect.length && typeof $eventSelect.selectpicker === 'function') {
+        $eventSelect.selectpicker('refresh');
+        if (!$eventSelect.val()) {
+            var firstReal = $eventSelect.find('option[value!=""]').first().val();
+            if (firstReal) {
+                $eventSelect.selectpicker('val', firstReal);
+            }
+        }
+    }
+
     $('input[name="price"]').on('input', function () {
         $('#ticket-cost-hidden').val(this.value || 0);
     });
@@ -252,16 +264,45 @@
             $('#submit-btn').on("click", function (e) {
                 e.preventDefault();
                 $('#ticket-cost-hidden').val($('input[name="price"]').val() || 0);
-                tinyMCE.triggerSave();
+                if (typeof tinyMCE !== 'undefined' && tinyMCE.triggerSave) {
+                    tinyMCE.triggerSave();
+                }
 
-                var name = $.trim($('input[name="name"]').val());
-                var code = $.trim($('input[name="code"]').val());
-                var category = $('select[name="category_id"]').val();
+                // bootstrap-select sometimes leaves the native <select> empty even when
+                // the UI shows an event — read via plugin API first, then fall back.
+                var $cat = $('select[name="category_id"]');
+                if ($cat.data('selectpicker') && typeof $cat.selectpicker === 'function') {
+                    try { $cat.selectpicker('refresh'); } catch (err) {}
+                }
+                var category = $cat.selectpicker ? $cat.selectpicker('val') : null;
+                if (category === null || category === undefined || category === '') {
+                    category = $cat.val();
+                }
+                if ($.isArray(category)) {
+                    category = category.length ? category[0] : '';
+                }
+
+                var name = $.trim($('input[name="name"]').val() || '');
+                var code = $.trim($('input[name="code"]').val() || '');
                 var price = $('input[name="price"]').val();
-                if (!name || !code || !category || price === '') {
-                    alert('{{ trans('file.Please fill in all required fields') }}');
+                var qty = $('input[name="qty"]').val();
+                var eventDay = $('input[name="event_day"]').val();
+
+                var missing = [];
+                if (!name) missing.push('{{ trans('file.Product Name') }}');
+                if (!code) missing.push('{{ trans('file.Product Code') }}');
+                if (!category) missing.push('{{ trans('file.category') }}');
+                if (price === '' || price === null || typeof price === 'undefined') missing.push('{{ trans('file.Product Price') }}');
+                if (qty === '' || qty === null || typeof qty === 'undefined') missing.push('{{ trans('file.Available seats') }}');
+                if (!eventDay) missing.push('{{ trans('file.Event Day') }}');
+
+                if (missing.length) {
+                    alert('{{ trans('file.Please fill in all required fields') }}' + ":\n- " + missing.join("\n- "));
                     return;
                 }
+
+                // Ensure the native select has the chosen value before serialize/ajax.
+                $cat.val(category);
 
                 $(this).prop('disabled', true).addClass('is-saving');
 
