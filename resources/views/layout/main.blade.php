@@ -508,12 +508,9 @@
                 </div>
             </div>
             <div class="sab-links">
-                <a href="{{ url('/admin') }}"><i class="dripicons-meter"></i> <span>{{ __('file.dashboard') }}</span></a>
-                @if(Auth::user()->isAdmin() || $user_index_permission_active)
+                @if(Auth::user()->isAdmin() || !empty($user_index_permission_active))
                     <a href="{{ route('admin.index') }}"><i class="dripicons-user-group"></i> <span>{{ trans('file.Admin') }}</span></a>
                 @endif
-                <a href="{{ route('home') }}" class="sab-home" target="_self"><i class="dripicons-home"></i> <span>{{ trans('file.Home Page') }}</span></a>
-                <a href="{{ route('user.profile', Auth::user()->id) }}"><i class="dripicons-user"></i> <span>{{trans('file.profile')}}</span></a>
                 <a href="#" class="sab-signout" onclick="event.preventDefault(); document.getElementById('sab-logout-form').submit();"><i class="dripicons-export"></i> <span>{{trans('file.logout')}}</span></a>
                 <form id="sab-logout-form" action="{{ route('logout') }}" method="POST" style="display:none">@csrf</form>
             </div>
