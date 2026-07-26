@@ -445,10 +445,7 @@ class HomeController extends Controller
                 ]);
 
         if (PhoneHelper::paymentSimulate() && $vote) {
-            $vote->status = true;
-            $vote->reference = 'SIM-' . $vote->id;
-            $vote->save();
-            $this->sendWhatsappMsgVoteMomoSuccess($user, $vote->vote, $vote->musician_id, $vote);
+            $this->markVoteSuccessful($vote->id, 'SIM-' . $vote->id);
 
             return redirect()->route('home')->with('message', trans('file.Thank you for your voting'));
         }
@@ -564,7 +561,8 @@ class HomeController extends Controller
         if (($session->payment_status ?? '') !== 'paid') {
             $voteId = $session->metadata->vote_id ?? null;
             if ($voteId) {
-                $this->markVoteFailed($voteId);
+                [$reasonFr, $reasonEn] = $this->stripeCheckoutFailureReasons($session);
+                $this->markVoteFailed($voteId, $reasonFr, $reasonEn);
             }
             return redirect()->route('home')->with('not_permitted', trans('file.Payment failed please try again'));
         }
@@ -1277,9 +1275,9 @@ class HomeController extends Controller
         return $this->markVoteSuccessful($voteId, $reference);
     }
 
-    public function markVoteFailedPublic($voteId)
+    public function markVoteFailedPublic($voteId, $failureReasonFr = null, $failureReasonEn = null)
     {
-        return $this->markVoteFailed($voteId);
+        return $this->markVoteFailed($voteId, $failureReasonFr, $failureReasonEn);
     }
 
     private function markVoteSuccessful($voteId, $reference = null)
@@ -1312,9 +1310,16 @@ class HomeController extends Controller
             }
 
             try {
+                $vote->refresh();
                 $this->sendWhatsappMsgVoteMomoSuccess($vote->voters, $vote->vote, $vote->musician_id, $vote);
             } catch (\Throwable $e) {
                 \Log::error('Vote success WhatsApp failed: ' . $e->getMessage(), ['vote_id' => $voteId]);
+            }
+
+            try {
+                $this->sendWhatsappMsgVoteToContestant($vote);
+            } catch (\Throwable $e) {
+                \Log::error('Contestant vote WhatsApp failed: ' . $e->getMessage(), ['vote_id' => $voteId]);
             }
         }
 
@@ -1348,15 +1353,36 @@ class HomeController extends Controller
         }
     }
 
-    /** Mark a vote as failed — but never override an already-counted (paid) vote. */
-    private function markVoteFailed($voteId)
+    /**
+     * Mark a vote as failed — but never override an already-counted (paid) vote.
+     * For Visa/card votes, notify the voter with a formatted failure reason.
+     *
+     * @param  string|null  $failureReasonFr
+     * @param  string|null  $failureReasonEn
+     */
+    private function markVoteFailed($voteId, $failureReasonFr = null, $failureReasonEn = null)
     {
         try {
             $vote = vote::find($voteId);
-            if ($vote && (int) $vote->status !== self::VOTE_SUCCESS) {
-                $vote->status = self::VOTE_FAILED;
-                $vote->save();
+            if (!$vote || (int) $vote->status === self::VOTE_SUCCESS) {
+                return $vote;
             }
+            $alreadyFailed = (int) $vote->status === self::VOTE_FAILED;
+            $vote->status = self::VOTE_FAILED;
+            $vote->save();
+
+            if (!$alreadyFailed && $vote->resolvedPaymentMethod() === 'card') {
+                try {
+                    $this->sendWhatsappMsgVoteCardFailed(
+                        $vote,
+                        $failureReasonFr ?: 'Paiement non abouti',
+                        $failureReasonEn ?: 'Payment did not complete'
+                    );
+                } catch (\Throwable $e) {
+                    \Log::error('Card failure WhatsApp failed: ' . $e->getMessage(), ['vote_id' => $voteId]);
+                }
+            }
+
             return $vote;
         } catch (\Throwable $e) {
             \Log::error('markVoteFailed failed: ' . $e->getMessage(), ['vote_id' => $voteId]);
@@ -1500,12 +1526,13 @@ class HomeController extends Controller
 
         $general_setting = GeneralSetting::pluck('vote_coin')->first();
         if($request->amount <= $coin_check->coin) {
-            vote::create([
+            $coinVote = vote::create([
                 'user_id' => $user->id,
                 'musician_id' => $request->musician_id,
                 'vote' => $request->vote,
                 'status' => true,
                 'reference' => rand(1, 999999),
+                'payment_method' => 'momo',
                 'price' => $general_setting,
                 'grand_total' => $request->amount,
                 'whatsapp_number' => $user->whatsapp_number ?? $user->phone,
@@ -1515,6 +1542,11 @@ class HomeController extends Controller
 
             $coin_check->update(['coin' => $remaining_coin]);
             $this->sendWhatsappMsgVote($user, $request->vote, $request->musician_id, $remaining_coin);
+            try {
+                $this->sendWhatsappMsgVoteToContestant($coinVote);
+            } catch (\Throwable $e) {
+                \Log::error('Contestant coin-vote WhatsApp failed: ' . $e->getMessage());
+            }
             return 'Thank you for your vote';
         }
 
@@ -1977,21 +2009,12 @@ class HomeController extends Controller
         $musician = Employee::select('name', 'id')->find($musician_id);
         $total_votes = vote::where('musician_id', $musician_id)->where('status', true)->sum('vote');
 
-//        $msg = '*Thank you for your vote,*  \n\n';
-//
-//        $msg .= 'You have casted ' . $vote;
-//        if ($vote == 1) {
-//            $msg .= ' vote ';
-//        } else {
-//            $msg .= ' votes ';
-//        }
-//        $msg .= 'for ' .$musician->name . '\n\n';
-//        $msg .= $musician->name . '`s total votes are  '.$total_votes.'\n\n';
-
-
         $locale = WhatsAppFormatter::normalizeLocale(optional($vote_data)->locale)
             ?: WhatsAppFormatter::currentLocale();
         $statusValue = $locale === 'fr' ? 'Confirmé ✓' : 'Confirmed ✓';
+        $payLabel = method_exists($vote_data, 'paymentMethodLabel')
+            ? $vote_data->paymentMethodLabel()
+            : '—';
 
         $msg = WhatsAppFormatter::compose(
             '✅',
@@ -2003,6 +2026,7 @@ class HomeController extends Controller
             [
                 ['Candidat', 'Contestant', $musician->name ?? '—'],
                 ['Votes', 'Votes cast', (string) $vote],
+                ['Paiement', 'Payment', $payLabel],
                 ['Nouveau total', 'New total votes', (string) $total_votes],
                 ['Statut', 'Status', $statusValue],
             ],
@@ -2019,6 +2043,142 @@ class HomeController extends Controller
         }
 
         return true;
+    }
+
+    /** Notify the contestant that a voter (MoMo/OM/Visa name) cast votes for them. */
+    public function sendWhatsappMsgVoteToContestant($vote)
+    {
+        if (!$vote) {
+            return false;
+        }
+
+        $musician = Employee::find($vote->musician_id);
+        if (!$musician) {
+            return false;
+        }
+
+        $phone = $musician->phone_number ?: null;
+        if (!$phone && $musician->user_id) {
+            $linked = User::find($musician->user_id);
+            $phone = $linked ? ($linked->whatsapp_number ?: $linked->phone) : null;
+        }
+        if (!$phone) {
+            return false;
+        }
+
+        $voter = $vote->voters;
+        $voterName = trim((string) optional($voter)->name);
+        if ($voterName === '' || PhoneHelper::looksLikePhone($voterName)) {
+            $voterName = 'Voter';
+        }
+
+        $total = vote::where('musician_id', $musician->id)->where('status', true)->sum('vote');
+        $locale = WhatsAppFormatter::normalizeLocale($vote->locale) ?: 'fr';
+
+        $msg = WhatsAppFormatter::contestantVoteReceivedMessage(
+            $musician->name ?? 'Candidat',
+            $voterName,
+            $vote->vote,
+            $vote->paymentMethodLabel(),
+            $total,
+            $locale
+        );
+
+        try {
+            $this->wpMessage($phone, $msg);
+        } catch (\Exception $e) {
+            \Log::error('Contestant WhatsApp send failed: ' . $e->getMessage(), ['vote_id' => $vote->id]);
+            return false;
+        }
+
+        return true;
+    }
+
+    /** Notify the voter that their Visa/card vote payment failed. */
+    public function sendWhatsappMsgVoteCardFailed($vote, $reasonFr, $reasonEn)
+    {
+        if (!$vote) {
+            return false;
+        }
+
+        $user = $vote->voters;
+        $to = $vote->whatsapp_number ?: optional($user)->whatsapp_number ?: optional($user)->phone;
+        if (!$to) {
+            return false;
+        }
+
+        $musician = Employee::select('name')->find($vote->musician_id);
+        $locale = WhatsAppFormatter::normalizeLocale($vote->locale) ?: WhatsAppFormatter::currentLocale();
+
+        $msg = WhatsAppFormatter::voteCardPaymentFailedMessage(
+            optional($user)->name ?: 'Voter',
+            optional($musician)->name ?: '—',
+            $vote->vote,
+            $reasonFr,
+            $reasonEn,
+            $vote->grand_total,
+            $locale
+        );
+
+        try {
+            $this->wpMessage($to, $msg);
+        } catch (\Exception $e) {
+            \Log::error('Card-fail WhatsApp send failed: ' . $e->getMessage(), ['vote_id' => $vote->id]);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Extract bilingual human reasons from a Stripe Checkout Session.
+     * @return array{0:string,1:string}
+     */
+    private function stripeCheckoutFailureReasons($session): array
+    {
+        $piId = $session->payment_intent ?? null;
+        if (is_object($piId)) {
+            $piId = $piId->id ?? null;
+        }
+
+        if (!$piId) {
+            $status = (string) ($session->status ?? '');
+            if ($status === 'expired') {
+                return WhatsAppFormatter::cardFailureReasonPair('checkout_expired');
+            }
+            return WhatsAppFormatter::cardFailureReasonPair('checkout_expired', 'timed out');
+        }
+
+        try {
+            $pi = \Stripe\PaymentIntent::retrieve($piId);
+            $err = $pi->last_payment_error ?? null;
+            $code = $err->decline_code ?? $err->code ?? null;
+            $message = $err->message ?? null;
+
+            if (!$code && !$message) {
+                $charges = \Stripe\Charge::all(['payment_intent' => $piId, 'limit' => 3]);
+                foreach ($charges->data as $ch) {
+                    if (!empty($ch->failure_code) || !empty($ch->failure_message)) {
+                        $code = $ch->failure_code ?: $code;
+                        $message = $ch->failure_message ?: $message;
+                        $seller = $ch->outcome->seller_message ?? '';
+                        if ($seller) {
+                            $message = trim(($message ? $message . ' ' : '') . $seller);
+                        }
+                        break;
+                    }
+                }
+            }
+
+            if (!$code && !$message && (($pi->status ?? '') === 'canceled')) {
+                return WhatsAppFormatter::cardFailureReasonPair('checkout_expired');
+            }
+
+            return WhatsAppFormatter::cardFailureReasonPair($code, $message);
+        } catch (\Throwable $e) {
+            \Log::warning('Could not read Stripe failure reason: ' . $e->getMessage());
+            return WhatsAppFormatter::cardFailureReasonPair('processing_error');
+        }
     }
 
 

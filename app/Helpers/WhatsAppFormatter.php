@@ -238,4 +238,123 @@ class WhatsAppFormatter
             $locale ?: self::currentLocale()
         );
     }
+
+    /** Contestant alert: a voter just cast votes for them. */
+    public static function contestantVoteReceivedMessage(
+        string $contestantName,
+        string $voterName,
+        $voteCount,
+        string $paymentLabel,
+        $newTotal = null,
+        $locale = null
+    ): string {
+        $count = max(1, (int) $voteCount);
+        $lines = [
+            ['Électeur', 'Voter', $voterName ?: '—'],
+            ['Votes reçus', 'Votes received', (string) $count],
+            ['Paiement', 'Payment', $paymentLabel ?: '—'],
+        ];
+        if ($newTotal !== null && $newTotal !== '') {
+            $lines[] = ['Nouveau total', 'New total', (string) $newTotal];
+        }
+
+        return self::compose(
+            '🗳️',
+            'NOUVEAU VOTE REÇU',
+            'NEW VOTE RECEIVED',
+            $contestantName ?: 'Candidat',
+            "Un électeur vient de voter pour vous.",
+            'A voter has just cast votes for you.',
+            $lines,
+            'Continuez — chaque vote compte !',
+            'Keep going — every vote counts!',
+            $locale ?: self::currentLocale()
+        );
+    }
+
+    /** Voter alert: Visa/card payment failed (funds, timeout, risk, etc.). */
+    public static function voteCardPaymentFailedMessage(
+        string $voterName,
+        string $contestantName,
+        $voteCount,
+        string $reasonFr,
+        string $reasonEn,
+        $amount = null,
+        $locale = null
+    ): string {
+        $locale = self::normalizeLocale($locale) ?: self::currentLocale();
+        $reasonValue = $locale === 'fr' ? $reasonFr : ($locale === 'en' ? $reasonEn : "{$reasonFr} / {$reasonEn}");
+        $lines = [
+            ['Candidat', 'Contestant', $contestantName ?: '—'],
+            ['Votes', 'Votes', (string) max(1, (int) $voteCount)],
+            ['Motif', 'Reason', $reasonValue],
+        ];
+        if ($amount !== null && $amount !== '') {
+            $lines[] = ['Montant', 'Amount', number_format((float) $amount) . ' XAF'];
+        }
+
+        return self::compose(
+            '⚠️',
+            'PAIEMENT CARTE ÉCHOUÉ',
+            'CARD PAYMENT FAILED',
+            $voterName ?: 'Voter',
+            'Votre paiement Visa / Mastercard n\'a pas abouti. Aucun vote n\'a été comptabilisé.',
+            'Your Visa / Mastercard payment did not go through. No votes were counted.',
+            $lines,
+            'Vous pouvez réessayer avec une autre carte ou payer par MoMo / Orange Money.',
+            'You can retry with another card or pay with MoMo / Orange Money.',
+            $locale
+        );
+    }
+
+    /**
+     * Map Stripe / card failure codes to bilingual human reasons.
+     * @return array{0:string,1:string} [fr, en]
+     */
+    public static function cardFailureReasonPair($code, $message = null): array
+    {
+        $code = strtolower(trim((string) $code));
+        $message = strtolower(trim((string) $message));
+
+        if ($code === 'insufficient_funds' || strpos($message, 'insufficient funds') !== false) {
+            return ['Fonds insuffisants', 'Insufficient funds'];
+        }
+        if ($code === 'expired_card' || strpos($message, 'expired') !== false && strpos($message, 'card') !== false) {
+            return ['Carte expirée', 'Expired card'];
+        }
+        if (
+            strpos($message, 'too risky') !== false
+            || strpos($message, 'blocked this payment') !== false
+            || $code === 'fraudulent'
+            || $code === 'highest_risk_level'
+        ) {
+            return ['Paiement bloqué (risque / sécurité)', 'Payment blocked (risk / security)'];
+        }
+        if (
+            $code === 'authentication_required'
+            || $code === 'payment_intent_authentication_failure'
+            || strpos($message, 'authenticat') !== false
+            || strpos($message, '3d secure') !== false
+        ) {
+            return ['Authentification échouée (3D Secure)', 'Authentication failed (3D Secure)'];
+        }
+        if ($code === 'checkout_expired' || $code === 'session_expired' || strpos($message, 'timed out') !== false) {
+            return ['Délai dépassé / session expirée', 'Timed out / session expired'];
+        }
+        if ($code === 'card_declined' || strpos($message, 'declined') !== false) {
+            return ['Carte refusée par la banque', 'Card declined by the bank'];
+        }
+        if ($code === 'lost_card' || $code === 'stolen_card') {
+            return ['Carte signalée perdue / volée', 'Card reported lost / stolen'];
+        }
+        if ($code === 'processing_error') {
+            return ['Erreur de traitement du paiement', 'Payment processing error'];
+        }
+
+        if ($message !== '') {
+            return ['Paiement non abouti', 'Payment did not complete'];
+        }
+
+        return ['Paiement non abouti', 'Payment did not complete'];
+    }
 }
