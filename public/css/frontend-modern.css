@@ -1250,6 +1250,92 @@ body.mg-popup-open {
     display: none;
 }
 
+/* Desktop header: keep logo + search + nav + account on one row after Rate Us */
+@media (min-width: 1200px) {
+    #header-sticky .header__main {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        gap: 10px;
+        min-width: 0;
+    }
+
+    #header-sticky .header__logo {
+        flex: 0 0 auto;
+    }
+
+    #header-sticky .header__logo img {
+        height: 58px !important;
+        width: auto;
+    }
+
+    #header-sticky .mg-header-search {
+        flex: 0 1 220px;
+        max-width: 220px;
+        margin: 0 8px;
+        min-width: 140px;
+    }
+
+    #header-sticky .header__right {
+        display: flex !important;
+        flex: 1 1 auto;
+        align-items: center;
+        justify-content: flex-end;
+        min-width: 0;
+        gap: 8px;
+    }
+
+    #header-sticky .mean__menu-wrapper {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    #header-sticky .main-menu > nav > ul {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        align-items: center;
+        justify-content: flex-end;
+        margin: 0;
+        padding: 0;
+        gap: 0;
+        white-space: nowrap;
+    }
+
+    #header-sticky .main-menu ul li {
+        display: block;
+        margin-inline-end: 0 !important;
+        flex: 0 0 auto;
+    }
+
+    #header-sticky .main-menu ul li a {
+        padding: 22px 8px !important;
+        font-size: 13px !important;
+        letter-spacing: 0;
+        white-space: nowrap;
+    }
+
+    #header-sticky .header__action-inner {
+        flex: 0 0 auto;
+        margin-left: 4px;
+    }
+
+    #header-sticky .header__hamburger {
+        display: none !important;
+    }
+}
+
+@media (min-width: 1400px) {
+    #header-sticky .mg-header-search {
+        flex-basis: 260px;
+        max-width: 260px;
+    }
+
+    #header-sticky .main-menu ul li a {
+        padding: 24px 10px !important;
+        font-size: 14px !important;
+    }
+}
+
 @media (max-width: 1199px) {
     .header__main {
         display: flex !important;
