@@ -6,7 +6,20 @@
         <div class="alert alert-danger alert-dismissible text-center"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>{{ $errors->first('name') }}</div>
     @endif
     @if(session()->has('message'))
-        <div class="alert alert-success alert-dismissible text-center"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>{{ session()->get('message') }}</div>
+        <div class="alert alert-success alert-dismissible text-center"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            {{ session()->get('message') }}
+            @php
+                $__msg = (string) session('message');
+                $__showRate = session('show_rate_us') || (stripos($__msg, 'thank you') !== false) || (stripos($__msg, 'merci') !== false);
+            @endphp
+            @if(\App\Helpers\SiteContent::rateUsEnabled() && $__showRate)
+                <div class="mt-2">
+                    <a class="btn btn-sm btn-warning" href="{{ route('rate.us', array_filter(['vote_id' => session('rate_vote_id')])) }}" style="font-weight:700;">
+                        ★ {{ trans('file.Rate Us') }}
+                    </a>
+                </div>
+            @endif
+        </div>
     @endif
     @if(session()->has('not_permitted'))
         <div class="alert alert-danger alert-dismissible text-center"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>{{ session()->get('not_permitted') }}</div>

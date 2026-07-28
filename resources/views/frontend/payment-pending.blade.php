@@ -60,6 +60,14 @@
                                 <div class="mg-pay-pending__spinner" aria-hidden="true"></div>
                                 <p class="mg-pay-pending__status" id="mg-pay-status">{{ trans('file.Waiting for payment confirmation') }}…</p>
                                 <p class="mg-pay-pending__hint">{{ trans('file.You can leave this page Your vote will still count once payment is confirmed') }}</p>
+                                @if(\App\Helpers\SiteContent::rateUsEnabled())
+                                <div class="mg-pay-rate" id="mg-pay-rate" style="display:none;">
+                                    <a class="mg-btn mg-pay-rate__btn" id="mg-pay-rate-link" href="{{ route('rate.us', ['vote_id' => $vote->id]) }}">
+                                        <i class="fa fa-star"></i> {{ trans('file.Rate Us') }}
+                                    </a>
+                                    <p class="mg-pay-rate__hint">{{ trans('file.Tap to rate your experience') }}</p>
+                                </div>
+                                @endif
                             </div>
 
                             <div class="mg-pay-retry" id="mg-pay-retry" style="{{ !empty($canRetry) ? '' : 'display:none;' }}">
@@ -115,7 +123,11 @@
     @keyframes mg-spin { to { transform: rotate(360deg); } }
     .mg-pay-pending__status { font-weight:700; color:#0a2350; margin:0 0 8px; font-size:15px; }
     .mg-pay-pending__hint { color:#6b7a93; font-size:13px; margin:0; }
-    .mg-pay-pending.is-success .mg-pay-pending__spinner { border-color:#28a745; border-top-color:#28a745; animation:none; }
+    .mg-pay-rate { margin-top:18px; }
+    .mg-pay-rate__btn { width:100%; justify-content:center; min-height:52px; font-size:16px !important; border-radius:14px !important; }
+    .mg-pay-rate__hint { margin:10px 0 0; color:#6b7a93; font-size:13px; }
+    .mg-pay-pending.is-success .mg-pay-pending__spinner { display:none; }
+    .mg-pay-pending.is-success .mg-pay-pending__status { color:#15803d; font-size:18px; }
     .mg-pay-pending.is-failed .mg-pay-pending__spinner { border-color:#dc3545; border-top-color:#dc3545; animation:none; }
     .mg-pay-retry { padding:0 20px 22px; text-align:center; border-top:1px solid #eef2f8; }
     .mg-pay-retry__text { color:#0a2350; font-weight:700; font-size:14px; margin:16px 0 12px; }
@@ -134,10 +146,12 @@
     var voteId = {{ (int) $vote->id }};
     var pollUrl = @json(route('musician.vote.payment.poll'));
     var homeUrl = @json(route('home'));
+    var rateUsUrl = @json(\App\Helpers\SiteContent::rateUsEnabled() ? route('rate.us', ['vote_id' => $vote->id]) : route('home'));
     var statusEl = document.getElementById('mg-pay-status');
     var pending = document.querySelector('.mg-pay-pending');
     var retryBox = document.getElementById('mg-pay-retry');
     var waitEl = document.getElementById('mg-pay-retry-wait');
+    var rateBox = document.getElementById('mg-pay-rate');
     var countdownEl = document.getElementById('mg-pay-countdown');
     var secondsLeft = {{ (int) ($secondsUntilRetry ?? 0) }};
     var attempts = 0;
@@ -200,7 +214,8 @@
                     statusEl.textContent = @json(trans('file.Thank you for your voting'));
                     if (retryBox) { retryBox.style.display = 'none'; }
                     if (waitEl) { waitEl.style.display = 'none'; }
-                    setTimeout(function () { window.location.href = homeUrl; }, 1200);
+                    if (rateBox) { rateBox.style.display = ''; }
+                    setTimeout(function () { window.location.href = rateUsUrl; }, 4500);
                     return;
                 }
                 if (data.status === 'FAILED') {

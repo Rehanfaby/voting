@@ -11,9 +11,11 @@ use App\Employee;
 use App\Gallery;
 use App\GeneralSetting;
 use App\Judge;
+use App\Helpers\CountryFlag;
 use App\Helpers\SiteContent;
 use App\Helpers\PhoneHelper;
 use App\Helpers\WhatsAppFormatter;
+use App\SiteRating;
 use App\MobileMoneyPayment;
 use App\EventSeatInventory;
 use App\EventSeatMap;
@@ -97,6 +99,125 @@ class HomeController extends Controller
     public function contact()
     {
         return view('frontend.contact');
+    }
+
+    public function rateUs(Request $request)
+    {
+        if (!SiteContent::rateUsEnabled()) {
+            return redirect()->route('home')->with('not_permitted', trans('file.Rate Us is currently unavailable'));
+        }
+
+        $vote = null;
+        $voterName = '';
+        $contestantName = '';
+        $musicianId = null;
+        $voteId = (int) $request->query('vote_id', 0);
+        if ($voteId > 0) {
+            $vote = vote::with(['voters', 'musicians'])->find($voteId);
+            if ($vote && (int) $vote->status === self::VOTE_SUCCESS) {
+                $voterName = trim((string) optional($vote->voters)->name);
+                if ($voterName === '' || PhoneHelper::looksLikePhone($voterName)) {
+                    $voterName = '';
+                }
+                $contestantName = trim((string) optional($vote->musicians)->name);
+                $musicianId = $vote->musician_id;
+            } else {
+                $vote = null;
+            }
+        }
+
+        $ratings = SiteRating::visible()->orderByDesc('created_at')->limit(60)->get();
+        $average = SiteRating::averageStars(true);
+        $ratingCount = SiteRating::countStars(true);
+        $countries = CountryFlag::options();
+
+        return view('frontend.rate_us', compact(
+            'ratings',
+            'average',
+            'ratingCount',
+            'countries',
+            'vote',
+            'voteId',
+            'voterName',
+            'contestantName',
+            'musicianId'
+        ));
+    }
+
+    public function rateUsStore(Request $request)
+    {
+        if (!SiteContent::rateUsEnabled()) {
+            return redirect()->route('home')->with('not_permitted', trans('file.Rate Us is currently unavailable'));
+        }
+
+        $request->validate([
+            'stars' => 'required|integer|min:1|max:5',
+            'comment' => 'nullable|string|max:1000',
+            'country' => 'required|string|max:8',
+            'display_as' => 'required|in:voter,contestant',
+            'display_name' => 'nullable|string|max:120',
+            'vote_id' => 'nullable|integer',
+            'musician_id' => 'nullable|integer',
+        ]);
+
+        $country = CountryFlag::code($request->input('country'));
+        if (!$country) {
+            return back()->withInput()->with('not_permitted', trans('file.Please select your country'));
+        }
+
+        $vote = null;
+        $voteId = (int) $request->input('vote_id', 0);
+        if ($voteId > 0) {
+            $vote = vote::with(['voters', 'musicians'])->find($voteId);
+            if (!$vote || (int) $vote->status !== self::VOTE_SUCCESS) {
+                $vote = null;
+            }
+        }
+
+        $displayAs = $request->input('display_as', 'voter');
+        $displayName = trim((string) $request->input('display_name', ''));
+        if ($vote) {
+            $musicianId = $vote->musician_id;
+        } else {
+            $musicianId = (int) $request->input('musician_id', 0);
+            $musicianId = $musicianId > 0 ? $musicianId : null;
+        }
+
+        if ($displayAs === 'contestant') {
+            if ($vote && $vote->musicians) {
+                $displayName = trim((string) $vote->musicians->name);
+            } elseif ($musicianId) {
+                $displayName = trim((string) optional(Employee::find($musicianId))->name);
+            }
+            if ($displayName === '') {
+                return back()->withInput()->with('not_permitted', trans('file.Contestant name is required for this rating'));
+            }
+        } else {
+            if ($displayName === '' && $vote && $vote->voters) {
+                $displayName = trim((string) $vote->voters->name);
+            }
+            if ($displayName === '' || PhoneHelper::looksLikePhone($displayName)) {
+                return back()->withInput()->with('not_permitted', trans('file.Please enter your name'));
+            }
+        }
+
+        if ($vote && SiteRating::where('vote_id', $vote->id)->exists()) {
+            return redirect()->route('rate.us')->with('message', trans('file.Thanks You already rated us'));
+        }
+
+        SiteRating::create([
+            'vote_id' => $vote ? $vote->id : null,
+            'musician_id' => $musicianId,
+            'display_name' => $displayName,
+            'display_as' => $displayAs,
+            'country' => $country,
+            'stars' => (int) $request->input('stars'),
+            'comment' => trim((string) $request->input('comment', '')) ?: null,
+            'is_visible' => false,
+            'ip_address' => substr((string) $request->ip(), 0, 45),
+        ]);
+
+        return redirect()->route('rate.us')->with('message', trans('file.Thank you for rating us'));
     }
 
      public function contactMessage(Request $request){
@@ -447,7 +568,7 @@ class HomeController extends Controller
         if (PhoneHelper::paymentSimulate() && $vote) {
             $this->markVoteSuccessful($vote->id, 'SIM-' . $vote->id);
 
-            return redirect()->route('home')->with('message', trans('file.Thank you for your voting'));
+            return $this->voteThankYouRedirect($vote->id);
         }
 
         try {
@@ -578,7 +699,7 @@ class HomeController extends Controller
             );
         }
 
-        return redirect()->route('home')->with('message', trans('file.Thank you for your voting'));
+        return $this->voteThankYouRedirect($vote->id);
     }
 
     public function ticketPaymentStripe(Request $request) {
@@ -1039,7 +1160,7 @@ class HomeController extends Controller
     {
         $vote = vote::findOrFail($id);
         if ((int) $vote->status === self::VOTE_SUCCESS) {
-            return redirect()->route('home')->with('message', 'Thank you for your voting');
+            return $this->voteThankYouRedirect($vote->id);
         }
         $musician = Employee::findOrFail($vote->musician_id);
         $paymentMethod = 'momo';
@@ -1077,7 +1198,7 @@ class HomeController extends Controller
     {
         $vote = vote::findOrFail($id);
         if ((int) $vote->status === self::VOTE_SUCCESS) {
-            return redirect()->route('home')->with('message', trans('file.Thank you for your voting'));
+            return $this->voteThankYouRedirect($vote->id);
         }
         if ((int) $vote->status === self::VOTE_FAILED) {
             return redirect()->route('musician.data', $vote->musician_id)
@@ -1197,7 +1318,7 @@ class HomeController extends Controller
             return redirect()->route('home')->with('not_permitted', trans('file.Payment record not found'));
         }
         if ((int) $vote->status === self::VOTE_SUCCESS) {
-            return redirect()->route('home')->with('message', trans('file.Thank you for your voting'));
+            return $this->voteThankYouRedirect($vote->id);
         }
 
         try {
@@ -1206,7 +1327,7 @@ class HomeController extends Controller
 
             if ($status === 'SUCCESSFUL') {
                 $this->markVoteSuccessful($vote->id, $request->reference ?: $vote->reference);
-                return redirect()->route('home')->with('message', trans('file.Thank you for your voting'));
+                return $this->voteThankYouRedirect($vote->id);
             }
             if ($status === 'FAILED') {
                 $this->markVoteFailed($vote->id);
@@ -2490,6 +2611,20 @@ class HomeController extends Controller
         }
 
         return null;
+    }
+
+    /** After a successful vote: send voters to Rate Us (mobile-friendly) when enabled. */
+    private function voteThankYouRedirect($voteId = null)
+    {
+        if (SiteContent::rateUsEnabled() && $voteId) {
+            return redirect()->route('rate.us', ['vote_id' => $voteId])
+                ->with('message', trans('file.Thank you for your voting'));
+        }
+
+        return redirect()->route('home')
+            ->with('message', trans('file.Thank you for your voting'))
+            ->with('show_rate_us', true)
+            ->with('rate_vote_id', $voteId);
     }
 
     private function findOrCreateVoterUser($phone, $whatsapp, $voterName)

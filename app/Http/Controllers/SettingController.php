@@ -176,6 +176,11 @@ class SettingController extends Controller
         $ambassadors = \App\Ambassador::where('is_active', true)->orderBy('sort_order')->orderBy('id')->get();
         $frontend_menu_labels = SiteContent::frontendMenuKeys();
         $frontend_menu_order = SiteContent::frontendMenuOrder();
+        $site_ratings = \App\SiteRating::orderByDesc('created_at')->limit(200)->get();
+        $site_rating_avg_all = \App\SiteRating::averageStars(false);
+        $site_rating_avg_visible = \App\SiteRating::averageStars(true);
+        $site_rating_count_all = \App\SiteRating::countStars(false);
+        $site_rating_count_visible = \App\SiteRating::countStars(true);
 
         $all_permission = [];
         $role = \Spatie\Permission\Models\Role::find(Auth::user()->role_id);
@@ -185,7 +190,23 @@ class SettingController extends Controller
             }
         }
 
-        return view('setting.site_content', compact('content', 'section_labels', 'menu_labels', 'menu_order', 'partners', 'judges', 'ambassadors', 'frontend_menu_labels', 'frontend_menu_order', 'all_permission'));
+        return view('setting.site_content', compact(
+            'content',
+            'section_labels',
+            'menu_labels',
+            'menu_order',
+            'partners',
+            'judges',
+            'ambassadors',
+            'frontend_menu_labels',
+            'frontend_menu_order',
+            'all_permission',
+            'site_ratings',
+            'site_rating_avg_all',
+            'site_rating_avg_visible',
+            'site_rating_count_all',
+            'site_rating_count_visible'
+        ));
     }
 
     public function siteContentStoreSection(Request $request)
@@ -266,6 +287,25 @@ class SettingController extends Controller
                     }
                 }
                 $message = 'Most voted & hero banner saved.';
+                break;
+
+            case 'eliminations':
+                $data['eliminations_enabled'] = $request->has('eliminations_enabled');
+                $data['eliminations_count'] = max(0, min(500, (int) $request->input('eliminations_count', 0)));
+                $message = 'Eliminations for the week saved.';
+                break;
+
+            case 'rate_us':
+                $data['rate_us_enabled'] = $request->has('rate_us_enabled');
+                $visible = array_map('intval', (array) $request->input('rating_visible', []));
+                $ids = array_map('intval', (array) $request->input('rating_ids', []));
+                if (!empty($ids)) {
+                    \App\SiteRating::whereIn('id', $ids)->update(['is_visible' => false]);
+                    if (!empty($visible)) {
+                        \App\SiteRating::whereIn('id', $visible)->update(['is_visible' => true]);
+                    }
+                }
+                $message = 'Rate Us settings saved.';
                 break;
 
             case 'casting':
@@ -439,6 +479,8 @@ class SettingController extends Controller
             'homepage_sections' => 'sc-homepage_sections',
             'popup' => 'sc-popup',
             'most_voted_hero' => 'sc-most_voted_hero',
+            'eliminations' => 'sc-eliminations',
+            'rate_us' => 'sc-rate_us',
             'casting' => 'sc-casting',
             'primes' => 'sc-primes',
             'gallery' => 'sc-gallery',

@@ -154,6 +154,11 @@ class SiteContent
             'casting_countdown' => true,
             'primes_countdown'  => true,
             'most_voted_count'  => 1,
+            // Weekly elimination danger zone on Vote Now (bottom N below red line).
+            'eliminations_enabled' => false,
+            'eliminations_count'   => 0,
+            // Public Rate Us page + post-vote CTA.
+            'rate_us_enabled' => true,
             'hero_image_en'     => null,
             'hero_image_fr'     => null,
             'casting_title'    => 'Provincial Casting Calendar 2026',
@@ -495,6 +500,29 @@ class SiteContent
     {
         $n = (int) self::get('most_voted_count', 1);
         return max(1, min(20, $n));
+    }
+
+    /** Whether the Vote Now elimination red line is active. */
+    public static function eliminationsEnabled()
+    {
+        return !empty(self::get('eliminations_enabled'));
+    }
+
+    /** How many bottom contestants sit below the elimination line (0 = off visually). */
+    public static function eliminationsCount()
+    {
+        if (!self::eliminationsEnabled()) {
+            return 0;
+        }
+        $n = (int) self::get('eliminations_count', 0);
+
+        return max(0, min(500, $n));
+    }
+
+    /** Whether the public Rate Us page / post-vote CTA is available. */
+    public static function rateUsEnabled()
+    {
+        return !empty(self::get('rate_us_enabled', true));
     }
 
     /** Public URL for a prime/finals promo image (optional). */

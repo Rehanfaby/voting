@@ -14,6 +14,8 @@
             <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#sc-homepage_sections" role="tab"><i class="dripicons-view-list"></i> Sections</a></li>
             <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#sc-popup" role="tab"><i class="dripicons-photo"></i> Popup</a></li>
             <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#sc-most_voted_hero" role="tab"><i class="dripicons-star"></i> Most Voted &amp; Hero</a></li>
+            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#sc-eliminations" role="tab"><i class="dripicons-warning"></i> Eliminations for the week</a></li>
+            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#sc-rate_us" role="tab"><i class="fa fa-star"></i> Rate Us</a></li>
             <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#sc-casting" role="tab"><i class="dripicons-calendar"></i> Casting</a></li>
             <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#sc-primes" role="tab"><i class="dripicons-clock"></i> Primes</a></li>
             <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#sc-gallery" role="tab"><i class="dripicons-photo-group"></i> Gallery</a></li>
@@ -193,6 +195,130 @@
                         </div>
                         <div class="sc-section-actions">
                             <button type="submit" class="btn btn-primary">Save</button>
+                        </div>
+                        {!! Form::close() !!}
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        {{-- Eliminations for the week --}}
+        <div class="tab-pane fade" id="sc-eliminations" role="tabpanel">
+        <div class="row">
+            <div class="col-md-8 col-lg-6">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h4><i class="dripicons-warning"></i> Eliminations for the week</h4>
+                    </div>
+                    <div class="card-body">
+                        {!! Form::open(['route' => 'setting.site_content.section', 'method' => 'post']) !!}
+                        <input type="hidden" name="section" value="eliminations">
+                        <p class="italic"><small>When enabled, Vote Now shows a red line above the bottom N contestants (danger / elimination zone).</small></p>
+                        <div class="sc-toggle mb-3">
+                            <label class="sc-switch">
+                                <input type="checkbox" name="eliminations_enabled" value="1" {{ !empty($content['eliminations_enabled']) ? 'checked' : '' }}>
+                                <span class="sc-slider"></span>
+                            </label>
+                            <span class="sc-toggle-label">Enable elimination red line on Vote Now</span>
+                        </div>
+                        <div class="form-group">
+                            <label>No. of eliminations (bottom contestants below the line)</label>
+                            <input type="number" name="eliminations_count" class="form-control" min="0" max="500" value="{{ (int) ($content['eliminations_count'] ?? 0) }}">
+                            <small class="text-muted">Example: 48 contestants + 20 eliminations → bottom 20 appear below the red line.</small>
+                        </div>
+                        <div class="sc-section-actions">
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </div>
+                        {!! Form::close() !!}
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        {{-- Rate Us moderation --}}
+        <div class="tab-pane fade" id="sc-rate_us" role="tabpanel">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h4><i class="fa fa-star"></i> Rate Us</h4>
+                    </div>
+                    <div class="card-body">
+                        {!! Form::open(['route' => 'setting.site_content.section', 'method' => 'post', 'id' => 'rate-us-settings-form']) !!}
+                        <input type="hidden" name="section" value="rate_us">
+                        <p class="italic"><small>Control the public Rate Us page and which reviews appear.</small></p>
+                        <div class="sc-toggle mb-3">
+                            <label class="sc-switch">
+                                <input type="checkbox" name="rate_us_enabled" value="1" {{ !empty($content['rate_us_enabled']) ? 'checked' : '' }}>
+                                <span class="sc-slider"></span>
+                            </label>
+                            <span class="sc-toggle-label">Enable Rate Us (page + post-vote link)</span>
+                        </div>
+                        <div class="mb-3 p-3" style="background:#f8fafc;border-radius:10px;">
+                            <div><strong>Visible average:</strong> {{ number_format($site_rating_avg_visible ?? 0, 1) }} / 5
+                                <small class="text-muted">({{ (int) ($site_rating_count_visible ?? 0) }} shown)</small>
+                            </div>
+                            <div class="mt-1"><strong>All ratings average:</strong> {{ number_format($site_rating_avg_all ?? 0, 1) }} / 5
+                                <small class="text-muted">({{ (int) ($site_rating_count_all ?? 0) }} total)</small>
+                            </div>
+                            <div class="mt-2"><a href="{{ route('rate.us') }}" target="_blank">Open public Rate Us page →</a></div>
+                        </div>
+                        <div class="sc-section-actions">
+                            <button type="submit" class="btn btn-primary">Save visibility</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h4><i class="fa fa-comments"></i> Ratings (enable to show on front end)</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Show</th>
+                                        <th>Stars</th>
+                                        <th>Name</th>
+                                        <th>Country</th>
+                                        <th>Comment</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($site_ratings ?? [] as $rating)
+                                        <tr>
+                                            <td>
+                                                <input type="hidden" name="rating_ids[]" form="rate-us-settings-form" value="{{ $rating->id }}">
+                                                <input type="checkbox" name="rating_visible[]" form="rate-us-settings-form" value="{{ $rating->id }}" {{ $rating->is_visible ? 'checked' : '' }}>
+                                            </td>
+                                            <td>{{ str_repeat('★', (int) $rating->stars) }}{{ str_repeat('☆', 5 - (int) $rating->stars) }}</td>
+                                            <td>
+                                                {{ $rating->display_name }}
+                                                @if($rating->display_as === 'contestant')
+                                                    <span class="badge badge-info">Contestant</span>
+                                                @else
+                                                    <span class="badge badge-secondary">Voter</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if($rating->countryFlagUrl())
+                                                    <img src="{{ $rating->countryFlagUrl(20) }}" alt="" width="20" height="14" style="vertical-align:middle;">
+                                                @endif
+                                                {{ $rating->countryLabel() }}
+                                            </td>
+                                            <td style="max-width:240px;white-space:normal;">{{ \Illuminate\Support\Str::limit($rating->comment, 120) }}</td>
+                                            <td>{{ optional($rating->created_at)->format('Y-m-d H:i') }}</td>
+                                        </tr>
+                                    @empty
+                                        <tr><td colspan="6" class="text-muted">No ratings yet.</td></tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
                         </div>
                         {!! Form::close() !!}
                     </div>

@@ -161,6 +161,11 @@
                 <div class="offcanvas__btn mb-30">
                     <a class="user__name" href="{{ route('contact') }}"><i class="fa-solid fa-plus"></i> {{trans('file.Contact Us')}}</a>
                 </div>
+                @if(\App\Helpers\SiteContent::rateUsEnabled())
+                <div class="offcanvas__btn mb-30">
+                    <a class="user__name" href="{{ route('rate.us') }}"><i class="fa-solid fa-star"></i> {{trans('file.Rate Us')}}</a>
+                </div>
+                @endif
 
                 @if($user)
                 <div class="hr-1 mt-30 mb-30 d-xl-none"></div>
@@ -234,6 +239,11 @@
                                                 <li>
                                                     <a href="{{ route('contact') }}">{{trans('file.Contact Us')}}</a>
                                                 </li>
+                                                @if(\App\Helpers\SiteContent::rateUsEnabled())
+                                                <li>
+                                                    <a href="{{ route('rate.us') }}">{{trans('file.Rate Us')}}</a>
+                                                </li>
+                                                @endif
                                                 <li>
                                                     <a href="{{ route('team') }}">{{trans('file.Vote Now')}}</a>
                                                 </li>

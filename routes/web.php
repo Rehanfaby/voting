@@ -45,6 +45,8 @@ Route::group([], function() {
     Route::get('/gallery', 'HomeController@gallery')->name('gallery.page');
     Route::get('/contact', 'HomeController@contact')->name('contact');
     Route::post('/contact/message', 'HomeController@contactMessage')->name('contact.message')->middleware('throttle:5,10');
+    Route::get('/rate-us', 'HomeController@rateUs')->name('rate.us');
+    Route::post('/rate-us', 'HomeController@rateUsStore')->name('rate.us.store')->middleware('throttle:8,10');
     Route::get('user/contentant', 'HomeController@userContentant')->name('user.contentant')->middleware('auth');
     Route::get('musician/data/{id}', 'HomeController@employee')->name('musician.data');
     Route::post('musician/find', 'HomeController@employeeFind')->name('musician.find');
