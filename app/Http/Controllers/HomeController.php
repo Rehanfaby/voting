@@ -126,10 +126,17 @@ class HomeController extends Controller
             }
         }
 
-        $ratings = SiteRating::visible()->orderByDesc('created_at')->limit(60)->get();
+        // Prioritize ratings submitted after a successful vote.
+        $ratings = SiteRating::visible()
+            ->orderByRaw('CASE WHEN vote_id IS NULL THEN 1 ELSE 0 END')
+            ->orderByDesc('created_at')
+            ->limit(60)
+            ->get();
         $average = SiteRating::averageStars(true);
         $ratingCount = SiteRating::countStars(true);
         $countries = CountryFlag::options();
+        // Open the form when arriving after a vote, or when validation returned input.
+        $openRateModal = (bool) $vote || !empty($request->old());
 
         return view('frontend.rate_us', compact(
             'ratings',
@@ -140,7 +147,8 @@ class HomeController extends Controller
             'voteId',
             'voterName',
             'contestantName',
-            'musicianId'
+            'musicianId',
+            'openRateModal'
         ));
     }
 
