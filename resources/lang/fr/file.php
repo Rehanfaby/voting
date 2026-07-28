@@ -1268,5 +1268,7 @@ return [
     'Contestant name is required for this rating' => 'Le nom du candidat est requis pour cette note.',
     'Tap to rate your experience' => 'Appuyez pour noter votre expérience',
     'Elimination zone' => 'Zone d’élimination',
+    'Qualified zone' => 'Zone de qualification',
+    'Qualified zone top contestants' => 'Zone de qualification — :count candidat(s) en tête',
     'Below this line contestants are in the elimination zone' => 'Zone d’élimination — :count candidat(s) en bas',
 ];

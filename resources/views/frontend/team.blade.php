@@ -32,24 +32,41 @@
                     $elimLineIndex = ($elimCount > 0 && $elimCount < $totalRanked)
                         ? ($totalRanked - $elimCount)
                         : null;
+                    $qualCount = $elimLineIndex !== null ? $elimLineIndex : 0;
                 @endphp
 
                 <div class="row mg-contestant-grid justify-content-center" id="contestant-grid">
+                    @if($elimLineIndex !== null)
+                    <div class="col-12 mg-zone-divider mg-zone-divider--qual js-qual-divider" role="separator" aria-label="{{ trans('file.Qualified zone') }}">
+                        <div class="mg-zone-divider__line"></div>
+                        <p class="mg-zone-divider__label">
+                            <i class="fa fa-check-circle"></i>
+                            {{ trans('file.Qualified zone top contestants', ['count' => $qualCount]) }}
+                        </p>
+                        <div class="mg-zone-divider__line"></div>
+                    </div>
+                    @endif
+
                     @foreach($ranked as $key => $musician)
                     @if($elimLineIndex !== null && $key === $elimLineIndex)
-                    <div class="col-12 mg-elim-divider js-elim-divider" role="separator" aria-label="{{ trans('file.Elimination zone') }}">
-                        <div class="mg-elim-divider__line"></div>
-                        <p class="mg-elim-divider__label">
+                    <div class="col-12 mg-zone-divider mg-zone-divider--elim js-elim-divider" role="separator" aria-label="{{ trans('file.Elimination zone') }}">
+                        <div class="mg-zone-divider__line"></div>
+                        <p class="mg-zone-divider__label">
                             <i class="fa fa-exclamation-triangle"></i>
                             {{ trans('file.Below this line contestants are in the elimination zone', ['count' => $elimCount]) }}
                         </p>
-                        <div class="mg-elim-divider__line"></div>
+                        <div class="mg-zone-divider__line"></div>
                     </div>
                     @endif
-                    <div class="col-6 col-sm-4 col-md-3 col-lg-2 contestant-list js-contestant-item {{ ($elimLineIndex !== null && $key >= $elimLineIndex) ? 'is-elim-zone' : '' }}" data-name="{{ strtolower($musician->name) }}">
+                    @php
+                        $inElim = $elimLineIndex !== null && $key >= $elimLineIndex;
+                        $inQual = $elimLineIndex !== null && $key < $elimLineIndex;
+                        $zoneClass = $inElim ? 'is-elim-zone' : ($inQual ? 'is-qual-zone' : '');
+                    @endphp
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2 contestant-list js-contestant-item {{ $zoneClass }}" data-name="{{ strtolower($musician->name) }}" data-zone="{{ $inElim ? 'elim' : ($inQual ? 'qual' : '') }}">
                         <div class="mg-contestant-card">
                             <div class="mg-contestant-card__avatar">
-                                <span class="mg-contestant-card__badge {{ ($elimLineIndex !== null && $key >= $elimLineIndex) ? 'is-danger' : '' }}">{{ $key + 1 }}</span>
+                                <span class="mg-contestant-card__badge {{ $inElim ? 'is-danger' : ($inQual ? 'is-safe' : '') }}">{{ $key + 1 }}</span>
                                 <a href="{{ route('musician.data', $musician->id) }}">
                                     <img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($musician->image) }}" alt="{{ $musician->name }}" width="160" height="160" loading="lazy" decoding="async">
                                 </a>
@@ -81,28 +98,108 @@
 
 @section('styles')
 <style>
-.mg-elim-divider {
+.mg-zone-divider {
     display: flex; flex-direction: column; align-items: center; gap: 8px;
     margin: 10px 0 18px; padding: 4px 8px; width: 100%;
 }
-.mg-elim-divider__line {
+.mg-zone-divider__line {
     width: 100%; height: 3px; border-radius: 999px;
+}
+.mg-zone-divider__label {
+    margin: 0; text-align: center; font-weight: 800;
+    font-size: 13px; letter-spacing: .3px; text-transform: uppercase;
+    border-radius: 999px; padding: 8px 14px; line-height: 1.3;
+}
+.mg-zone-divider__label i { margin-right: 6px; }
+
+/* Qualified (green) */
+.mg-zone-divider--qual .mg-zone-divider__line {
+    background: linear-gradient(90deg, transparent, #22c55e 12%, #22c55e 88%, transparent);
+    box-shadow: 0 0 18px rgba(34, 197, 94, .45);
+}
+.mg-zone-divider--qual .mg-zone-divider__label {
+    color: #bbf7d0;
+    background: rgba(20, 83, 45, .55);
+    border: 1px solid rgba(34, 197, 94, .55);
+}
+.mg-zone-divider--qual .mg-zone-divider__label i { color: #4ade80; }
+
+/* Elimination (red) */
+.mg-zone-divider--elim .mg-zone-divider__line {
     background: linear-gradient(90deg, transparent, #ef4444 12%, #ef4444 88%, transparent);
     box-shadow: 0 0 18px rgba(239, 68, 68, .45);
 }
-.mg-elim-divider__label {
-    margin: 0; text-align: center; color: #fecaca; font-weight: 800;
-    font-size: 13px; letter-spacing: .3px; text-transform: uppercase;
-    background: rgba(127, 29, 29, .55); border: 1px solid rgba(239, 68, 68, .55);
-    border-radius: 999px; padding: 8px 14px; line-height: 1.3;
+.mg-zone-divider--elim .mg-zone-divider__label {
+    color: #fecaca;
+    background: rgba(127, 29, 29, .55);
+    border: 1px solid rgba(239, 68, 68, .55);
 }
-.mg-elim-divider__label i { margin-right: 6px; color: #f87171; }
+.mg-zone-divider--elim .mg-zone-divider__label i { color: #f87171; }
+
+/* Blinking frame — qualified (green) */
+.contestant-list.is-qual-zone .mg-contestant-card__avatar {
+    background: linear-gradient(145deg, #16a34a, #4ade80) !important;
+    animation: mg-blink-green 1.35s ease-in-out infinite;
+}
+.contestant-list.is-qual-zone.is-search-hit .mg-contestant-card__avatar {
+    animation: mg-blink-green 0.7s ease-in-out infinite;
+}
+.mg-contestant-card__badge.is-safe {
+    background: #166534 !important;
+    color: #bbf7d0 !important;
+    border-color: #4ade80 !important;
+}
+
+/* Blinking frame — elimination (red) */
 .contestant-list.is-elim-zone .mg-contestant-card__avatar {
-    box-shadow: 0 0 0 2px rgba(239, 68, 68, .55);
+    background: linear-gradient(145deg, #dc2626, #f87171) !important;
+    animation: mg-blink-red 1.35s ease-in-out infinite;
 }
-.mg-contestant-card__badge.is-danger { background: #dc2626 !important; }
+.contestant-list.is-elim-zone.is-search-hit .mg-contestant-card__avatar {
+    animation: mg-blink-red 0.7s ease-in-out infinite;
+}
+.mg-contestant-card__badge.is-danger {
+    background: #dc2626 !important;
+    color: #fff !important;
+    border-color: #fca5a5 !important;
+}
+
+@keyframes mg-blink-red {
+    0%, 100% {
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, .25), 0 0 10px rgba(239, 68, 68, .25);
+        filter: brightness(1);
+    }
+    50% {
+        box-shadow: 0 0 0 6px rgba(239, 68, 68, .95), 0 0 28px rgba(239, 68, 68, .85);
+        filter: brightness(1.12);
+    }
+}
+@keyframes mg-blink-green {
+    0%, 100% {
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, .25), 0 0 10px rgba(34, 197, 94, .25);
+        filter: brightness(1);
+    }
+    50% {
+        box-shadow: 0 0 0 6px rgba(34, 197, 94, .95), 0 0 28px rgba(34, 197, 94, .85);
+        filter: brightness(1.12);
+    }
+}
+
 @media (max-width: 575.98px) {
-    .mg-elim-divider__label { font-size: 11px; padding: 7px 12px; max-width: 96%; }
+    .mg-zone-divider__label { font-size: 11px; padding: 7px 12px; max-width: 96%; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .contestant-list.is-qual-zone .mg-contestant-card__avatar,
+    .contestant-list.is-elim-zone .mg-contestant-card__avatar,
+    .contestant-list.is-search-hit .mg-contestant-card__avatar {
+        animation: none !important;
+    }
+    .contestant-list.is-qual-zone .mg-contestant-card__avatar {
+        box-shadow: 0 0 0 4px rgba(34, 197, 94, .85), 0 0 18px rgba(34, 197, 94, .55);
+    }
+    .contestant-list.is-elim-zone .mg-contestant-card__avatar {
+        box-shadow: 0 0 0 4px rgba(239, 68, 68, .85), 0 0 18px rgba(239, 68, 68, .55);
+    }
 }
 </style>
 @endsection
@@ -113,23 +210,33 @@
         var $grid = $('#contestant-grid');
         var originalNodes = $grid.children().toArray();
         var originalCards = $grid.children('.contestant-list').toArray();
-        var $divider = $grid.children('.js-elim-divider');
+        var $qualDivider = $grid.children('.js-qual-divider');
+        var $elimDivider = $grid.children('.js-elim-divider');
 
-        $('#contestant-search').on('keyup', function () {
-            var value = $(this).val().toLowerCase();
+        $('#contestant-search').on('keyup input', function () {
+            var value = $(this).val().toLowerCase().trim();
+            $('.js-contestant-item').removeClass('is-search-hit');
+
             if (!value) {
                 $grid.append(originalNodes);
                 $(originalNodes).show();
                 return;
             }
+
             var matched = [], rest = [];
             originalCards.forEach(function (el) {
                 var $el = $(el);
                 var name = ($el.data('name') || $el.text()).toString().toLowerCase();
-                if (name.indexOf(value) > -1) { $el.show(); matched.push(el); }
-                else { $el.hide(); rest.push(el); }
+                if (name.indexOf(value) > -1) {
+                    $el.show().addClass('is-search-hit');
+                    matched.push(el);
+                } else {
+                    $el.hide().removeClass('is-search-hit');
+                    rest.push(el);
+                }
             });
-            if ($divider.length) { $divider.hide(); }
+            if ($qualDivider.length) { $qualDivider.hide(); }
+            if ($elimDivider.length) { $elimDivider.hide(); }
             $grid.append(matched.concat(rest));
         });
 
