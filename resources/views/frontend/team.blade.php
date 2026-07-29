@@ -112,7 +112,7 @@
 }
 .mg-zone-divider__label i { margin-right: 6px; }
 
-/* Qualified (green) */
+/* Green Zone */
 .mg-zone-divider--qual .mg-zone-divider__line {
     background: linear-gradient(90deg, transparent, #22c55e 12%, #22c55e 88%, transparent);
     box-shadow: 0 0 18px rgba(34, 197, 94, .45);
@@ -124,19 +124,19 @@
 }
 .mg-zone-divider--qual .mg-zone-divider__label i { color: #4ade80; }
 
-/* Elimination (red) */
+/* Orange Zone */
 .mg-zone-divider--elim .mg-zone-divider__line {
-    background: linear-gradient(90deg, transparent, #ef4444 12%, #ef4444 88%, transparent);
-    box-shadow: 0 0 18px rgba(239, 68, 68, .45);
+    background: linear-gradient(90deg, transparent, #e87722 12%, #ff9533 88%, transparent);
+    box-shadow: 0 0 18px rgba(232, 119, 34, .5);
 }
 .mg-zone-divider--elim .mg-zone-divider__label {
-    color: #fecaca;
-    background: rgba(127, 29, 29, .55);
-    border: 1px solid rgba(239, 68, 68, .55);
+    color: #ffe0c2;
+    background: rgba(124, 45, 18, .55);
+    border: 1px solid rgba(232, 119, 34, .6);
 }
-.mg-zone-divider--elim .mg-zone-divider__label i { color: #f87171; }
+.mg-zone-divider--elim .mg-zone-divider__label i { color: #ff9533; }
 
-/* Blinking frame — qualified (green) */
+/* Blinking frame — Green Zone */
 .contestant-list.is-qual-zone .mg-contestant-card__avatar {
     background: linear-gradient(145deg, #16a34a, #4ade80) !important;
     animation: mg-blink-green 1.35s ease-in-out infinite;
@@ -150,27 +150,27 @@
     border-color: #4ade80 !important;
 }
 
-/* Blinking frame — elimination (red) */
+/* Blinking frame — Orange Zone */
 .contestant-list.is-elim-zone .mg-contestant-card__avatar {
-    background: linear-gradient(145deg, #dc2626, #f87171) !important;
-    animation: mg-blink-red 1.35s ease-in-out infinite;
+    background: linear-gradient(145deg, #c65d0a, #e87722) !important;
+    animation: mg-blink-orange 1.35s ease-in-out infinite;
 }
 .contestant-list.is-elim-zone.is-search-hit .mg-contestant-card__avatar {
-    animation: mg-blink-red 0.7s ease-in-out infinite;
+    animation: mg-blink-orange 0.7s ease-in-out infinite;
 }
 .mg-contestant-card__badge.is-danger {
-    background: #dc2626 !important;
+    background: #e87722 !important;
     color: #fff !important;
-    border-color: #fca5a5 !important;
+    border-color: #ffb366 !important;
 }
 
-@keyframes mg-blink-red {
+@keyframes mg-blink-orange {
     0%, 100% {
-        box-shadow: 0 0 0 3px rgba(239, 68, 68, .25), 0 0 10px rgba(239, 68, 68, .25);
+        box-shadow: 0 0 0 3px rgba(232, 119, 34, .25), 0 0 10px rgba(232, 119, 34, .25);
         filter: brightness(1);
     }
     50% {
-        box-shadow: 0 0 0 6px rgba(239, 68, 68, .95), 0 0 28px rgba(239, 68, 68, .85);
+        box-shadow: 0 0 0 6px rgba(232, 119, 34, .95), 0 0 28px rgba(255, 149, 51, .85);
         filter: brightness(1.12);
     }
 }
@@ -198,7 +198,7 @@
         box-shadow: 0 0 0 4px rgba(34, 197, 94, .85), 0 0 18px rgba(34, 197, 94, .55);
     }
     .contestant-list.is-elim-zone .mg-contestant-card__avatar {
-        box-shadow: 0 0 0 4px rgba(239, 68, 68, .85), 0 0 18px rgba(239, 68, 68, .55);
+        box-shadow: 0 0 0 4px rgba(232, 119, 34, .85), 0 0 18px rgba(232, 119, 34, .55);
     }
 }
 </style>

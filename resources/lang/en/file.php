@@ -1264,8 +1264,8 @@ return [
     'Please select your country' => 'Please select your country.',
     'Contestant name is required for this rating' => 'Contestant name is required for this rating.',
     'Tap to rate your experience' => 'Tap to rate your experience',
-    'Elimination zone' => 'Elimination zone',
-    'Qualified zone' => 'Qualified zone',
-    'Qualified zone top contestants' => 'Qualified zone — top :count contestant(s)',
-    'Below this line contestants are in the elimination zone' => 'Elimination zone — bottom :count contestant(s)',
+    'Elimination zone' => 'Orange Zone',
+    'Qualified zone' => 'Green Zone',
+    'Qualified zone top contestants' => 'Green Zone — top :count contestant(s)',
+    'Below this line contestants are in the elimination zone' => 'Orange Zone — bottom :count contestant(s)',
 ];
