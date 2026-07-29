@@ -48,10 +48,15 @@ Route::group([], function() {
     Route::get('/rate-us', 'HomeController@rateUs')->name('rate.us');
     Route::post('/rate-us', 'HomeController@rateUsStore')->name('rate.us.store')->middleware('throttle:8,10');
     Route::get('user/contentant', 'HomeController@userContentant')->name('user.contentant')->middleware('auth');
-    Route::get('musician/data/{id}', 'HomeController@employee')->name('musician.data');
+    // Public contestant URLs (legacy /musician/* kept as redirects)
+    Route::get('contestants', 'HomeController@team')->name('team');
+    Route::get('contestant/{id}', 'HomeController@employee')->name('musician.data');
+    Route::redirect('musician/team', '/contestants', 301);
+    Route::get('musician/data/{id}', function ($id) {
+        return redirect()->route('musician.data', $id, 301);
+    });
     Route::post('musician/find', 'HomeController@employeeFind')->name('musician.find');
     Route::post('musician/vote', 'HomeController@employeeVote')->name('musician.vote');
-    Route::get('musician/team', 'HomeController@team')->name('team');
     Route::post('musician/vote/payment', 'HomeController@musicianVotePayment')->name('musician.vote.payment');
     Route::get('musician/vote/payment/coin', 'HomeController@musicianVotePaymentCoin')->name('musician.vote.payment.coin');
     Route::get('/musician/vote/payment/check', 'HomeController@musicianVotePaymentCheck')->name('musician.vote.payment.check');

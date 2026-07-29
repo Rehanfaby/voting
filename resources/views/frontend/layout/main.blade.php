@@ -448,7 +448,7 @@
                     </div>
                 </div>
             </footer>
-            <style>.mg-dev-credit{margin:0;font-size:11px;line-height:1.4;opacity:.65;color:rgba(255,255,255,.7);}.mg-dev-credit a{color:inherit;text-decoration:none;}.mg-dev-credit a:hover{text-decoration:underline;color:#e87722;}</style>
+            <style>.mg-dev-credit{margin:0;font-size:11px;line-height:1.4;opacity:.65;color:rgba(255,255,255,.7);}.mg-dev-credit a{color:inherit;text-decoration:none;}.mg-dev-credit a:hover{text-decoration:underline;color:#e87722;}.mg-dev-credit .mg-dev-phone{margin-left:4px;white-space:nowrap;}</style>
             <!-- Footer Area End Here  -->
             </div>
 
