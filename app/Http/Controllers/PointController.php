@@ -75,6 +75,11 @@ class PointController extends Controller
     public function store(StorePointRequest $request)
     {
         $data = $request->validated();
+        foreach (['depth', 'accuracy', 'interpretation', 'song_choice', 'overall_presentation'] as $field) {
+            if (array_key_exists($field, $data)) {
+                $data[$field] = round((float) $data[$field], 2);
+            }
+        }
         $point = Point::create($data);
         $point->calculateTotal();
         $point->save();
@@ -100,6 +105,11 @@ class PointController extends Controller
     public function update(StorePointRequest $request, $id)
     {
         $data = $request->validated();
+        foreach (['depth', 'accuracy', 'interpretation', 'song_choice', 'overall_presentation'] as $field) {
+            if (array_key_exists($field, $data)) {
+                $data[$field] = round((float) $data[$field], 2);
+            }
+        }
         $point = Point::where('id', $id)->update([
             'depth' => $data['depth'],
 //            'diction' => $data['diction'],

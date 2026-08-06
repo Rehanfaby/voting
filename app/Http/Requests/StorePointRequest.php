@@ -33,16 +33,16 @@ class StorePointRequest extends FormRequest
                 })->ignore($this->point) // ignore current row on update
             ],
             'candidate_id' => 'required|exists:employees,id',
-            'depth' => 'required|integer|min:0|max:20',
-//            'diction' => 'required|integer|min:0|max:10',
-            'accuracy' => 'required|integer|min:0|max:30',
-            'interpretation' => 'required|integer|min:0|max:20',
-//            'technique' => 'required|integer|min:0|max:10',
-//            'stage_presence' => 'required|integer|min:0|max:10',
-            'song_choice' => 'required|integer|min:0|max:10',
-            'overall_presentation' => 'required|integer|min:0|max:20',
-//            'adaptability' => 'required|integer|min:0|max:5',
-//            'audience_interaction' => 'required|integer|min:0|max:5',
+            'depth' => 'required|numeric|min:0|max:20',
+//            'diction' => 'required|numeric|min:0|max:10',
+            'accuracy' => 'required|numeric|min:0|max:30',
+            'interpretation' => 'required|numeric|min:0|max:20',
+//            'technique' => 'required|numeric|min:0|max:10',
+//            'stage_presence' => 'required|numeric|min:0|max:10',
+            'song_choice' => 'required|numeric|min:0|max:10',
+            'overall_presentation' => 'required|numeric|min:0|max:20',
+//            'adaptability' => 'required|numeric|min:0|max:5',
+//            'audience_interaction' => 'required|numeric|min:0|max:5',
         ];
     }
 
@@ -55,6 +55,7 @@ class StorePointRequest extends FormRequest
             'depth.max' => 'Depth and atmosphere cannot be more than 20 (20_Max).',
             'interpretation.max' => 'Interpretation cannot be more than 20 (20_Max).',
             'overall_presentation.max' => 'Overall presentation cannot be more than 20 (20_Max).',
+            '*.numeric' => 'Scores may include decimals (for example 2.5 or 12.25).',
         ];
     }
 }

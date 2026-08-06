@@ -65,7 +65,8 @@
                         $contestant = $point->contestant;
                         $name = optional($contestant)->name ?? '—';
                         $ambName = optional($point->ambassador)->name ?? '—';
-                        $score = (int) $point->points;
+                        $score = round((float) $point->points, 2);
+                        $scoreLabel = rtrim(rtrim(number_format($score, 2, '.', ''), '0'), '.');
                         $ratio = $maxPoints > 0 ? min(1, max(0, $score / $maxPoints)) : 0;
                         $pct = (int) round($ratio * 100);
                         if ($ratio < 0.5) {
@@ -100,7 +101,7 @@
                                 </div>
                             </div>
                             <span class="mg-list-card__score" style="color: {{ $barColor }};">
-                                <strong>{{ $score }}</strong><small>/{{ $maxPoints }}</small>
+                                <strong>{{ $scoreLabel }}</strong><small>/{{ $maxPoints }}</small>
                             </span>
                         </a>
                         <div class="mg-list-card__actions">

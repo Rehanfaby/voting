@@ -20,9 +20,12 @@ class Point extends Model
 
     public function calculateTotal()
     {
-        $sum = $this->depth + $this->diction + $this->accuracy + $this->interpretation + $this->technique +
-            $this->stage_presence + $this->song_choice + $this->overall_presentation + $this->adaptability + $this->audience_interaction;
-        $this->total = $sum;
+        $sum = (float) $this->depth + (float) $this->diction + (float) $this->accuracy
+            + (float) $this->interpretation + (float) $this->technique
+            + (float) $this->stage_presence + (float) $this->song_choice
+            + (float) $this->overall_presentation + (float) $this->adaptability
+            + (float) $this->audience_interaction;
+        $this->total = round($sum, 2);
         return $this->total;
     }
 }

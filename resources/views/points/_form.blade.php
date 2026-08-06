@@ -81,11 +81,11 @@
                             id="{{ $f['key'] }}"
                             name="{{ $f['key'] }}"
                             class="form-control points-input mg-grade__input {{ $errors->has($f['key']) ? 'is-invalid' : '' }}"
-                            value="{{ old($f['key'], $point->{$f['key']} ?? '') }}"
+                            value="{{ old($f['key'], isset($point) ? rtrim(rtrim(number_format((float) ($point->{$f['key']} ?? 0), 2, '.', ''), '0'), '.') : '') }}"
                             min="0"
                             max="{{ $f['max'] }}"
-                            step="1"
-                            inputmode="numeric"
+                            step="0.01"
+                            inputmode="decimal"
                             data-max="{{ $f['max'] }}"
                             required>
                         <span class="mg-grade__input-cap">/ {{ $f['max'] }}</span>
@@ -306,13 +306,25 @@
         }
     }
 
+    function parseScore(raw) {
+        if (raw === '' || raw === '.' || raw === '-') return NaN;
+        var n = parseFloat(String(raw).replace(',', '.'));
+        return isNaN(n) ? NaN : Math.round(n * 100) / 100;
+    }
+
+    function formatScore(n) {
+        if (isNaN(n)) return '0';
+        var s = (Math.round(n * 100) / 100).toFixed(2);
+        return s.replace(/\.?0+$/, '');
+    }
+
     function refreshScores() {
         var total = 0;
         var anyOver = false;
         form.querySelectorAll('.points-input').forEach(function (input) {
-            var max = parseInt(input.getAttribute('data-max'), 10) || 0;
-            var raw = (input.value || '').trim();
-            var v = parseInt(raw, 10);
+            var max = parseFloat(input.getAttribute('data-max')) || 0;
+            var raw = (input.value || '').trim().replace(',', '.');
+            var v = parseScore(raw);
             var validNum = raw !== '' && !isNaN(v);
             var score = validNum ? Math.max(0, v) : 0;
             var over = validNum && v > max;
@@ -346,7 +358,8 @@
             if (validNum) total += v;
         });
 
-        if (totalSpan) totalSpan.textContent = total;
+        total = Math.round(total * 100) / 100;
+        if (totalSpan) totalSpan.textContent = formatScore(total);
         if (totalBar) {
             var totalRatio = Math.max(0, Math.min(1, total / 100));
             totalBar.style.width = (Math.min(100, Math.max(0, total))) + '%';
@@ -358,13 +371,14 @@
         var firstBad = null;
         var overCount = 0;
         form.querySelectorAll('.points-input').forEach(function (input) {
-            var max = parseInt(input.getAttribute('data-max'), 10);
-            var raw = (input.value || '').trim();
-            var v = parseInt(raw, 10);
+            var max = parseFloat(input.getAttribute('data-max'));
+            var raw = (input.value || '').trim().replace(',', '.');
+            var v = parseScore(raw);
             var invalid = raw === '' || isNaN(v) || v < 0 || v > max;
             markInput(input, invalid);
             if (invalid && !isNaN(v) && v > max) overCount++;
             if (invalid && !firstBad) firstBad = input;
+            if (!invalid) input.value = formatScore(v);
         });
         refreshScores();
         return { firstBad: firstBad, overCount: overCount };
@@ -372,22 +386,23 @@
 
     form.querySelectorAll('.points-input').forEach(function (input) {
         input.addEventListener('input', function () {
-            var max = parseInt(input.getAttribute('data-max'), 10);
-            var raw = (input.value || '').trim();
+            var max = parseFloat(input.getAttribute('data-max'));
+            var raw = (input.value || '').trim().replace(',', '.');
             if (raw === '') {
                 markInput(input, false);
             } else {
-                var v = parseInt(raw, 10);
+                var v = parseScore(raw);
                 markInput(input, isNaN(v) || v < 0 || v > max);
             }
             refreshScores();
         });
         input.addEventListener('blur', function () {
-            var max = parseInt(input.getAttribute('data-max'), 10);
-            var raw = (input.value || '').trim();
+            var max = parseFloat(input.getAttribute('data-max'));
+            var raw = (input.value || '').trim().replace(',', '.');
             if (raw === '') return;
-            var v = parseInt(raw, 10);
+            var v = parseScore(raw);
             markInput(input, isNaN(v) || v < 0 || v > max);
+            if (!isNaN(v) && v >= 0 && v <= max) input.value = formatScore(v);
             refreshScores();
         });
     });

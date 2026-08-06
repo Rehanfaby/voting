@@ -8,7 +8,7 @@
                 @if($candidate_name)
                     <p class="mg-grade-page__candidate">{{ $candidate_name }}</p>
                 @else
-                    <p class="mg-grade-page__sub">Select a candidate and enter points. Do not exceed 5_Max.</p>
+                    <p class="mg-grade-page__sub">Select a candidate and enter points (decimals allowed, e.g. 2.5). Do not exceed 5_Max.</p>
                 @endif
             </div>
             <div class="mg-grade-page__badge">5_Max</div>

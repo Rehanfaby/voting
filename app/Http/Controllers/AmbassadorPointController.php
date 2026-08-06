@@ -79,12 +79,12 @@ class AmbassadorPointController extends Controller
         $request->validate([
             'ambassador_id' => 'required|exists:users,id',
             'candidate_id'  => 'required|exists:employees,id',
-            'points'        => 'required|integer|min:1|max:5',
+            'points'        => 'required|numeric|min:0.01|max:5',
         ], [
             'points.required' => 'Please enter points for this candidate.',
-            'points.integer'  => 'Points must be a whole number from 1 to 5.',
-            'points.min'      => 'Points must be at least 1.',
-            'points.max'      => 'Points cannot be more than 5. Please enter a number from 1 to 5.',
+            'points.numeric'  => 'Points must be a number from 0.01 to 5 (decimals allowed).',
+            'points.min'      => 'Points must be at least 0.01.',
+            'points.max'      => 'Points cannot be more than 5. Please enter a number from 0.01 to 5.',
         ]);
 
         $exists = AmbassadorPoint::where('ambassador_id', $request->ambassador_id)
@@ -100,7 +100,7 @@ class AmbassadorPointController extends Controller
         AmbassadorPoint::create([
             'ambassador_id' => $request->ambassador_id,
             'candidate_id'  => $request->candidate_id,
-            'points'        => $request->points,
+            'points'        => round((float) $request->points, 2),
         ]);
 
         return redirect()->route('ambassador_points.index')->with('success', 'Points added successfully.');
@@ -118,17 +118,17 @@ class AmbassadorPointController extends Controller
     public function update($id, Request $request)
     {
         $request->validate([
-            'points' => 'required|integer|min:1|max:5',
+            'points' => 'required|numeric|min:0.01|max:5',
         ], [
             'points.required' => 'Please enter points for this candidate.',
-            'points.integer'  => 'Points must be a whole number from 1 to 5.',
-            'points.min'      => 'Points must be at least 1.',
-            'points.max'      => 'Points cannot be more than 5. Please enter a number from 1 to 5.',
+            'points.numeric'  => 'Points must be a number from 0.01 to 5 (decimals allowed).',
+            'points.min'      => 'Points must be at least 0.01.',
+            'points.max'      => 'Points cannot be more than 5. Please enter a number from 0.01 to 5.',
         ]);
         $ambassador_point = AmbassadorPoint::where('id', $id)->firstOrFail();
         if($ambassador_point) {
             $ambassador_point->update([
-                'points' => $request->points
+                'points' => round((float) $request->points, 2),
             ]);
         }
 

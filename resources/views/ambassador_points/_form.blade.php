@@ -72,13 +72,13 @@
                         id="points"
                         name="points"
                         class="form-control points-input mg-grade__input {{ $errors->has('points') ? 'is-invalid' : '' }}"
-                        value="{{ old('points', $point->points ?? '') }}"
-                        min="1"
+                        value="{{ old('points', isset($point) ? rtrim(rtrim(number_format((float) $point->points, 2, '.', ''), '0'), '.') : '') }}"
+                        min="0.01"
                         max="{{ $maxPoints }}"
-                        step="1"
-                        inputmode="numeric"
+                        step="0.01"
+                        inputmode="decimal"
                         data-max="{{ $maxPoints }}"
-                        data-min="1"
+                        data-min="0.01"
                         required>
                     <span class="mg-grade__input-cap">/ {{ $maxPoints }}</span>
                 </div>
@@ -244,12 +244,25 @@
     if (!form || !root || !input) return;
     form.setAttribute('novalidate', 'novalidate');
 
-    var max = parseInt(input.getAttribute('data-max'), 10) || 5;
-    var min = parseInt(input.getAttribute('data-min'), 10) || 1;
+    var max = parseFloat(input.getAttribute('data-max')) || 5;
+    var min = parseFloat(input.getAttribute('data-min'));
+    if (isNaN(min)) min = 0.01;
     var totalSpan = root.querySelector('.total-points');
     var totalBar = document.getElementById('mg-amb-total-bar');
     var bar = root.querySelector('[data-bar-for="points"]');
     var pctEl = root.querySelector('[data-pct-for="points"]');
+
+    function parseScore(raw) {
+        if (raw === '' || raw === '.' || raw === '-') return NaN;
+        var n = parseFloat(String(raw).replace(',', '.'));
+        return isNaN(n) ? NaN : Math.round(n * 100) / 100;
+    }
+
+    function formatScore(n) {
+        if (isNaN(n)) return '0';
+        var s = (Math.round(n * 100) / 100).toFixed(2);
+        return s.replace(/\.?0+$/, '');
+    }
 
     function scoreBarColor(ratio, over) {
         if (over) return '#dc2626';
@@ -280,8 +293,8 @@
     }
 
     function refresh() {
-        var raw = (input.value || '').trim();
-        var v = parseInt(raw, 10);
+        var raw = (input.value || '').trim().replace(',', '.');
+        var v = parseScore(raw);
         var validNum = raw !== '' && !isNaN(v);
         var over = validNum && v > max;
         var under = validNum && v < min;
@@ -305,7 +318,7 @@
                 pctEl.style.color = '#64748b';
             }
         }
-        if (totalSpan) totalSpan.textContent = validNum ? v : 0;
+        if (totalSpan) totalSpan.textContent = validNum ? formatScore(v) : '0';
         if (totalBar) {
             totalBar.style.width = (validNum ? Math.min(100, (Math.max(0, v) / max) * 100) : 0) + '%';
             if (over) totalBar.style.width = '100%';
@@ -319,11 +332,14 @@
     input.addEventListener('blur', refresh);
 
     form.addEventListener('submit', function (e) {
-        var v = parseInt(input.value, 10);
-        if (!isNaN(v) && v >= min && v <= max) return;
+        var v = parseScore((input.value || '').trim().replace(',', '.'));
+        if (!isNaN(v) && v >= min && v <= max) {
+            input.value = formatScore(v);
+            return;
+        }
         e.preventDefault();
-        var msg = 'Points cannot be more than ' + max + '. Please enter a number from ' + min + ' to ' + max + '.';
-        if (isNaN(v) || v < min) msg = 'Points must be at least ' + min + ' and at most ' + max + '.';
+        var msg = 'Points cannot be more than ' + max + '. Please enter a number from ' + min + ' to ' + max + ' (decimals allowed).';
+        if (isNaN(v) || v < min) msg = 'Points must be at least ' + min + ' and at most ' + max + ' (decimals allowed, e.g. 2.5).';
         var box = document.getElementById('amb-points-client-error');
         if (!box) {
             box = document.createElement('div');
