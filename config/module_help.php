@@ -98,11 +98,13 @@ return [
         ],
         'shots' => [
             ['file' => 'grade-judge.jpg', 'caption' => 'Judge grading — enter criteria scores', 'url' => null],
-            ['file' => 'contestants.jpg', 'caption' => 'Contestants on the public site', 'url' => '/contestants'],
+            ['file' => 'candidates-sheet-1.jpg', 'caption' => 'All candidates — sheet 1', 'url' => '/contestants'],
+            ['file' => 'candidates-sheet-2.jpg', 'caption' => 'All candidates — sheet 2', 'url' => '/contestants'],
         ],
         'videos' => [
-            ['file' => 'how-to-grade.mp4', 'caption' => 'Silent guide: Judge & Ambassador grading'],
+            ['file' => 'how-to-grade.mp4', 'caption' => 'Silent guide: grade every candidate (Judge & Ambassador)'],
         ],
+        'show_candidates' => true,
     ],
 
     'ambassador-point' => [
@@ -120,11 +122,13 @@ return [
         ],
         'shots' => [
             ['file' => 'grade-ambassador.jpg', 'caption' => 'Ambassador grading form', 'url' => null],
-            ['file' => 'contestants.jpg', 'caption' => 'Contestants on the public site', 'url' => '/contestants'],
+            ['file' => 'candidates-sheet-1.jpg', 'caption' => 'All candidates — sheet 1', 'url' => '/contestants'],
+            ['file' => 'candidates-sheet-2.jpg', 'caption' => 'All candidates — sheet 2', 'url' => '/contestants'],
         ],
         'videos' => [
-            ['file' => 'how-to-grade.mp4', 'caption' => 'Silent guide: Judge & Ambassador grading'],
+            ['file' => 'how-to-grade.mp4', 'caption' => 'Silent guide: grade every candidate (Judge & Ambassador)'],
         ],
+        'show_candidates' => true,
     ],
 
     'grading-setting' => [
@@ -141,7 +145,13 @@ return [
         ],
         'shots' => [
             ['file' => 'contestants.jpg', 'caption' => 'Public Vote Now ranking', 'url' => '/contestants'],
+            ['file' => 'candidates-sheet-1.jpg', 'caption' => 'All candidates — sheet 1', 'url' => '/contestants'],
+            ['file' => 'candidates-sheet-2.jpg', 'caption' => 'All candidates — sheet 2', 'url' => '/contestants'],
         ],
+        'videos' => [
+            ['file' => 'how-to-grade.mp4', 'caption' => 'Silent guide: grade every candidate (Judge & Ambassador)'],
+        ],
+        'show_candidates' => true,
     ],
 
     'coin' => [
@@ -210,7 +220,10 @@ return [
         'shots' => [
             ['file' => 'contestants.jpg', 'caption' => 'Vote Now contestant grid', 'url' => '/contestants'],
             ['file' => 'vote-profile.jpg', 'caption' => 'Contestant profile', 'url' => '/contestants'],
+            ['file' => 'candidates-sheet-1.jpg', 'caption' => 'All candidates — sheet 1', 'url' => '/contestants'],
+            ['file' => 'candidates-sheet-2.jpg', 'caption' => 'All candidates — sheet 2', 'url' => '/contestants'],
         ],
+        'show_candidates' => true,
     ],
 
     'account' => [

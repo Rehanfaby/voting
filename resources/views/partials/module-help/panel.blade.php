@@ -76,6 +76,10 @@
                         </ol>
                     @endif
 
+                    @if(!empty($guide['show_candidates']))
+                        @include('partials.module-help.candidates-gallery')
+                    @endif
+
                     @if(!empty($guide['tips']))
                         <div class="mg-help-box">
                             <strong>Tips</strong>

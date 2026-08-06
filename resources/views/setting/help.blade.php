@@ -271,11 +271,15 @@
                     {{-- Grading --}}
                     <div class="tab-pane fade" id="help-grading" role="tabpanel">
                         <h5>Judge &amp; Ambassador grading</h5>
+                        <div class="mg-help-box">
+                            <strong>Important:</strong> Every approved candidate must be graded once by each Judge and once by each Ambassador.
+                            Use <strong>Awaiting Candidate</strong> until the list is empty. The video below shows every candidate with photo and scoring criteria.
+                        </div>
                         <figure class="mg-help-video">
                             <video controls playsinline preload="metadata">
                                 <source src="{{ asset('public/videos/help/how-to-grade.mp4') }}?v={{ config('app.version') }}" type="video/mp4">
                             </video>
-                            <figcaption>Silent guide — How to grade as a Judge and as an Ambassador</figcaption>
+                            <figcaption>Silent guide — How to grade every candidate (Judge &amp; Ambassador)</figcaption>
                         </figure>
                         <ul>
                             <li><strong>Judge Grading</strong> / <strong>Ambassador Grading</strong>: enter points for contestants.</li>
@@ -291,7 +295,16 @@
                                 <img src="{{ asset('public/img/help/grade-ambassador.jpg') }}?v={{ config('app.version') }}" alt="Ambassador grading steps" loading="lazy">
                                 <figcaption>Ambassador grading steps</figcaption>
                             </figure>
+                            <figure class="mg-help-shot">
+                                <img src="{{ asset('public/img/help/candidates-sheet-1.jpg') }}?v={{ config('app.version') }}" alt="All candidates sheet 1" loading="lazy">
+                                <figcaption>All candidates — sheet 1</figcaption>
+                            </figure>
+                            <figure class="mg-help-shot">
+                                <img src="{{ asset('public/img/help/candidates-sheet-2.jpg') }}?v={{ config('app.version') }}" alt="All candidates sheet 2" loading="lazy">
+                                <figcaption>All candidates — sheet 2</figcaption>
+                            </figure>
                         </div>
+                        @include('partials.module-help.candidates-gallery')
                     </div>
 
                     {{-- Login --}}
