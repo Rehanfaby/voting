@@ -60,10 +60,12 @@
 }
 .mg-grade-page__card .card-body { padding: 18px; }
 @media (max-width: 767.98px) {
-    .mg-grade-page__hero { flex-direction: column; padding: 14px; gap: 10px; }
-    .mg-grade-page__title { font-size: 1.25rem; }
-    .mg-grade-page__badge { align-self: flex-start; }
-    .mg-grade-page__card .card-body { padding: 12px; }
+    .mg-grade-page { padding-left: 0; padding-right: 0; overflow-x: hidden; }
+    .mg-grade-page__hero { flex-direction: column; padding: 12px; gap: 8px; border-radius: 14px; }
+    .mg-grade-page__title { font-size: 1.15rem; }
+    .mg-grade-page__badge { align-self: flex-start; padding: 8px 12px; font-size: 12px; }
+    .mg-grade-page__card { border-radius: 14px; }
+    .mg-grade-page__card .card-body { padding: 10px; }
 }
 @media (min-width: 768px) {
     .mg-grade-page__title { font-size: 1.75rem; }

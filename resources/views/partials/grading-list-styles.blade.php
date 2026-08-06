@@ -98,8 +98,12 @@
     .mg-awaiting__grid { grid-template-columns: 1fr 1fr 1fr; }
 }
 @media (max-width: 575.98px) {
-    .mg-awaiting__hero { padding: 16px; }
+    .mg-awaiting { overflow-x: hidden; }
+    .mg-awaiting__hero { padding: 12px; border-radius: 14px; }
+    .mg-awaiting__title { font-size: 1.15rem; }
     .mg-awaiting__sub { font-size: 12px; }
+    .mg-awaiting__toolbar { gap: 8px; }
+    .mg-awaiting-card, .mg-list-card { width: 100%; max-width: 100%; }
     .mg-list-card__score strong { font-size: 1.15rem; }
 }
 </style>

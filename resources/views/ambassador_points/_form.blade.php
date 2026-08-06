@@ -216,15 +216,20 @@
     font-weight: 800; padding: 12px 22px; border-radius: 999px; min-height: 44px; flex-shrink: 0;
 }
 @media (max-width: 767.98px) {
+    .mg-amb-grade { max-width: 100%; width: 100%; box-sizing: border-box; }
     .mg-grade__criterion { padding: 12px; border-radius: 14px; }
-    .mg-grade__input-wrap { max-width: none; }
+    .mg-grade__score-row { gap: 8px; }
+    .mg-grade__input-wrap { max-width: none; flex: 1 1 auto; min-width: 0; }
     .mg-grade__input { height: 52px; font-size: 1.35rem; }
+    .mg-grade__pct { min-width: 40px; font-size: 11px; }
     .mg-grade__actions {
         flex-direction: column; align-items: stretch;
-        position: sticky; bottom: 8px; z-index: 5;
+        position: sticky; bottom: 0; z-index: 5;
+        margin-top: 14px;
     }
     .mg-grade__save { width: 100%; order: 2; }
     .mg-grade__total-block { order: 1; }
+    .mg-grade__total-value { font-size: 1.45rem; }
 }
 @media (min-width: 768px) {
     .mg-grade__meta, .mg-grade__meta--selects { grid-template-columns: 1fr 1fr; }

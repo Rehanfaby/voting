@@ -89,7 +89,7 @@
     <!-- Custom stylesheet - for your changes-->
     <link rel="stylesheet" href="<?php echo asset('public/css/custom-'.$general_setting->theme) ?>" type="text/css" id="custom-style">
     <!-- Modern admin theme overlay (Alpha Bridge inspired) -->
-    <link rel="stylesheet" href="<?php echo asset('public/css/admin-modern.css') ?>?v=20260721-home-switch" type="text/css" id="admin-modern-style">
+    <link rel="stylesheet" href="<?php echo asset('public/css/admin-modern.css') ?>?v=20260806-mobile-grade" type="text/css" id="admin-modern-style">
     <style>
         /* Header layout guarantee: logo top-left ALONE, fullscreen + language top-right.
            Inline so it always wins over any cached copy of the base theme / admin-modern.css. */
@@ -1210,7 +1210,39 @@
 
     if ($(window).outerWidth() > 1199) {
         $('nav.side-navbar').removeClass('shrink');
+        $('body').removeClass('mg-side-open');
+    } else {
+        /* Phones/tablets: start with menu closed so grading fills the screen. */
+        $('nav.side-navbar').addClass('shrink');
+        $('body').removeClass('mg-side-open');
     }
+
+    function mgSyncSideOpenClass() {
+        if ($(window).outerWidth() > 1199) {
+            $('body').removeClass('mg-side-open');
+            return;
+        }
+        $('body').toggleClass('mg-side-open', !$('nav.side-navbar').hasClass('shrink'));
+    }
+
+    $(document).on('click', '#toggle-btn', function () {
+        setTimeout(mgSyncSideOpenClass, 0);
+    });
+
+    $(document).on('click', 'body.mg-side-open', function (e) {
+        if ($(e.target).closest('nav.side-navbar, #toggle-btn, .menu-btn').length) {
+            return;
+        }
+        $('nav.side-navbar').addClass('shrink');
+        $('body').removeClass('mg-side-open');
+    });
+
+    $(document).on('click', 'nav.side-navbar a', function () {
+        if ($(window).outerWidth() <= 1199) {
+            $('nav.side-navbar').addClass('shrink');
+            $('body').removeClass('mg-side-open');
+        }
+    });
     function myFunction() {
         setTimeout(showPage, 150);
     }
