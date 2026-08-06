@@ -237,8 +237,8 @@
                                 </div>
                                 <div class="col-md-12">
                                     <hr>
-                                    <h5 class="mb-3">Voting &amp; Contestants</h5>
-                                    <p class="alert alert-info py-2 small mb-3"><i class="dripicons-information"></i> These toggles only change voting visibility and contestant workflow. They are safe — they will not take the site offline.</p>
+                                    <h5 class="mb-3">Voting, Grading &amp; Contestants</h5>
+                                    <p class="alert alert-info py-2 small mb-3"><i class="dripicons-information"></i> These toggles only change voting, grading access, and contestant workflow. They are safe — they will not take the site offline.</p>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-group">
@@ -262,6 +262,19 @@
                                                 {{ (int) ($lims_general_setting_data->is_voting_start ?? 0) === 1 ? 'checked' : '' }}>
                                             Allow visitors to cast votes
                                         </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>{{ trans('file.Available for Grading') }}</label><br>
+                                        <label class="checkbox-inline">
+                                            <input type="checkbox" class="setting-toggle" name="available_grading" value="1"
+                                                data-confirm-on="Enable grading? Judges and Ambassadors will be able to grade contestants."
+                                                data-confirm-off="Disable grading? Judges and Ambassadors will not be able to grade contestants."
+                                                {{ (int) ($lims_general_setting_data->available_grading ?? 0) === 1 ? 'checked' : '' }}>
+                                            {{ trans('file.Available for Grading') }}
+                                        </label>
+                                        <small class="form-text text-muted">When off, Judge/Ambassador grading is closed.</small>
                                     </div>
                                 </div>
                                 <div class="col-md-4">

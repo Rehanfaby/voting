@@ -125,6 +125,9 @@ class SettingController extends Controller
         if (Schema::hasColumn('general_settings', 'is_voting_start')) {
             $general_setting->is_voting_start = self::checkboxInt($request, 'is_voting_start');
         }
+        if (Schema::hasColumn('general_settings', 'available_grading')) {
+            $general_setting->available_grading = self::checkboxInt($request, 'available_grading');
+        }
         if (Schema::hasColumn('general_settings', 'require_contestant_approval')) {
             $general_setting->require_contestant_approval = self::checkboxInt($request, 'require_contestant_approval');
         }
@@ -183,7 +186,6 @@ class SettingController extends Controller
         $general_setting->judge_percentage = $request->judge_percentage;
         $general_setting->ambassador_percentage = $request->ambassador_percentage;
         $general_setting->number_of_elimination = $request->number_of_elimination;
-        $general_setting->available_grading = $request->available_grading;
 
         $general_setting->save();
         AppCache::forgetSharedData();

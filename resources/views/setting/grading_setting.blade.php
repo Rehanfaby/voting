@@ -62,19 +62,8 @@
                                     </span>
                                     @endif
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>{{trans('file.Available for Grading')}} *</label><br>
-                                        <input type="hidden" name="available_grading" value="0">
-                                        <label class="checkbox-inline">
-                                            <input type="checkbox" name="available_grading" value="1"
-                                                {{ $lims_general_setting_data->available_grading ? 'checked' : '' }}>
-                                            {{ trans('file.Available for Grading') }}
-                                        </label>
-                                    </div>
-                                </div>
                                 <div class="col-md-12">
-                                    <p class="text-muted small mb-0"><i class="dripicons-information"></i> Enable Voting and Hide Votes are managed under <a href="{{ route('setting.general') }}">General Settings</a>.</p>
+                                    <p class="text-muted small mb-0"><i class="dripicons-information"></i> {{ trans('file.Available for Grading') }}, Enable Voting, and Hide Votes are managed under <a href="{{ route('setting.general') }}">{{ trans('file.General Setting') }}</a>.</p>
                                 </div>
                             </div>
                             <div class="form-group">
