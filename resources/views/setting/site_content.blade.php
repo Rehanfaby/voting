@@ -466,45 +466,8 @@
                         <h4><i class="dripicons-photo-group"></i> Gallery</h4>
                     </div>
                     <div class="card-body">
-                        {!! Form::open(['route' => 'setting.site_content.section', 'method' => 'post', 'files' => true]) !!}
-                        <input type="hidden" name="section" value="gallery">
-                        <p class="italic"><small>Add photos to the public Gallery page. Paste (Ctrl/Cmd+V) or choose files below, then press <strong>Save</strong>.</small></p>
-
-                        <div id="gallery-paste-zone" class="sc-paste-zone mb-3" tabindex="0">
-                            <p class="mb-2"><strong>Paste or upload</strong> — click here and press <kbd>Ctrl+V</kbd> / <kbd>Cmd+V</kbd>, or choose files below.</p>
-                            <input type="file" name="gallery_images[]" id="gallery_images_input" accept="image/*" multiple class="form-control-file">
-                        </div>
-
-                        {{-- Thumbnails of newly pasted / chosen images (not yet saved) --}}
-                        <div class="row" id="gallery-new-preview" style="display:none;">
-                            <div class="col-12"><p class="mb-2"><small class="text-info"><i class="dripicons-photo"></i> {{ trans('file.New photos to be saved') }}</small></p></div>
-                            <div class="col-12"><div class="row" id="gallery-new-preview-items"></div></div>
-                        </div>
-
-                        <div class="row" id="gallery-existing">
-                            @foreach(($content['gallery'] ?? []) as $i => $g)
-                                @php $gimg = is_array($g) ? ($g['image'] ?? '') : $g; @endphp
-                                @if($gimg)
-                                <div class="col-md-3 col-6 mb-3 sc-gallery-card" data-image="{{ $gimg }}">
-                                    <div class="card h-100">
-                                        <div class="sc-gallery-thumb">
-                                            <img src="{{ \App\Helpers\SiteContent::publicUploadUrl($gimg) }}?v={{ config('app.version') }}" style="height:120px;width:100%;object-fit:cover;border-radius:6px 6px 0 0;">
-                                            <button type="button" class="sc-gallery-del" title="{{ trans('file.delete') }}" aria-label="{{ trans('file.delete') }}"><i class="dripicons-trash"></i></button>
-                                        </div>
-                                        <div class="card-body p-2">
-                                            <input type="hidden" name="gallery_existing[{{ $i }}]" value="{{ $gimg }}">
-                                            <input type="text" name="gallery_caption[{{ $i }}]" class="form-control form-control-sm" placeholder="Caption (optional)" value="{{ is_array($g) ? ($g['caption'] ?? '') : '' }}">
-                                        </div>
-                                    </div>
-                                </div>
-                                @endif
-                            @endforeach
-                        </div>
-
-                        <div class="sc-section-actions">
-                            <button type="submit" class="btn btn-primary">Save</button>
-                        </div>
-                        {!! Form::close() !!}
+                        <p class="mb-3">Gallery photos and albums (TikTok, Events, …) are managed under the dedicated <strong>Gallery</strong> menu.</p>
+                        <a href="{{ route('gallery.admin') }}" class="btn btn-primary"><i class="dripicons-photo-group"></i> Open Gallery manager</a>
                     </div>
                 </div>
             </div>

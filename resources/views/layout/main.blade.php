@@ -395,6 +395,7 @@
                 @endif
                 @if($general_setting_permission_active)
                     <li data-menu-key="site-content" id="site-content-top-menu"><a href="{{ route('setting.site_content') }}"><i class="dripicons-view-apps"></i><span>{{ trans('file.Site Content') }}</span></a></li>
+                    <li data-menu-key="gallery-admin" id="gallery-admin-top-menu"><a href="{{ route('gallery.admin') }}"><i class="dripicons-photo-group"></i><span>{{ trans('file.Gallery') }}</span></a></li>
                 @endif
                 <?php
                 $announcement_permission = DB::table('permissions')->where('name', 'announcement_index')->first();

@@ -407,40 +407,8 @@ class SettingController extends Controller
                 break;
 
             case 'gallery':
-                $gallery = [];
-                $existing = (array) $request->input('gallery_existing', []);
-                $captions = (array) $request->input('gallery_caption', []);
-                $removed = (array) $request->input('gallery_remove', []);
-                foreach ($existing as $i => $path) {
-                    $path = trim((string) $path);
-                    if ($path === '' || in_array((string) $i, array_map('strval', $removed), true)) {
-                        continue;
-                    }
-                    $gallery[] = ['image' => $path, 'caption' => trim((string) ($captions[$i] ?? ''))];
-                }
-                $galleryDir = public_path('uploads/gallery');
-                if (!is_dir($galleryDir)) {
-                    @mkdir($galleryDir, 0755, true);
-                }
-                $files = $request->file('gallery_images', []);
-                if (is_array($files)) {
-                    foreach ($files as $file) {
-                        if (!$file || !$file->isValid()) {
-                            continue;
-                        }
-                        $ext = strtolower($file->getClientOriginalExtension());
-                        if (!in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'], true)) {
-                            continue;
-                        }
-                        $name = 'gallery-' . time() . '-' . mt_rand(1000, 9999) . '.' . $ext;
-                        $file->move($galleryDir, $name);
-                        ImageOptimizer::afterUpload($galleryDir . '/' . $name, 'banner');
-                        $gallery[] = ['image' => 'uploads/gallery/' . $name, 'caption' => ''];
-                    }
-                }
-                $data['gallery'] = array_values($gallery);
-                $message = 'Gallery saved.';
-                break;
+                // Gallery is managed under the dedicated Gallery menu.
+                return redirect()->route('gallery.admin')->with('message', 'Gallery is managed under the Gallery menu.');
 
             case 'frontend_menu_order':
                 $postedOrder = (array) $request->input('frontend_menu_order', []);

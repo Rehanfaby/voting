@@ -91,9 +91,10 @@ class HomeController extends Controller
 
     public function gallery()
     {
+        $groups = \App\Helpers\SiteContent::galleryItemsByCategory();
         $images = \App\Helpers\SiteContent::galleryItems();
 
-        return view('frontend.gallery', compact('images'));
+        return view('frontend.gallery', compact('groups', 'images'));
     }
 
     public function contact()

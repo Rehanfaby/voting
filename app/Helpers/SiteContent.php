@@ -35,6 +35,7 @@ class SiteContent
             'account'          => 'Accounting',
             'report'           => 'Reports',
             'site-content'     => 'Site Content',
+            'gallery-admin'    => 'Gallery',
             'announcement'     => 'Announcements',
             'setting'          => 'Settings',
         ];
@@ -148,7 +149,13 @@ class SiteContent
             'popup_countdown' => false,
             'popup_countdown_at' => null,
             'popup_countdown_label' => '',
-            // Homepage / site gallery images: [ ['image' => 'uploads/gallery/x.jpg', 'caption' => ''], ... ]
+            // Site gallery albums + images (public /gallery page).
+            // categories: [ ['id' => 'tiktok', 'name' => 'TikTok', 'slug' => 'tiktok', 'sort' => 1], ... ]
+            // images:     [ ['image' => 'uploads/gallery/x.jpg', 'caption' => '', 'category_id' => 'tiktok'], ... ]
+            'gallery_categories' => [
+                ['id' => 'general', 'name' => 'General', 'slug' => 'general', 'sort' => 0],
+                ['id' => 'tiktok', 'name' => 'TikTok', 'slug' => 'tiktok', 'sort' => 1],
+            ],
             'gallery' => [],
             // Countdown toggles (checkboxes in Settings > Site Content).
             'casting_countdown' => true,
@@ -178,7 +185,7 @@ class SiteContent
             'menu_order' => [
                 'dashboard', 'product', 'vote', 'point', 'ambassador-point',
                 'grading-setting', 'coin', 'expense', 'people', 'contestants',
-                'account', 'report', 'site-content', 'announcement', 'setting',
+                'account', 'report', 'site-content', 'gallery-admin', 'announcement', 'setting',
             ],
             'frontend_menu_order' => [
                 'buy_tickets', 'home', 'about', 'gallery', 'contact', 'vote_now',
@@ -239,11 +246,12 @@ class SiteContent
             $merged['sections'] = array_merge($defaults['sections'], $data['sections']);
         }
         // arrays of rows must replace, not merge by index
-        foreach (['casting_rows', 'primes', 'menu_order', 'frontend_menu_order', 'gallery'] as $listKey) {
+        foreach (['casting_rows', 'primes', 'menu_order', 'frontend_menu_order', 'gallery', 'gallery_categories'] as $listKey) {
             if (isset($data[$listKey]) && is_array($data[$listKey])) {
                 $merged[$listKey] = array_values($data[$listKey]);
             }
         }
+        $merged = self::normalizeGalleryData($merged);
         if (isset($data['about_page']) && is_array($data['about_page'])) {
             $merged['about_page'] = array_merge($defaults['about_page'] ?? [], $data['about_page']);
         }
@@ -310,8 +318,89 @@ class SiteContent
         return $dt->toIso8601String();
     }
 
-    /** Site gallery items: array of ['url' => ..., 'caption' => ...]. */
-    public static function galleryItems()
+    /**
+     * Ensure gallery categories exist and every image has a category_id.
+     * Migrates legacy flat gallery items into "General".
+     */
+    public static function normalizeGalleryData(array $data)
+    {
+        $categories = is_array($data['gallery_categories'] ?? null) ? $data['gallery_categories'] : [];
+        if (empty($categories)) {
+            $categories = self::defaults()['gallery_categories'];
+        }
+        $normalizedCats = [];
+        $seenIds = [];
+        foreach ($categories as $i => $cat) {
+            if (!is_array($cat)) {
+                continue;
+            }
+            $name = trim((string) ($cat['name'] ?? ''));
+            if ($name === '') {
+                continue;
+            }
+            $id = trim((string) ($cat['id'] ?? ''));
+            if ($id === '') {
+                $id = preg_replace('/[^a-z0-9]+/', '-', strtolower($name));
+                $id = trim($id, '-') ?: ('cat-' . ($i + 1));
+            }
+            if (isset($seenIds[$id])) {
+                $id .= '-' . ($i + 1);
+            }
+            $seenIds[$id] = true;
+            $slug = trim((string) ($cat['slug'] ?? $id));
+            $normalizedCats[] = [
+                'id' => $id,
+                'name' => $name,
+                'slug' => $slug !== '' ? $slug : $id,
+                'sort' => (int) ($cat['sort'] ?? $i),
+            ];
+        }
+        if (empty($normalizedCats)) {
+            $normalizedCats = self::defaults()['gallery_categories'];
+        }
+        usort($normalizedCats, function ($a, $b) {
+            return ($a['sort'] ?? 0) <=> ($b['sort'] ?? 0);
+        });
+        $defaultCatId = $normalizedCats[0]['id'];
+        $validIds = array_column($normalizedCats, 'id');
+
+        $items = is_array($data['gallery'] ?? null) ? $data['gallery'] : [];
+        $normalizedItems = [];
+        foreach ($items as $item) {
+            if (is_string($item)) {
+                $item = ['image' => $item, 'caption' => '', 'category_id' => $defaultCatId];
+            }
+            if (!is_array($item) || empty($item['image'])) {
+                continue;
+            }
+            $catId = trim((string) ($item['category_id'] ?? ''));
+            if ($catId === '' || !in_array($catId, $validIds, true)) {
+                $catId = $defaultCatId;
+            }
+            $normalizedItems[] = [
+                'image' => (string) $item['image'],
+                'caption' => trim((string) ($item['caption'] ?? '')),
+                'category_id' => $catId,
+            ];
+        }
+
+        $data['gallery_categories'] = array_values($normalizedCats);
+        $data['gallery'] = array_values($normalizedItems);
+        return $data;
+    }
+
+    /** Gallery albums/categories for admin + frontend tabs. */
+    public static function galleryCategories()
+    {
+        $cats = self::get('gallery_categories', []);
+        return is_array($cats) ? $cats : [];
+    }
+
+    /**
+     * Site gallery items: array of ['url','caption','category_id','image'].
+     * Pass $categoryId to filter one album; null returns all.
+     */
+    public static function galleryItems($categoryId = null)
     {
         $items = self::get('gallery', []);
         if (!is_array($items)) {
@@ -320,17 +409,46 @@ class SiteContent
         $out = [];
         foreach ($items as $item) {
             if (is_string($item)) {
-                $item = ['image' => $item, 'caption' => ''];
+                $item = ['image' => $item, 'caption' => '', 'category_id' => 'general'];
             }
             if (!is_array($item) || empty($item['image']) || !self::uploadExists($item['image'])) {
+                continue;
+            }
+            $catId = (string) ($item['category_id'] ?? 'general');
+            if ($categoryId !== null && $catId !== (string) $categoryId) {
                 continue;
             }
             $out[] = [
                 'url' => self::publicUploadUrl($item['image']),
                 'caption' => trim((string) ($item['caption'] ?? '')),
+                'category_id' => $catId,
+                'image' => (string) $item['image'],
             ];
         }
         return $out;
+    }
+
+    /** Group gallery items by category_id for the public page. */
+    public static function galleryItemsByCategory()
+    {
+        $grouped = [];
+        foreach (self::galleryCategories() as $cat) {
+            $grouped[$cat['id']] = [
+                'category' => $cat,
+                'items' => [],
+            ];
+        }
+        foreach (self::galleryItems() as $item) {
+            $id = $item['category_id'];
+            if (!isset($grouped[$id])) {
+                $grouped[$id] = [
+                    'category' => ['id' => $id, 'name' => $id, 'slug' => $id, 'sort' => 999],
+                    'items' => [],
+                ];
+            }
+            $grouped[$id]['items'][] = $item;
+        }
+        return array_values($grouped);
     }
 
     /** An About-page social link (facebook/instagram/tiktok), or null. */
