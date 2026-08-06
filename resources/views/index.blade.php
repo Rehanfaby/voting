@@ -79,21 +79,11 @@
       </div>
     </div>
 
-    <div class="mg-grader-cta">
-      <a href="{{ $awaitingRoute }}" class="btn btn-primary btn-lg">
-        <i class="fa fa-pencil"></i> {{ trans('file.Awaiting Candidate') }}
-      </a>
-      <a href="#module-help" class="btn btn-outline-primary btn-lg" onclick="if(window.msShowModuleHelp){event.preventDefault();window.msShowModuleHelp('{{ $roleNameLower === 'ambassador' ? 'ambassador-point' : 'point' }}');}">
-        <i class="dripicons-question"></i> {{ trans('file.Help') }}
-      </a>
-    </div>
   </div>
 </div>
 <style>
 .mg-grader-stats { grid-template-columns: 1fr; max-width: 920px; }
 @media (min-width: 768px) { .mg-grader-stats { grid-template-columns: repeat(3, 1fr); } }
-.mg-grader-cta { display: flex; flex-wrap: wrap; gap: 12px; margin: 8px 0 28px; }
-.mg-grader-cta .btn { border-radius: 12px; font-weight: 700; }
 </style>
 @else
 @php
