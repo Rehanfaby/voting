@@ -50,6 +50,11 @@ class StorePointRequest extends FormRequest
     {
         return [
             'judge_id.unique' => 'You have already given grading to this candidate.',
+            'accuracy.max' => 'Accuracy cannot be more than 30 (30_Max).',
+            'song_choice.max' => 'Song choice cannot be more than 10 (10_Max).',
+            'depth.max' => 'Depth and atmosphere cannot be more than 20 (20_Max).',
+            'interpretation.max' => 'Interpretation cannot be more than 20 (20_Max).',
+            'overall_presentation.max' => 'Overall presentation cannot be more than 20 (20_Max).',
         ];
     }
 }

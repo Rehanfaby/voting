@@ -22,9 +22,9 @@ return [
     | Bump this on each release. Displayed on the login screen and footer.
     */
 
-    'version' => env('APP_VERSION', '3.0.27'),
+    'version' => env('APP_VERSION', '3.0.28'),
 
-    'version_label' => 'MGT V.' . env('APP_VERSION', '3.0.27'),
+    'version_label' => 'MGT V.' . env('APP_VERSION', '3.0.28'),
 
     /*
     |--------------------------------------------------------------------------
