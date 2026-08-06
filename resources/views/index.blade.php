@@ -29,15 +29,31 @@
     $pendingGrading = 0;
     if ($isGraderDashboard) {
         $uid = (int) Auth::id();
+        // Only count grades for current active+approved contestants (same pool as Awaiting Grading).
+        // Orphan rows left after contestant purge must not inflate "Number Graded".
         if ($roleNameLower === 'ambassador') {
             $gradedByMe = (int) $__safe(function () use ($uid) {
-                return \DB::table('ambassador_points')->where('ambassador_id', $uid)->distinct()->count('candidate_id');
+                return \App\Employee::where('is_active', true)
+                    ->where('is_approve', true)
+                    ->whereIn('id', function ($q) use ($uid) {
+                        $q->select('candidate_id')
+                            ->from('ambassador_points')
+                            ->where('ambassador_id', $uid);
+                    })
+                    ->count();
             });
             $awaitingRoute = route('ambassador_points.awaiting_candidates');
             $listingRoute = route('ambassador_points.index');
         } else {
             $gradedByMe = (int) $__safe(function () use ($uid) {
-                return \DB::table('points')->where('judge_id', $uid)->distinct()->count('candidate_id');
+                return \App\Employee::where('is_active', true)
+                    ->where('is_approve', true)
+                    ->whereIn('id', function ($q) use ($uid) {
+                        $q->select('candidate_id')
+                            ->from('points')
+                            ->where('judge_id', $uid);
+                    })
+                    ->count();
             });
             $awaitingRoute = route('points.awaiting_candidates');
             $listingRoute = route('points.index');
