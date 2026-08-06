@@ -7,7 +7,7 @@
                 </div>
                 <div class="card-body">
                     @if ($errors->any())
-                        <div class="alert alert-danger">
+                        <div class="alert alert-danger alert-validation">
                             <ul class="mb-0">
                                 @foreach ($errors->all() as $error)
                                     <li>{{ $error }}</li>
@@ -15,7 +15,7 @@
                             </ul>
                         </div>
                     @endif
-                    <form action="{{ route('ambassador_points.update', $point) }}" method="POST">
+                    <form action="{{ route('ambassador_points.update', $point) }}" method="POST" novalidate>
                         @method('PUT')
                         @include('ambassador_points._form')
                     </form>
