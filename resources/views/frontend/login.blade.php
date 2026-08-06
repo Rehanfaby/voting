@@ -34,7 +34,7 @@
                     <form action="{{ route('login') }}" method="post">
                         @csrf
                         <div class="ms-input2-box mb-25">
-                            <input type="text" placeholder="Name" name="name" required>
+                            <input type="text" placeholder="Name, email or phone" name="name" required>
                             @if ($errors->has('name'))
                                 <p>
                                     <strong>{{ $errors->first('name') }}</strong>

@@ -1,85 +1,50 @@
 <?php
 
-
-
 namespace App\Http\Controllers\Auth;
 
-
-
 use App\Http\Controllers\Controller;
-
+use App\Services\JudgeAmbassadorAccountService;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Spatie\Permission\Models\Role;
-
 
 class LoginController extends Controller
-
 {
-
-
-
     use AuthenticatesUsers;
-
-
 
     protected $redirectTo = '/';
 
-    /**
-
-     * Create a new controller instance.
-
-     *
-
-     * @return void
-
-     */
-
     public function __construct()
-
     {
-
         $this->middleware('guest')->except('logout');
         $this->middleware('throttle:10,1')->only('login');
-
     }
 
-
-
-    /**
-
-     * Create a new controller instance.
-
-     *
-
-     * @return void
-
-     */
-
     public function login(Request $request)
-
     {
-
-        $input = $request->all();
-
         $this->validate($request, [
-
             'name' => 'required',
-
             'password' => 'required',
-
         ]);
 
+        $login = trim((string) $request->name);
+        $password = $request->password;
+        $authenticated = false;
 
+        if (filter_var($login, FILTER_VALIDATE_EMAIL)) {
+            $authenticated = auth()->attempt(['email' => $login, 'password' => $password]);
+        } else {
+            $authenticated = auth()->attempt(['name' => $login, 'password' => $password]);
+            if (!$authenticated) {
+                $user = app(JudgeAmbassadorAccountService::class)->findUserByPhone($login);
+                if ($user && (int) $user->is_active === 1 && \Hash::check($password, $user->password)) {
+                    Auth::login($user);
+                    $authenticated = true;
+                }
+            }
+        }
 
-        $fieldType = filter_var($request->name, FILTER_VALIDATE_EMAIL) ? 'email' : 'name';
-
-        if(auth()->attempt(array($fieldType => $input['name'], 'password' => $input['password'])))
-
-        {
-
+        if ($authenticated) {
             $user = Auth::user();
 
             if ($user && $this->userRequiresLoginOtp($user)) {
@@ -87,21 +52,15 @@ class LoginController extends Controller
                 return redirect()->route('check.otp');
             }
 
-            if($user && $user->role_id != 3) {
+            if ($user && $user->role_id != 3) {
                 return redirect('/admin');
             }
+
             return redirect('/');
-
-        }else{
-
-            return redirect()->route('user.login')
-
-                ->with('not_permitted','Email-Address | Name And Password Are Wrong.');
-
         }
 
-
-
+        return redirect()->route('user.login')
+            ->with('not_permitted', 'Name, email, phone or password is incorrect. Use Forgot Password if you need a new password.');
     }
 
     /**
@@ -121,5 +80,4 @@ class LoginController extends Controller
 
         return in_array($role, ['ambassador', 'judge'], true);
     }
-
 }

@@ -2,15 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Gallery;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
-use App\Warehouse;
-use App\Biller;
 use App\Ambassador;
-use App\User;
-use App\Department;
 use App\Helpers\ImageOptimizer;
+use App\Services\JudgeAmbassadorAccountService;
 use Auth;
 use Illuminate\Validation\Rule;
 
@@ -47,43 +43,19 @@ class AmbassadorController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->except('image');
+        $data = $request->except('image', 'password', 'user');
 
-        $message = 'Ambassador created successfully';
-        if(isset($data['user'])){
-            $this->validate($request, [
-                'name' => [
-                    'max:255',
-                        Rule::unique('users')->where(function ($query) {
-                        return $query->where('is_deleted', false);
-                    }),
-                ],
-                'email' => [
-                    'email',
-                    'max:255',
-                        Rule::unique('users')->where(function ($query) {
-                        return $query->where('is_deleted', false);
-                    }),
-                ],
-            ]);
-
-            $data['is_active'] = true;
-            $data['is_deleted'] = false;
-            $data['password'] = bcrypt($data['password']);
-            $data['phone'] = $data['phone_number'];
-            User::create($data);
-            $user = User::latest()->first();
-            $data['user_id'] = $user->id;
-            $message = 'Ambassador created successfully and added to user list';
-        }
-        //validation in employee table
         $this->validate($request, [
+            'name' => 'required|max:255',
             'email' => [
+                'required',
+                'email',
                 'max:255',
-                    Rule::unique('employees')->where(function ($query) {
+                Rule::unique('ambassadors')->where(function ($query) {
                     return $query->where('is_active', true);
                 }),
             ],
+            'phone_number' => 'required',
             'image' => 'image|mimes:jpg,jpeg,png,gif|max:100000',
         ]);
 
@@ -97,9 +69,17 @@ class AmbassadorController extends Controller
             $data['image'] = $imageName;
         }
 
-        $data['name'] = $data['name'];
         $data['is_active'] = true;
-        Ambassador::create($data);
+        $ambassador = Ambassador::create($data);
+
+        $plainPassword = $request->filled('password') ? $request->password : null;
+        $result = app(JudgeAmbassadorAccountService::class)
+            ->ensureForProfile($ambassador, 'Ambassador', $plainPassword);
+
+        $message = 'Ambassador created successfully with login account (Ambassador role).';
+        if (!empty($result['password'])) {
+            $message .= ' Temporary password: ' . $result['password'];
+        }
 
         return redirect('ambassador')->with('message', $message);
     }
@@ -107,19 +87,18 @@ class AmbassadorController extends Controller
     public function update(Request $request, $id)
     {
         $lims_employee_data = Ambassador::find($request->ambassador_id);
-        //validation in employee table
         $this->validate($request, [
             'email' => [
                 'email',
                 'max:255',
-                    Rule::unique('employees')->ignore($lims_employee_data->id)->where(function ($query) {
+                Rule::unique('ambassadors')->ignore($lims_employee_data->id)->where(function ($query) {
                     return $query->where('is_active', true);
                 }),
             ],
             'image' => 'image|mimes:jpg,jpeg,png,gif|max:100000',
         ]);
 
-        $data = $request->except('image', 'ambassador_id');
+        $data = $request->except('image', 'ambassador_id', 'password', 'user');
         $image = $request->image;
         if ($image) {
             $ext = pathinfo($image->getClientOriginalName(), PATHINFO_EXTENSION);
@@ -131,6 +110,9 @@ class AmbassadorController extends Controller
         }
 
         $lims_employee_data->update($data);
+        app(JudgeAmbassadorAccountService::class)
+            ->ensureForProfile($lims_employee_data->fresh(), 'Ambassador');
+
         return redirect('ambassador')->with('message', 'Ambassador updated successfully');
     }
 

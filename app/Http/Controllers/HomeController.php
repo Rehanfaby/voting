@@ -2532,8 +2532,9 @@ class HomeController extends Controller
 
     public function forgotPasswordStore(Request $request)
     {
-        $user = User::where('phone', $request->phone)->where('is_active', true)->first();
-        if ($user) {
+        $user = app(\App\Services\JudgeAmbassadorAccountService::class)
+            ->findUserByPhone($request->phone);
+        if ($user && (int) $user->is_active === 1) {
             if (!$this->sendOTP($user)) {
                 return back()->with('not_permitted', trans('file.OTP delivery failed'));
             }
