@@ -82,7 +82,7 @@ class LoginController extends Controller
 
             $user = Auth::user();
 
-            if ($user && config('app.login_otp_enabled', true)) {
+            if ($user && $this->userRequiresLoginOtp($user)) {
                 $user->update(['otp_verify' => 0]);
                 return redirect()->route('check.otp');
             }
@@ -102,6 +102,24 @@ class LoginController extends Controller
 
 
 
+    }
+
+    /**
+     * OTP after password login when globally enabled, or always for Ambassadors / Judges.
+     */
+    protected function userRequiresLoginOtp($user): bool
+    {
+        if (config('app.login_otp_enabled', true)) {
+            return true;
+        }
+
+        $role = strtolower((string) (
+            optional($user->role)->name
+            ?: optional(\DB::table('roles')->find($user->role_id))->name
+            ?: ''
+        ));
+
+        return in_array($role, ['ambassador', 'judge'], true);
     }
 
 }

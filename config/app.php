@@ -22,16 +22,16 @@ return [
     | Bump this on each release. Displayed on the login screen and footer.
     */
 
-    'version' => env('APP_VERSION', '3.0.21'),
+    'version' => env('APP_VERSION', '3.0.22'),
 
-    'version_label' => 'MGT V.' . env('APP_VERSION', '3.0.21'),
+    'version_label' => 'MGT V.' . env('APP_VERSION', '3.0.22'),
 
     /*
     |--------------------------------------------------------------------------
     | Login OTP
     |--------------------------------------------------------------------------
-    | When enabled, users must verify a WhatsApp OTP after login. Disabled by
-    | default; flip LOGIN_OTP_ENABLED=true in .env to turn it back on.
+    | When LOGIN_OTP_ENABLED=true, all users verify a WhatsApp OTP after login.
+    | Ambassadors and Judges always require OTP even if this flag is false.
     */
     'login_otp_enabled' => env('LOGIN_OTP_ENABLED', true),
 

@@ -56,20 +56,6 @@
     </div>
 
     <div class="ms-stat-grid mg-grader-stats">
-      <div class="ms-stat" style="--ms-accent:#1d4ed8;">
-        <div class="ms-stat-icon"><i class="fa fa-microphone"></i></div>
-        <div class="ms-stat-body">
-          <div class="ms-stat-value">{{ number_format($totalContestants) }}</div>
-          <div class="ms-stat-label">Number of Contestants</div>
-        </div>
-      </div>
-      <a href="{{ $listingRoute }}" class="ms-stat" style="--ms-accent:#16a34a;">
-        <div class="ms-stat-icon"><i class="fa fa-check-circle"></i></div>
-        <div class="ms-stat-body">
-          <div class="ms-stat-value">{{ number_format($gradedByMe) }}</div>
-          <div class="ms-stat-label">Number Graded</div>
-        </div>
-      </a>
       <a href="{{ $awaitingRoute }}" class="ms-stat" style="--ms-accent:#f59e0b;">
         <div class="ms-stat-icon"><i class="fa fa-hourglass-half"></i></div>
         <div class="ms-stat-body">
@@ -77,6 +63,20 @@
           <div class="ms-stat-label">Pending Grading</div>
         </div>
       </a>
+      <a href="{{ $listingRoute }}" class="ms-stat" style="--ms-accent:#16a34a;">
+        <div class="ms-stat-icon"><i class="fa fa-check-circle"></i></div>
+        <div class="ms-stat-body">
+          <div class="ms-stat-value">{{ number_format($gradedByMe) }}</div>
+          <div class="ms-stat-label">Number Graded</div>
+        </div>
+      </a>
+      <div class="ms-stat" style="--ms-accent:#1d4ed8;">
+        <div class="ms-stat-icon"><i class="fa fa-microphone"></i></div>
+        <div class="ms-stat-body">
+          <div class="ms-stat-value">{{ number_format($totalContestants) }}</div>
+          <div class="ms-stat-label">Number of Contestants</div>
+        </div>
+      </div>
     </div>
 
     <div class="mg-grader-cta">
