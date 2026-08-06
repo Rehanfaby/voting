@@ -27,6 +27,7 @@
             @endif
             <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#sc-frontend_menu" role="tab"><i class="dripicons-web"></i> {{ trans('file.Landing Menu') }}</a></li>
             <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#sc-menu_order" role="tab"><i class="dripicons-menu"></i> Side Menu</a></li>
+            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#sc-help" role="tab" id="sc-help-tab"><i class="dripicons-question"></i> {{ trans('file.Help') }}</a></li>
         </ul>
 
         <div class="tab-content sc-tab-content">
@@ -832,6 +833,49 @@
                 </div>
             </div>
         </div>
+        </div>
+
+        {{-- Module Help (last tab) --}}
+        <div class="tab-pane fade" id="sc-help" role="tabpanel">
+            <div class="row">
+                <div class="col-md-12">
+                    @php $guide = config('module_help.site-content', []); $version = config('app.version'); @endphp
+                    <div class="card mg-help-card">
+                        <div class="card-header d-flex align-items-center justify-content-between flex-wrap">
+                            <h4 class="mb-0"><i class="dripicons-question"></i> {{ trans('file.Help') }} — {{ $guide['title'] ?? 'Site Content' }}</h4>
+                            <a href="{{ route('setting.help') }}" class="btn btn-sm btn-outline-primary">{{ trans('file.User Guide') }}</a>
+                        </div>
+                        <div class="card-body">
+                            <p class="mg-help-intro">{{ $guide['intro'] ?? '' }}</p>
+                            @if(!empty($guide['shots']))
+                                <div class="mg-help-shot-grid">
+                                    @foreach($guide['shots'] as $shot)
+                                        @php
+                                            $src = asset('public/img/help/' . $shot['file']) . '?v=' . $version;
+                                            $url = !empty($shot['url']) ? (strpos($shot['url'], 'http') === 0 ? $shot['url'] : url($shot['url'])) : null;
+                                        @endphp
+                                        <figure class="mg-help-shot">
+                                            @if($url)<a href="{{ $url }}" target="_blank" rel="noopener">@endif
+                                            <img src="{{ $src }}" alt="{{ $shot['caption'] ?? '' }}" loading="lazy">
+                                            @if($url)</a>@endif
+                                            <figcaption>{{ $shot['caption'] ?? '' }}</figcaption>
+                                        </figure>
+                                    @endforeach
+                                </div>
+                            @endif
+                            @if(!empty($guide['steps']))
+                                <h6>How to use</h6>
+                                <ol class="mg-help-steps">
+                                    @foreach($guide['steps'] as $step)<li>{!! $step !!}</li>@endforeach
+                                </ol>
+                            @endif
+                            @if(!empty($guide['tips']))
+                                <div class="mg-help-box"><strong>Tips</strong><ul class="mb-0">@foreach($guide['tips'] as $tip)<li>{!! $tip !!}</li>@endforeach</ul></div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         </div>{{-- /.tab-content --}}

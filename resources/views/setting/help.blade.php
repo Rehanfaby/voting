@@ -10,9 +10,9 @@
             </div>
             <div class="card-body">
                 <p class="mg-help-intro">
-                    In-app guide for staff. Use the tabs below to find a topic.
-                    Screenshots below are live captures from <strong>mulemagc.com</strong>.
-                    Later, module-specific help can be opened from each area for roles that do not have Settings access.
+                    Full platform guide for staff. Use the tabs below to find a topic.
+                    Screenshots are live captures from <strong>mulemagc.com</strong>.
+                    Every backend menu also has a <strong>Help</strong> tab (last) with a short guide for that area.
                 </p>
 
                 <ul class="nav nav-tabs sc-tabs mg-help-tabs" id="help-tab-nav" role="tablist">
@@ -99,6 +99,12 @@
                             <li>Search (header or page) filters by name. Zone blink speeds up on search hits.</li>
                         </ul>
                         <h6>Casting a vote</h6>
+                        <figure class="mg-help-video">
+                            <video controls playsinline preload="metadata">
+                                <source src="{{ asset('public/videos/help/how-to-vote.mp4') }}?v={{ config('app.version') }}" type="video/mp4">
+                            </video>
+                            <figcaption>Silent guide — How to vote</figcaption>
+                        </figure>
                         <ol class="mg-help-steps">
                             <li>Open a contestant → choose number of votes.</li>
                             <li>Enter voter name, MoMo/OM number, WhatsApp number (or Visa/card).</li>
@@ -265,11 +271,27 @@
                     {{-- Grading --}}
                     <div class="tab-pane fade" id="help-grading" role="tabpanel">
                         <h5>Judge &amp; Ambassador grading</h5>
+                        <figure class="mg-help-video">
+                            <video controls playsinline preload="metadata">
+                                <source src="{{ asset('public/videos/help/how-to-grade.mp4') }}?v={{ config('app.version') }}" type="video/mp4">
+                            </video>
+                            <figcaption>Silent guide — How to grade as a Judge and as an Ambassador</figcaption>
+                        </figure>
                         <ul>
                             <li><strong>Judge Grading</strong> / <strong>Ambassador Grading</strong>: enter points for contestants.</li>
                             <li><strong>Grading Setting</strong>: weights (vote %, judge %, ambassador %), elimination count for grading lists.</li>
                             <li>Public “Most Voted” and Vote Now zones are separate from grading elimination lists — configure each in its own place.</li>
                         </ul>
+                        <div class="mg-help-shot-grid">
+                            <figure class="mg-help-shot">
+                                <img src="{{ asset('public/img/help/grade-judge.jpg') }}?v={{ config('app.version') }}" alt="Judge grading steps" loading="lazy">
+                                <figcaption>Judge grading steps</figcaption>
+                            </figure>
+                            <figure class="mg-help-shot">
+                                <img src="{{ asset('public/img/help/grade-ambassador.jpg') }}?v={{ config('app.version') }}" alt="Ambassador grading steps" loading="lazy">
+                                <figcaption>Ambassador grading steps</figcaption>
+                            </figure>
+                        </div>
                     </div>
 
                     {{-- Login --}}
@@ -399,6 +421,11 @@
 .mg-help-shot-grid {
     display: grid; gap: 14px; margin-bottom: 8px;
 }
+.mg-help-video {
+    margin: 12px 0 18px; background: #0a2350; border-radius: 12px; overflow: hidden;
+}
+.mg-help-video video { display: block; width: 100%; max-height: 420px; background: #000; }
+.mg-help-video figcaption { padding: 8px 12px; font-size: 12px; color: #e2e8f0; margin: 0; }
 @media (min-width: 992px) {
     .mg-help-shot-grid { grid-template-columns: 1fr 1fr; }
 }

@@ -887,7 +887,10 @@
 
     <div style="display:none" id="content" class="animate-bottom">
         <nav id="ms-section-tabs" class="ms-section-tabs" aria-label="Section navigation" style="display:none"></nav>
-        @yield('content')
+        <div id="ms-page-body">
+            @yield('content')
+        </div>
+        @include('partials.module-help.panel')
     </div>
 
     <footer class="main-footer">
@@ -916,54 +919,234 @@
     }
 </script>
 <script type="text/javascript">
-    /* Build colorful page-level tabs from the active sidebar submenu group. */
+    /* Section tabs from the active sidebar group + Help as the last tab. */
     (function () {
+        var HELP_LABEL = @json(trans('file.Help'));
+        var GUIDE_TITLES = @json(collect(config('module_help', []))->mapWithKeys(function ($g, $k) {
+            return [$k => $g['title'] ?? $k];
+        }));
+
+        function normalizePath(p) {
+            return (p || '/').replace(/\/+$/, '') || '/';
+        }
+
+        function detectMenuKey() {
+            var path = normalizePath(window.location.pathname);
+            var bestKey = null, bestLen = -1;
+            document.querySelectorAll('nav.side-navbar .side-menu li[data-menu-key]').forEach(function (li) {
+                var key = li.getAttribute('data-menu-key');
+                var anchors = li.querySelectorAll('a');
+                anchors.forEach(function (a) {
+                    var href = a.getAttribute('href');
+                    if (!href || href === '#' || href === '') return;
+                    var lp;
+                    try { lp = normalizePath(new URL(a.href, window.location.origin).pathname); } catch (e) { return; }
+                    if (lp === '/') return;
+                    if (path === lp || path.indexOf(lp + '/') === 0) {
+                        if (lp.length > bestLen) { bestLen = lp.length; bestKey = key; }
+                    }
+                });
+            });
+            return bestKey || 'dashboard';
+        }
+
+        function showModuleHelp(key) {
+            var panel = document.getElementById('ms-module-help');
+            var body = document.getElementById('ms-page-body');
+            if (!panel) return;
+            key = key || detectMenuKey();
+            var panes = panel.querySelectorAll('.ms-module-help-pane');
+            var shown = false;
+            panes.forEach(function (pane) {
+                var match = pane.getAttribute('data-help-key') === key;
+                pane.style.display = match ? 'block' : 'none';
+                if (match) shown = true;
+            });
+            if (!shown) {
+                var fallback = panel.querySelector('.ms-module-help-pane[data-help-key="default"]');
+                if (fallback) fallback.style.display = 'block';
+            }
+            var title = document.getElementById('ms-module-help-title');
+            if (title) {
+                title.textContent = HELP_LABEL + ' — ' + (GUIDE_TITLES[key] || HELP_LABEL);
+            }
+            if (body) body.style.display = 'none';
+            panel.style.display = 'block';
+            document.querySelectorAll('.ms-help-tab').forEach(function (t) { t.classList.add('is-active'); });
+            document.querySelectorAll('#ms-section-tabs .ms-tab:not(.ms-help-tab)').forEach(function (t) { t.classList.remove('is-active'); });
+            document.querySelectorAll('.vote-status-tabs .nav-link').forEach(function (t) { t.classList.remove('active'); });
+            document.querySelectorAll('.sc-tabs .nav-link').forEach(function (t) { t.classList.remove('active'); });
+            var scHelp = document.querySelector('.sc-tabs a[href="#sc-help"]');
+            if (scHelp) scHelp.classList.add('active');
+            try { history.replaceState(null, '', '#module-help'); } catch (e) {}
+        }
+
+        function hideModuleHelp() {
+            var panel = document.getElementById('ms-module-help');
+            var body = document.getElementById('ms-page-body');
+            if (panel) panel.style.display = 'none';
+            if (body) body.style.display = '';
+            document.querySelectorAll('.ms-help-tab').forEach(function (t) { t.classList.remove('is-active'); });
+            var scHelp = document.querySelector('.sc-tabs a[href="#sc-help"]');
+            if (scHelp) scHelp.classList.remove('active');
+            if ((window.location.hash || '') === '#module-help') {
+                try { history.replaceState(null, '', window.location.pathname + window.location.search); } catch (e) {}
+            }
+        }
+
+        function makeHelpTab(className) {
+            var pill = document.createElement('a');
+            pill.href = '#module-help';
+            pill.className = className;
+            pill.textContent = HELP_LABEL;
+            pill.setAttribute('data-module-help', '1');
+            pill.addEventListener('click', function (e) {
+                e.preventDefault();
+                showModuleHelp(detectMenuKey());
+            });
+            return pill;
+        }
+
+        function appendHelpToSectionTabs(host, frag, palette, i) {
+            var help = makeHelpTab('ms-tab ms-help-tab');
+            help.style.setProperty('--tab-color', '#0a2350');
+            frag.appendChild(help);
+            return frag;
+        }
+
         function buildSectionTabs() {
             var host = document.getElementById('ms-section-tabs');
             if (!host) return;
-            // Page already has its own status tabs (e.g. Votes List) — avoid a duplicate row.
-            if (document.querySelector('.vote-status-tabs')) {
+
+            // Votes page: keep status pills, append Help as last pill.
+            var voteTabs = document.querySelector('.vote-status-tabs');
+            if (voteTabs) {
+                host.innerHTML = '';
+                host.style.display = 'none';
+                if (!voteTabs.querySelector('[data-module-help]')) {
+                    var li = document.createElement('li');
+                    li.className = 'nav-item mr-2 mb-2';
+                    var a = makeHelpTab('nav-link ms-help-tab');
+                    a.style.background = '#0a2350';
+                    a.style.borderColor = '#0a2350';
+                    a.style.color = '#fff';
+                    li.appendChild(a);
+                    voteTabs.appendChild(li);
+                }
+                voteTabs.querySelectorAll('a.nav-link:not([data-module-help])').forEach(function (link) {
+                    link.addEventListener('click', function () { hideModuleHelp(); });
+                });
+                return;
+            }
+
+            // Site Content (and similar) already have in-page tabs — only ensure Help exists there.
+            if (document.querySelector('#sc-tab-nav')) {
                 host.innerHTML = '';
                 host.style.display = 'none';
                 return;
             }
-            var path = (window.location.pathname || '/').replace(/\/+$/, '') || '/';
+
+            var path = normalizePath(window.location.pathname);
             var groups = document.querySelectorAll('nav.side-navbar .side-menu ul.collapse');
-            var activeGroup = null, activeLink = null, bestLen = -1;
+            var activeGroup = null, activeLink = null, bestLen = -1, singleLi = null, singleLink = null;
             groups.forEach(function (ul) {
                 ul.querySelectorAll('a').forEach(function (a) {
                     var href = a.getAttribute('href');
                     if (!href || href === '#' || href === '') return;
                     var lp;
-                    try { lp = (new URL(a.href, window.location.origin).pathname || '').replace(/\/+$/, '') || '/'; } catch (e) { return; }
+                    try { lp = normalizePath(new URL(a.href, window.location.origin).pathname); } catch (e) { return; }
                     if (lp === '/') return;
                     if (path === lp || path.indexOf(lp + '/') === 0) {
                         if (lp.length > bestLen) { bestLen = lp.length; activeGroup = ul; activeLink = a; }
                     }
                 });
             });
-            if (!activeGroup) { host.style.display = 'none'; return; }
+
+            // Single-link menus (Dashboard, Halls, Announcements…) — Overview + Help.
+            if (!activeGroup) {
+                document.querySelectorAll('nav.side-navbar .side-menu > li[data-menu-key]').forEach(function (li) {
+                    if (li.querySelector('ul.collapse')) return;
+                    var a = null;
+                    for (var ci = 0; ci < li.children.length; ci++) {
+                        if (li.children[ci].tagName === 'A') { a = li.children[ci]; break; }
+                    }
+                    if (!a) return;
+                    var href = a.getAttribute('href');
+                    if (!href || href === '#' || href === '') return;
+                    var lp;
+                    try { lp = normalizePath(new URL(a.href, window.location.origin).pathname); } catch (e) { return; }
+                    if (path === lp || path.indexOf(lp + '/') === 0) {
+                        singleLi = li;
+                        singleLink = a;
+                    }
+                });
+            }
+
             var palette = ['#3b82f6', '#22c55e', '#f59e0b', '#a855f7', '#ec4899', '#14b8a6', '#ef4444', '#6366f1', '#0ea5e9', '#84cc16'];
             var frag = document.createDocumentFragment(), i = 0;
-            activeGroup.querySelectorAll('a').forEach(function (a) {
-                var href = a.getAttribute('href');
-                if (!href || href === '#' || href === '') return;
-                var color = palette[i % palette.length]; i++;
-                var pill = document.createElement('a');
-                pill.href = a.href;
-                pill.className = 'ms-tab';
-                pill.textContent = (a.textContent || '').trim();
-                pill.style.setProperty('--tab-color', color);
-                if (a === activeLink) pill.classList.add('is-active');
-                frag.appendChild(pill);
-            });
-            if (!frag.childNodes.length) { host.style.display = 'none'; return; }
+
+            if (activeGroup) {
+                activeGroup.querySelectorAll('a').forEach(function (a) {
+                    var href = a.getAttribute('href');
+                    if (!href || href === '#' || href === '') return;
+                    var color = palette[i % palette.length]; i++;
+                    var pill = document.createElement('a');
+                    pill.href = a.href;
+                    pill.className = 'ms-tab';
+                    pill.textContent = (a.textContent || '').trim();
+                    pill.style.setProperty('--tab-color', color);
+                    if (a === activeLink) pill.classList.add('is-active');
+                    pill.addEventListener('click', function () { hideModuleHelp(); });
+                    frag.appendChild(pill);
+                });
+            } else if (singleLink) {
+                var overview = document.createElement('a');
+                overview.href = singleLink.href;
+                overview.className = 'ms-tab is-active';
+                overview.textContent = (singleLink.textContent || '').trim() || 'Overview';
+                overview.style.setProperty('--tab-color', palette[0]);
+                overview.addEventListener('click', function (e) {
+                    if ((window.location.hash || '') === '#module-help') {
+                        e.preventDefault();
+                        hideModuleHelp();
+                        overview.classList.add('is-active');
+                    }
+                });
+                frag.appendChild(overview);
+            } else {
+                host.style.display = 'none';
+                return;
+            }
+
+            appendHelpToSectionTabs(host, frag, palette, i);
             host.innerHTML = '';
             host.appendChild(frag);
             host.style.display = 'flex';
         }
-        if (document.readyState !== 'loading') buildSectionTabs();
-        else document.addEventListener('DOMContentLoaded', buildSectionTabs);
+
+        function bindHelpChrome() {
+            var closeBtn = document.getElementById('ms-module-help-close');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function () {
+                    hideModuleHelp();
+                    var active = document.querySelector('#ms-section-tabs .ms-tab:not(.ms-help-tab)');
+                    if (active) active.classList.add('is-active');
+                });
+            }
+            if ((window.location.hash || '') === '#module-help') {
+                showModuleHelp(detectMenuKey());
+            }
+        }
+
+        window.msShowModuleHelp = showModuleHelp;
+        window.msHideModuleHelp = hideModuleHelp;
+
+        function boot() {
+            buildSectionTabs();
+            bindHelpChrome();
+        }
+        if (document.readyState !== 'loading') boot();
+        else document.addEventListener('DOMContentLoaded', boot);
     })();
 </script>
 <script type="text/javascript">
