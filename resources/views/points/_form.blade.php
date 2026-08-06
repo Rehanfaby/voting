@@ -114,6 +114,9 @@
                         required>
                     <span class="mg-grade__input-cap">/ {{ $f['max'] }}</span>
                 </div>
+                <div class="mg-grade__field-error" data-error-for="{{ $f['key'] }}">
+                    Must be 0–{{ $f['max'] }} ({{ $f['max'] }}_Max)
+                </div>
                 @error($f['key'])
                     <div class="invalid-feedback d-block font-weight-bold">{{ $message }}</div>
                 @enderror
@@ -159,7 +162,15 @@
     border-color: #f5c518;
     box-shadow: 0 10px 24px rgba(10,35,80,.1);
 }
-.mg-grade__criterion.is-invalid { border-color: #dc3545; }
+.mg-grade__criterion.is-invalid {
+    border-color: #dc3545;
+    background: #fff5f5;
+    box-shadow: 0 0 0 2px rgba(220,53,69,.18);
+}
+.mg-grade__criterion.is-invalid .mg-grade__criterion-label { color: #b91c1c; }
+.mg-grade__criterion.is-invalid .mg-grade__max {
+    background: #dc3545; color: #fff;
+}
 .mg-grade__criterion-head {
     display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px;
 }
@@ -167,6 +178,10 @@
     margin: 0; font-weight: 800; color: #0a2350; font-size: 14px; line-height: 1.3;
 }
 .mg-grade__criterion-hint { margin: 4px 0 0; font-size: 12px; color: #64748b; }
+.mg-grade__field-error {
+    display: none; margin-top: 8px; font-size: 12px; font-weight: 700; color: #b91c1c;
+}
+.mg-grade__criterion.is-invalid .mg-grade__field-error { display: block; }
 .mg-grade__max {
     flex-shrink: 0; display: inline-block; padding: 4px 10px; border-radius: 999px;
     background: #0a2350; color: #f5c518; font-size: 12px; font-weight: 800; letter-spacing: .02em;
@@ -176,10 +191,18 @@
     height: 48px; font-size: 1.25rem; font-weight: 700; color: #0a2350;
     border-radius: 12px; border: 1px solid #cbd5e1; padding-right: 52px;
 }
+.mg-grade__input.is-invalid,
+.mg-grade__criterion.is-invalid .mg-grade__input {
+    border-color: #dc3545 !important;
+    background: #fff !important;
+    color: #b91c1c !important;
+    box-shadow: 0 0 0 3px rgba(220,53,69,.2);
+}
 .mg-grade__input-cap {
     position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
     color: #94a3b8; font-weight: 700; font-size: 13px; pointer-events: none;
 }
+.mg-grade__criterion.is-invalid .mg-grade__input-cap { color: #dc3545; }
 .mg-grade__actions {
     display: flex; align-items: center; justify-content: space-between; gap: 14px;
     margin-top: 20px; flex-wrap: wrap;
@@ -212,21 +235,55 @@
     var form = document.querySelector('.mg-grade') && document.querySelector('.mg-grade').closest('form');
     if (!form) return;
     form.setAttribute('novalidate', 'novalidate');
-    form.addEventListener('submit', function (e) {
-        var bad = null;
+
+    function markInput(input, invalid) {
+        var card = input.closest('.mg-grade__criterion');
+        input.classList.toggle('is-invalid', invalid);
+        if (card) card.classList.toggle('is-invalid', invalid);
+    }
+
+    function validateAll(scrollToFirst) {
+        var firstBad = null;
+        var overCount = 0;
         form.querySelectorAll('.points-input').forEach(function (input) {
             var max = parseInt(input.getAttribute('data-max'), 10);
-            var v = parseInt(input.value, 10);
-            if (isNaN(v) || v < 0 || v > max) {
-                if (!bad) bad = { input: input, max: max, value: v };
-            }
+            var raw = (input.value || '').trim();
+            var v = parseInt(raw, 10);
+            var invalid = raw === '' || isNaN(v) || v < 0 || v > max;
+            markInput(input, invalid);
+            if (invalid && !isNaN(v) && v > max) overCount++;
+            if (invalid && !firstBad) firstBad = input;
         });
-        if (!bad) return;
+        return { firstBad: firstBad, overCount: overCount };
+    }
+
+    form.querySelectorAll('.points-input').forEach(function (input) {
+        input.addEventListener('input', function () {
+            var max = parseInt(input.getAttribute('data-max'), 10);
+            var raw = (input.value || '').trim();
+            if (raw === '') {
+                markInput(input, false);
+                return;
+            }
+            var v = parseInt(raw, 10);
+            markInput(input, isNaN(v) || v < 0 || v > max);
+        });
+        input.addEventListener('blur', function () {
+            var max = parseInt(input.getAttribute('data-max'), 10);
+            var raw = (input.value || '').trim();
+            if (raw === '') return;
+            var v = parseInt(raw, 10);
+            markInput(input, isNaN(v) || v < 0 || v > max);
+        });
+    });
+
+    form.addEventListener('submit', function (e) {
+        var result = validateAll(true);
+        if (!result.firstBad) return;
         e.preventDefault();
-        var msg = 'One or more scores exceed the maximum. Please stay within each Max.';
-        if (!isNaN(bad.value) && bad.value > bad.max) {
-            msg = 'Score cannot be more than ' + bad.max + ' for this criterion (' + bad.max + '_Max).';
-        }
+        var msg = result.overCount > 1
+            ? result.overCount + ' scores exceed their Max. Red fields need correcting.'
+            : 'Score exceeds Max. Correct the red field(s) below.';
         var box = document.getElementById('mg-grade-client-error');
         if (!box) {
             box = document.createElement('div');
@@ -237,9 +294,11 @@
         }
         box.textContent = msg;
         box.style.display = 'block';
-        bad.input.classList.add('is-invalid');
-        bad.input.focus();
-        try { box.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (err) {}
+        result.firstBad.focus();
+        try {
+            var card = result.firstBad.closest('.mg-grade__criterion');
+            (card || result.firstBad).scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } catch (err) {}
     });
 })();
 </script>
