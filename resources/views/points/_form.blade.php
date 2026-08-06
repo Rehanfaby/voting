@@ -1,36 +1,11 @@
 @csrf
 @php
     $fields = [
-        [
-            'key' => 'accuracy',
-            'label' => __('file.Accuracy and precision'),
-            'max' => 30,
-            'hint' => 'Intonation, rhythm, diction, vocal technique',
-        ],
-        [
-            'key' => 'song_choice',
-            'label' => __('file.Choice of song / Key'),
-            'max' => 10,
-            'hint' => 'Song choice, key & microphone technique',
-        ],
-        [
-            'key' => 'depth',
-            'label' => __('file.Depth and atmosphere / Spiritual impact'),
-            'max' => 20,
-            'hint' => 'Depth, atmosphere & spiritual impact',
-        ],
-        [
-            'key' => 'interpretation',
-            'label' => __('file.Interpretation, emotion, and heartfelt engagement / Originality and style'),
-            'max' => 20,
-            'hint' => 'Emotion, originality & style',
-        ],
-        [
-            'key' => 'overall_presentation',
-            'label' => __('file.Overall presentation'),
-            'max' => 20,
-            'hint' => 'General presentation on stage',
-        ],
+        ['key' => 'accuracy', 'label' => __('file.Accuracy and precision'), 'max' => 30],
+        ['key' => 'song_choice', 'label' => __('file.Choice of song / Key'), 'max' => 10],
+        ['key' => 'depth', 'label' => __('file.Depth and atmosphere / Spiritual impact'), 'max' => 20],
+        ['key' => 'interpretation', 'label' => __('file.Interpretation, emotion, and heartfelt engagement / Originality and style'), 'max' => 20],
+        ['key' => 'overall_presentation', 'label' => __('file.Overall presentation'), 'max' => 20],
     ];
 @endphp
 
@@ -93,10 +68,7 @@
         @foreach($fields as $f)
             <div class="mg-grade__criterion {{ $errors->has($f['key']) ? 'is-invalid' : '' }}">
                 <div class="mg-grade__criterion-head">
-                    <div>
-                        <label for="{{ $f['key'] }}" class="mg-grade__criterion-label">{{ $f['label'] }}</label>
-                        <p class="mg-grade__criterion-hint">{{ $f['hint'] }}</p>
-                    </div>
+                    <label for="{{ $f['key'] }}" class="mg-grade__criterion-label">{{ $f['label'] }}</label>
                     <span class="mg-grade__max">({{ $f['max'] }}_Max)</span>
                 </div>
                 <div class="mg-grade__input-wrap">
@@ -175,9 +147,9 @@
     display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px;
 }
 .mg-grade__criterion-label {
-    margin: 0; font-weight: 800; color: #0a2350; font-size: 14px; line-height: 1.3;
+    margin: 0; font-weight: 800; color: #0a2350; font-size: 14px; line-height: 1.35;
+    flex: 1; min-width: 0;
 }
-.mg-grade__criterion-hint { margin: 4px 0 0; font-size: 12px; color: #64748b; }
 .mg-grade__field-error {
     display: none; margin-top: 8px; font-size: 12px; font-weight: 700; color: #b91c1c;
 }
@@ -185,11 +157,18 @@
 .mg-grade__max {
     flex-shrink: 0; display: inline-block; padding: 4px 10px; border-radius: 999px;
     background: #0a2350; color: #f5c518; font-size: 12px; font-weight: 800; letter-spacing: .02em;
+    white-space: nowrap;
 }
-.mg-grade__input-wrap { position: relative; max-width: 180px; }
+.mg-grade__input-wrap { position: relative; max-width: 100%; width: 100%; }
 .mg-grade__input {
-    height: 48px; font-size: 1.25rem; font-weight: 700; color: #0a2350;
+    height: 48px; width: 100%; font-size: 1.25rem; font-weight: 700; color: #0a2350;
     border-radius: 12px; border: 1px solid #cbd5e1; padding-right: 52px;
+    -moz-appearance: textfield;
+}
+.mg-grade__input::-webkit-outer-spin-button,
+.mg-grade__input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 .mg-grade__input.is-invalid,
 .mg-grade__criterion.is-invalid .mg-grade__input {
@@ -212,7 +191,7 @@
 }
 .mg-grade__save {
     background: #f5c518 !important; border-color: #f5c518 !important; color: #0a2350 !important;
-    font-weight: 800; padding: 10px 22px; border-radius: 999px;
+    font-weight: 800; padding: 12px 22px; border-radius: 999px; min-height: 44px;
 }
 .mg-grade__total { text-align: right; }
 .mg-grade__total-label {
@@ -223,9 +202,23 @@
     font-size: 1.75rem; line-height: 1.1; color: #f5c518;
 }
 .mg-grade__total-value small { font-size: .9rem; color: rgba(255,255,255,.7); margin-left: 2px; }
-@media (min-width: 768px) {
+@media (max-width: 767.98px) {
+    .mg-grade__criterion { padding: 12px; border-radius: 14px; }
+    .mg-grade__criterion-head { gap: 8px; margin-bottom: 8px; }
+    .mg-grade__criterion-label { font-size: 13px; }
+    .mg-grade__max { font-size: 11px; padding: 3px 8px; }
+    .mg-grade__input { height: 52px; font-size: 1.35rem; }
+    .mg-grade__actions {
+        flex-direction: column-reverse; align-items: stretch; text-align: center;
+        position: sticky; bottom: 8px; z-index: 5;
+    }
+    .mg-grade__total { text-align: center; }
+    .mg-grade__save { width: 100%; }
+}
+@media (min-width: 992px) {
     .mg-grade__meta, .mg-grade__meta--selects { grid-template-columns: 1fr 1fr; }
     .mg-grade__criteria { grid-template-columns: 1fr 1fr; }
+    .mg-grade__input-wrap { max-width: 180px; }
     .mg-grade__criterion:last-child:nth-child(odd) { grid-column: 1 / -1; max-width: calc(50% - 6px); }
 }
 </style>

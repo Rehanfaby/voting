@@ -61,6 +61,13 @@
     overflow: hidden;
 }
 .mg-grade-page__card .card-body { padding: 18px; }
+@media (max-width: 767.98px) {
+    .mg-grade-page__hero { flex-direction: column; padding: 14px; gap: 10px; }
+    .mg-grade-page__title { font-size: 1.25rem; }
+    .mg-grade-page__candidate { font-size: .95rem; word-break: break-word; }
+    .mg-grade-page__badge { align-self: flex-start; }
+    .mg-grade-page__card .card-body { padding: 12px; }
+}
 @media (min-width: 768px) {
     .mg-grade-page__title { font-size: 1.75rem; }
     .mg-grade-page__card .card-body { padding: 24px; }
