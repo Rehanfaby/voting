@@ -238,4 +238,119 @@ class SiteGalleryController extends Controller
 
         return response()->json(['status' => 'ok', 'removed' => $removed]);
     }
+
+    /** Reorder images within the active album (drag-and-drop). */
+    public function reorderImages(Request $request)
+    {
+        $this->assertCanManage();
+        $categoryId = trim((string) $request->input('category_id'));
+        $ordered = array_values(array_filter(array_map('strval', (array) $request->input('images', []))));
+        $categories = SiteContent::galleryCategories();
+        $validIds = array_column($categories, 'id');
+        if (!in_array($categoryId, $validIds, true)) {
+            return response()->json(['status' => 'error', 'message' => 'Invalid album'], 422);
+        }
+
+        $data = SiteContent::all();
+        $gallery = is_array($data['gallery'] ?? null) ? $data['gallery'] : [];
+        $byCat = [];
+        foreach ($gallery as $g) {
+            if (!is_array($g)) {
+                $g = ['image' => $g, 'caption' => '', 'category_id' => $categoryId];
+            }
+            $cat = (string) ($g['category_id'] ?? 'general');
+            $byCat[$cat][] = $g;
+        }
+
+        $current = $byCat[$categoryId] ?? [];
+        $byImage = [];
+        foreach ($current as $g) {
+            $byImage[(string) ($g['image'] ?? '')] = $g;
+        }
+        $reordered = [];
+        foreach ($ordered as $path) {
+            if (isset($byImage[$path])) {
+                $reordered[] = $byImage[$path];
+                unset($byImage[$path]);
+            }
+        }
+        foreach ($byImage as $g) {
+            $reordered[] = $g;
+        }
+        $byCat[$categoryId] = $reordered;
+
+        $newGallery = [];
+        foreach ($categories as $cat) {
+            foreach ($byCat[$cat['id']] ?? [] as $g) {
+                $newGallery[] = $g;
+            }
+            unset($byCat[$cat['id']]);
+        }
+        foreach ($byCat as $leftover) {
+            foreach ($leftover as $g) {
+                $newGallery[] = $g;
+            }
+        }
+
+        $data['gallery'] = array_values($newGallery);
+        SiteContent::save(SiteContent::normalizeGalleryData($data));
+
+        return response()->json(['status' => 'ok']);
+    }
+
+    /** Move one image to another album via drag-and-drop. */
+    public function moveImage(Request $request)
+    {
+        $this->assertCanManage();
+        $image = trim((string) $request->input('image'));
+        $toCategory = trim((string) $request->input('category_id'));
+        $categories = SiteContent::galleryCategories();
+        $validIds = array_column($categories, 'id');
+        if ($image === '' || !in_array($toCategory, $validIds, true)) {
+            return response()->json(['status' => 'error', 'message' => 'Invalid move'], 422);
+        }
+
+        $data = SiteContent::all();
+        $gallery = is_array($data['gallery'] ?? null) ? $data['gallery'] : [];
+        $moved = null;
+        $rest = [];
+        foreach ($gallery as $g) {
+            if (!is_array($g)) {
+                $g = ['image' => $g, 'caption' => '', 'category_id' => 'general'];
+            }
+            if ((string) ($g['image'] ?? '') === $image) {
+                $g['category_id'] = $toCategory;
+                $moved = $g;
+                continue;
+            }
+            $rest[] = $g;
+        }
+        if ($moved === null) {
+            return response()->json(['status' => 'error', 'message' => 'Image not found'], 404);
+        }
+
+        $byCat = [];
+        foreach ($rest as $g) {
+            $byCat[(string) ($g['category_id'] ?? 'general')][] = $g;
+        }
+        $byCat[$toCategory][] = $moved;
+
+        $newGallery = [];
+        foreach ($categories as $cat) {
+            foreach ($byCat[$cat['id']] ?? [] as $g) {
+                $newGallery[] = $g;
+            }
+            unset($byCat[$cat['id']]);
+        }
+        foreach ($byCat as $leftover) {
+            foreach ($leftover as $g) {
+                $newGallery[] = $g;
+            }
+        }
+
+        $data['gallery'] = array_values($newGallery);
+        SiteContent::save(SiteContent::normalizeGalleryData($data));
+
+        return response()->json(['status' => 'ok', 'category_id' => $toCategory]);
+    }
 }

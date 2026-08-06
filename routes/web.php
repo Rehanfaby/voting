@@ -259,6 +259,8 @@ Route::group(['middleware' => ['auth', 'active', 'checkOtp']], function() {
 	Route::post('gallery/manage/category', 'SiteGalleryController@storeCategory')->name('gallery.admin.category.store');
 	Route::post('gallery/manage/category/delete', 'SiteGalleryController@deleteCategory')->name('gallery.admin.category.delete');
 	Route::post('gallery/manage/images', 'SiteGalleryController@storeImages')->name('gallery.admin.images.store');
+	Route::post('gallery/manage/images/reorder', 'SiteGalleryController@reorderImages')->name('gallery.admin.images.reorder');
+	Route::post('gallery/manage/image/move', 'SiteGalleryController@moveImage')->name('gallery.admin.image.move');
 	Route::post('gallery/manage/image/delete', 'SiteGalleryController@deleteImage')->name('gallery.admin.image.delete');
 	Route::get('setting/general_setting', 'SettingController@generalSetting')->name('setting.general');
     Route::get('setting/help', 'SettingController@help')->name('setting.help');

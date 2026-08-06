@@ -18,17 +18,20 @@
             <div>
                 <p class="mg-gal-admin__eyebrow">Site Content</p>
                 <h1 class="mg-gal-admin__title">{{ trans('file.Gallery') }}</h1>
-                <p class="mg-gal-admin__sub">Create albums (TikTok, Events, …) and add photos for the public Gallery page.</p>
+                <p class="mg-gal-admin__sub">Create albums, drag photos to reorder, or drop them onto another album to move.</p>
             </div>
         </div>
 
         <div class="card mb-3">
             <div class="card-body">
                 <h5 class="mb-3">Albums / categories</h5>
-                <div class="mg-gal-cats mb-3">
+                <p class="text-muted small mb-2"><i class="fa fa-arrows"></i> Drag a photo onto an album below to move it there.</p>
+                <div class="mg-gal-cats mb-3" id="mg-gal-drop-albums">
                     @foreach($categories as $cat)
                         <a href="{{ route('gallery.admin', ['category' => $cat['id']]) }}"
-                           class="mg-gal-cat {{ $cat['id'] === $activeCategoryId ? 'is-active' : '' }}">
+                           class="mg-gal-cat {{ $cat['id'] === $activeCategoryId ? 'is-active' : '' }}"
+                           data-category-id="{{ $cat['id'] }}"
+                           data-category-name="{{ $cat['name'] }}">
                             {{ $cat['name'] }}
                         </a>
                     @endforeach
@@ -55,7 +58,10 @@
             <div class="card-body">
                 {!! Form::open(['route' => 'gallery.admin.images.store', 'method' => 'post', 'files' => true, 'id' => 'gallery-admin-form']) !!}
                 <input type="hidden" name="category_id" value="{{ $activeCategoryId }}">
-                <p class="italic"><small>Add photos to <strong>{{ $activeCat['name'] ?? 'this album' }}</strong>. Paste (Ctrl/Cmd+V) or choose files, then press <strong>Save</strong>.</small></p>
+                <p class="italic"><small>
+                    Add photos to <strong>{{ $activeCat['name'] ?? 'this album' }}</strong>.
+                    Drag cards to reorder · drop onto another album to move · then press <strong>Save</strong> for captions/uploads.
+                </small></p>
 
                 <div id="gallery-paste-zone" class="sc-paste-zone mb-3" tabindex="0">
                     <p class="mb-2"><strong>Paste or upload</strong> — click here and press <kbd>Ctrl+V</kbd> / <kbd>Cmd+V</kbd>, or choose files below.</p>
@@ -74,13 +80,14 @@
                         <div class="col-md-3 col-6 mb-3 sc-gallery-card" data-image="{{ $gimg }}">
                             <div class="card h-100">
                                 <div class="sc-gallery-thumb">
-                                    <img src="{{ \App\Helpers\SiteContent::publicUploadUrl($gimg) }}?v={{ config('app.version') }}" style="height:120px;width:100%;object-fit:cover;border-radius:6px 6px 0 0;">
+                                    <span class="sc-gallery-drag" title="Drag to reorder or move"><i class="fa fa-arrows"></i></span>
+                                    <img src="{{ \App\Helpers\SiteContent::publicUploadUrl($gimg) }}?v={{ config('app.version') }}" style="height:120px;width:100%;object-fit:cover;border-radius:6px 6px 0 0;" draggable="false">
                                     <button type="button" class="sc-gallery-del" title="{{ trans('file.delete') }}"><i class="dripicons-trash"></i></button>
                                 </div>
                                 <div class="card-body p-2">
-                                    <input type="hidden" name="gallery_existing[{{ $i }}]" value="{{ $gimg }}">
+                                    <input type="hidden" name="gallery_existing[{{ $i }}]" value="{{ $gimg }}" class="gallery-existing-path">
                                     <input type="text" name="gallery_caption[{{ $i }}]" class="form-control form-control-sm" placeholder="Caption (optional)" value="{{ is_array($g) ? ($g['caption'] ?? '') : '' }}">
-                                    <select name="gallery_category[{{ $i }}]" class="form-control form-control-sm mt-1" title="Move to album">
+                                    <select name="gallery_category[{{ $i }}]" class="form-control form-control-sm mt-1 gallery-cat-select" title="Move to album">
                                         @foreach($categories as $cat)
                                             <option value="{{ $cat['id'] }}" {{ $cat['id'] === $activeCategoryId ? 'selected' : '' }}>{{ $cat['name'] }}</option>
                                         @endforeach
@@ -91,6 +98,7 @@
                         @endif
                     @endforeach
                 </div>
+                <p id="mg-gal-drag-hint" class="text-muted small mt-1" style="display:none;"></p>
 
                 <div class="mt-3">
                     <button type="submit" class="btn btn-primary">Save</button>
@@ -114,18 +122,42 @@
 .mg-gal-cat {
     display: inline-flex; padding: 8px 14px; border-radius: 999px; border: 1px solid #cbd5e1;
     color: #0a2350 !important; font-weight: 700; font-size: 13px; text-decoration: none !important; background: #fff;
+    min-height: 40px; align-items: center; transition: box-shadow .15s ease, border-color .15s ease, background .15s ease;
 }
 .mg-gal-cat.is-active { background: #0a2350; color: #fff !important; border-color: #0a2350; }
+.mg-gal-cat.is-drop-target {
+    border-color: #f5c518; background: #fffbeb; color: #0a2350 !important;
+    box-shadow: 0 0 0 3px rgba(245,197,24,.35);
+}
 .sc-paste-zone {
     border: 2px dashed #93c5fd; border-radius: 12px; padding: 16px; background: #f8fafc;
 }
-.sc-gallery-thumb { position: relative; }
+.sc-gallery-thumb { position: relative; cursor: grab; }
+.sc-gallery-thumb:active { cursor: grabbing; }
+.sc-gallery-drag {
+    position: absolute; top: 6px; left: 6px; z-index: 2;
+    width: 32px; height: 32px; border-radius: 8px; background: rgba(10,35,80,.85); color: #f5c518;
+    display: inline-flex; align-items: center; justify-content: center; font-size: 13px;
+}
 .sc-gallery-del {
     position: absolute; top: 6px; right: 6px; width: 32px; height: 32px; border: 0; border-radius: 8px;
-    background: #dc2626; color: #fff; cursor: pointer;
+    background: #dc2626; color: #fff; cursor: pointer; z-index: 2;
 }
 .sc-gallery-del:hover { background: #b91c1c; }
 .sc-gallery-newitem img { height: 110px; width: 100%; object-fit: cover; border-radius: 8px; border: 2px solid #22c55e; }
+.sc-gallery-card.ui-sortable-helper {
+    z-index: 50;
+    box-shadow: 0 12px 28px rgba(15,23,42,.22);
+}
+.sc-gallery-card.ui-sortable-placeholder {
+    visibility: visible !important;
+    background: #e0ecff;
+    border: 2px dashed #60a5fa;
+    border-radius: 12px;
+    min-height: 180px;
+    margin-bottom: 1rem;
+}
+#gallery-existing.mg-gal-sorting { opacity: .95; }
 </style>
 
 <script>
@@ -135,6 +167,13 @@ document.querySelectorAll('nav.side-navbar .side-menu li[data-menu-key="gallery-
 });
 
 (function () {
+    var activeCategoryId = @json($activeCategoryId);
+    var csrf = '{{ csrf_token() }}';
+    var reorderUrl = @json(route('gallery.admin.images.reorder'));
+    var moveUrl = @json(route('gallery.admin.image.move'));
+    var deleteUrl = @json(route('gallery.admin.image.delete'));
+    var hint = document.getElementById('mg-gal-drag-hint');
+
     var galleryInput = document.getElementById('gallery_images_input');
     var galleryZone = document.getElementById('gallery-paste-zone');
     var previewWrap = document.getElementById('gallery-new-preview');
@@ -209,24 +248,152 @@ document.querySelectorAll('nav.side-navbar .side-menu li[data-menu-key="gallery-
         });
     }
 
+    function reindexFormFields() {
+        $('#gallery-existing .sc-gallery-card').each(function (i, card) {
+            $(card).find('.gallery-existing-path').attr('name', 'gallery_existing[' + i + ']');
+            $(card).find('input[name^="gallery_caption"]').attr('name', 'gallery_caption[' + i + ']');
+            $(card).find('.gallery-cat-select').attr('name', 'gallery_category[' + i + ']');
+        });
+    }
+
+    function collectOrder() {
+        var images = [];
+        $('#gallery-existing .sc-gallery-card').each(function () {
+            var img = $(this).attr('data-image');
+            if (img) images.push(img);
+        });
+        return images;
+    }
+
+    function saveOrder() {
+        var images = collectOrder();
+        reindexFormFields();
+        return fetch(reorderUrl, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': csrf,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ category_id: activeCategoryId, images: images })
+        }).then(function (r) { return r.json(); });
+    }
+
+    function moveImage(image, categoryId, categoryName, card) {
+        if (hint) {
+            hint.style.display = '';
+            hint.textContent = 'Moving to “' + categoryName + '”…';
+        }
+        return fetch(moveUrl, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': csrf,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ image: image, category_id: categoryId })
+        }).then(function (r) { return r.json(); }).then(function (data) {
+            if (data.status === 'ok') {
+                if (card && card.parentNode) card.parentNode.removeChild(card);
+                reindexFormFields();
+                if (hint) hint.textContent = 'Moved to “' + categoryName + '”.';
+            } else {
+                throw new Error(data.message || 'Move failed');
+            }
+        }).catch(function () {
+            if (hint) hint.textContent = 'Could not move photo.';
+            alert('Could not move photo.');
+        });
+    }
+
+    if ($.fn.sortable) {
+        $('#gallery-existing').sortable({
+            items: '.sc-gallery-card',
+            handle: '.sc-gallery-thumb',
+            placeholder: 'col-md-3 col-6 mb-3 sc-gallery-card ui-sortable-placeholder',
+            tolerance: 'pointer',
+            opacity: 0.92,
+            cursor: 'grabbing',
+            start: function () {
+                $('#gallery-existing').addClass('mg-gal-sorting');
+            },
+            stop: function () {
+                $('#gallery-existing').removeClass('mg-gal-sorting');
+                $('.mg-gal-cat').removeClass('is-drop-target');
+            },
+            update: function () {
+                saveOrder().then(function () {
+                    if (hint) {
+                        hint.style.display = '';
+                        hint.textContent = 'Order saved.';
+                    }
+                }).catch(function () {
+                    if (hint) {
+                        hint.style.display = '';
+                        hint.textContent = 'Could not save order.';
+                    }
+                });
+            }
+        });
+
+        // Allow dropping a card onto another album pill
+        $('.mg-gal-cat').not('.is-active').droppable({
+            accept: '.sc-gallery-card',
+            tolerance: 'pointer',
+            over: function () { $(this).addClass('is-drop-target'); },
+            out: function () { $(this).removeClass('is-drop-target'); },
+            drop: function (event, ui) {
+                $(this).removeClass('is-drop-target');
+                var catId = $(this).data('category-id');
+                var catName = $(this).data('category-name') || catId;
+                var card = ui.draggable.get(0);
+                var image = card ? card.getAttribute('data-image') : '';
+                if (!image || !catId || catId === activeCategoryId) return;
+                // Prevent navigation when dropping
+                event.preventDefault();
+                moveImage(image, catId, catName, card);
+            }
+        });
+
+        // Prevent accidental navigation when starting a drag over album links
+        $('.mg-gal-cat').on('click', function (e) {
+            if ($(this).hasClass('is-drop-target')) {
+                e.preventDefault();
+            }
+        });
+    }
+
     document.querySelectorAll('#gallery-existing .sc-gallery-del').forEach(function (btn) {
         btn.addEventListener('click', function () {
             var card = btn.closest('.sc-gallery-card');
             if (!card) return;
             var image = card.getAttribute('data-image');
             if (!image || !confirm('Delete this photo?')) return;
-            fetch('{{ route('gallery.admin.image.delete') }}', {
+            fetch(deleteUrl, {
                 method: 'POST',
                 headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'X-CSRF-TOKEN': csrf,
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ image: image })
             }).then(function (r) { return r.json(); }).then(function () {
                 card.parentNode.removeChild(card);
+                reindexFormFields();
             }).catch(function () { alert('Could not delete image.'); });
         });
+    });
+
+    // Dropdown move (same as drag-to-album)
+    $(document).on('change', '.gallery-cat-select', function () {
+        var select = this;
+        var newCat = select.value;
+        if (!newCat || newCat === activeCategoryId) return;
+        var card = select.closest('.sc-gallery-card');
+        var image = card ? card.getAttribute('data-image') : '';
+        var name = $(select).find('option:selected').text();
+        if (!image) return;
+        moveImage(image, newCat, name, card);
     });
 })();
 </script>
