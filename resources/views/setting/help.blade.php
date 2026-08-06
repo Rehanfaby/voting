@@ -11,6 +11,7 @@
             <div class="card-body">
                 <p class="mg-help-intro">
                     In-app guide for staff. Use the tabs below to find a topic.
+                    Screenshots below are live captures from <strong>mulemagc.com</strong>.
                     Later, module-specific help can be opened from each area for roles that do not have Settings access.
                 </p>
 
@@ -35,6 +36,12 @@
                     <div class="tab-pane fade show active" id="help-start" role="tabpanel">
                         <h5>Welcome to Mulema Gospel Talent admin</h5>
                         <p>This panel manages contestants, public voting, tickets, site content, announcements, and grading.</p>
+                        <figure class="mg-help-shot">
+                            <a href="{{ url('/') }}" target="_blank" rel="noopener">
+                                <img src="{{ asset('public/img/help/home.jpg') }}?v={{ config('app.version') }}" alt="Live homepage screenshot" loading="lazy">
+                            </a>
+                            <figcaption>Live homepage — <a href="{{ url('/') }}" target="_blank">mulemagc.com</a></figcaption>
+                        </figure>
                         <div class="mg-help-box">
                             <strong>Quick links</strong>
                             <ul class="mb-0">
@@ -70,6 +77,20 @@
                     <div class="tab-pane fade" id="help-public" role="tabpanel">
                         <h5>Public website &amp; Vote Now</h5>
                         <p>Visitors use the public site to browse contestants, vote, buy tickets, and rate the platform.</p>
+                        <div class="mg-help-shot-grid">
+                            <figure class="mg-help-shot">
+                                <a href="{{ route('team') }}" target="_blank" rel="noopener">
+                                    <img src="{{ asset('public/img/help/contestants.jpg') }}?v={{ config('app.version') }}" alt="Vote Now live screenshot" loading="lazy">
+                                </a>
+                                <figcaption>Vote Now / Contestants — <a href="{{ route('team') }}" target="_blank">/contestants</a></figcaption>
+                            </figure>
+                            <figure class="mg-help-shot">
+                                <a href="{{ route('about') }}" target="_blank" rel="noopener">
+                                    <img src="{{ asset('public/img/help/about.jpg') }}?v={{ config('app.version') }}" alt="About Us live screenshot" loading="lazy">
+                                </a>
+                                <figcaption>About Us — <a href="{{ route('about') }}" target="_blank">/about</a></figcaption>
+                            </figure>
+                        </div>
                         <h6>Vote Now page</h6>
                         <ul>
                             <li>URL: <code>/contestants</code> (old <code>/musician/team</code> redirects here).</li>
@@ -96,6 +117,12 @@
                     <div class="tab-pane fade" id="help-zones" role="tabpanel">
                         <h5>Green Zone &amp; Orange Zone</h5>
                         <p>These zones appear on Vote Now when eliminations are enabled. They create urgency for the public to vote.</p>
+                        <figure class="mg-help-shot">
+                            <a href="{{ route('team') }}" target="_blank" rel="noopener">
+                                <img src="{{ asset('public/img/help/contestants.jpg') }}?v={{ config('app.version') }}" alt="Green and Orange zones on Vote Now" loading="lazy">
+                            </a>
+                            <figcaption>Live Vote Now showing zone frames (green = safe, orange = at risk when enabled).</figcaption>
+                        </figure>
                         <h6>How to configure</h6>
                         <ol class="mg-help-steps">
                             <li>Go to <strong>Site Content → Eliminations for the week</strong>.</li>
@@ -128,6 +155,12 @@
                     <div class="tab-pane fade" id="help-rate" role="tabpanel">
                         <h5>Rate Us</h5>
                         <p>Collect 1–5 star ratings and comments after voting (or from the Rate Us page).</p>
+                        <figure class="mg-help-shot">
+                            <a href="{{ route('rate.us') }}" target="_blank" rel="noopener">
+                                <img src="{{ asset('public/img/help/rate-us.jpg') }}?v={{ config('app.version') }}" alt="Rate Us live screenshot" loading="lazy">
+                            </a>
+                            <figcaption>Rate Us page — average + reviews first, then the Rate Us button — <a href="{{ route('rate.us') }}" target="_blank">/rate-us</a></figcaption>
+                        </figure>
                         <h6>Public experience</h6>
                         <ul>
                             <li>Page shows the overall average and approved reviews first.</li>
@@ -186,6 +219,12 @@
                     {{-- Tickets --}}
                     <div class="tab-pane fade" id="help-tickets" role="tabpanel">
                         <h5>Tickets &amp; Halls</h5>
+                        <figure class="mg-help-shot">
+                            <a href="{{ route('events') }}" target="_blank" rel="noopener">
+                                <img src="{{ asset('public/img/help/events.jpg') }}?v={{ config('app.version') }}" alt="Buy Tickets / Events live screenshot" loading="lazy">
+                            </a>
+                            <figcaption>Buy Tickets (events) — <a href="{{ route('events') }}" target="_blank">/events</a></figcaption>
+                        </figure>
                         <ul>
                             <li><strong>Ticket / Product</strong>: create event tickets (name, code, event, price, seats, image, details).</li>
                             <li>When creating a ticket, fill Ticket Name and other required fields; Event uses the dropdown (selectpicker).</li>
@@ -236,6 +275,12 @@
                     {{-- Login --}}
                     <div class="tab-pane fade" id="help-login" role="tabpanel">
                         <h5>Login &amp; roles</h5>
+                        <figure class="mg-help-shot">
+                            <a href="{{ route('login') }}" target="_blank" rel="noopener">
+                                <img src="{{ asset('public/img/help/login.jpg') }}?v={{ config('app.version') }}" alt="Staff login live screenshot" loading="lazy">
+                            </a>
+                            <figcaption>Staff / dashboard login — opened from the public gold <strong>Login</strong> button — <a href="{{ route('login') }}" target="_blank">/login</a></figcaption>
+                        </figure>
                         <ul>
                             <li>Staff login: public header <strong>Login</strong> or <code>/login</code> (username + password).</li>
                             <li>Forgot password: reset via WhatsApp OTP from the login card.</li>
@@ -340,8 +385,26 @@
 .mg-help-content code {
     background: #e2e8f0; padding: 1px 6px; border-radius: 4px; font-size: 12px;
 }
+.mg-help-shot {
+    margin: 12px 0 18px; background: #fff; border: 1px solid #e2e8f0;
+    border-radius: 12px; overflow: hidden; box-shadow: 0 6px 18px rgba(15,23,42,.06);
+}
+.mg-help-shot img {
+    display: block; width: 100%; height: auto; max-height: 420px; object-fit: cover; object-position: top;
+    border-bottom: 1px solid #e2e8f0;
+}
+.mg-help-shot figcaption {
+    padding: 8px 12px; font-size: 12px; color: #64748b; margin: 0;
+}
+.mg-help-shot-grid {
+    display: grid; gap: 14px; margin-bottom: 8px;
+}
+@media (min-width: 992px) {
+    .mg-help-shot-grid { grid-template-columns: 1fr 1fr; }
+}
 @media (max-width: 767.98px) {
     .mg-help-content { padding: 14px 12px; }
     .mg-help-tabs .nav-link { font-size: 12px; padding: 6px 10px; }
+    .mg-help-shot img { max-height: 260px; }
 }
 </style>
