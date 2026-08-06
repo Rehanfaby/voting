@@ -1218,7 +1218,7 @@
         document.getElementById("content").style.display = "block";
     }
 
-    $("div.alert").delay(3000).slideUp(750);
+    $("div.alert").not('.alert-validation').delay(3000).slideUp(750);
 
     function confirmDelete() {
         if (confirm("Are you sure want to delete?")) {
