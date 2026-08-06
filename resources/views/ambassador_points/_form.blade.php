@@ -60,7 +60,7 @@
     @endif
     <div class="col-md-4">
         <div class="form-group mb-3">
-            <label for="points">Points <span class="text-muted">(5 mas)</span></label>
+            <label for="points">Points <span class="text-muted">(5_Max)</span></label>
             <input type="number" id="points" name="points"
                 class="form-control {{ $errors->has('points') ? 'is-invalid' : '' }}"
                 value="{{ old('points', $point->points ?? '') }}"
