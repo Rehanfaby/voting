@@ -18,10 +18,21 @@
                         <p class="italic"><small>{{trans('file.The field labels marked with * are required input fields')}}.</small></p>
                         {!! Form::open(['route' => 'setting.generalStore', 'files' => true, 'method' => 'post']) !!}
                             <div class="row">
+                                @php
+                                    $__gsRole = strtolower((string) (
+                                        optional(Auth::user()->role)->name
+                                        ?: optional(\DB::table('roles')->find(Auth::user()->role_id))->name
+                                        ?: ''
+                                    ));
+                                    $__lockTitle = in_array($__gsRole, ['judge', 'ambassador'], true);
+                                @endphp
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>{{trans('file.System Title')}} *</label>
-                                        <input type="text" name="site_title" class="form-control" value="@if($lims_general_setting_data){{$lims_general_setting_data->site_title}}@endif" required />
+                                        <input type="text" name="site_title" class="form-control" value="@if($lims_general_setting_data){{$lims_general_setting_data->site_title}}@endif" required {{ $__lockTitle ? 'readonly' : '' }} />
+                                        @if($__lockTitle)
+                                            <small class="text-muted">System title cannot be changed from a Judge or Ambassador account.</small>
+                                        @endif
                                     </div>
                                 </div>
                                 <div class="col-md-6">

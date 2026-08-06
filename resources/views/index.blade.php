@@ -15,8 +15,89 @@
         catch (\Throwable $e) { return $fallback; }
     };
 
+    $roleNameLower = strtolower((string) (
+        optional(Auth::user()->role)->name
+        ?: optional(\DB::table('roles')->find(Auth::user()->role_id))->name
+        ?: ''
+    ));
+    $isGraderDashboard = in_array($roleNameLower, ['judge', 'ambassador'], true);
+
     $totalContestants   = (int) $__safe(function () { return \App\Employee::where('is_active', true)->where('is_approve', true)->count(); });
     $pendingContestants = (int) $__safe(function () { return \App\Employee::where('is_active', true)->where('is_approve', false)->count(); });
+
+    $gradedByMe = 0;
+    $pendingGrading = 0;
+    if ($isGraderDashboard) {
+        $uid = (int) Auth::id();
+        if ($roleNameLower === 'ambassador') {
+            $gradedByMe = (int) $__safe(function () use ($uid) {
+                return \DB::table('ambassador_points')->where('ambassador_id', $uid)->distinct()->count('candidate_id');
+            });
+            $awaitingRoute = route('ambassador_points.awaiting_candidates');
+            $listingRoute = route('ambassador_points.index');
+        } else {
+            $gradedByMe = (int) $__safe(function () use ($uid) {
+                return \DB::table('points')->where('judge_id', $uid)->distinct()->count('candidate_id');
+            });
+            $awaitingRoute = route('points.awaiting_candidates');
+            $listingRoute = route('points.index');
+        }
+        $pendingGrading = max(0, $totalContestants - $gradedByMe);
+    }
+@endphp
+
+@if($isGraderDashboard)
+{{-- Judge / Ambassador: grading-only dashboard (no voting stats) --}}
+<div class="row">
+  <div class="container-fluid">
+    <div class="ms-dash-head">
+      <h2>{{trans('file.welcome')}}, {{ ucfirst(Auth::user()->name) }}</h2>
+      <p>{{ \Carbon\Carbon::now()->format('l, F j, Y') }} — {{ $roleNameLower === 'ambassador' ? 'Ambassador' : 'Judge' }} grading overview</p>
+    </div>
+
+    <div class="ms-stat-grid mg-grader-stats">
+      <div class="ms-stat" style="--ms-accent:#1d4ed8;">
+        <div class="ms-stat-icon"><i class="fa fa-microphone"></i></div>
+        <div class="ms-stat-body">
+          <div class="ms-stat-value">{{ number_format($totalContestants) }}</div>
+          <div class="ms-stat-label">Number of Contestants</div>
+        </div>
+      </div>
+      <a href="{{ $listingRoute }}" class="ms-stat" style="--ms-accent:#16a34a;">
+        <div class="ms-stat-icon"><i class="fa fa-check-circle"></i></div>
+        <div class="ms-stat-body">
+          <div class="ms-stat-value">{{ number_format($gradedByMe) }}</div>
+          <div class="ms-stat-label">Number Graded</div>
+        </div>
+      </a>
+      <a href="{{ $awaitingRoute }}" class="ms-stat" style="--ms-accent:#f59e0b;">
+        <div class="ms-stat-icon"><i class="fa fa-hourglass-half"></i></div>
+        <div class="ms-stat-body">
+          <div class="ms-stat-value">{{ number_format($pendingGrading) }}</div>
+          <div class="ms-stat-label">Pending Grading</div>
+        </div>
+      </a>
+    </div>
+
+    <div class="mg-grader-cta">
+      <a href="{{ $awaitingRoute }}" class="btn btn-primary btn-lg">
+        <i class="fa fa-pencil"></i> {{ trans('file.Awaiting Candidate') }}
+      </a>
+      <a href="#module-help" class="btn btn-outline-primary btn-lg" onclick="if(window.msShowModuleHelp){event.preventDefault();window.msShowModuleHelp('{{ $roleNameLower === 'ambassador' ? 'ambassador-point' : 'point' }}');}">
+        <i class="dripicons-question"></i> {{ trans('file.Help') }}
+      </a>
+    </div>
+  </div>
+</div>
+<style>
+.mg-grader-stats { grid-template-columns: 1fr; max-width: 920px; }
+@media (min-width: 768px) { .mg-grader-stats { grid-template-columns: repeat(3, 1fr); } }
+.mg-grader-cta { display: flex; flex-wrap: wrap; gap: 12px; margin: 8px 0 28px; }
+.mg-grader-cta .btn { border-radius: 12px; font-weight: 700; }
+</style>
+@else
+@php
+    /* Admin / staff dashboard continues below */
 
     // Transaction counts match Votes List tab badges (one row = one payment).
     // Vote units = sum of the `vote` column (votes purchased in that payment).
@@ -404,9 +485,11 @@
 
   </div>
 </div>
+@endif
 @endsection
 
 @section('scripts')
+@if(empty($isGraderDashboard))
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <script type="text/javascript">
@@ -702,4 +785,5 @@
     }
 })();
 </script>
+@endif
 @endsection

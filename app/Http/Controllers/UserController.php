@@ -220,6 +220,14 @@ class UserController extends Controller
         if (!$lims_user_data) {
             return redirect()->back()->with('not_permitted', 'User not found.');
         }
+        $roleName = strtolower((string) (
+            optional(Auth::user()->role)->name
+            ?: optional(\DB::table('roles')->find(Auth::user()->role_id))->name
+            ?: ''
+        ));
+        if (in_array($roleName, ['judge', 'ambassador'], true)) {
+            unset($input['company_name']);
+        }
         $lims_user_data->update($input);
         return redirect()->back()->with('message3', 'Data updated successfullly');
     }

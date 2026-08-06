@@ -54,9 +54,22 @@ class SettingController extends Controller
         return view('setting.general_setting', compact('lims_general_setting_data', 'lims_account_list', 'zones_array', 'lims_currency_list'));
     }
 
-    /** In-app user guide (Settings > Help). Tabs keep topics ready for later permission-scoped help. */
+    /** In-app user guide (Settings > Help). Judges/Ambassadors get their grading Help instead. */
     public function help()
     {
+        $role = strtolower((string) (
+            optional(auth()->user()->role)->name
+            ?: optional(\DB::table('roles')->find(auth()->user()->role_id))->name
+            ?: ''
+        ));
+
+        if ($role === 'ambassador') {
+            return redirect()->to(route('ambassador_points.awaiting_candidates') . '#module-help');
+        }
+        if ($role === 'judge') {
+            return redirect()->to(route('points.awaiting_candidates') . '#module-help');
+        }
+
         return view('setting.help');
     }
 
@@ -89,7 +102,14 @@ class SettingController extends Controller
 
         $general_setting = GeneralSetting::latest()->first();
         $general_setting->id = 1;
-        $general_setting->site_title = $data['site_title'];
+        $roleName = strtolower((string) (
+            optional(auth()->user()->role)->name
+            ?: optional(\DB::table('roles')->find(auth()->user()->role_id))->name
+            ?: ''
+        ));
+        if (!in_array($roleName, ['judge', 'ambassador'], true)) {
+            $general_setting->site_title = $data['site_title'];
+        }
         $general_setting->currency = $data['currency'];
         $general_setting->currency_position = $data['currency_position'];
         $general_setting->staff_access = $data['staff_access'];

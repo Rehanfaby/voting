@@ -4,11 +4,20 @@
 @endphp
 <div id="ms-module-help" class="ms-module-help" style="display:none" aria-live="polite">
     <div class="card mg-help-card ms-module-help-card">
-        <div class="card-header d-flex align-items-center justify-content-between flex-wrap">
+                <div class="card-header d-flex align-items-center justify-content-between flex-wrap">
             <h4 class="mb-0"><i class="dripicons-question"></i> <span id="ms-module-help-title">{{ trans('file.Help') }}</span></h4>
             <div class="d-flex align-items-center flex-wrap">
                 <small class="text-muted mr-3">{{ config('app.version_label') }}</small>
+                @php
+                    $__helpRole = strtolower((string) (
+                        optional(Auth::user()->role)->name
+                        ?: optional(\DB::table('roles')->find(Auth::user()->role_id))->name
+                        ?: ''
+                    ));
+                @endphp
+                @if(!in_array($__helpRole, ['judge', 'ambassador'], true))
                 <a href="{{ route('setting.help') }}" class="btn btn-sm btn-outline-primary mr-2">{{ trans('file.User Guide') }}</a>
+                @endif
                 <button type="button" class="btn btn-sm btn-light" id="ms-module-help-close">{{ trans('file.Close') }}</button>
             </div>
         </div>

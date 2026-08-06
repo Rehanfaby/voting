@@ -48,9 +48,20 @@
                                     <label>{{trans('file.Phone Number')}} *</strong> </label>
                                     <input type="text" name="phone" value="{{$lims_user_data->phone}}" required class="form-control" />
                                 </div>
+                                @php
+                                    $__profileRole = strtolower((string) (
+                                        optional(Auth::user()->role)->name
+                                        ?: optional(\DB::table('roles')->find(Auth::user()->role_id))->name
+                                        ?: ''
+                                    ));
+                                    $__lockCompany = in_array($__profileRole, ['judge', 'ambassador'], true);
+                                @endphp
                                 <div class="form-group">
-                                    <label>{{trans('file.Company Name')}}</strong> </label>
-                                    <input type="text" name="company_name" value="{{$lims_user_data->company_name}}" class="form-control" />
+                                    <label>{{trans('file.Company Name')}}</label>
+                                    <input type="text" name="company_name" value="{{$lims_user_data->company_name}}" class="form-control" {{ $__lockCompany ? 'readonly' : '' }} />
+                                    @if($__lockCompany)
+                                        <small class="text-muted">Company Name cannot be changed from a Judge or Ambassador account.</small>
+                                    @endif
                                 </div>
                                 <div class="form-group">
                                     <input type="submit" value="{{trans('file.submit')}}" class="btn btn-primary">

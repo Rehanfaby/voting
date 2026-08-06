@@ -495,7 +495,9 @@
                         {{--                      @if($sms_setting_permission_active)--}}
                         {{--                      <li id="sms-setting-menu"><a href="{{route('setting.sms')}}">{{trans('file.SMS Setting')}}</a></li>--}}
                         {{--                      @endif--}}
+                        @if(!in_array($mgBodyRole, ['judge', 'ambassador'], true))
                         <li id="help-setting-menu"><a href="{{ route('setting.help') }}">{{ trans('file.Help') }}</a></li>
+                        @endif
 
                     </ul>
                 </li>
@@ -937,7 +939,16 @@
             return (p || '/').replace(/\/+$/, '') || '/';
         }
 
+        function roleHelpKey() {
+            var cls = document.body.className || '';
+            if (cls.indexOf('mg-role-ambassador') !== -1) return 'ambassador-point';
+            if (cls.indexOf('mg-role-judge') !== -1) return 'point';
+            return null;
+        }
+
         function detectMenuKey() {
+            var forced = roleHelpKey();
+            if (forced) return forced;
             var path = normalizePath(window.location.pathname);
             var bestKey = null, bestLen = -1;
             document.querySelectorAll('nav.side-navbar .side-menu li[data-menu-key]').forEach(function (li) {
@@ -957,11 +968,19 @@
             return bestKey || 'dashboard';
         }
 
+        function isHelpNavLink(a) {
+            if (!a) return false;
+            var text = (a.textContent || '').trim().toLowerCase();
+            if (text === (HELP_LABEL || 'Help').toLowerCase()) return true;
+            var href = (a.getAttribute('href') || '').toLowerCase();
+            return href.indexOf('setting/help') !== -1 || href.indexOf('#module-help') !== -1;
+        }
+
         function showModuleHelp(key) {
             var panel = document.getElementById('ms-module-help');
             var body = document.getElementById('ms-page-body');
             if (!panel) return;
-            key = key || detectMenuKey();
+            key = roleHelpKey() || key || detectMenuKey();
             var panes = panel.querySelectorAll('.ms-module-help-pane');
             var shown = false;
             panes.forEach(function (pane) {
@@ -1096,6 +1115,8 @@
                 activeGroup.querySelectorAll('a').forEach(function (a) {
                     var href = a.getAttribute('href');
                     if (!href || href === '#' || href === '') return;
+                    // Avoid duplicate Help pills (Settings submenu + appended Help tab).
+                    if (isHelpNavLink(a)) return;
                     var color = palette[i % palette.length]; i++;
                     var pill = document.createElement('a');
                     pill.href = a.href;
