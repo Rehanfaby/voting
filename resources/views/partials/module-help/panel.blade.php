@@ -26,6 +26,25 @@
                 <div class="ms-module-help-pane" data-help-key="{{ $key }}" style="display:none">
                     <p class="mg-help-intro">{{ $guide['intro'] ?? '' }}</p>
 
+                    @if(!empty($guide['guide_steps']))
+                        <div class="mg-help-guide">
+                            @foreach($guide['guide_steps'] as $gstep)
+                                <div class="mg-help-guide__step">
+                                    <h5>{{ $gstep['title'] ?? '' }}</h5>
+                                    @if(!empty($gstep['body']))
+                                        <p>{!! $gstep['body'] !!}</p>
+                                    @endif
+                                    @if(!empty($gstep['file']))
+                                        <figure class="mg-help-shot">
+                                            <img src="{{ asset('public/img/help/' . $gstep['file']) }}?v={{ $version }}" alt="{{ $gstep['title'] ?? '' }}" loading="lazy">
+                                            <figcaption>{{ $gstep['title'] ?? '' }}</figcaption>
+                                        </figure>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+
                     @if(!empty($guide['shots']))
                         <div class="mg-help-shot-grid">
                             @foreach($guide['shots'] as $shot)
@@ -77,7 +96,7 @@
                     @endif
 
                     @if(!empty($guide['steps']))
-                        <h6>How to use</h6>
+                        <h6>Also remember</h6>
                         <ol class="mg-help-steps">
                             @foreach($guide['steps'] as $step)
                                 <li>{!! $step !!}</li>

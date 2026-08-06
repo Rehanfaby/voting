@@ -727,6 +727,13 @@ label {
     padding: 8px 12px; font-size: 12px; color: #e2e8f0; margin: 0; background: #0a2350;
 }
 .mg-help-video-grid { display: grid; gap: 14px; }
+.mg-help-guide { display: flex; flex-direction: column; gap: 22px; margin: 8px 0 18px; }
+.mg-help-guide__step h5 {
+    color: #0a2350; font-weight: 800; margin: 0 0 8px; font-size: 1.05rem;
+}
+.mg-help-guide__step p { color: #475569; margin: 0 0 10px; line-height: 1.5; }
+.mg-help-guide__step .mg-help-shot { margin-top: 4px; }
+.mg-help-guide__step .mg-help-shot img { max-height: 520px; object-fit: contain; background: #f8fafc; }
 .mg-help-candidates {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));

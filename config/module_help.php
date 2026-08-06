@@ -117,35 +117,49 @@ return [
 
     'ambassador-point' => [
         'title' => 'Ambassador Grading',
-        'intro' => 'How Ambassadors log in and grade contestants on mulemagc.com.',
+        'intro' => 'Ambassador guide: login, dashboard, search a contestant, give points, and allocate a grade (max 5).',
+        'guide_steps' => [
+            [
+                'title' => '1. Login screen',
+                'body' => 'Open <strong>www.mulemagc.com</strong>, click <strong>Login</strong>, enter your username and password, then tap <strong>Sign In</strong>. Enter the OTP sent to your WhatsApp phone.',
+                'file' => 'amb-guide-01-login.jpg',
+            ],
+            [
+                'title' => '2. Ambassador dashboard',
+                'body' => 'After login you see your grading dashboard only: <strong>Number of Contestants</strong>, <strong>Number Graded</strong>, and <strong>Pending Grading</strong>. No voting information is shown. Open <strong>Awaiting Grading</strong> to continue.',
+                'file' => 'amb-guide-02-dashboard.jpg',
+            ],
+            [
+                'title' => '3. Select or search a contestant',
+                'body' => 'On <strong>Awaiting Grading</strong>, browse the photo cards or use <strong>Search candidate…</strong> to find a name.',
+                'file' => 'amb-guide-03-awaiting.jpg',
+            ],
+            [
+                'title' => '4. Click on Give Point',
+                'body' => 'Tap the contestant card or the blue <strong>Give Point</strong> button to open the grading form for that person.',
+                'file' => 'amb-guide-04-search-give.jpg',
+            ],
+            [
+                'title' => '5. Allocate grade (not more than 5)',
+                'body' => 'Enter points from <strong>1 to 5</strong> only, then press <strong>Save</strong>. You cannot give more than 5 points. Repeat until Pending Grading is empty.',
+                'file' => 'amb-guide-05-allocate.jpg',
+            ],
+        ],
         'steps' => [
-            'Open the platform using the URL <strong>www.mulemagc.com</strong>.',
-            'Click on <strong>Login</strong> (gold button in the header).',
-            'Enter your username and password.',
-            'Click on <strong>Login</strong>.',
-            'When the OTP screen displays, enter the OTP sent to your phone (WhatsApp).',
-            'Once you are logged in, click on <strong>Ambassador Grading</strong>.',
-            'You will see <strong>3 tabs</strong>: Awaiting Grading · Grade Candidate · Grade Listing.',
-            '<strong>1. Awaiting Grading</strong> — shows contestants that have not been graded yet. Tap a card to give points.',
-            '<strong>2. Grade Candidate</strong> — manually select a candidate and give grades (max 5 points).',
-            '<strong>3. Grade Listing</strong> — shows candidates and their grades.',
-            'Use this Help tab anytime to move around the Ambassador portal.',
+            'Tabs: <strong>Awaiting Grading</strong> · <strong>Grade Candidate</strong> · <strong>Grade Listing</strong>.',
+            'You grade each contestant only once.',
+            'Use this Help tab anytime while working.',
         ],
         'tips' => [
-            'OTP is sent by WhatsApp to the phone number on your account. Ask admin if it never arrives.',
-            'You grade each contestant only once. Awaiting Grading empties as you finish.',
-            'Ambassador scores are separate from Judge scores.',
+            'OTP is sent by WhatsApp to the phone on your account.',
+            'Max grade is <strong>5 points</strong>.',
+            'Company Name cannot be edited from an Ambassador account.',
         ],
-        'shots' => [
-            ['file' => 'login.jpg', 'caption' => 'Login page', 'url' => '/login'],
-            ['file' => 'grade-ambassador.jpg', 'caption' => 'Ambassador grading steps', 'url' => null],
-            ['file' => 'candidates-sheet-1.jpg', 'caption' => 'All candidates — sheet 1', 'url' => '/contestants'],
-            ['file' => 'candidates-sheet-2.jpg', 'caption' => 'All candidates — sheet 2', 'url' => '/contestants'],
-        ],
+        'shots' => [],
         'videos' => [
             ['file' => 'how-to-grade.mp4', 'caption' => 'Silent guide: grade every candidate (Judge & Ambassador)'],
         ],
-        'show_candidates' => true,
+        'show_candidates' => false,
     ],
 
     'grading-setting' => [
