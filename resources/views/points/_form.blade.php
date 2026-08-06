@@ -66,28 +66,34 @@
 
     <div class="mg-grade__criteria">
         @foreach($fields as $f)
-            <div class="mg-grade__criterion {{ $errors->has($f['key']) ? 'is-invalid' : '' }}">
+            <div class="mg-grade__criterion {{ $errors->has($f['key']) ? 'is-invalid' : '' }}" data-max="{{ $f['max'] }}">
                 <div class="mg-grade__criterion-head">
                     <label for="{{ $f['key'] }}" class="mg-grade__criterion-label">{{ $f['label'] }}</label>
-                    <span class="mg-grade__max">({{ $f['max'] }}_Max)</span>
+                    <span class="mg-grade__max">{{ $f['max'] }}_Max</span>
                 </div>
-                <div class="mg-grade__input-wrap">
-                    <input
-                        type="number"
-                        id="{{ $f['key'] }}"
-                        name="{{ $f['key'] }}"
-                        class="form-control points-input mg-grade__input {{ $errors->has($f['key']) ? 'is-invalid' : '' }}"
-                        value="{{ old($f['key'], $point->{$f['key']} ?? '') }}"
-                        min="0"
-                        max="{{ $f['max'] }}"
-                        step="1"
-                        inputmode="numeric"
-                        data-max="{{ $f['max'] }}"
-                        required>
-                    <span class="mg-grade__input-cap">/ {{ $f['max'] }}</span>
+                <div class="mg-grade__bar" aria-hidden="true">
+                    <div class="mg-grade__bar-fill" data-bar-for="{{ $f['key'] }}" style="width: 0%;"></div>
+                </div>
+                <div class="mg-grade__score-row">
+                    <div class="mg-grade__input-wrap">
+                        <input
+                            type="number"
+                            id="{{ $f['key'] }}"
+                            name="{{ $f['key'] }}"
+                            class="form-control points-input mg-grade__input {{ $errors->has($f['key']) ? 'is-invalid' : '' }}"
+                            value="{{ old($f['key'], $point->{$f['key']} ?? '') }}"
+                            min="0"
+                            max="{{ $f['max'] }}"
+                            step="1"
+                            inputmode="numeric"
+                            data-max="{{ $f['max'] }}"
+                            required>
+                        <span class="mg-grade__input-cap">/ {{ $f['max'] }}</span>
+                    </div>
+                    <span class="mg-grade__pct" data-pct-for="{{ $f['key'] }}">0%</span>
                 </div>
                 <div class="mg-grade__field-error" data-error-for="{{ $f['key'] }}">
-                    Must be 0–{{ $f['max'] }} ({{ $f['max'] }}_Max)
+                    Maximum allowed score is {{ $f['max'] }}
                 </div>
                 @error($f['key'])
                     <div class="invalid-feedback d-block font-weight-bold">{{ $message }}</div>
@@ -97,11 +103,16 @@
     </div>
 
     <div class="mg-grade__actions">
-        <button type="submit" class="btn btn-primary mg-grade__save">Save grade</button>
-        <div class="mg-grade__total" aria-live="polite">
-            <span class="mg-grade__total-label">{{ trans('file.Total') }}</span>
-            <strong class="mg-grade__total-value"><span class="total-points">0</span><small>/100</small></strong>
+        <div class="mg-grade__total-block">
+            <div class="mg-grade__total" aria-live="polite">
+                <span class="mg-grade__total-label">{{ trans('file.Total') }}</span>
+                <strong class="mg-grade__total-value"><span class="total-points">0</span><small>/100</small></strong>
+            </div>
+            <div class="mg-grade__total-bar" aria-hidden="true">
+                <div class="mg-grade__total-bar-fill" id="mg-grade-total-bar" style="width: 0%;"></div>
+            </div>
         </div>
+        <button type="submit" class="btn btn-primary mg-grade__save">Save grade</button>
     </div>
 </div>
 
@@ -150,6 +161,25 @@
     margin: 0; font-weight: 800; color: #0a2350; font-size: 14px; line-height: 1.35;
     flex: 1; min-width: 0;
 }
+.mg-grade__bar {
+    height: 8px; border-radius: 999px; background: #e8edf5; overflow: hidden; margin-bottom: 12px;
+}
+.mg-grade__bar-fill {
+    height: 100%; width: 0; border-radius: 999px;
+    background: linear-gradient(90deg, #f5c518 0%, #f59e0b 55%, #ea580c 100%);
+    transition: width .22s ease, background .2s ease;
+}
+.mg-grade__criterion.is-invalid .mg-grade__bar-fill,
+.mg-grade__bar-fill.is-over {
+    background: linear-gradient(90deg, #f87171 0%, #dc2626 100%);
+}
+.mg-grade__score-row {
+    display: flex; align-items: center; gap: 12px;
+}
+.mg-grade__pct {
+    min-width: 44px; text-align: right; font-size: 12px; font-weight: 800; color: #64748b;
+}
+.mg-grade__criterion.is-invalid .mg-grade__pct { color: #dc2626; }
 .mg-grade__field-error {
     display: none; margin-top: 8px; font-size: 12px; font-weight: 700; color: #b91c1c;
 }
@@ -159,7 +189,7 @@
     background: #0a2350; color: #f5c518; font-size: 12px; font-weight: 800; letter-spacing: .02em;
     white-space: nowrap;
 }
-.mg-grade__input-wrap { position: relative; max-width: 100%; width: 100%; }
+.mg-grade__input-wrap { position: relative; flex: 1; max-width: 180px; }
 .mg-grade__input {
     height: 48px; width: 100%; font-size: 1.25rem; font-weight: 700; color: #0a2350;
     border-radius: 12px; border: 1px solid #cbd5e1; padding-right: 52px;
@@ -183,17 +213,14 @@
 }
 .mg-grade__criterion.is-invalid .mg-grade__input-cap { color: #dc3545; }
 .mg-grade__actions {
-    display: flex; align-items: center; justify-content: space-between; gap: 14px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
     margin-top: 20px; flex-wrap: wrap;
-    padding: 14px 16px; border-radius: 16px;
+    padding: 16px 18px; border-radius: 16px;
     background: linear-gradient(135deg, #0a2350 0%, #1d4ed8 100%);
     color: #fff;
 }
-.mg-grade__save {
-    background: #f5c518 !important; border-color: #f5c518 !important; color: #0a2350 !important;
-    font-weight: 800; padding: 12px 22px; border-radius: 999px; min-height: 44px;
-}
-.mg-grade__total { text-align: right; }
+.mg-grade__total-block { flex: 1 1 220px; min-width: 0; }
+.mg-grade__total { margin-bottom: 8px; }
 .mg-grade__total-label {
     display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .06em;
     color: rgba(255,255,255,.75); font-weight: 700;
@@ -202,32 +229,53 @@
     font-size: 1.75rem; line-height: 1.1; color: #f5c518;
 }
 .mg-grade__total-value small { font-size: .9rem; color: rgba(255,255,255,.7); margin-left: 2px; }
+.mg-grade__total-bar {
+    height: 10px; border-radius: 999px; background: rgba(255,255,255,.18); overflow: hidden;
+}
+.mg-grade__total-bar-fill {
+    height: 100%; width: 0; border-radius: 999px;
+    background: linear-gradient(90deg, #f5c518 0%, #fbbf24 50%, #f59e0b 100%);
+    box-shadow: 0 0 12px rgba(245,197,24,.45);
+    transition: width .22s ease, background .2s ease;
+}
+.mg-grade__total-bar-fill.is-over {
+    background: linear-gradient(90deg, #f87171 0%, #dc2626 100%);
+    box-shadow: 0 0 12px rgba(220,38,38,.4);
+}
+.mg-grade__save {
+    background: #f5c518 !important; border-color: #f5c518 !important; color: #0a2350 !important;
+    font-weight: 800; padding: 12px 22px; border-radius: 999px; min-height: 44px; flex-shrink: 0;
+}
 @media (max-width: 767.98px) {
     .mg-grade__criterion { padding: 12px; border-radius: 14px; }
     .mg-grade__criterion-head { gap: 8px; margin-bottom: 8px; }
     .mg-grade__criterion-label { font-size: 13px; }
     .mg-grade__max { font-size: 11px; padding: 3px 8px; }
+    .mg-grade__input-wrap { max-width: none; }
     .mg-grade__input { height: 52px; font-size: 1.35rem; }
     .mg-grade__actions {
-        flex-direction: column-reverse; align-items: stretch; text-align: center;
+        flex-direction: column; align-items: stretch;
         position: sticky; bottom: 8px; z-index: 5;
     }
-    .mg-grade__total { text-align: center; }
-    .mg-grade__save { width: 100%; }
+    .mg-grade__save { width: 100%; order: 2; }
+    .mg-grade__total-block { order: 1; }
 }
 @media (min-width: 992px) {
     .mg-grade__meta, .mg-grade__meta--selects { grid-template-columns: 1fr 1fr; }
     .mg-grade__criteria { grid-template-columns: 1fr 1fr; }
-    .mg-grade__input-wrap { max-width: 180px; }
     .mg-grade__criterion:last-child:nth-child(odd) { grid-column: 1 / -1; max-width: calc(50% - 6px); }
 }
 </style>
 
 <script>
 (function () {
-    var form = document.querySelector('.mg-grade') && document.querySelector('.mg-grade').closest('form');
-    if (!form) return;
+    var root = document.querySelector('.mg-grade');
+    var form = root && root.closest('form');
+    if (!form || !root) return;
     form.setAttribute('novalidate', 'novalidate');
+
+    var totalSpan = root.querySelector('.total-points');
+    var totalBar = document.getElementById('mg-grade-total-bar');
 
     function markInput(input, invalid) {
         var card = input.closest('.mg-grade__criterion');
@@ -235,7 +283,44 @@
         if (card) card.classList.toggle('is-invalid', invalid);
     }
 
-    function validateAll(scrollToFirst) {
+    function refreshScores() {
+        var total = 0;
+        var anyOver = false;
+        form.querySelectorAll('.points-input').forEach(function (input) {
+            var max = parseInt(input.getAttribute('data-max'), 10) || 0;
+            var raw = (input.value || '').trim();
+            var v = parseInt(raw, 10);
+            var validNum = raw !== '' && !isNaN(v);
+            var score = validNum ? Math.max(0, v) : 0;
+            var over = validNum && v > max;
+            var pct = max > 0 ? Math.min(100, (Math.min(score, max) / max) * 100) : 0;
+            if (over) {
+                pct = 100;
+                anyOver = true;
+            }
+
+            var bar = root.querySelector('[data-bar-for="' + input.id + '"]');
+            var pctEl = root.querySelector('[data-pct-for="' + input.id + '"]');
+            if (bar) {
+                bar.style.width = pct + '%';
+                bar.classList.toggle('is-over', over);
+            }
+            if (pctEl) {
+                pctEl.textContent = validNum ? (Math.round((Math.min(score, max) / max) * 100) + '%') : '0%';
+                if (over) pctEl.textContent = 'Max!';
+            }
+
+            if (validNum) total += v;
+        });
+
+        if (totalSpan) totalSpan.textContent = total;
+        if (totalBar) {
+            totalBar.style.width = Math.min(100, Math.max(0, total)) + '%';
+            totalBar.classList.toggle('is-over', total > 100 || anyOver);
+        }
+    }
+
+    function validateAll() {
         var firstBad = null;
         var overCount = 0;
         form.querySelectorAll('.points-input').forEach(function (input) {
@@ -247,6 +332,7 @@
             if (invalid && !isNaN(v) && v > max) overCount++;
             if (invalid && !firstBad) firstBad = input;
         });
+        refreshScores();
         return { firstBad: firstBad, overCount: overCount };
     }
 
@@ -256,10 +342,11 @@
             var raw = (input.value || '').trim();
             if (raw === '') {
                 markInput(input, false);
-                return;
+            } else {
+                var v = parseInt(raw, 10);
+                markInput(input, isNaN(v) || v < 0 || v > max);
             }
-            var v = parseInt(raw, 10);
-            markInput(input, isNaN(v) || v < 0 || v > max);
+            refreshScores();
         });
         input.addEventListener('blur', function () {
             var max = parseInt(input.getAttribute('data-max'), 10);
@@ -267,11 +354,12 @@
             if (raw === '') return;
             var v = parseInt(raw, 10);
             markInput(input, isNaN(v) || v < 0 || v > max);
+            refreshScores();
         });
     });
 
     form.addEventListener('submit', function (e) {
-        var result = validateAll(true);
+        var result = validateAll();
         if (!result.firstBad) return;
         e.preventDefault();
         var msg = result.overCount > 1
@@ -293,5 +381,8 @@
             (card || result.firstBad).scrollIntoView({ behavior: 'smooth', block: 'center' });
         } catch (err) {}
     });
+
+    refreshScores();
+    window.mgGradeRefreshScores = refreshScores;
 })();
 </script>

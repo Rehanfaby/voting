@@ -71,22 +71,9 @@
     $("ul#point #point-menu-list").addClass("active");
 
     document.addEventListener('DOMContentLoaded', function () {
-        var inputs = document.querySelectorAll('.points-input');
-        var totalSpan = document.querySelector('.total-points');
-
-        function updateTotal() {
-            var total = 0;
-            inputs.forEach(function (input) {
-                var val = parseFloat(input.value);
-                if (!isNaN(val)) total += val;
-            });
-            if (totalSpan) totalSpan.textContent = total;
+        if (typeof window.mgGradeRefreshScores === 'function') {
+            window.mgGradeRefreshScores();
         }
-
-        inputs.forEach(function (input) {
-            input.addEventListener('input', updateTotal);
-        });
-        updateTotal();
     });
 </script>
 @endsection
