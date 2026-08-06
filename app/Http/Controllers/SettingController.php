@@ -54,6 +54,12 @@ class SettingController extends Controller
         return view('setting.general_setting', compact('lims_general_setting_data', 'lims_account_list', 'zones_array', 'lims_currency_list'));
     }
 
+    /** In-app user guide (Settings > Help). Tabs keep topics ready for later permission-scoped help. */
+    public function help()
+    {
+        return view('setting.help');
+    }
+
     public function gradingSetting()
     {
         $lims_general_setting_data = GeneralSetting::latest()->first();

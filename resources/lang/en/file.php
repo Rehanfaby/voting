@@ -1268,4 +1268,5 @@ return [
     'Qualified zone' => 'Green Zone',
     'Qualified zone top contestants' => 'Green Zone — top :count contestant(s)',
     'Below this line contestants are in the elimination zone' => 'Orange Zone — bottom :count contestant(s)',
+    'User Guide' => 'User Guide',
 ];

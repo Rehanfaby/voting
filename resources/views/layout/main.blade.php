@@ -463,6 +463,7 @@
                             <li id="currency-menu"><a href="{{route('currency.index')}}">{{trans('file.Currency')}}</a></li>
                         @endif
                         <li id="user-menu"><a href="{{route('user.profile', ['id' => Auth::id()])}}">{{trans('file.User Profile')}}</a></li>
+                        <li id="help-setting-menu"><a href="{{ route('setting.help') }}">{{ trans('file.Help') }}</a></li>
                         {{--                      @if($create_sms_permission_active)--}}
                         {{--                      <li id="create-sms-menu"><a href="{{route('setting.createSms')}}">{{trans('file.Create SMS')}}</a></li>--}}
                         {{--                      @endif--}}

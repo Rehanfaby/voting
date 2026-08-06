@@ -255,6 +255,7 @@ Route::group(['middleware' => ['auth', 'active', 'checkOtp']], function() {
 	Route::post('setting/site_content/gallery/delete', 'SettingController@galleryDelete')->name('setting.site_content.gallery.delete');
 	Route::post('setting/site_content_store', 'SettingController@siteContentStore')->name('setting.site_content.store');
 	Route::get('setting/general_setting', 'SettingController@generalSetting')->name('setting.general');
+    Route::get('setting/help', 'SettingController@help')->name('setting.help');
     Route::get('setting/env', 'SettingController@envSetting')->name('setting.env');
     Route::post('setting/env', 'SettingController@envSettingStore')->name('setting.env.store');
     Route::get('setting/grading_setting', 'SettingController@gradingSetting')->name('setting.grading');

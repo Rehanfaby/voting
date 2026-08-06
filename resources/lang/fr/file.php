@@ -520,7 +520,7 @@ return [
     'Mobile' => 'Mobile',
     'Message' => 'Message',
     'Add mobile numbers by selecting the customers' => 'Ajouter des numéros de téléphone en sélectionnant les clients',
-    'Help' => 'Aidez-moi',
+    'Help' => 'Aide',
     'Type Product Name or Code...' => 'Tapez Nom du produit ou code ...',
     'Type date or sale reference...' => 'Type date ou référence de vente ...',
     'Type date or purchase reference...' => 'Tapez date ou référence d\'achat ...',
@@ -1271,4 +1271,5 @@ return [
     'Qualified zone' => 'Zone Verte',
     'Qualified zone top contestants' => 'Zone Verte — :count candidat(s) en tête',
     'Below this line contestants are in the elimination zone' => 'Zone Orange — :count candidat(s) en bas',
+    'User Guide' => 'Guide utilisateur',
 ];
