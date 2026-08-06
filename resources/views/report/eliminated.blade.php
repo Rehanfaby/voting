@@ -18,6 +18,10 @@
             <div class="card">
                 <div class="card-header mt-2">
                     <h3 class="text-center">{{ trans('file.Eliminated Contestants') }}</h3>
+                    <p class="text-center text-muted mb-2">
+                        Bottom {{ (int) ($number_of_elimination ?? 0) }} by current ranking
+                        (Number of Elimination)
+                    </p>
                     <a class="pull-right btn btn-primary" href="{{ route('eliminate.contestants') }}">{{ trans('file.Generate Elimination List') }}</a>
                 </div>
             </div>

@@ -5,6 +5,10 @@
             <div class="card">
                 <div class="card-header mt-2">
                     <h3 class="text-center">{{ trans('file.Qualified Contestants') }}</h3>
+                    <p class="text-center text-muted mb-2">
+                        Top contestants above the bottom {{ (int) ($number_of_elimination ?? 0) }}
+                        (Number of Elimination)
+                    </p>
                 </div>
             </div>
         </div>

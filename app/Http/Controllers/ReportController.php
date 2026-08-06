@@ -157,7 +157,9 @@ class ReportController extends Controller
             ->sortByDesc('final_score')
             ->values();
 
-        return view('report.ranking', compact('contestants'));
+        $number_of_elimination = max(0, (int) $general_setting->number_of_elimination);
+
+        return view('report.ranking', compact('contestants', 'number_of_elimination'));
     }
 
     public function qualifiedContestantRanking() {
@@ -166,6 +168,7 @@ class ReportController extends Controller
         $judges_percentage = $general_setting->judge_percentage;
         $ambassadors_percentage = $general_setting->ambassador_percentage;
         $vote_percentage = $general_setting->vote_percentage;
+        $number_of_elimination = max(0, (int) $general_setting->number_of_elimination);
 
         $maxVotes = DB::table('votes')
             ->where('status', 1)
@@ -177,7 +180,7 @@ class ReportController extends Controller
 
         $judges_count = Judge::where('is_active', true)->count();
 
-        $contestants = DB::table('employees')->where('is_active', true)->where('is_approve', true)->where('is_eliminate', false)
+        $contestants = DB::table('employees')->where('is_active', true)->where('is_approve', true)
             ->leftJoin('votes', function($join) {
                 $join->on('votes.musician_id', '=', 'employees.id')
                     ->where('votes.status', 1);
@@ -204,9 +207,11 @@ class ReportController extends Controller
             ->sortByDesc('final_score')
             ->values();
 
-//        $contestants = $contestants->slice(0, $contestants->count() - $general_setting->number_of_elimination);
+        $total = $contestants->count();
+        $elimN = min($number_of_elimination, $total);
+        $contestants = $contestants->slice(0, max(0, $total - $elimN))->values();
 
-        return view('report.qualified', compact('contestants'));
+        return view('report.qualified', compact('contestants', 'number_of_elimination'));
     }
 
     public function eliminatedContestantRanking() {
@@ -215,6 +220,7 @@ class ReportController extends Controller
         $judges_percentage = $general_setting->judge_percentage;
         $ambassadors_percentage = $general_setting->ambassador_percentage;
         $vote_percentage = $general_setting->vote_percentage;
+        $number_of_elimination = max(0, (int) $general_setting->number_of_elimination);
 
         $maxVotes = DB::table('votes')
             ->where('status', 1)
@@ -226,7 +232,7 @@ class ReportController extends Controller
 
         $judges_count = Judge::where('is_active', true)->count();
 
-        $contestants = DB::table('employees')->where('is_active', true)->where('is_approve', true)->where('is_eliminate', true)
+        $contestants = DB::table('employees')->where('is_active', true)->where('is_approve', true)
             ->leftJoin('votes', function($join) {
                 $join->on('votes.musician_id', '=', 'employees.id')
                     ->where('votes.status', 1);
@@ -253,9 +259,11 @@ class ReportController extends Controller
             ->sortByDesc('final_score')
             ->values();
 
-//        $contestants = $contestants->slice(-$general_setting->number_of_elimination);
+        $total = $contestants->count();
+        $elimN = min($number_of_elimination, $total);
+        $contestants = $contestants->slice(max(0, $total - $elimN), $elimN)->values();
 
-        return view('report.eliminated', compact('contestants'));
+        return view('report.eliminated', compact('contestants', 'number_of_elimination'));
     }
 
     public function eliminateContestants()

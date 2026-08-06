@@ -1,10 +1,44 @@
 @extends('layout.main') @section('content')
+@php
+    $elimN = max(0, (int) ($number_of_elimination ?? 0));
+    $totalContestants = $contestants->count();
+    $elimN = min($elimN, $totalContestants);
+    $qualifiedCutoff = $totalContestants - $elimN;
+@endphp
     <section>
+        <style>
+            #employee-table tbody tr.mg-rank-qualified { background: #ecfdf5 !important; }
+            #employee-table tbody tr.mg-rank-qualified td:nth-child(3) { color: #047857; font-weight: 700; }
+            #employee-table tbody tr.mg-rank-eliminated { background: #fef2f2 !important; }
+            #employee-table tbody tr.mg-rank-cutoff td {
+                border-top: 3px solid #dc2626 !important;
+            }
+            .mg-rank-legend { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin: 0 0 12px; font-size: 13px; }
+            .mg-rank-legend span { display: inline-flex; align-items: center; gap: 6px; }
+            .mg-rank-swatch { width: 14px; height: 14px; border-radius: 3px; display: inline-block; }
+            .mg-rank-swatch--q { background: #34d399; }
+            .mg-rank-swatch--e { background: #f87171; }
+            .mg-rank-line { width: 28px; height: 3px; background: #dc2626; display: inline-block; }
+        </style>
 
         <div class="container-fluid">
             <div class="card">
                 <div class="card-header mt-2">
                     <h3 class="text-center">Contestant Ranking Report</h3>
+                    <p class="text-center text-muted mb-2">
+                        Top {{ max(0, $qualifiedCutoff) }} qualified
+                        @if($elimN > 0)
+                            · bottom {{ $elimN }} in elimination zone
+                        @endif
+                        (from Number of Elimination)
+                    </p>
+                    <div class="mg-rank-legend">
+                        <span><i class="mg-rank-swatch mg-rank-swatch--q"></i> Qualified (green)</span>
+                        @if($elimN > 0)
+                            <span><i class="mg-rank-line"></i> Elimination cut-off</span>
+                            <span><i class="mg-rank-swatch mg-rank-swatch--e"></i> Elimination zone (red)</span>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
@@ -20,32 +54,44 @@
                     <th>{{trans('file.Ambassador Points')}}</th>
                     <th>{{trans('file.Total')}}</th>
                     <th>{{trans('file.Position')}}</th>
+                    <th class="not-exported">Status</th>
                 </tr>
                 </thead>
                 <tbody>
-                @php
-                    $total_votes = 0;
-                @endphp
                 @foreach($contestants as $key=>$employee)
-                    @php $contestant = \App\Employee::find($employee->id); @endphp
-                    <tr>
+                    @php
+                        $contestant = \App\Employee::find($employee->id);
+                        $isQualified = $key < $qualifiedCutoff;
+                        $isCutoff = $elimN > 0 && $key === $qualifiedCutoff;
+                        $rowClass = ($isQualified ? 'mg-rank-qualified' : 'mg-rank-eliminated') . ($isCutoff ? ' mg-rank-cutoff' : '');
+                    @endphp
+                    <tr class="{{ $rowClass }}">
                         <td>{{$key}}</td>
-                        @if($contestant->image)
+                        @if($contestant && $contestant->image)
                             <td> <img src="{{url('public/images/employee',$contestant->image)}}" height="80" width="80"></td>
                         @else
                             <td>No Image</td>
                         @endif
-                        <td>{{ $contestant->name }}</td>
+                        <td>{{ $contestant ? $contestant->name : $employee->name }}</td>
                         <td>{{ $employee->total_votes }}</td>
                         <td>{{ $employee->total_points }}</td>
                         <td>{{ $employee->total_ambassador_points }}</td>
-                        <td class="text text-danger">{{ round($employee->final_score, 2) }}</td>
+                        <td class="{{ $isQualified ? 'text-success font-weight-bold' : 'text text-danger' }}">{{ round($employee->final_score, 2) }}</td>
                         <td class="badge badge-info">{{ $key + 1}}</td>
+                        <td>
+                            @if($isQualified)
+                                <span class="badge badge-success">Qualified</span>
+                            @else
+                                <span class="badge badge-danger">Elimination</span>
+                            @endif
+                        </td>
                     </tr>
                 @endforeach
                 </tbody>
                 <tfoot>
                 <tr>
+                    <th></th>
+                    <th></th>
                     <th></th>
                     <th></th>
                     <th></th>
@@ -85,6 +131,7 @@
 
         $('#employee-table').DataTable( {
             "order": [],
+            'pageLength': 50,
             'language': {
                 'lengthMenu': '_MENU_ {{trans("file.records per page")}}',
                 "info":      '<small>{{trans("file.Showing")}} _START_ - _END_ (_TOTAL_)</small>',
@@ -97,7 +144,7 @@
             'columnDefs': [
                 {
                     "orderable": false,
-                    'targets': [0, 1, 6]
+                    'targets': [0, 1, 6, 8]
                 },
                 {
                     'render': function(data, type, row, meta){
