@@ -808,12 +808,13 @@
                     <div class="card-body">
                         {!! Form::open(['route' => 'setting.site_content.section', 'method' => 'post']) !!}
                         <input type="hidden" name="section" value="menu_order">
-                        <p class="italic"><small>Reorder the admin side menu with the arrows, then press <strong>Save</strong>.</small></p>
+                        <p class="italic"><small>Drag items up or down (or use the arrows), then press <strong>Save</strong>.</small></p>
                         <ul class="sc-menu-order list-unstyled" id="sc-menu-order">
                             @foreach($menu_order as $key)
                                 @if(isset($menu_labels[$key]))
                                 <li class="sc-menu-item" data-key="{{ $key }}">
                                     <input type="hidden" name="menu_order[]" value="{{ $key }}">
+                                    <span class="sc-menu-drag" title="Drag to reorder"><i class="dripicons-move"></i></span>
                                     <span class="sc-menu-label">{{ $menu_labels[$key] }}</span>
                                     <span class="sc-menu-actions">
                                         <button type="button" class="btn btn-sm btn-light sc-move-up" title="Move up"><i class="dripicons-chevron-up"></i></button>
@@ -926,7 +927,12 @@
     .sc-switch input:checked + .sc-slider:before { transform:translateX(23px); }
     .sc-menu-order { max-width:520px; margin:0; }
     .sc-menu-item { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 14px; margin-bottom:8px; background:#f3f6fc; border:1px solid #dbe4f3; border-radius:8px; }
-    .sc-menu-label { font-weight:600; color:#14223f; }
+    .sc-menu-item.ui-sortable-helper { box-shadow:0 8px 22px rgba(15,23,42,.18); background:#fff; border-color:#93c5fd; z-index:20; }
+    .sc-menu-item.ui-sortable-placeholder { visibility:visible !important; background:#e0ecff; border:1px dashed #60a5fa; height:46px; margin-bottom:8px; border-radius:8px; }
+    .sc-menu-drag { cursor:grab; color:#64748b; display:inline-flex; align-items:center; padding:2px 4px; flex:0 0 auto; }
+    .sc-menu-drag:active { cursor:grabbing; }
+    .sc-menu-label { font-weight:600; color:#14223f; flex:1 1 auto; }
+    .sc-menu-actions { flex:0 0 auto; }
     .sc-menu-actions .btn { padding:2px 8px; }
     .sc-section-actions { margin-top:16px; padding-top:12px; border-top:1px solid #e8edf5; display:flex; gap:10px; flex-wrap:wrap; }
     .sc-paste-zone { border:2px dashed #c5d3ea; border-radius:10px; padding:16px; background:#f8fafc; cursor:text; }
@@ -1005,6 +1011,20 @@
             var next = item.next('.sc-menu-item');
             if (next.length) { item.insertAfter(next); }
         });
+
+        // Drag-and-drop reorder for Side Menu (keeps existing arrow buttons + Save).
+        if ($.fn.sortable) {
+            $('#sc-menu-order').sortable({
+                handle: '.sc-menu-drag',
+                axis: 'y',
+                tolerance: 'pointer',
+                placeholder: 'ui-sortable-placeholder',
+                forcePlaceholderSize: true,
+                opacity: 0.92,
+                cursor: 'grabbing',
+                cancel: 'button, input, a'
+            });
+        }
 
         var popupInput = document.getElementById('popup_image_input');
         var popupPreview = document.getElementById('popup-preview-img');
