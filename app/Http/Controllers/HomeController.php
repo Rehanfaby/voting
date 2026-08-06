@@ -1692,12 +1692,18 @@ class HomeController extends Controller
 
     public function otpCheck(){
         $user = Auth::user();
+        $this->syncLoginOtpPhoneFromProfile($user);
         $sent = $this->sendOTP($user);
         $user->refresh();
+        $recipient = $this->loginOtpRecipient($user);
+        $masked = $recipient
+            ? \App\Helpers\PhoneHelper::forUltraMsg($recipient)
+            : null;
 
         return view('otp_screen', [
             'otp_sent_at' => $user->otp_time,
-            'otp_send_failed' => $sent === false && !$user->otp_time,
+            'otp_send_failed' => $sent === false,
+            'otp_phone_masked' => $masked ? $this->maskPhoneForDisplay($masked) : null,
         ]);
     }
 
@@ -1741,9 +1747,20 @@ class HomeController extends Controller
             return null;
         }
 
+        $this->syncLoginOtpPhoneFromProfile($user);
         $recipient = $this->loginOtpRecipient($user);
         if (!$recipient) {
             \Log::warning('Login OTP: user has no phone', ['user_id' => $user->id]);
+            return false;
+        }
+
+        $to = \App\Helpers\PhoneHelper::forUltraMsg($recipient);
+        if (!$to || strlen(preg_replace('/\D/', '', $to)) < 10) {
+            \Log::warning('Login OTP: invalid phone after normalize', [
+                'user_id' => $user->id,
+                'raw' => $recipient,
+                'to' => $to,
+            ]);
             return false;
         }
 
@@ -1755,10 +1772,10 @@ class HomeController extends Controller
             WhatsAppFormatter::currentLocale()
         );
 
-        if (!$this->wpMessage($recipient, $msg)) {
+        if (!$this->wpMessage($to, $msg)) {
             \Log::warning('Login OTP WhatsApp delivery failed', [
                 'user_id' => $user->id,
-                'to' => \App\Helpers\PhoneHelper::forUltraMsg($recipient),
+                'to' => $to,
             ]);
             return false;
         }
@@ -1768,18 +1785,105 @@ class HomeController extends Controller
         return true;
     }
 
-    /** Prefer a valid Cameroon number for login OTP delivery. */
+    /**
+     * Prefer a valid Cameroon WhatsApp number; fall back to any sane E.164.
+     * Also reads Ambassador/Judge profile phones when the user row is empty.
+     */
     private function loginOtpRecipient($user)
     {
-        $candidates = array_filter([$user->phone, $user->whatsapp_number]);
+        $candidates = [];
+        foreach ([$user->phone, $user->whatsapp_number] as $candidate) {
+            if ($candidate !== null && trim((string) $candidate) !== '') {
+                $candidates[] = trim((string) $candidate);
+            }
+        }
+        foreach ($this->profilePhonesForUser($user) as $candidate) {
+            $candidates[] = $candidate;
+        }
+
+        $candidates = array_values(array_unique($candidates));
+        $fallback = null;
         foreach ($candidates as $candidate) {
             $e164 = \App\Helpers\PhoneHelper::forUltraMsg($candidate);
-            if ($e164 && strpos($e164, '+237') === 0) {
-                return $candidate;
+            if (!$e164 || strlen(preg_replace('/\D/', '', $e164)) < 10) {
+                continue;
+            }
+            if (strpos($e164, '+237') === 0 && strlen(preg_replace('/\D/', '', $e164)) === 12) {
+                return $e164;
+            }
+            if ($fallback === null) {
+                $fallback = $e164;
             }
         }
 
-        return $user->phone ?: $user->whatsapp_number;
+        return $fallback;
+    }
+
+    /** Pull phone from linked Ambassador / Judge profile rows when user.phone is empty. */
+    private function profilePhonesForUser($user)
+    {
+        $phones = [];
+        try {
+            $amb = \App\Ambassador::where(function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+                if (!empty($user->email)) {
+                    $q->orWhere('email', $user->email);
+                }
+                if (!empty($user->name)) {
+                    $q->orWhere('name', $user->name);
+                }
+            })->first();
+            if ($amb && !empty($amb->phone_number) && strlen(preg_replace('/\D/', '', $amb->phone_number)) >= 9) {
+                $phones[] = trim((string) $amb->phone_number);
+            }
+        } catch (\Throwable $e) {
+            // ignore
+        }
+        try {
+            if (class_exists(\App\Judge::class)) {
+                $judge = \App\Judge::where(function ($q) use ($user) {
+                    $q->where('user_id', $user->id);
+                    if (!empty($user->email)) {
+                        $q->orWhere('email', $user->email);
+                    }
+                    if (!empty($user->name)) {
+                        $q->orWhere('name', $user->name);
+                    }
+                })->first();
+                if ($judge && !empty($judge->phone_number) && strlen(preg_replace('/\D/', '', $judge->phone_number)) >= 9) {
+                    $phones[] = trim((string) $judge->phone_number);
+                }
+            }
+        } catch (\Throwable $e) {
+            // ignore
+        }
+
+        return $phones;
+    }
+
+    /** If user.phone is empty, copy a usable profile phone onto the user row. */
+    private function syncLoginOtpPhoneFromProfile($user)
+    {
+        if (!empty($user->phone) || !empty($user->whatsapp_number)) {
+            return;
+        }
+        foreach ($this->profilePhonesForUser($user) as $raw) {
+            $e164 = \App\Helpers\PhoneHelper::forUltraMsg($raw);
+            if ($e164 && strlen(preg_replace('/\D/', '', $e164)) >= 10) {
+                $user->phone = $e164;
+                $user->save();
+                return;
+            }
+        }
+    }
+
+    private function maskPhoneForDisplay($e164)
+    {
+        $digits = preg_replace('/\D/', '', (string) $e164);
+        if (strlen($digits) < 6) {
+            return $e164;
+        }
+        return '+' . substr($digits, 0, 3) . str_repeat('•', max(0, strlen($digits) - 6)) . substr($digits, -3);
     }
 
     public function whatsapp()

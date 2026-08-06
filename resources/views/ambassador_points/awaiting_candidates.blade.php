@@ -1,4 +1,5 @@
-@extends('layout.main') @section('content')
+@extends('layout.main')
+@section('content')
 
 @if(session()->has('message'))
   <div class="alert alert-success alert-dismissible text-center"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>{!! session()->get('message') !!}</div>
@@ -6,216 +7,197 @@
 @if(session()->has('not_permitted'))
   <div class="alert alert-danger alert-dismissible text-center"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>{{ session()->get('not_permitted') }}</div>
 @endif
-<section>
-    <style>
-        tr{
-            cursor: pointer;
-        }
-    </style>
+@if(session('success'))
+  <div class="alert alert-success alert-dismissible text-center"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>{{ session('success') }}</div>
+@endif
+
+@php
+    use App\Helpers\ImageOptimizer;
+    $awaiting = collect($awaiting_candidates ?? []);
+    $count = $awaiting->count();
+@endphp
+
+<section class="mg-awaiting">
     <div class="container-fluid">
-        <div class="card">
-            <div class="card-header">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h2>{{trans('file.Awaiting Candidate')}}</h2>
-                </div>
+        <div class="mg-awaiting__hero">
+            <div>
+                <p class="mg-awaiting__eyebrow">Ambassador Grading</p>
+                <h1 class="mg-awaiting__title">{{ trans('file.Awaiting Candidate') }}</h1>
+                <p class="mg-awaiting__sub">
+                    Contestants you have not graded yet. Tap a card to give points (max 5).
+                </p>
+            </div>
+            <div class="mg-awaiting__count" aria-label="{{ $count }} remaining">
+                <span class="mg-awaiting__count-num">{{ $count }}</span>
+                <span class="mg-awaiting__count-label">left to grade</span>
             </div>
         </div>
 
-        @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
+        <div class="mg-awaiting__toolbar">
+            <div class="mg-awaiting__search">
+                <i class="fa fa-search"></i>
+                <input type="search" id="mg-awaiting-search" placeholder="Search candidate…" autocomplete="off">
+            </div>
+            <a class="mg-awaiting__help-link" href="#module-help" data-module-help="1">
+                <i class="dripicons-question"></i> {{ trans('file.Help') }}
+            </a>
+        </div>
+
+        @if($count === 0)
+            <div class="mg-awaiting__empty">
+                <i class="fa fa-check-circle"></i>
+                <h3>All caught up</h3>
+                <p>You have graded every contestant, or grading is not available right now.</p>
+                <a href="{{ route('ambassador_points.index') }}" class="btn btn-primary">{{ trans('file.Grade Listing') }}</a>
+            </div>
+        @else
+            <div class="mg-awaiting__grid" id="mg-awaiting-grid">
+                @foreach($awaiting->sortBy('name') as $candidate)
+                    @php
+                        $href = route('ambassador_points.create', ['candidate_id' => $candidate->id]);
+                        $img = ImageOptimizer::employeeImageUrl($candidate->image ?? '');
+                    @endphp
+                    <a class="mg-awaiting-card" href="{{ $href }}" data-name="{{ strtolower($candidate->name) }}">
+                        <div class="mg-awaiting-card__photo">
+                            @if(!empty($candidate->image))
+                                <img src="{{ $img }}" alt="{{ $candidate->name }}" loading="lazy" width="88" height="88">
+                            @else
+                                <span class="mg-awaiting-card__initial">{{ strtoupper(substr($candidate->name, 0, 1)) }}</span>
+                            @endif
+                        </div>
+                        <div class="mg-awaiting-card__body">
+                            <h3 class="mg-awaiting-card__name">{{ $candidate->name }}</h3>
+                            <p class="mg-awaiting-card__hint">Tap to grade · max 5 points</p>
+                        </div>
+                        <span class="mg-awaiting-card__cta">
+                            <i class="fa fa-pencil"></i>
+                            <span>Give Point</span>
+                        </span>
+                    </a>
+                @endforeach
+            </div>
+            <p class="mg-awaiting__none-match" id="mg-awaiting-none" style="display:none;">No candidate matches your search.</p>
         @endif
-
-        <table id="employee-table" class="table table-striped">
-            <thead>
-            <tr>
-                <th class="not-exported">#</th>
-                <th>Name</th>
-{{--                <th>Phone</th>--}}
-{{--                <th>Email</th>--}}
-                <th class="not-exported">Actions</th>
-            </tr>
-            </thead>
-            <tbody>
-            @foreach($awaiting_candidates as $awaiting_candidate)
-                <tr data-id="{{$awaiting_candidate->id}}" class="clickable-row" data-href="{{ route('ambassador_points.create', ['candidate_id' => $awaiting_candidate->id]) }}">
-                    <td>{{ $awaiting_candidate->id }}</td>
-                    <td>{{ $awaiting_candidate->name }}</td>
-{{--                    <td>{{ $awaiting_candidate->phone_number }}</td>--}}
-{{--                    <td>{{ $awaiting_candidate->email }}</td>--}}
-                    <td>
-                        <a href="{{ route('ambassador_points.create', ['candidate_id' => $awaiting_candidate->id]) }}">
-                            <i class="fa fa-pencil"></i> Give Point
-                        </a>
-                    </td>
-
-                </tr>
-            @endforeach
-            </tbody>
-        </table>
-
     </div>
-
-
 </section>
 
+<style>
+.mg-awaiting { padding: 8px 0 28px; }
+.mg-awaiting__hero {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+    background: linear-gradient(135deg, #0a2350 0%, #1d4ed8 100%);
+    color: #fff; border-radius: 18px; padding: 20px 18px; margin-bottom: 16px;
+    box-shadow: 0 12px 30px rgba(10,35,80,.22);
+}
+.mg-awaiting__eyebrow { margin: 0 0 4px; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: #f5c518; font-weight: 700; }
+.mg-awaiting__title { margin: 0; font-size: 1.45rem; font-weight: 800; line-height: 1.2; }
+.mg-awaiting__sub { margin: 8px 0 0; font-size: 13px; color: rgba(255,255,255,.82); max-width: 36rem; }
+.mg-awaiting__count {
+    flex-shrink: 0; min-width: 88px; text-align: center; background: rgba(255,255,255,.12);
+    border: 1px solid rgba(245,197,24,.45); border-radius: 14px; padding: 10px 12px;
+}
+.mg-awaiting__count-num { display: block; font-size: 1.8rem; font-weight: 800; color: #f5c518; line-height: 1; }
+.mg-awaiting__count-label { display: block; font-size: 11px; margin-top: 4px; color: rgba(255,255,255,.85); }
+.mg-awaiting__toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+.mg-awaiting__search {
+    flex: 1 1 220px; display: flex; align-items: center; gap: 10px;
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 999px; padding: 10px 14px;
+    box-shadow: 0 4px 14px rgba(15,23,42,.05);
+}
+.mg-awaiting__search i { color: #64748b; }
+.mg-awaiting__search input {
+    border: 0; outline: 0; width: 100%; font-size: 15px; background: transparent; color: #0a2350;
+}
+.mg-awaiting__help-link {
+    display: inline-flex; align-items: center; gap: 6px; padding: 10px 14px; border-radius: 999px;
+    background: #0a2350; color: #fff !important; font-weight: 700; font-size: 13px; text-decoration: none !important;
+}
+.mg-awaiting__grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+.mg-awaiting-card {
+    display: flex; align-items: center; gap: 12px; padding: 12px;
+    background: #fff; border: 1px solid #e7edf5; border-radius: 16px; text-decoration: none !important;
+    color: inherit; box-shadow: 0 6px 18px rgba(15,23,42,.05);
+    transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+.mg-awaiting-card:hover, .mg-awaiting-card:focus {
+    transform: translateY(-1px); border-color: #f5c518;
+    box-shadow: 0 10px 24px rgba(10,35,80,.12); color: inherit;
+}
+.mg-awaiting-card__photo {
+    width: 64px; height: 64px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
+    background: #0a2350; border: 3px solid #f5c518;
+    display: flex; align-items: center; justify-content: center;
+}
+.mg-awaiting-card__photo img { width: 100%; height: 100%; object-fit: cover; }
+.mg-awaiting-card__initial { color: #f5c518; font-weight: 800; font-size: 1.4rem; }
+.mg-awaiting-card__body { flex: 1; min-width: 0; }
+.mg-awaiting-card__name {
+    margin: 0; font-size: 15px; font-weight: 800; color: #0a2350;
+    line-height: 1.25; overflow-wrap: anywhere;
+}
+.mg-awaiting-card__hint { margin: 4px 0 0; font-size: 12px; color: #64748b; }
+.mg-awaiting-card__cta {
+    flex-shrink: 0; display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 2px; min-width: 72px; padding: 8px 10px; border-radius: 12px;
+    background: linear-gradient(135deg, #1d4ed8, #0a2350); color: #fff; font-size: 11px; font-weight: 700;
+}
+.mg-awaiting-card__cta i { font-size: 16px; }
+.mg-awaiting__empty {
+    text-align: center; background: #fff; border-radius: 18px; padding: 36px 18px;
+    border: 1px solid #e7edf5;
+}
+.mg-awaiting__empty i { font-size: 42px; color: #22c55e; }
+.mg-awaiting__empty h3 { margin: 12px 0 6px; color: #0a2350; font-weight: 800; }
+.mg-awaiting__empty p { color: #64748b; margin-bottom: 16px; }
+.mg-awaiting__none-match { text-align: center; color: #64748b; margin-top: 18px; }
+@media (min-width: 768px) {
+    .mg-awaiting__grid { grid-template-columns: 1fr 1fr; }
+    .mg-awaiting__title { font-size: 1.75rem; }
+    .mg-awaiting-card__photo { width: 72px; height: 72px; }
+}
+@media (min-width: 1200px) {
+    .mg-awaiting__grid { grid-template-columns: 1fr 1fr 1fr; }
+}
+@media (max-width: 575.98px) {
+    .mg-awaiting__hero { flex-direction: row; padding: 16px; }
+    .mg-awaiting__sub { font-size: 12px; }
+    .mg-awaiting-card__cta span { display: none; }
+    .mg-awaiting-card__cta { min-width: 44px; min-height: 44px; border-radius: 50%; }
+}
+</style>
 
 <script type="text/javascript">
-
     $("ul#ambassador-point").siblings('a').attr('aria-expanded','true');
     $("ul#ambassador-point").addClass("show");
     $("ul#ambassador-point #ambassador-point-awaiting-list").addClass("active");
 
-    $(document).ready(function($) {
-        $('.clickable-row td:not(:first-child)').click(function () {
-            window.location = $(this).closest('tr').data("href");
+    (function () {
+        var input = document.getElementById('mg-awaiting-search');
+        var grid = document.getElementById('mg-awaiting-grid');
+        var none = document.getElementById('mg-awaiting-none');
+        if (!input || !grid) return;
+        input.addEventListener('input', function () {
+            var q = (input.value || '').toLowerCase().trim();
+            var visible = 0;
+            grid.querySelectorAll('.mg-awaiting-card').forEach(function (card) {
+                var match = !q || (card.getAttribute('data-name') || '').indexOf(q) !== -1;
+                card.style.display = match ? '' : 'none';
+                if (match) visible++;
+            });
+            if (none) none.style.display = visible ? 'none' : 'block';
         });
-    });
 
-    var employee_id = [];
-    var user_verified = <?php echo json_encode(env('USER_VERIFIED')) ?>;
-
-    $.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        }
-    });
-
-    function confirmDelete() {
-        if (confirm("Are you sure want to delete?")) {
-            return true;
-        }
-        return false;
-    }
-
-
-    $('#employee-table').DataTable( {
-        "order": [],
-        'language': {
-            'lengthMenu': '_MENU_ {{trans("file.records per page")}}',
-             "info":      '<small>{{trans("file.Showing")}} _START_ - _END_ (_TOTAL_)</small>',
-            "search":  '{{trans("file.Search")}}',
-            'paginate': {
-                    'previous': '<i class="dripicons-chevron-left"></i>',
-                    'next': '<i class="dripicons-chevron-right"></i>'
-            }
-        },
-        'columnDefs': [
-            {
-                "orderable": false,
-                'targets': [0, 2]
-            },
-            {
-                'render': function(data, type, row, meta){
-                    if(type === 'display'){
-                        data = '<div class="checkbox"><input type="checkbox" class="dt-checkboxes"><label></label></div>';
-                    }
-
-                   return data;
-                },
-                'checkboxes': {
-                   'selectRow': true,
-                   'selectAllRender': '<div class="checkbox"><input type="checkbox" class="dt-checkboxes"><label></label></div>'
-                },
-                'targets': [0]
-            }
-        ],
-        'select': { style: 'multi',  selector: 'td:first-child'},
-        'lengthMenu': [[10, 25, 50, -1], [10, 25, 50, "All"]],
-        dom: '<"row"lfB>rtip',
-        buttons: [
-            {
-                extend: 'pdf',
-                text: '<i title="export to pdf" class="fa fa-file-pdf-o"></i>',
-                exportOptions: {
-                    columns: ':visible:Not(.not-exported)',
-                    rows: ':visible',
-                    stripHtml: false
-                },
-                customize: function(doc) {
-                    for (var i = 1; i < doc.content[1].table.body.length; i++) {
-                        if (doc.content[1].table.body[i][0].text.indexOf('<img src=') !== -1) {
-                            var imagehtml = doc.content[1].table.body[i][0].text;
-                            var regex = /<img.*?src=['"](.*?)['"]/;
-                            var src = regex.exec(imagehtml)[1];
-                            var tempImage = new Image();
-                            tempImage.src = src;
-                            var canvas = document.createElement("canvas");
-                            canvas.width = tempImage.width;
-                            canvas.height = tempImage.height;
-                            var ctx = canvas.getContext("2d");
-                            ctx.drawImage(tempImage, 0, 0);
-                            var imagedata = canvas.toDataURL("image/png");
-                            delete doc.content[1].table.body[i][0].text;
-                            doc.content[1].table.body[i][0].image = imagedata;
-                            doc.content[1].table.body[i][0].fit = [30, 30];
-                        }
-                    }
-                },
-            },
-            {
-                extend: 'csv',
-                text: '<i title="export to csv" class="fa fa-file-text-o"></i>',
-                exportOptions: {
-                    columns: ':visible:Not(.not-exported)',
-                    rows: ':visible',
-                    format: {
-                        body: function ( data, row, column, node ) {
-                            if (column === 0 && (data.indexOf('<img src=') != -1)) {
-                                var regex = /<img.*?src=['"](.*?)['"]/;
-                                data = regex.exec(data)[1];
-                            }
-                            return data;
-                        }
-                    }
-                },
-            },
-            {
-                extend: 'print',
-                text: '<i title="print" class="fa fa-print"></i>',
-                exportOptions: {
-                    columns: ':visible:Not(.not-exported)',
-                    rows: ':visible',
-                    stripHtml: false
-                },
-            },
-            {
-                text: '<i title="delete" class="dripicons-cross"></i>',
-                className: 'buttons-delete',
-                action: function ( e, dt, node, config ) {
-                    if(user_verified == '1') {
-                        employee_id.length = 0;
-                        $(':checkbox:checked').each(function(i){
-                            if(i){
-                                employee_id[i-1] = $(this).closest('tr').data('id');
-                            }
-                        });
-                        if(employee_id.length && confirm("Are you sure want to delete?")) {
-                            $.ajax({
-                                type:'POST',
-                                url:'judge/deletebyselection',
-                                data:{
-                                    employeeIdArray: employee_id
-                                },
-                                success:function(data){
-                                    alert(data);
-                                    location.reload();
-                                }
-                            });
-                            dt.rows({ page: 'current', selected: true }).remove().draw(false);
-                        }
-                        else if(!employee_id.length)
-                            alert('No employee is selected!');
-                    }
-                    else
-                        alert('This feature is disable for demo!');
+        var helpLink = document.querySelector('.mg-awaiting__help-link');
+        if (helpLink) {
+            helpLink.addEventListener('click', function (e) {
+                e.preventDefault();
+                if (typeof window.msShowModuleHelp === 'function') {
+                    window.msShowModuleHelp('ambassador-point');
+                } else {
+                    window.location.hash = 'module-help';
                 }
-            },
-            {
-                extend: 'colvis',
-                text: '<i title="column visibility" class="fa fa-eye"></i>',
-                columns: ':gt(0)'
-            },
-        ],
-    } );
+            });
+        }
+    })();
 </script>
 @endsection

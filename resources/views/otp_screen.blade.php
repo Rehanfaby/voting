@@ -29,11 +29,17 @@
                     <div class="alert-box success">{{ session()->get('message') }}</div>
                 @endif
 
+                @if(!empty($otp_phone_masked) && empty($otp_send_failed))
+                    <p class="otp-dest">WhatsApp → <strong>{{ $otp_phone_masked }}</strong></p>
+                @elseif(empty($otp_phone_masked))
+                    <div class="alert-box">No phone number is on your account. Ask an admin to add your WhatsApp number, then try again.</div>
+                @endif
+
                 @if(Auth::user()->is_active)
                 <form action="{{ route('check.otp.store') }}" method="post">
                     @csrf
                     <div class="otp-field">
-                        <input id="login-otp" type="text" name="otp" required inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="one-time-code" autofocus>
+                        <input id="login-otp" type="text" name="otp" required inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="000000" autocomplete="one-time-code" autofocus>
                     </div>
                     <p class="otp-timer" id="otp-expiry">{{ trans('file.Code expires in') }} <span id="otp-expiry-time">3:00</span></p>
                     <button type="submit" class="btn-auth">{{ trans('file.Verify OTP') }}</button>

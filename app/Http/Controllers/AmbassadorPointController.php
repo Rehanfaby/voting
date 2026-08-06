@@ -14,8 +14,11 @@ use Spatie\Permission\Models\Role;
 
 class AmbassadorPointController extends Controller
 {
-    private function getJudgeRoleId() {
-        return Role::where('name', 'ambassador')->first()->id;
+    private function ambassadorRoleId()
+    {
+        $role = Role::whereRaw('LOWER(name) = ?', ['ambassador'])->first();
+
+        return $role ? (int) $role->id : 0;
     }
 
     public function index()
@@ -27,15 +30,15 @@ class AmbassadorPointController extends Controller
             ]);
         }
 
-        $ambassadorRole = Role::where('name', 'ambassador')->first();
-        if (!$ambassadorRole) {
+        $ambassadorRoleId = $this->ambassadorRoleId();
+        if (!$ambassadorRoleId) {
             return view('ambassador_points.index', [
                 'points' => collect(),
                 'grading_disabled' => true,
             ]);
         }
 
-        if (Auth::user()->role_id == $ambassadorRole->id) {
+        if ((int) Auth::user()->role_id === $ambassadorRoleId) {
             $points = AmbassadorPoint::with(['ambassador', 'contestant'])
                 ->whereHas('contestant')
                 ->whereHas('ambassador')
@@ -60,7 +63,7 @@ class AmbassadorPointController extends Controller
         if ($candidate_id) {
             $candidate_name = Employee::where('id', $candidate_id)->where('is_active', true)->where('is_approve', true)->first()->name;
         }
-        $judge_role_id = Role::where('name', 'ambassador')->first()->id;
+        $judge_role_id = $this->ambassadorRoleId();
         $ambassadors = User::where('is_deleted', false)->where('role_id', $judge_role_id)->get();
 //        $ambassadors = Ambassador::where('is_active', true)->orderBy('name')->get();
         if ($this->isGradingAvailable()) {
@@ -130,21 +133,23 @@ class AmbassadorPointController extends Controller
     public function awaitingCandidates()
     {
         $user_id = Auth::user()->id;
-        $user_role = Auth::user()->role_id;
-        $ambassador_role_id = Role::where('name', 'ambassador')->first()->id;
+        $user_role = (int) Auth::user()->role_id;
+        $ambassador_role_id = $this->ambassadorRoleId();
 
-        if ($user_role == $ambassador_role_id && $this->isGradingAvailable()) {
+        if ($ambassador_role_id && $user_role === $ambassador_role_id && $this->isGradingAvailable()) {
             $awaiting_candidates = Employee::where('is_active', true)
                 ->where('is_approve', true)
-                ->whereNotIn('id', function($query) use ($user_id) {
+                ->whereNotIn('id', function ($query) use ($user_id) {
                     $query->select('candidate_id')
                         ->from('ambassador_points')
                         ->where('ambassador_id', $user_id);
                 })
+                ->orderBy('name')
                 ->get();
         } else {
-            $awaiting_candidates = [];
+            $awaiting_candidates = collect();
         }
+
         return view('ambassador_points.awaiting_candidates', compact('awaiting_candidates'));
     }
 

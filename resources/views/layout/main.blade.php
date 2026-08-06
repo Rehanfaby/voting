@@ -106,7 +106,14 @@
     </style>
 </head>
 
-<body onload="myFunction()">
+@php
+    $mgBodyRole = strtolower((string) (
+        optional(Auth::user()->role)->name
+        ?: optional(DB::table('roles')->find(Auth::user()->role_id))->name
+        ?: ''
+    ));
+@endphp
+<body onload="myFunction()" class="mg-role-{{ preg_replace('/[^a-z0-9]+/', '-', $mgBodyRole) }}">
 <div id="loader"></div>
 <!-- Side Navbar -->
 <nav class="side-navbar">

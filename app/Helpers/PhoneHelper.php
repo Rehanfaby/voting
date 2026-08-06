@@ -110,7 +110,19 @@ class PhoneHelper
             return null;
         }
 
-        return '+237' . ltrim($digits, '0');
+        // Cameroon local mobile: 9 digits starting with 6 (optionally with a leading 0).
+        $local = ltrim($digits, '0');
+        if (strlen($local) === 9 && strpos($local, '6') === 0) {
+            return '+237' . $local;
+        }
+
+        // Already includes country code (e.g. 2376… or other intl) — do not force +237.
+        if (strlen($digits) >= 10 && strlen($digits) <= 15) {
+            return '+' . $digits;
+        }
+
+        // Short local remainder — assume Cameroon.
+        return '+237' . $local;
     }
 
     /** Build +237 number from a local digits-only input (no country code). */

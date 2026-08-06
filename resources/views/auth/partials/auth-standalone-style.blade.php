@@ -107,6 +107,17 @@
         font-family: inherit;
     }
     .otp-field input:focus { box-shadow: 0 0 0 3px rgba(245,197,24,.25); }
+    .otp-dest {
+        text-align: center;
+        margin: 0 0 14px;
+        font-size: 13px;
+        color: #334155;
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-radius: 12px;
+        padding: 10px 12px;
+    }
+    .otp-dest strong { color: #0a2350; letter-spacing: .02em; }
     .otp-timer {
         text-align: center;
         margin: 12px 0 18px;
@@ -115,6 +126,15 @@
         color: #dc2626;
     }
     .otp-timer.expired { color: #94a3b8; }
+    @media (max-width: 480px) {
+        .auth-wrap { padding: 14px; max-width: 100%; }
+        .auth-card__head { padding: 28px 18px 18px; }
+        .auth-body { padding: 18px 16px 24px; }
+        .otp-field input { font-size: 22px; letter-spacing: 8px; padding: 14px 8px; }
+        .btn-auth { min-height: 48px; font-size: 16px; }
+        .auth-logo { width: 84px; height: 84px; }
+        .page-credit { position: static; margin: 18px 12px 10px; }
+    }
     .btn-auth {
         width: 100%;
         padding: 14px;
