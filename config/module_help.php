@@ -156,9 +156,6 @@ return [
             'Company Name cannot be edited from an Ambassador account.',
         ],
         'shots' => [],
-        'videos' => [
-            ['file' => 'how-to-grade.mp4', 'caption' => 'Silent guide: grade every candidate (Judge & Ambassador)'],
-        ],
         'show_candidates' => false,
     ],
 

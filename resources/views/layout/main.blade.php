@@ -141,7 +141,7 @@
                     ['role_id', $role->id]
                 ])->first();
                 ?>
-                @if(in_array('dashboard', $all_permission))
+                @if(in_array('dashboard', $all_permission) || in_array($mgBodyRole, ['ambassador', 'judge'], true))
                     <li data-menu-key="dashboard"><a href="{{ url('/admin') }}"> <i class="dripicons-meter"></i><span>{{ __('file.dashboard') }}</span></a></li>
                 @endif
                     @if($category_permission_active || $index_permission_active )
