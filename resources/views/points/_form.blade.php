@@ -166,12 +166,8 @@
 }
 .mg-grade__bar-fill {
     height: 100%; width: 0; border-radius: 999px;
-    background: linear-gradient(90deg, #f5c518 0%, #f59e0b 55%, #ea580c 100%);
-    transition: width .22s ease, background .2s ease;
-}
-.mg-grade__criterion.is-invalid .mg-grade__bar-fill,
-.mg-grade__bar-fill.is-over {
-    background: linear-gradient(90deg, #f87171 0%, #dc2626 100%);
+    background: #dc2626;
+    transition: width .22s ease, background-color .25s ease;
 }
 .mg-grade__score-row {
     display: flex; align-items: center; gap: 12px;
@@ -234,13 +230,9 @@
 }
 .mg-grade__total-bar-fill {
     height: 100%; width: 0; border-radius: 999px;
-    background: linear-gradient(90deg, #f5c518 0%, #fbbf24 50%, #f59e0b 100%);
-    box-shadow: 0 0 12px rgba(245,197,24,.45);
-    transition: width .22s ease, background .2s ease;
-}
-.mg-grade__total-bar-fill.is-over {
-    background: linear-gradient(90deg, #f87171 0%, #dc2626 100%);
-    box-shadow: 0 0 12px rgba(220,38,38,.4);
+    background: #dc2626;
+    box-shadow: 0 0 12px rgba(220,38,38,.35);
+    transition: width .22s ease, background-color .25s ease, box-shadow .25s ease;
 }
 .mg-grade__save {
     background: #f5c518 !important; border-color: #f5c518 !important; color: #0a2350 !important;
@@ -283,6 +275,32 @@
         if (card) card.classList.toggle('is-invalid', invalid);
     }
 
+    /** Under half = red; from half to full shifts amber → green. Over max stays red. */
+    function scoreBarColor(ratio, over) {
+        if (over) return '#dc2626';
+        ratio = Math.max(0, Math.min(1, ratio || 0));
+        if (ratio <= 0) return '#dc2626';
+        if (ratio < 0.5) {
+            return '#dc2626';
+        }
+        var t = (ratio - 0.5) / 0.5;
+        var hue = Math.round(8 + t * (142 - 8));
+        var sat = Math.round(82 - t * 10);
+        var light = Math.round(44 + t * 4);
+        return 'hsl(' + hue + ', ' + sat + '%, ' + light + '%)';
+    }
+
+    function applyBarColor(el, ratio, over) {
+        if (!el) return;
+        var color = scoreBarColor(ratio, over);
+        el.style.background = color;
+        if (color.indexOf('hsl(') === 0) {
+            el.style.boxShadow = '0 0 10px ' + color.replace('hsl(', 'hsla(').replace(')', ', 0.35)');
+        } else {
+            el.style.boxShadow = '0 0 10px rgba(220,38,38,.35)';
+        }
+    }
+
     function refreshScores() {
         var total = 0;
         var anyOver = false;
@@ -293,7 +311,9 @@
             var validNum = raw !== '' && !isNaN(v);
             var score = validNum ? Math.max(0, v) : 0;
             var over = validNum && v > max;
-            var pct = max > 0 ? Math.min(100, (Math.min(score, max) / max) * 100) : 0;
+            var capped = Math.min(score, max);
+            var ratio = max > 0 ? capped / max : 0;
+            var pct = ratio * 100;
             if (over) {
                 pct = 100;
                 anyOver = true;
@@ -302,12 +322,20 @@
             var bar = root.querySelector('[data-bar-for="' + input.id + '"]');
             var pctEl = root.querySelector('[data-pct-for="' + input.id + '"]');
             if (bar) {
-                bar.style.width = pct + '%';
-                bar.classList.toggle('is-over', over);
+                bar.style.width = (validNum ? pct : 0) + '%';
+                applyBarColor(bar, over ? 0 : ratio, over);
             }
             if (pctEl) {
-                pctEl.textContent = validNum ? (Math.round((Math.min(score, max) / max) * 100) + '%') : '0%';
-                if (over) pctEl.textContent = 'Max!';
+                if (over) {
+                    pctEl.textContent = 'Max!';
+                    pctEl.style.color = '#dc2626';
+                } else if (validNum) {
+                    pctEl.textContent = Math.round(ratio * 100) + '%';
+                    pctEl.style.color = scoreBarColor(ratio, false);
+                } else {
+                    pctEl.textContent = '0%';
+                    pctEl.style.color = '#64748b';
+                }
             }
 
             if (validNum) total += v;
@@ -315,8 +343,9 @@
 
         if (totalSpan) totalSpan.textContent = total;
         if (totalBar) {
-            totalBar.style.width = Math.min(100, Math.max(0, total)) + '%';
-            totalBar.classList.toggle('is-over', total > 100 || anyOver);
+            var totalRatio = Math.max(0, Math.min(1, total / 100));
+            totalBar.style.width = (Math.min(100, Math.max(0, total))) + '%';
+            applyBarColor(totalBar, anyOver || total > 100 ? 0 : totalRatio, anyOver || total > 100);
         }
     }
 
