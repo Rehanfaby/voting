@@ -1250,6 +1250,40 @@ body.mg-popup-open {
     display: none;
 }
 
+/* Header Login pill (gold outline like reference) */
+.mg-header-login {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex: 0 0 auto;
+    white-space: nowrap;
+    min-height: 38px;
+    padding: 7px 18px;
+    margin-left: 6px;
+    border-radius: 999px;
+    border: 1.5px solid #e8b84a;
+    background: transparent;
+    color: #e8b84a !important;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .2px;
+    text-decoration: none !important;
+    transition: background .18s ease, color .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+.mg-header-login i { font-size: 14px; color: inherit; }
+.mg-header-login:hover,
+.mg-header-login:focus {
+    background: rgba(232, 184, 74, .14);
+    border-color: #f0c75e;
+    color: #f0c75e !important;
+    box-shadow: 0 0 0 3px rgba(232, 184, 74, .16);
+    text-decoration: none !important;
+}
+.mg-header-login--mobile {
+    display: none !important;
+}
+
 /* Desktop header: keep logo + search + nav + account on one row after Rate Us */
 @media (min-width: 1200px) {
     #header-sticky .header__main {
@@ -1397,6 +1431,14 @@ body.mg-popup-open {
         text-decoration: none !important;
         box-shadow: 0 6px 16px rgba(232, 119, 34, .35);
     }
+
+    .mg-header-login--mobile {
+        display: inline-flex !important;
+        min-height: 36px;
+        padding: 6px 12px;
+        margin-left: 0;
+        font-size: 12px;
+    }
     .mg-header-vote-btn:hover,
     .mg-header-vote-btn:focus {
         background: #ff9533;
@@ -1462,6 +1504,13 @@ body.mg-popup-open {
         padding: 6px 10px;
         font-size: 11px;
         min-height: 34px;
+    }
+
+    .mg-header-login--mobile {
+        padding: 6px 10px;
+        font-size: 11px;
+        min-height: 34px;
+        gap: 5px;
     }
 }
 

@@ -124,15 +124,13 @@
                     </div>
                 </div>
                 <div class="offcanvas__user mb-30 d-xxl-none">
+                    @if(!$user)
+                        <a class="mg-header-login" href="{{ route('login') }}">
+                            <i class="fa fa-sign-in"></i> {{ trans('file.LogIn') }}
+                        </a>
+                    @else
                     <div class="user__acount">
-                            <span>
-                                <a href="javascript:void(0)"><i class="flaticon-user"></i></a>
-                            </span>
-                        <ul></ul>
                         <div class="user__name-mail">
-                            @if(!$user)
-                                <h4 class="user__name"><a href="{{ route('user.login') }}">{{trans('file.LogIn')}}</a></h4>
-                            @else
                             <h4 class="user__name"><a href="javascript:void(0)">{{ $user->name }}</a></h4>
                             <p class="user__mail">
                                 <a href="{{ route('logout') }}"
@@ -141,9 +139,9 @@
                                     {{trans('file.logout')}}
                                 </a>
                             </p>
-                            @endif
                         </div>
                     </div>
+                    @endif
                 </div>
                 <div class="hr-1 mt-30 mb-30 d-xl-none"></div>
                 <div class="offcanvas__btn mb-30">
@@ -253,11 +251,10 @@
                                 </div>
                                 <div class="header__action-inner d-flex align-items-center flex-grow-1 justify-content-end">
                                     @if(!$user)
-                                    <div class="user__acount d-none d-xxl-inline-flex">
-                                            <span>
-                                                <a href="{{ route('user.login') }}"><i class="flaticon-user"></i></a>
-                                            </span>
-                                    </div>
+                                    <a class="mg-header-login d-none d-xl-inline-flex" href="{{ route('login') }}">
+                                        <i class="fa fa-sign-in"></i>
+                                        <span>{{ trans('file.LogIn') }}</span>
+                                    </a>
                                     @else
                                         @if($user->role_id == 3 && !$user->isAdmin())
                                         <div class="enquiry__list ml-10 mr-10 ms-browse-act-wrap p-relative">
@@ -325,6 +322,12 @@
                                     </div>
                                 </div>
                             </div>
+                            @if(!$user)
+                            <a class="mg-header-login mg-header-login--mobile" href="{{ route('login') }}">
+                                <i class="fa fa-sign-in"></i>
+                                <span>{{ trans('file.LogIn') }}</span>
+                            </a>
+                            @endif
                             {{-- Hamburger sits outside .header__right so logo+search cannot push it off-screen --}}
                             <div class="header__hamburger">
                                 <div class="sidebar__toggle">
