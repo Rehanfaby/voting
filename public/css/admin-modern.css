@@ -1043,32 +1043,71 @@ a.ms-stat:hover::after {
 }
 
 /* ---------------------------------------------------------------------
-   Mobile shell — keep sidebar off-canvas so grading UI is fully visible.
-   Theme defaults leave the menu open on phones and cover ~230px of content.
+   Mobile shell — off-canvas sidebar, full-height, scrollable menu + logout.
+   Avoid transform() here: it breaks overflow scroll / sticky on iOS.
    --------------------------------------------------------------------- */
 @media (max-width: 1199.98px) {
     nav.side-navbar {
-        left: 0 !important;
-        width: min(86vw, 280px) !important;
-        max-width: 280px;
-        transform: translateX(-105%);
-        transition: transform .22s ease;
+        top: 63px !important;
+        bottom: 0 !important;
+        left: -110% !important;
+        width: min(88vw, 300px) !important;
+        max-width: 300px;
+        height: auto !important;
+        max-height: none !important;
+        transition: left .22s ease;
         z-index: 1050 !important;
         opacity: 1 !important;
         pointer-events: none;
-        height: calc(100vh - 56px) !important;
-        max-height: calc(100vh - 56px) !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
     }
     nav.side-navbar:not(.shrink) {
-        transform: translateX(0);
+        left: 0 !important;
         pointer-events: auto;
         box-shadow: 8px 0 32px rgba(10, 35, 80, .35);
     }
     nav.side-navbar.shrink {
-        width: min(86vw, 280px) !important;
+        left: -110% !important;
+        width: min(88vw, 300px) !important;
         opacity: 1 !important;
-        transform: translateX(-105%);
         pointer-events: none;
+    }
+    nav.side-navbar .side-navbar-wrapper {
+        flex: 1 1 auto;
+        min-height: 0;
+        height: 100% !important;
+        max-height: 100%;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+        display: flex;
+        flex-direction: column;
+    }
+    nav.side-navbar .main-menu {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: visible !important;
+        height: auto !important;
+        max-height: none !important;
+    }
+    .side-admin-block {
+        position: relative !important;
+        bottom: auto !important;
+        flex-shrink: 0;
+        margin-top: auto;
+        padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    }
+    .side-admin-block .sab-links a {
+        min-height: 44px;
+    }
+    .side-admin-block .sab-links a.sab-signout {
+        background: rgba(220, 38, 38, .16);
+        border: 1px solid rgba(255, 138, 138, .35);
+        margin-top: 4px;
     }
     .page,
     .page.active,
@@ -1080,6 +1119,9 @@ a.ms-stat:hover::after {
     }
     body.mg-side-open {
         overflow: hidden;
+    }
+    body.mg-side-open .page {
+        pointer-events: none;
     }
     body.mg-side-open::before {
         content: '';

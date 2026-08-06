@@ -89,7 +89,7 @@
     <!-- Custom stylesheet - for your changes-->
     <link rel="stylesheet" href="<?php echo asset('public/css/custom-'.$general_setting->theme) ?>" type="text/css" id="custom-style">
     <!-- Modern admin theme overlay (Alpha Bridge inspired) -->
-    <link rel="stylesheet" href="<?php echo asset('public/css/admin-modern.css') ?>?v=20260806-mobile-grade" type="text/css" id="admin-modern-style">
+    <link rel="stylesheet" href="<?php echo asset('public/css/admin-modern.css') ?>?v=20260806-mobile-menu-scroll" type="text/css" id="admin-modern-style">
     <style>
         /* Header layout guarantee: logo top-left ALONE, fullscreen + language top-right.
            Inline so it always wins over any cached copy of the base theme / admin-modern.css. */
@@ -522,6 +522,7 @@
                 @if(Auth::user()->isAdmin() || !empty($user_index_permission_active))
                     <a href="{{ route('admin.index') }}"><i class="dripicons-user-group"></i> <span>{{ trans('file.Admin') }}</span></a>
                 @endif
+                <a href="{{ url('/') }}" class="sab-home"><i class="dripicons-home"></i> <span>{{ trans('file.Home') }}</span></a>
                 <a href="#" class="sab-signout" onclick="event.preventDefault(); document.getElementById('sab-logout-form').submit();"><i class="dripicons-export"></i> <span>{{trans('file.logout')}}</span></a>
                 <form id="sab-logout-form" action="{{ route('logout') }}" method="POST" style="display:none">@csrf</form>
             </div>
@@ -1238,10 +1239,11 @@
     });
 
     $(document).on('click', 'nav.side-navbar a', function () {
-        if ($(window).outerWidth() <= 1199) {
-            $('nav.side-navbar').addClass('shrink');
-            $('body').removeClass('mg-side-open');
-        }
+        if ($(window).outerWidth() > 1199) return;
+        /* Keep menu open for in-menu actions that are not real navigations. */
+        if ($(this).hasClass('sab-signout') || ($(this).attr('href') || '') === '#') return;
+        $('nav.side-navbar').addClass('shrink');
+        $('body').removeClass('mg-side-open');
     });
     function myFunction() {
         setTimeout(showPage, 150);

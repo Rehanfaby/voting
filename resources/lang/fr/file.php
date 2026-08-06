@@ -43,7 +43,7 @@ return [
     'update' => 'Mettre à jour',
     'The field labels marked with * are required input fields' => 'Les étiquettes de champs marquées d\'un * sont des champs de saisie obligatoires',
     'settings' => 'Réglages',
-    'logout' => 'Connectez - Out',
+    'logout' => 'Déconnexion',
     'return' => 'Revenir',
     'profit' => 'Profit',
     'sale qty' => 'Quantité de vente',
