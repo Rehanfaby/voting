@@ -4,10 +4,15 @@
 #
 # Updates config/app.php defaults used for cache-busting and UI labels.
 #
+# Rollover rules (patch level):
+#   After x.y.10  →  x.(y+1).0
+#   After x.10.10 →  (x+1).0.0
+# Example: 3.0.10 → 3.1.0 ; 3.10.10 → 4.0.0
+#
 # USAGE
-#   ./scripts/bump-version.sh           # 2.3.3 -> 2.3.4
-#   ./scripts/bump-version.sh minor     # 2.3.3 -> 2.4.0
-#   ./scripts/bump-version.sh major     # 2.3.3 -> 3.0.0
+#   ./scripts/bump-version.sh           # patch (with rollover)
+#   ./scripts/bump-version.sh minor     # 3.1.4 -> 3.2.0 (3.10.x -> 4.0.0)
+#   ./scripts/bump-version.sh major     # 3.2.4 -> 4.0.0
 #
 set -euo pipefail
 
@@ -16,6 +21,7 @@ cd "$ROOT"
 
 LEVEL="${1:-patch}"
 APP_FILE="config/app.php"
+MAX_SEGMENT=10
 
 current="$(php -r "
 \$c = file_get_contents('$APP_FILE');
@@ -31,12 +37,55 @@ major="${major:-0}"
 minor="${minor:-0}"
 patch="${patch:-0}"
 
-case "$LEVEL" in
-  major) major=$((major + 1)); minor=0; patch=0 ;;
-  minor) minor=$((minor + 1)); patch=0 ;;
-  patch) patch=$((patch + 1)) ;;
-  *) echo "Unknown level: $LEVEL (use patch|minor|major)" >&2; exit 1 ;;
-esac
+# Collapse illegal high segments (e.g. 3.0.30 → 3.1.0) before applying a bump.
+normalized=0
+while [ "$patch" -gt "$MAX_SEGMENT" ]; do
+  patch=0
+  minor=$((minor + 1))
+  normalized=1
+done
+while [ "$minor" -gt "$MAX_SEGMENT" ]; do
+  minor=0
+  major=$((major + 1))
+  normalized=1
+done
+
+# If we only needed to repair an over-cap version, that repair is the next release.
+if [ "$normalized" -eq 1 ] && [ "$LEVEL" = "patch" ]; then
+  :
+else
+  case "$LEVEL" in
+    major)
+      major=$((major + 1))
+      minor=0
+      patch=0
+      ;;
+    minor)
+      minor=$((minor + 1))
+      patch=0
+      if [ "$minor" -gt "$MAX_SEGMENT" ]; then
+        major=$((major + 1))
+        minor=0
+      fi
+      ;;
+    patch)
+      if [ "$patch" -ge "$MAX_SEGMENT" ]; then
+        patch=0
+        minor=$((minor + 1))
+        if [ "$minor" -gt "$MAX_SEGMENT" ]; then
+          major=$((major + 1))
+          minor=0
+        fi
+      else
+        patch=$((patch + 1))
+      fi
+      ;;
+    *)
+      echo "Unknown level: $LEVEL (use patch|minor|major)" >&2
+      exit 1
+      ;;
+  esac
+fi
 
 next="${major}.${minor}.${patch}"
 
