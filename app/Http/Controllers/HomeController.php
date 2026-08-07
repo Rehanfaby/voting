@@ -1624,6 +1624,29 @@ class HomeController extends Controller
         return response()->json(['ok' => true] + $result);
     }
 
+    /**
+     * Hostinger-friendly HTTP cron to sync Hide Votes / Voting / Grading windows.
+     *   /cron/apply-setting-schedules/{token}
+     */
+    public function cronApplySettingSchedules(Request $request, $token = null)
+    {
+        $secret = (string) env('CRON_SECRET', '');
+        $token = (string) ($token ?: $request->query('token', ''));
+        if ($secret === '' || !hash_equals($secret, $token)) {
+            return response()->json(['ok' => false, 'message' => 'unauthorized'], 401);
+        }
+
+        $result = \App\Helpers\VoteSettings::applySchedules();
+
+        return response()->json([
+            'ok' => true,
+            'timezone' => config('app.timezone'),
+            'now' => now()->toDateTimeString(),
+            'changed' => $result['changed'],
+            'updates' => $result['updates'],
+        ]);
+    }
+
     public function musicianVotePaymentCoin(Request $request) {
         if (!\App\Helpers\VoteSettings::votingEnabled()) {
             return "Voting is currently closed";

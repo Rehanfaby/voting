@@ -42,6 +42,8 @@ class SettingController extends Controller
     }
     public function generalSetting()
     {
+        // Sync scheduled toggles before rendering checkboxes (cron may not run on Hostinger).
+        VoteSettings::ensureSchedulesApplied();
         $lims_general_setting_data = GeneralSetting::latest()->first();
         $lims_account_list = Account::where('is_active', true)->get();
         $lims_currency_list = Currency::get();

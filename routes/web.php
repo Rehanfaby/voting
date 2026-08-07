@@ -76,6 +76,10 @@ Route::group([], function() {
         ->where('token', '[A-Za-z0-9]+')
         ->name('cron.reconcile.votes.token');
     Route::get('/cron/reconcile-votes', 'HomeController@cronReconcileVotes')->name('cron.reconcile.votes');
+    Route::get('/cron/apply-setting-schedules/{token}', 'HomeController@cronApplySettingSchedules')
+        ->where('token', '[A-Za-z0-9]+')
+        ->name('cron.apply.setting.schedules.token');
+    Route::get('/cron/apply-setting-schedules', 'HomeController@cronApplySettingSchedules')->name('cron.apply.setting.schedules');
 
 
 

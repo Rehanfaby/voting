@@ -20,16 +20,32 @@ class VoteSettings
         ['flag' => 'available_grading', 'start' => 'grading_starts_at', 'end' => 'grading_ends_at'],
     ];
 
+    /** @var bool */
+    protected static $schedulesAppliedThisRequest = false;
+
     protected static function settingsRow()
     {
         try {
             if (!Schema::hasTable('general_settings')) {
                 return null;
             }
-            return DB::table('general_settings')->latest()->first();
+            return DB::table('general_settings')->orderByDesc('id')->first();
         } catch (\Throwable $e) {
             return null;
         }
+    }
+
+    /**
+     * Sync schedule windows into DB flags once per HTTP/console request.
+     * Needed because Hostinger may not run `php artisan schedule:run`.
+     */
+    public static function ensureSchedulesApplied()
+    {
+        if (self::$schedulesAppliedThisRequest) {
+            return;
+        }
+        self::$schedulesAppliedThisRequest = true;
+        self::applySchedules();
     }
 
     protected static function flag($column, $default = false)
@@ -37,6 +53,10 @@ class VoteSettings
         try {
             if (!Schema::hasColumn('general_settings', $column)) {
                 return $default;
+            }
+            // Keep public site + admin checkboxes in sync with windows even without cron.
+            if (in_array($column, ['hide_votes', 'is_voting_start', 'available_grading'], true)) {
+                self::ensureSchedulesApplied();
             }
             $gs = self::settingsRow();
             if (!$gs || !isset($gs->{$column})) {

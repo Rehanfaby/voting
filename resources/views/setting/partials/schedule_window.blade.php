@@ -22,6 +22,6 @@
     </div>
     @if($status)
         <small class="d-block mt-1 text-primary"><i class="dripicons-clock"></i> {{ $status }}</small>
-        <small class="d-block text-muted">While scheduled, the flag follows this window every minute.</small>
+        <small class="d-block text-muted">While scheduled, the checkbox and public site follow this window automatically.</small>
     @endif
 </div>
