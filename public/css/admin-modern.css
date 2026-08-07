@@ -1235,3 +1235,19 @@ a.ms-stat:hover::after {
         font-size: 1.15rem !important;
     }
 }
+
+/* Site logo spin — same motion as the login screen */
+@keyframes mg-logo-spin {
+    0%   { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+.header .navbar-holder .brand-big img.mg-spin-logo,
+img.mg-spin-logo {
+    animation: mg-logo-spin 6s linear infinite;
+    border-radius: 50%;
+    will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+    .header .navbar-holder .brand-big img.mg-spin-logo,
+    img.mg-spin-logo { animation: none; }
+}

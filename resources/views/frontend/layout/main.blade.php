@@ -114,7 +114,7 @@
                 <div class="offcanvas__top mb-40 d-flex justify-content-between align-items-center">
                     <div class="offcanvas__logo">
                         <a href="{{ route('home') }}">
-                            <img src="{{url('public/logo', $general_setting->site_logo)}}" alt="{{trans('file.Site Logo')}}" style="height: 100px">
+                            <img class="mg-spin-logo" src="{{url('public/logo', $general_setting->site_logo)}}" alt="{{trans('file.Site Logo')}}" style="height: 100px">
                         </a>
                     </div>
                     <div class="offcanvas__close">
@@ -205,7 +205,7 @@
                         <div class="header__main ms-border2 d-flex align-items-center justify-content-between">
                             <div class="header__logo pt-25 pb-25">
                                 <a href="{{ route('home') }}">
-                                    <img src="{{url('public/logo', $general_setting->site_logo)}}" alt="{{trans('file.Site Logo')}}" style="height: 70px">
+                                    <img class="mg-spin-logo" src="{{url('public/logo', $general_setting->site_logo)}}" alt="{{trans('file.Site Logo')}}" style="height: 70px">
                                 </a>
                             </div>
                             <div class="mg-header-search">
