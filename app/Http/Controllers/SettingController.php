@@ -16,6 +16,7 @@ use App\RewardPointSetting;
 use App\Helpers\AppCache;
 use App\Helpers\SiteContent;
 use App\Helpers\ImageOptimizer;
+use App\Helpers\VoteSettings;
 use DB;
 use Auth;
 use Illuminate\Support\Facades\Schema;
@@ -131,6 +132,11 @@ class SettingController extends Controller
         if (Schema::hasColumn('general_settings', 'require_contestant_approval')) {
             $general_setting->require_contestant_approval = self::checkboxInt($request, 'require_contestant_approval');
         }
+
+        $scheduleError = $this->saveSettingSchedules($request, $general_setting);
+        if ($scheduleError) {
+            return redirect()->back()->withInput()->with('not_permitted', $scheduleError);
+        }
         if (Schema::hasColumn('general_settings', 'announcement_ref_prefix') && $request->filled('announcement_ref_prefix')) {
             $general_setting->announcement_ref_prefix = strtoupper(trim($request->announcement_ref_prefix));
         }
@@ -174,6 +180,7 @@ class SettingController extends Controller
         }
         $general_setting->save();
         AppCache::forgetSharedData();
+        VoteSettings::applySchedules();
 
         return redirect()->back()->with('message', 'Data updated successfully');
     }
@@ -872,6 +879,42 @@ class SettingController extends Controller
             $value = end($value);
         }
         return (int) $value === 1 ? 1 : 0;
+    }
+
+    /**
+     * Persist optional start/end windows for Hide Votes / Voting / Grading.
+     * Returns an error message string, or null on success.
+     */
+    private function saveSettingSchedules(Request $request, GeneralSetting $general_setting)
+    {
+        $windows = [
+            ['start' => 'hide_votes_starts_at', 'end' => 'hide_votes_ends_at', 'label' => 'Hide Votes'],
+            ['start' => 'voting_starts_at', 'end' => 'voting_ends_at', 'label' => 'Enable Voting'],
+            ['start' => 'grading_starts_at', 'end' => 'grading_ends_at', 'label' => 'Available for Grading'],
+        ];
+
+        foreach ($windows as $window) {
+            $startCol = $window['start'];
+            $endCol = $window['end'];
+            if (!Schema::hasColumn('general_settings', $startCol) || !Schema::hasColumn('general_settings', $endCol)) {
+                continue;
+            }
+
+            $start = VoteSettings::parseScheduleInput($request->input($startCol));
+            $end = VoteSettings::parseScheduleInput($request->input($endCol));
+
+            if (($start && !$end) || (!$start && $end)) {
+                return $window['label'] . ': set both Start and End, or leave both blank for manual control.';
+            }
+            if ($start && $end && $end < $start) {
+                return $window['label'] . ': End must be on or after Start.';
+            }
+
+            $general_setting->{$startCol} = $start;
+            $general_setting->{$endCol} = $end;
+        }
+
+        return null;
     }
 
     public function envSetting()

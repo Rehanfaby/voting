@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Spatie\Permission\Models\Role;
@@ -12,6 +13,13 @@ use Spatie\Permission\Models\Role;
  */
 class VoteSettings
 {
+    /** @var array<int, array{flag:string,start:string,end:string}> */
+    protected static $scheduleMap = [
+        ['flag' => 'hide_votes', 'start' => 'hide_votes_starts_at', 'end' => 'hide_votes_ends_at'],
+        ['flag' => 'is_voting_start', 'start' => 'voting_starts_at', 'end' => 'voting_ends_at'],
+        ['flag' => 'available_grading', 'start' => 'grading_starts_at', 'end' => 'grading_ends_at'],
+    ];
+
     protected static function settingsRow()
     {
         try {
@@ -67,9 +75,156 @@ class VoteSettings
         return self::requireContestantApproval() ? false : true;
     }
 
-    /** Whether public voting buttons should appear. */
+    /** Whether public voting buttons should appear / votes may be submitted. */
     public static function votingEnabled()
     {
         return self::flag('is_voting_start', false);
+    }
+
+    /** Whether Judge / Ambassador grading may be saved. */
+    public static function gradingEnabled()
+    {
+        return self::flag('available_grading', false);
+    }
+
+    /**
+     * Sync boolean flags from configured start/end windows.
+     * When both ends of a window are set: flag = (start <= now <= end).
+     * When either end is blank: leave the flag unchanged (manual control).
+     *
+     * @return array{changed:bool,updates:array<string,int>}
+     */
+    public static function applySchedules(?Carbon $now = null)
+    {
+        $result = ['changed' => false, 'updates' => []];
+
+        try {
+            if (!Schema::hasTable('general_settings')) {
+                return $result;
+            }
+
+            $gs = DB::table('general_settings')->orderByDesc('id')->first();
+            if (!$gs) {
+                return $result;
+            }
+
+            $now = $now ?: Carbon::now(config('app.timezone'));
+            $updates = [];
+
+            foreach (self::$scheduleMap as $map) {
+                $flagCol = $map['flag'];
+                $startCol = $map['start'];
+                $endCol = $map['end'];
+
+                if (!Schema::hasColumn('general_settings', $flagCol)
+                    || !Schema::hasColumn('general_settings', $startCol)
+                    || !Schema::hasColumn('general_settings', $endCol)) {
+                    continue;
+                }
+
+                $startRaw = $gs->{$startCol} ?? null;
+                $endRaw = $gs->{$endCol} ?? null;
+                if (empty($startRaw) || empty($endRaw)) {
+                    continue;
+                }
+
+                try {
+                    $start = Carbon::parse($startRaw, config('app.timezone'));
+                    $end = Carbon::parse($endRaw, config('app.timezone'));
+                } catch (\Throwable $e) {
+                    continue;
+                }
+
+                $desired = ($now->greaterThanOrEqualTo($start) && $now->lessThanOrEqualTo($end)) ? 1 : 0;
+                $current = (int) ((bool) ($gs->{$flagCol} ?? 0));
+                if ($current !== $desired) {
+                    $updates[$flagCol] = $desired;
+                }
+            }
+
+            if (!empty($updates)) {
+                $updates['updated_at'] = Carbon::now();
+                DB::table('general_settings')->where('id', $gs->id)->update($updates);
+                AppCache::forgetSharedData();
+                $result['changed'] = true;
+                $result['updates'] = $updates;
+            }
+        } catch (\Throwable $e) {
+            return $result;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Whether a schedule window is fully configured for a flag group.
+     *
+     * @param  object|null  $gs
+     */
+    public static function scheduleActive($gs, $startCol, $endCol)
+    {
+        if (!$gs) {
+            return false;
+        }
+        return !empty($gs->{$startCol}) && !empty($gs->{$endCol});
+    }
+
+    /**
+     * Human-readable effective state for the admin UI.
+     *
+     * @param  object|null  $gs
+     * @return string|null
+     */
+    public static function scheduleStatusLabel($gs, $flagCol, $startCol, $endCol)
+    {
+        if (!self::scheduleActive($gs, $startCol, $endCol)) {
+            return null;
+        }
+
+        try {
+            $now = Carbon::now(config('app.timezone'));
+            $start = Carbon::parse($gs->{$startCol}, config('app.timezone'));
+            $end = Carbon::parse($gs->{$endCol}, config('app.timezone'));
+            $on = $now->greaterThanOrEqualTo($start) && $now->lessThanOrEqualTo($end);
+            $fmt = 'Y-m-d H:i';
+            if ($on) {
+                return 'Scheduled: ON until ' . $end->format($fmt);
+            }
+            if ($now->lt($start)) {
+                return 'Scheduled: OFF — turns ON ' . $start->format($fmt);
+            }
+            return 'Scheduled: OFF (window ended ' . $end->format($fmt) . ')';
+        } catch (\Throwable $e) {
+            return 'Scheduled: active (flag follows window)';
+        }
+    }
+
+    /**
+     * Parse a datetime-local form value into a DB datetime string, or null if blank.
+     */
+    public static function parseScheduleInput($value)
+    {
+        $value = trim((string) $value);
+        if ($value === '') {
+            return null;
+        }
+        try {
+            return Carbon::parse($value, config('app.timezone'))->format('Y-m-d H:i:s');
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    /** Format a stored datetime for a datetime-local input. */
+    public static function forDatetimeLocal($value)
+    {
+        if (empty($value)) {
+            return '';
+        }
+        try {
+            return Carbon::parse($value, config('app.timezone'))->format('Y-m-d\TH:i');
+        } catch (\Throwable $e) {
+            return '';
+        }
     }
 }

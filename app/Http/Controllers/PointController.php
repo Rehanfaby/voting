@@ -199,8 +199,7 @@ class PointController extends Controller
 
     private function isGradingAvailable()
     {
-        $setting = GeneralSetting::first();
-        return $setting && (bool) $setting->available_grading;
+        return \App\Helpers\VoteSettings::gradingEnabled();
     }
 
 }

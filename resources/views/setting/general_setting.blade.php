@@ -250,6 +250,14 @@
                                                 {{ (int) ($lims_general_setting_data->hide_votes ?? 0) === 1 ? 'checked' : '' }}>
                                             Hide all vote counts on the public site
                                         </label>
+                                        @include('setting.partials.schedule_window', [
+                                            'label' => 'Hide Votes',
+                                            'startName' => 'hide_votes_starts_at',
+                                            'endName' => 'hide_votes_ends_at',
+                                            'startValue' => $lims_general_setting_data->hide_votes_starts_at ?? null,
+                                            'endValue' => $lims_general_setting_data->hide_votes_ends_at ?? null,
+                                            'flagCol' => 'hide_votes',
+                                        ])
                                     </div>
                                 </div>
                                 <div class="col-md-4">
@@ -262,6 +270,14 @@
                                                 {{ (int) ($lims_general_setting_data->is_voting_start ?? 0) === 1 ? 'checked' : '' }}>
                                             Allow visitors to cast votes
                                         </label>
+                                        @include('setting.partials.schedule_window', [
+                                            'label' => 'Enable Voting',
+                                            'startName' => 'voting_starts_at',
+                                            'endName' => 'voting_ends_at',
+                                            'startValue' => $lims_general_setting_data->voting_starts_at ?? null,
+                                            'endValue' => $lims_general_setting_data->voting_ends_at ?? null,
+                                            'flagCol' => 'is_voting_start',
+                                        ])
                                     </div>
                                 </div>
                                 <div class="col-md-4">
@@ -275,6 +291,14 @@
                                             {{ trans('file.Available for Grading') }}
                                         </label>
                                         <small class="form-text text-muted">When off, Judge/Ambassador grading is closed.</small>
+                                        @include('setting.partials.schedule_window', [
+                                            'label' => 'Available for Grading',
+                                            'startName' => 'grading_starts_at',
+                                            'endName' => 'grading_ends_at',
+                                            'startValue' => $lims_general_setting_data->grading_starts_at ?? null,
+                                            'endValue' => $lims_general_setting_data->grading_ends_at ?? null,
+                                            'flagCol' => 'available_grading',
+                                        ])
                                     </div>
                                 </div>
                                 <div class="col-md-4">

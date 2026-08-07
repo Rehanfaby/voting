@@ -503,6 +503,10 @@ class HomeController extends Controller
     }
 
     public function employeeVote(Request $request) {
+        if (!\App\Helpers\VoteSettings::votingEnabled()) {
+            return redirect()->route('home')->with('not_permitted', trans('file.Voting is currently closed'));
+        }
+
         $request->validate([
             'musician_id' => 'required|integer',
             'vote' => 'required|integer|min:1|max:1000',
@@ -528,6 +532,9 @@ class HomeController extends Controller
     }
 
     public function musicianVotePayment(Request $request) {
+        if (!\App\Helpers\VoteSettings::votingEnabled()) {
+            return redirect()->route('home')->with('not_permitted', trans('file.Voting is currently closed'));
+        }
 
         if ($request->input('payment_method') === 'card') {
             return $this->musicianVotePaymentStripe($request);
@@ -1618,6 +1625,9 @@ class HomeController extends Controller
     }
 
     public function musicianVotePaymentCoin(Request $request) {
+        if (!\App\Helpers\VoteSettings::votingEnabled()) {
+            return "Voting is currently closed";
+        }
 
         $user = Auth::user() ?? null;
 

@@ -1208,6 +1208,7 @@ return [
     'Files' => 'Files',
     'Optional caption or label' => 'Optional caption or label',
     'Grading is not enabled yet' => 'Grading is not enabled yet',
+    'Voting is currently closed' => 'Voting is currently closed',
     'Clone' => 'Clone',
     'Clone Announcement' => 'Clone Announcement',
     'Send to' => 'Send to',

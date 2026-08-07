@@ -1211,6 +1211,7 @@ return [
     'Files' => 'Fichiers',
     'Optional caption or label' => 'Légende ou libellé (facultatif)',
     'Grading is not enabled yet' => 'La notation n\'est pas encore activée',
+    'Voting is currently closed' => 'Le vote est actuellement fermé',
     'Clone' => 'Cloner',
     'Clone Announcement' => 'Cloner l\'annonce',
     'Send to' => 'Envoyer à',
