@@ -73,7 +73,7 @@ class PointController extends Controller
         $point->calculateTotal();
         $point->save();
 
-        return redirect()->route('points.index')->with('success', 'Point saved successfully');
+        return redirect()->route('points.awaiting_candidates')->with('success', 'Point saved successfully');
     }
 
     public function show(Point $point)
@@ -115,7 +115,7 @@ class PointController extends Controller
         $point->calculateTotal();
         $point->save();
 
-        return redirect()->route('points.index')->with('success', 'Point updated');
+        return redirect()->route('points.awaiting_candidates')->with('success', 'Point updated');
     }
 
     public function destroy(Point $point)

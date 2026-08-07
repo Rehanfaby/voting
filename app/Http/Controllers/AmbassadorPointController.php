@@ -97,7 +97,7 @@ class AmbassadorPointController extends Controller
             'points'        => round((float) $request->points, 2),
         ]);
 
-        return redirect()->route('ambassador_points.index')->with('success', 'Points added successfully.');
+        return redirect()->route('ambassador_points.awaiting_candidates')->with('success', 'Points added successfully.');
     }
 
 
@@ -126,7 +126,7 @@ class AmbassadorPointController extends Controller
             ]);
         }
 
-        return redirect()->route('ambassador_points.index')->with('success', 'Point updated');
+        return redirect()->route('ambassador_points.awaiting_candidates')->with('success', 'Point updated');
     }
     public function destroy($id)
     {
