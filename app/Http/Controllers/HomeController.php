@@ -2152,39 +2152,18 @@ class HomeController extends Controller
     public function sendWhatsappMsgVote($user, $vote, $musician_id, $remaining_coin)
     {
         $musician = Employee::select('name', 'id')->find($musician_id);
-        $total_votes = vote::where('musician_id', $musician_id)->where('status', true)->sum('vote');
+        $standing = WhatsAppFormatter::contestantPublicVoteStanding((int) $musician_id);
 
-//        $msg = '*Congrats:* You have casted ' . $vote;
-//        if ($vote == 1) {
-//            $msg .= ' vote ';
-//        } else {
-//            $msg .= ' votes ';
-//        }
-//        $msg .= 'for ' .$musician->name . '\n\n';
-//        $msg .= $musician->name . '`s total votes are  '.$total_votes.'\n\n';
-//
-//        $msg .= 'Your remaining coins are  '.$remaining_coin.'\n\n';
-
-
-        $voteLabel = $vote > 1 ? "{$vote} votes" : '1 vote';
-        $locale = WhatsAppFormatter::currentLocale();
-
-        $msg = WhatsAppFormatter::compose(
-            '🗳️',
-            'VOTE ENREGISTRÉ',
-            'VOTE RECORDED',
+        $msg = WhatsAppFormatter::voterVoteConfirmedMessage(
             $user->name ?? 'Voter',
-            "Vous avez voté {$vote} fois pour {$musician->name}.",
-            "You successfully cast {$voteLabel} for {$musician->name}.",
+            $musician->name ?? '—',
+            $vote,
+            $standing['total'],
+            'Beyond Coin',
             [
-                ['Candidat', 'Contestant', $musician->name ?? '—'],
-                ['Votes', 'Votes cast', (string) $vote],
-                ['Total des votes', 'Total votes', (string) $total_votes],
                 ['Coins restants', 'Remaining coins', (string) $remaining_coin],
             ],
-            'Continuez à soutenir votre candidat !',
-            'Keep supporting your favourite contestant!',
-            $locale
+            null
         );
 
         try{
@@ -2264,32 +2243,19 @@ class HomeController extends Controller
     public function sendWhatsappMsgVoteMomoSuccess($user, $vote, $musician_id, $vote_data)
     {
         $musician = Employee::select('name', 'id')->find($musician_id);
-        $total_votes = vote::where('musician_id', $musician_id)->where('status', true)->sum('vote');
-
-        $locale = WhatsAppFormatter::normalizeLocale(optional($vote_data)->locale)
-            ?: WhatsAppFormatter::currentLocale();
-        $statusValue = $locale === 'fr' ? 'Confirmé ✓' : 'Confirmed ✓';
+        $standing = WhatsAppFormatter::contestantPublicVoteStanding((int) $musician_id);
         $payLabel = method_exists($vote_data, 'paymentMethodLabel')
             ? $vote_data->paymentMethodLabel()
             : '—';
 
-        $msg = WhatsAppFormatter::compose(
-            '✅',
-            'VOTE CONFIRMÉ',
-            'VOTE CONFIRMED',
+        $msg = WhatsAppFormatter::voterVoteConfirmedMessage(
             $user->name ?? 'Voter',
-            'Merci ! Votre vote a été enregistré avec succès.',
-            'Thank you! Your vote has been recorded successfully.',
-            [
-                ['Candidat', 'Contestant', $musician->name ?? '—'],
-                ['Votes', 'Votes cast', (string) $vote],
-                ['Paiement', 'Payment', $payLabel],
-                ['Nouveau total', 'New total votes', (string) $total_votes],
-                ['Statut', 'Status', $statusValue],
-            ],
-            'Chaque vote compte — merci pour votre soutien !',
-            'Every vote counts — thank you for your support!',
-            $locale
+            $musician->name ?? '—',
+            $vote,
+            $standing['total'],
+            $payLabel,
+            [],
+            null
         );
 
         try{
@@ -2329,16 +2295,16 @@ class HomeController extends Controller
             $voterName = 'Voter';
         }
 
-        $total = vote::where('musician_id', $musician->id)->where('status', true)->sum('vote');
-        $locale = WhatsAppFormatter::normalizeLocale($vote->locale) ?: 'fr';
+        $standing = WhatsAppFormatter::contestantPublicVoteStanding((int) $musician->id);
 
         $msg = WhatsAppFormatter::contestantVoteReceivedMessage(
             $musician->name ?? 'Candidat',
             $voterName,
             $vote->vote,
             $vote->paymentMethodLabel(),
-            $total,
-            $locale
+            $standing['total'],
+            null,
+            $standing['position']
         );
 
         try {

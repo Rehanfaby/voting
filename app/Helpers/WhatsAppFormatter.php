@@ -239,23 +239,107 @@ class WhatsAppFormatter
         );
     }
 
-    /** Contestant alert: a voter just cast votes for them. */
+    /**
+     * Public vote standing for a contestant (successful votes only).
+     * Position = 1 + number of active approved contestants with strictly more votes.
+     *
+     * @return array{total:int,position:int}
+     */
+    public static function contestantPublicVoteStanding(int $musicianId): array
+    {
+        $total = 0;
+        $position = 1;
+        try {
+            $total = (int) \DB::table('votes')
+                ->where('musician_id', $musicianId)
+                ->where('status', 1)
+                ->sum('vote');
+
+            $ahead = (int) \DB::table('employees')
+                ->where('employees.is_active', true)
+                ->where('employees.is_approve', true)
+                ->where('employees.id', '!=', $musicianId)
+                ->whereRaw(
+                    '(SELECT COALESCE(SUM(v.vote), 0) FROM votes v WHERE v.musician_id = employees.id AND v.status = 1) > ?',
+                    [$total]
+                )
+                ->count();
+
+            $position = $ahead + 1;
+        } catch (\Throwable $e) {
+            // keep defaults
+        }
+
+        return ['total' => $total, 'position' => $position];
+    }
+
+    /** Voter confirmation after a successful vote (bilingual, OTP-style layout). */
+    public static function voterVoteConfirmedMessage(
+        string $voterName,
+        string $contestantName,
+        $voteCount,
+        $contestantTotal,
+        string $paymentLabel = '',
+        $extraLines = [],
+        $locale = null
+    ): string {
+        $count = max(1, (int) $voteCount);
+        $name = $contestantName ?: '—';
+        $total = (int) $contestantTotal;
+        $lines = [
+            ['Candidat', 'Contestant', $name],
+            ['Votes donnés', 'Votes cast', (string) $count],
+            ['Total du candidat', 'Contestant total votes', (string) $total],
+        ];
+        if ($paymentLabel !== '') {
+            $lines[] = ['Paiement', 'Payment', $paymentLabel];
+        }
+        if (is_array($extraLines)) {
+            foreach ($extraLines as $line) {
+                if (is_array($line) && count($line) >= 3) {
+                    $lines[] = $line;
+                }
+            }
+        }
+
+        return self::compose(
+            '✅',
+            'VOTE CONFIRMÉ',
+            'VOTE CONFIRMED',
+            $voterName ?: 'Voter',
+            "Merci ! Votre vote pour *{$name}* a été enregistré. Ce candidat a maintenant *{$total}* vote(s).",
+            "Thank you! Your vote for *{$name}* has been recorded. This contestant now has *{$total}* vote(s).",
+            $lines,
+            'Chaque vote compte — merci pour votre soutien !',
+            'Every vote counts — thank you for your support!',
+            $locale // null = bilingual FR + EN
+        );
+    }
+
+    /** Contestant alert: a voter just cast votes for them (bilingual, OTP-style layout). */
     public static function contestantVoteReceivedMessage(
         string $contestantName,
         string $voterName,
         $voteCount,
         string $paymentLabel,
         $newTotal = null,
-        $locale = null
+        $locale = null,
+        $position = null
     ): string {
         $count = max(1, (int) $voteCount);
+        $voter = $voterName ?: 'Voter';
         $lines = [
-            ['Électeur', 'Voter', $voterName ?: '—'],
-            ['Votes reçus', 'Votes received', (string) $count],
-            ['Paiement', 'Payment', $paymentLabel ?: '—'],
+            ['Électeur', 'Voter', $voter],
+            ['Votes reçus', 'Votes cast', (string) $count],
         ];
         if ($newTotal !== null && $newTotal !== '') {
-            $lines[] = ['Nouveau total', 'New total', (string) $newTotal];
+            $lines[] = ['Total des votes', 'Total votes', (string) $newTotal];
+        }
+        if ($position !== null && $position !== '') {
+            $lines[] = ['Position', 'Position', (string) $position];
+        }
+        if ($paymentLabel !== '') {
+            $lines[] = ['Paiement', 'Payment', $paymentLabel];
         }
 
         return self::compose(
@@ -263,12 +347,12 @@ class WhatsAppFormatter
             'NOUVEAU VOTE REÇU',
             'NEW VOTE RECEIVED',
             $contestantName ?: 'Candidat',
-            "Un électeur vient de voter pour vous.",
-            'A voter has just cast votes for you.',
+            "*{$voter}* a voté *{$count}* fois pour vous.",
+            "*{$voter}* has cast *{$count}* vote(s) for you.",
             $lines,
             'Continuez — chaque vote compte !',
             'Keep going — every vote counts!',
-            $locale ?: self::currentLocale()
+            $locale // null = bilingual FR + EN
         );
     }
 
