@@ -15,6 +15,9 @@ use App\Http\Controllers\StripePaymentController;
 
 Auth::routes();
 
+// Legacy Laravel default; /home never had a route and caused mobile login 404s.
+Route::redirect('/home', '/admin', 302);
+
 Route::group(['middleware' => 'auth'], function() {
 	Route::get('/dashboard', 'HomeController@dashboard');
 });

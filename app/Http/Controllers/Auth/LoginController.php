@@ -52,11 +52,7 @@ class LoginController extends Controller
                 return redirect()->route('check.otp');
             }
 
-            if ($user && $user->role_id != 3) {
-                return redirect('/admin');
-            }
-
-            return redirect('/');
+            return $this->redirectAfterLogin($user);
         }
 
         return redirect()->route('user.login')
@@ -72,12 +68,34 @@ class LoginController extends Controller
             return true;
         }
 
-        $role = strtolower((string) (
+        $role = $this->roleName($user);
+
+        return in_array($role, ['ambassador', 'judge'], true);
+    }
+
+    protected function redirectAfterLogin($user)
+    {
+        if (!$user || (int) $user->role_id === 3) {
+            return redirect('/');
+        }
+
+        $role = $this->roleName($user);
+        if ($role === 'judge') {
+            return redirect()->route('points.awaiting_candidates');
+        }
+        if ($role === 'ambassador') {
+            return redirect()->route('ambassador_points.awaiting_candidates');
+        }
+
+        return redirect('/admin');
+    }
+
+    protected function roleName($user): string
+    {
+        return strtolower((string) (
             optional($user->role)->name
             ?: optional(\DB::table('roles')->find($user->role_id))->name
             ?: ''
         ));
-
-        return in_array($role, ['ambassador', 'judge'], true);
     }
 }

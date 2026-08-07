@@ -1734,10 +1734,23 @@ class HomeController extends Controller
 
         if (hash_equals((string) $user->otp, (string) $request->otp)) {
             $user->update(['otp' => null, 'otp_time' => null, 'otp_verify' => '1']);
-            if ((int) $user->role_id !== 3) {
-                return redirect('/admin');
+            if ((int) $user->role_id === 3) {
+                return redirect()->route('home');
             }
-            return redirect()->route('home');
+
+            $role = strtolower((string) (
+                optional($user->role)->name
+                ?: optional(\DB::table('roles')->find($user->role_id))->name
+                ?: ''
+            ));
+            if ($role === 'judge') {
+                return redirect()->route('points.awaiting_candidates');
+            }
+            if ($role === 'ambassador') {
+                return redirect()->route('ambassador_points.awaiting_candidates');
+            }
+
+            return redirect('/admin');
         } else {
             return redirect()->back()->with('not_permitted', trans('file.Invalid OTP'));
         }
