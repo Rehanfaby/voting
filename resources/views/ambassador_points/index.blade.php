@@ -50,8 +50,9 @@
         </div>
 
         @if(!empty($grading_disabled))
-            <div class="alert alert-warning">{{ trans('file.Grading is not enabled yet') }}</div>
-        @elseif($count === 0)
+            <div class="alert alert-warning">{{ trans('file.Grading is not enabled yet') }} — existing grades still show below.</div>
+        @endif
+        @if($count === 0)
             <div class="mg-awaiting__empty">
                 <i class="fa fa-star-o"></i>
                 <h3>No grades yet</h3>

@@ -23,37 +23,23 @@ class AmbassadorPointController extends Controller
 
     public function index()
     {
-        if (!$this->isGradingAvailable()) {
-            return view('ambassador_points.index', [
-                'points' => collect(),
-                'grading_disabled' => true,
-            ]);
-        }
-
         $ambassadorRoleId = $this->ambassadorRoleId();
-        if (!$ambassadorRoleId) {
-            return view('ambassador_points.index', [
-                'points' => collect(),
-                'grading_disabled' => true,
-            ]);
+        $isAmbassador = $ambassadorRoleId && (int) Auth::user()->role_id === $ambassadorRoleId;
+        $grading_disabled = !$this->isGradingAvailable();
+
+        // Always list grades for current contestants (do not hide when grading is toggled off).
+        $query = AmbassadorPoint::with(['ambassador', 'contestant'])
+            ->whereHas('contestant', function ($q) {
+                $q->where('is_active', true)->where('is_approve', true);
+            });
+
+        if ($isAmbassador) {
+            $query->where('ambassador_id', Auth::id());
         }
 
-        if ((int) Auth::user()->role_id === $ambassadorRoleId) {
-            $points = AmbassadorPoint::with(['ambassador', 'contestant'])
-                ->whereHas('contestant')
-                ->whereHas('ambassador')
-                ->where('ambassador_id', Auth::user()->id)
-                ->latest()
-                ->get();
-        } else {
-            $points = AmbassadorPoint::with(['ambassador', 'contestant'])
-                ->whereHas('contestant')
-                ->whereHas('ambassador')
-                ->latest()
-                ->get();
-        }
+        $points = $query->latest()->get();
 
-        return view('ambassador_points.index', compact('points'));
+        return view('ambassador_points.index', compact('points', 'grading_disabled'));
     }
 
     public function create(Request $request, $candidate_id = null)
@@ -66,16 +52,24 @@ class AmbassadorPointController extends Controller
         $judge_role_id = $this->ambassadorRoleId();
         $ambassadors = User::where('is_deleted', false)->where('role_id', $judge_role_id)->get();
 //        $ambassadors = Ambassador::where('is_active', true)->orderBy('name')->get();
-        if ($this->isGradingAvailable()) {
-            $candidates = Employee::orderBy('name')->where('is_active', true)->where('is_approve', true)->get();
-        } else {
-            $candidates = [];
-        }
-        return view('ambassador_points.create', compact('candidates', 'ambassadors', 'candidate_id', 'candidate_name'));
+        $candidates = Employee::orderBy('name')->where('is_active', true)->where('is_approve', true)->get();
+        $grading_disabled = !$this->isGradingAvailable();
+
+        return view('ambassador_points.create', compact(
+            'candidates',
+            'ambassadors',
+            'candidate_id',
+            'candidate_name',
+            'grading_disabled'
+        ));
     }
 
     public function store(Request $request)
     {
+        if (!$this->isGradingAvailable()) {
+            return back()->with('not_permitted', trans('file.Grading is not enabled yet'));
+        }
+
         $request->validate([
             'ambassador_id' => 'required|exists:users,id',
             'candidate_id'  => 'required|exists:employees,id',
@@ -149,30 +143,33 @@ class AmbassadorPointController extends Controller
         $ambassador_role_id = $this->ambassadorRoleId();
         $isAmbassador = $ambassador_role_id && $user_role === $ambassador_role_id;
         $adminView = !$isAmbassador;
+        $grading_disabled = !$this->isGradingAvailable();
 
-        if (!$this->isGradingAvailable()) {
-            return view('ambassador_points.awaiting_candidates', [
-                'awaiting_candidates' => collect(),
-                'adminView' => $adminView,
-                'grading_disabled' => true,
-            ]);
-        }
-
+        // Ambassadors: only contestants they have not graded yet (shrinks as they grade).
+        // Admins/staff: all approved contestants so they can open any card to grade.
         $query = Employee::where('is_active', true)
             ->where('is_approve', true)
             ->orderBy('name');
 
         if ($isAmbassador) {
-            $query->whereNotIn('id', function ($q) use ($user_id) {
-                $q->select('candidate_id')
-                    ->from('ambassador_points')
-                    ->where('ambassador_id', $user_id);
-            });
+            $gradedIds = AmbassadorPoint::where('ambassador_id', $user_id)
+                ->pluck('candidate_id')
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
+            if (!empty($gradedIds)) {
+                $query->whereNotIn('id', $gradedIds);
+            }
         }
 
         $awaiting_candidates = $query->get();
 
-        return view('ambassador_points.awaiting_candidates', compact('awaiting_candidates', 'adminView'));
+        return view('ambassador_points.awaiting_candidates', compact(
+            'awaiting_candidates',
+            'adminView',
+            'grading_disabled'
+        ));
     }
 
 

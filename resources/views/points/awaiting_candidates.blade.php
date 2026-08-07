@@ -48,8 +48,10 @@
         </div>
 
         @if(!empty($grading_disabled))
-            <div class="alert alert-warning">{{ trans('file.Grading is not enabled yet') }}</div>
-        @elseif($count === 0)
+            <div class="alert alert-warning">{{ trans('file.Grading is not enabled yet') }} — lists still show below; saving new grades is blocked until grading is enabled in General Settings.</div>
+        @endif
+
+        @if($count === 0)
             <div class="mg-awaiting__empty">
                 <i class="fa fa-check-circle"></i>
                 <h3>{{ !empty($adminView) ? 'No contestants' : 'All caught up' }}</h3>
@@ -57,7 +59,7 @@
                     @if(!empty($adminView))
                         There are no approved contestants to grade right now.
                     @else
-                        You have graded every contestant, or grading is not available right now.
+                        You have graded every contestant.
                     @endif
                 </p>
                 <a href="{{ route('points.index') }}" class="btn btn-primary">{{ trans('file.Grade Listing') }}</a>

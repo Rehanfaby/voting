@@ -21,37 +21,22 @@ class PointController extends Controller
 
     public function index()
     {
-        if (!$this->isGradingAvailable()) {
-            return view('points.index', [
-                'points' => collect(),
-                'grading_disabled' => true,
-            ]);
+        $judgeRole = Role::whereRaw('LOWER(name) = ?', ['judge'])->first();
+        $isJudge = $judgeRole && (int) Auth::user()->role_id === (int) $judgeRole->id;
+        $grading_disabled = !$this->isGradingAvailable();
+
+        $query = Point::with(['judge', 'contestant'])
+            ->whereHas('contestant', function ($q) {
+                $q->where('is_active', true)->where('is_approve', true);
+            });
+
+        if ($isJudge) {
+            $query->where('judge_id', Auth::id());
         }
 
-        $judgeRole = Role::where('name', 'judge')->first();
-        if (!$judgeRole) {
-            return view('points.index', [
-                'points' => collect(),
-                'grading_disabled' => true,
-            ]);
-        }
+        $points = $query->latest()->get();
 
-        if (Auth::user()->role_id == $judgeRole->id) {
-            $points = Point::with(['judge', 'contestant'])
-                ->whereHas('contestant')
-                ->whereHas('judge')
-                ->where('judge_id', Auth::user()->id)
-                ->latest()
-                ->get();
-        } else {
-            $points = Point::with(['judge', 'contestant'])
-                ->whereHas('contestant')
-                ->whereHas('judge')
-                ->latest()
-                ->get();
-        }
-
-        return view('points.index', compact('points'));
+        return view('points.index', compact('points', 'grading_disabled'));
     }
 
     public function create(Request $request, $candidate_id = null)
@@ -74,6 +59,10 @@ class PointController extends Controller
 
     public function store(StorePointRequest $request)
     {
+        if (!$this->isGradingAvailable()) {
+            return back()->with('not_permitted', trans('file.Grading is not enabled yet'));
+        }
+
         $data = $request->validated();
         foreach (['depth', 'accuracy', 'interpretation', 'song_choice', 'overall_presentation'] as $field) {
             if (array_key_exists($field, $data)) {
@@ -167,28 +156,31 @@ class PointController extends Controller
         $judge_role_id = $judgeRole ? (int) $judgeRole->id : 0;
         $isJudge = $judge_role_id && $user_role === $judge_role_id;
         $adminView = !$isJudge;
-
-        if (!$this->isGradingAvailable()) {
-            return view('points.awaiting_candidates', [
-                'awaiting_candidates' => collect(),
-                'adminView' => $adminView,
-                'grading_disabled' => true,
-            ]);
-        }
+        $grading_disabled = !$this->isGradingAvailable();
 
         $query = Employee::where('is_active', true)
             ->where('is_approve', true)
             ->orderBy('name');
 
         if ($isJudge) {
-            $query->whereNotIn('id', function ($q) use ($user_id) {
-                $q->select('candidate_id')->from('points')->where('judge_id', $user_id);
-            });
+            $gradedIds = Point::where('judge_id', $user_id)
+                ->pluck('candidate_id')
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
+            if (!empty($gradedIds)) {
+                $query->whereNotIn('id', $gradedIds);
+            }
         }
 
         $awaiting_candidates = $query->get();
 
-        return view('points.awaiting_candidates', compact('awaiting_candidates', 'adminView'));
+        return view('points.awaiting_candidates', compact(
+            'awaiting_candidates',
+            'adminView',
+            'grading_disabled'
+        ));
     }
 
     public function deleteBySelection(Request $request)
