@@ -158,6 +158,7 @@
                                                     <label class="custom-control-label" for="schedule_later">{{ trans('file.Schedule for later') }}</label>
                                                 </div>
                                                 <div id="schedule-times-wrap" style="display:none;">
+                                                    <p class="small text-muted mb-2"><i class="dripicons-clock"></i> Times use <strong>{{ config('app.timezone', 'Africa/Douala') }}</strong> (GMT+1 Douala).</p>
                                                     <div id="schedule-times-list">
                                                         <div class="mg-slot-row schedule-row">
                                                             <input type="datetime-local" name="schedule_times[]" class="form-control">
@@ -172,7 +173,7 @@
                                         <div class="card border mb-3">
                                             <div class="card-body">
                                                 <label class="d-block mb-2"><strong>{{ trans('file.Reminders') }}</strong></label>
-                                                <p class="small text-muted">{{ trans('file.Reminder send help') }}</p>
+                                                <p class="small text-muted">{{ trans('file.Reminder send help') }} Times use <strong>{{ config('app.timezone', 'Africa/Douala') }}</strong>.</p>
                                                 <div id="reminder-times-list">
                                                     <div class="mg-slot-row reminder-row">
                                                         <input type="datetime-local" name="reminder_times[]" class="form-control">

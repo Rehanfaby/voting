@@ -45,14 +45,30 @@ class SettingController extends Controller
         $lims_general_setting_data = GeneralSetting::latest()->first();
         $lims_account_list = Account::where('is_active', true)->get();
         $lims_currency_list = Currency::get();
-        $zones_array = array();
+        $appTimezone = config('app.timezone', 'Africa/Douala');
+        $zones_array = [];
         $timestamp = time();
-        foreach(timezone_identifiers_list() as $key => $zone) {
-            date_default_timezone_set($zone);
-            $zones_array[$key]['zone'] = $zone;
-            $zones_array[$key]['diff_from_GMT'] = 'UTC/GMT ' . date('P', $timestamp);
+        $preferred = ['Africa/Douala', 'Africa/Lagos', 'UTC', 'Europe/London'];
+        foreach (array_unique(array_merge($preferred, timezone_identifiers_list())) as $zone) {
+            try {
+                $dt = new \DateTime('now', new \DateTimeZone($zone));
+                $zones_array[] = [
+                    'zone' => $zone,
+                    'diff_from_GMT' => 'GMT' . $dt->format('P'),
+                ];
+            } catch (\Throwable $e) {
+                continue;
+            }
         }
-        return view('setting.general_setting', compact('lims_general_setting_data', 'lims_account_list', 'zones_array', 'lims_currency_list'));
+        $current_time_label = \Carbon\Carbon::now($appTimezone)->format('l, j M Y · H:i:s') . ' (' . $appTimezone . ')';
+        return view('setting.general_setting', compact(
+            'lims_general_setting_data',
+            'lims_account_list',
+            'zones_array',
+            'lims_currency_list',
+            'appTimezone',
+            'current_time_label'
+        ));
     }
 
     /** In-app user guide (Settings > Help). Judges/Ambassadors get their grading Help instead. */
@@ -93,13 +109,14 @@ class SettingController extends Controller
         ]);
 
         $data = $request->except('site_logo');
-        //return $data;
-        //writting timezone info in .env file
-        $path = '.env';
-        $searchArray = array('APP_TIMEZONE='.env('APP_TIMEZONE'));
-        $replaceArray = array('APP_TIMEZONE='.$data['timezone']);
 
-//        file_put_contents($path, str_replace($searchArray, $replaceArray, file_get_contents($path)));
+        $timezone = $data['timezone'] ?? config('app.timezone', 'Africa/Douala');
+        if (!in_array($timezone, timezone_identifiers_list(), true)) {
+            $timezone = 'Africa/Douala';
+        }
+        $this->writeAppTimezone($timezone);
+        config(['app.timezone' => $timezone]);
+        date_default_timezone_set($timezone);
 
         $general_setting = GeneralSetting::latest()->first();
         $general_setting->id = 1;
@@ -879,6 +896,30 @@ class SettingController extends Controller
             $value = end($value);
         }
         return (int) $value === 1 ? 1 : 0;
+    }
+
+    /** Persist APP_TIMEZONE in .env so cron, announcements, and schedules share one clock. */
+    private function writeAppTimezone(string $timezone): void
+    {
+        $path = base_path('.env');
+        if (!is_file($path) || !is_writable($path)) {
+            return;
+        }
+        $contents = file_get_contents($path);
+        if ($contents === false) {
+            return;
+        }
+        if (preg_match('/^APP_TIMEZONE=.*$/m', $contents)) {
+            $contents = preg_replace('/^APP_TIMEZONE=.*$/m', 'APP_TIMEZONE=' . $timezone, $contents);
+        } else {
+            $contents = rtrim($contents) . "\nAPP_TIMEZONE=" . $timezone . "\n";
+        }
+        file_put_contents($path, $contents);
+        try {
+            \Artisan::call('config:clear');
+        } catch (\Throwable $e) {
+            // ignore — next request still picks up date_default_timezone_set above
+        }
     }
 
     /**

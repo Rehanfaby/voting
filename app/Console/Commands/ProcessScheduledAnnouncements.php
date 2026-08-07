@@ -20,7 +20,7 @@ class ProcessScheduledAnnouncements extends Command
         ignore_user_abort(true);
 
         $controller = app(AnnouncementController::class);
-        $now = Carbon::now();
+        $now = Carbon::now(config('app.timezone', 'Africa/Douala'));
 
         Announcement::where('is_active', true)
             ->where(function ($q) {
@@ -60,7 +60,7 @@ class ProcessScheduledAnnouncements extends Command
                 continue;
             }
             try {
-                $due = Carbon::parse($slot['at']);
+                $due = Carbon::parse($slot['at'], config('app.timezone', 'Africa/Douala'));
             } catch (\Exception $e) {
                 continue;
             }

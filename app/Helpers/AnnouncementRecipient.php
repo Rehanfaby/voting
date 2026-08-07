@@ -71,13 +71,20 @@ class AnnouncementRecipient
 
     public static function normalizeSlots(array $times): array
     {
+        $tz = config('app.timezone', 'Africa/Douala');
         $out = [];
         foreach ($times as $time) {
             $time = trim((string) $time);
             if ($time === '') {
                 continue;
             }
-            $out[] = ['at' => $time, 'status' => 'pending', 'sent_at' => null];
+            try {
+                // datetime-local values are wall-clock in the app timezone (Douala GMT+1).
+                $at = \Carbon\Carbon::parse(str_replace('T', ' ', $time), $tz)->format('Y-m-d H:i:s');
+            } catch (\Throwable $e) {
+                continue;
+            }
+            $out[] = ['at' => $at, 'status' => 'pending', 'sent_at' => null];
         }
 
         return $out;

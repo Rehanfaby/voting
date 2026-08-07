@@ -7,7 +7,7 @@
     );
 @endphp
 <div class="mg-schedule-window mt-2 p-2" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;">
-    <small class="d-block text-muted mb-1"><strong>Schedule</strong> (optional) — leave blank for manual checkbox only</small>
+    <small class="d-block text-muted mb-1"><strong>Schedule</strong> (optional, {{ config('app.timezone', 'Africa/Douala') }}) — leave blank for manual checkbox only</small>
     <div class="form-row">
         <div class="col-6">
             <label class="small mb-0" for="{{ $startName }}">Start</label>

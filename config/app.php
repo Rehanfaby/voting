@@ -108,7 +108,8 @@ return [
     |
     */
 
-    'timezone' => env('APP_TIMEZONE', 'UTC'),
+    // Cameroon (Douala) — GMT+1 year-round; used by voting/grading windows and announcement schedules.
+    'timezone' => env('APP_TIMEZONE', 'Africa/Douala'),
 
     /*
     |--------------------------------------------------------------------------
