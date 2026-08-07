@@ -144,25 +144,35 @@ class AmbassadorPointController extends Controller
 
     public function awaitingCandidates()
     {
-        $user_id = Auth::user()->id;
+        $user_id = (int) Auth::id();
         $user_role = (int) Auth::user()->role_id;
         $ambassador_role_id = $this->ambassadorRoleId();
+        $isAmbassador = $ambassador_role_id && $user_role === $ambassador_role_id;
+        $adminView = !$isAmbassador;
 
-        if ($ambassador_role_id && $user_role === $ambassador_role_id && $this->isGradingAvailable()) {
-            $awaiting_candidates = Employee::where('is_active', true)
-                ->where('is_approve', true)
-                ->whereNotIn('id', function ($query) use ($user_id) {
-                    $query->select('candidate_id')
-                        ->from('ambassador_points')
-                        ->where('ambassador_id', $user_id);
-                })
-                ->orderBy('name')
-                ->get();
-        } else {
-            $awaiting_candidates = collect();
+        if (!$this->isGradingAvailable()) {
+            return view('ambassador_points.awaiting_candidates', [
+                'awaiting_candidates' => collect(),
+                'adminView' => $adminView,
+                'grading_disabled' => true,
+            ]);
         }
 
-        return view('ambassador_points.awaiting_candidates', compact('awaiting_candidates'));
+        $query = Employee::where('is_active', true)
+            ->where('is_approve', true)
+            ->orderBy('name');
+
+        if ($isAmbassador) {
+            $query->whereNotIn('id', function ($q) use ($user_id) {
+                $q->select('candidate_id')
+                    ->from('ambassador_points')
+                    ->where('ambassador_id', $user_id);
+            });
+        }
+
+        $awaiting_candidates = $query->get();
+
+        return view('ambassador_points.awaiting_candidates', compact('awaiting_candidates', 'adminView'));
     }
 
 

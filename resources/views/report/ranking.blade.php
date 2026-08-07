@@ -72,7 +72,12 @@
                         @else
                             <td>No Image</td>
                         @endif
-                        <td>{{ $contestant ? $contestant->name : $employee->name }}</td>
+                        <td>
+                            <a href="{{ route('report.contestant.grading', $employee->id) }}" class="font-weight-bold" style="color:#0a2350;text-decoration:underline;">
+                                {{ $contestant ? $contestant->name : $employee->name }}
+                            </a>
+                            <div><small class="text-muted">Tap for judge &amp; ambassador scores</small></div>
+                        </td>
                         <td>{{ $employee->total_votes }}</td>
                         <td>{{ $employee->total_points }}</td>
                         <td>{{ $employee->total_ambassador_points }}</td>

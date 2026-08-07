@@ -17,93 +17,124 @@
 @if(session()->has('not_permitted'))
   <div class="alert alert-danger alert-dismissible text-center"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>{{ session()->get('not_permitted') }}</div>
 @endif
-<section>
-    @if(in_array("employees-add", $all_permission))
+@php
+    use App\Helpers\ImageOptimizer;
+    $contestants = collect($lims_employee_all ?? []);
+    $contestantCount = $contestants->count();
+@endphp
+<section class="mg-awaiting">
     <div class="container-fluid">
-        <button type="button" class="btn btn-info" data-toggle="modal" data-target="#addModal"><i class="dripicons-plus"></i>Add Contestant</button>
-    </div>
-    @endif
-    <div class="table-responsive">
-        <table id="employee-table" class="table">
-            <thead>
-                <tr>
-                    <th class="not-exported"></th>
-                    <th>{{trans('file.Image')}}</th>
-                    <th>{{trans('file.name')}}</th>
-                    <th>{{trans('file.Email')}}</th>
-                    <th>{{trans('file.Phone Number')}}</th>
-                    <th>{{trans('file.Department')}}</th>
-                    <th>{{trans('file.Address')}}</th>
-                    <th class="not-exported">{{trans('file.action')}}</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($lims_employee_all as $key=>$employee)
-                @php $department = \App\Department::find($employee->department_id); @endphp
-                <tr data-id="{{$employee->id}}">
-                    <td>{{$key}}</td>
-                    @if($employee->image)
-                    @php $__thumb = public_path('images/employee/thumbs/' . $employee->image); @endphp
-                    <td> <img src="{{ is_file($__thumb) ? url('public/images/employee/thumbs', $employee->image) : url('public/images/employee', $employee->image) }}" height="80" width="80" loading="lazy" decoding="async">
-                    </td>
-                    @else
-                    <td>No Image</td>
-                    @endif
-                    <td>{{ $employee->name }}</td>
-                    <td>{{ $employee->email}}</td>
-                    <td>{{ $employee->phone_number}}</td>
-                    <td>{{ $department->name }}</td>
-                    <td>{{ $employee->address}}
-                            @if($employee->city){{ ', '.$employee->city}}@endif
-                            @if($employee->state){{ ', '.$employee->state}}@endif
-                            @if($employee->postal_code){{ ', '.$employee->postal_code}}@endif
-                            @if($employee->country){{ ', '.$employee->country}}@endif</td>
-                    <td>
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{trans('file.action')}}
-                                <span class="caret"></span>
-                                <span class="sr-only">Toggle Dropdown</span>
-                            </button>
-                            <ul class="dropdown-menu edit-options dropdown-menu-right dropdown-default" user="menu">
-                                @if(in_array("employees-edit", $all_permission))
-                                    @if($employee->is_approve == 0)
-                                        <li>
-                                            <a onclick="return confirm('Are you sure you want to approve this contestant?')" href="{{ route('musician.approve', $employee->id) }}" class="edit-btn btn btn-link"><i class="fa fa-check"></i> Approve</a>
-                                        </li>
-                                        <li>
-                                            <a onclick="return confirm('Are you sure you want to reject this contestant?')" href="{{ route('musician.reject', $employee->id) }}" class="edit-btn btn btn-link"><i class="fa fa-close"></i> Reject</a>
-                                        </li>
-                                    @endif
-                                <li>
-                                    <button type="button" data-id="{{$employee->id}}" data-name="{{$employee->name}}" data-email="{{$employee->email}}" data-phone_number="{{$employee->phone_number}}" data-department_id="{{$employee->department_id}}" data-address="{{$employee->address}}" data-city="{{$employee->city}}" data-country="{{$employee->country}}" class="edit-btn btn btn-link" data-toggle="modal" data-target="#editModal"><i class="dripicons-document-edit"></i> {{trans('file.edit')}}</button>
-                                </li>
-                                @endif
-                                <li>
-                                    <a href="{{ route('musician.upload', $employee->id) }}" class="edit-btn btn btn-link"><i class="fa fa-upload"></i> Upload</a>
-                                </li>
-                                <li>
-                                    <a href="{{ route('musician.gallery', $employee->id) }}" class="edit-btn btn btn-link"><i class="fa fa-image"></i> Gallery</a>
-                                </li>
-                                <li>
-                                    <a href="{{ route('musician.votes', $employee->id) }}" class="edit-btn btn btn-link"><i class="dripicons-mail"></i> Votes</a>
-                                </li>
-                                <li class="divider"></li>
-                                @if(in_array("employees-delete", $all_permission))
-                                {{ Form::open(['route' => ['musician.destroy', $employee->id], 'method' => 'DELETE'] ) }}
-                                <li>
-                                    <button type="submit" class="btn btn-link" onclick="return confirmDelete()"><i class="dripicons-trash"></i> {{trans('file.delete')}}</button>
-                                </li>
-                                {{ Form::close() }}
-                                @endif
-                            </ul>
+        <div class="mg-awaiting__hero">
+            <div>
+                <p class="mg-awaiting__eyebrow">Contestants</p>
+                <h1 class="mg-awaiting__title">{{ !empty($pending) ? trans('file.Pending Contestants') : trans('file.Contestants') }}</h1>
+                <p class="mg-awaiting__sub">Same card layout as Judge / Ambassador grading lists.</p>
+            </div>
+            <div class="mg-awaiting__count">
+                <span class="mg-awaiting__count-num">{{ $contestantCount }}</span>
+                <span class="mg-awaiting__count-label">contestants</span>
+            </div>
+        </div>
+
+        <div class="mg-awaiting__toolbar">
+            <div class="mg-awaiting__search">
+                <i class="fa fa-search"></i>
+                <input type="search" id="mg-contestant-search" placeholder="Search contestant…" autocomplete="off">
+            </div>
+            @if(in_array("employees-add", $all_permission))
+                <button type="button" class="mg-awaiting__help-link" data-toggle="modal" data-target="#addModal" style="border:0;cursor:pointer;">
+                    <i class="dripicons-plus"></i> Add Contestant
+                </button>
+            @endif
+            @if(in_array("employees-delete", $all_permission))
+                <button type="button" id="mg-delete-selected" class="mg-awaiting__help-link mg-awaiting__help-link--ghost" style="border:0;cursor:pointer;color:#b91c1c !important;">
+                    <i class="dripicons-trash"></i> Delete selected
+                </button>
+            @endif
+            @if(!empty($pending) && in_array("employees-edit", $all_permission))
+                <button type="button" id="mg-approve-selected" class="mg-awaiting__help-link" style="border:0;cursor:pointer;background:#16a34a;">
+                    <i class="fa fa-check"></i> Approve selected
+                </button>
+            @endif
+        </div>
+
+        @if($contestantCount === 0)
+            <div class="mg-awaiting__empty">
+                <i class="fa fa-microphone"></i>
+                <h3>No contestants</h3>
+                <p>Add a contestant to get started.</p>
+            </div>
+        @else
+            <div class="mg-awaiting__grid" id="mg-contestant-grid">
+                @foreach($contestants->sortBy('name') as $employee)
+                    @php
+                        $department = \App\Department::find($employee->department_id);
+                        $img = ImageOptimizer::employeeImageUrl($employee->image ?? '');
+                        $search = strtolower(($employee->name ?? '') . ' ' . ($employee->email ?? '') . ' ' . ($employee->phone_number ?? '') . ' ' . (optional($department)->name ?? ''));
+                    @endphp
+                    <div class="mg-awaiting-card mg-list-card" data-id="{{ $employee->id }}" data-name="{{ $search }}">
+                        <label class="mg-contestant-check">
+                            <input type="checkbox" class="mg-contestant-cb" value="{{ $employee->id }}">
+                        </label>
+                        <div class="mg-awaiting-card__photo">
+                            @if(!empty($employee->image))
+                                <img src="{{ $img }}" alt="{{ $employee->name }}" loading="lazy" width="88" height="88">
+                            @else
+                                <span class="mg-awaiting-card__initial">{{ strtoupper(substr($employee->name, 0, 1)) }}</span>
+                            @endif
                         </div>
-                    </td>
-                </tr>
+                        <div class="mg-awaiting-card__body">
+                            <h3 class="mg-awaiting-card__name">{{ $employee->name }}</h3>
+                            <p class="mg-awaiting-card__hint">
+                                {{ $employee->phone_number }}
+                                @if(optional($department)->name) · {{ $department->name }}@endif
+                            </p>
+                            <p class="mg-awaiting-card__hint">{{ $employee->email }}</p>
+                        </div>
+                        <div class="mg-list-card__actions">
+                            <a href="{{ route('report.contestant.grading', $employee->id) }}" class="mg-list-card__btn" title="Grading scores"><i class="fa fa-star"></i></a>
+                            @if(in_array("employees-edit", $all_permission))
+                                @if((int) $employee->is_approve === 0)
+                                    <a href="{{ route('musician.approve', $employee->id) }}" class="mg-list-card__btn" style="background:#16a34a;" title="Approve" onclick="return confirm('Approve this contestant?');"><i class="fa fa-check"></i></a>
+                                @endif
+                                <button type="button"
+                                    class="mg-list-card__btn edit-btn"
+                                    title="Edit"
+                                    data-id="{{$employee->id}}"
+                                    data-name="{{$employee->name}}"
+                                    data-email="{{$employee->email}}"
+                                    data-phone_number="{{$employee->phone_number}}"
+                                    data-department_id="{{$employee->department_id}}"
+                                    data-address="{{$employee->address}}"
+                                    data-city="{{$employee->city}}"
+                                    data-country="{{$employee->country}}"
+                                    data-toggle="modal"
+                                    data-target="#editModal"><i class="dripicons-document-edit"></i></button>
+                            @endif
+                            <a href="{{ route('musician.gallery', $employee->id) }}" class="mg-list-card__btn" title="Gallery"><i class="fa fa-image"></i></a>
+                            <a href="{{ route('musician.votes', $employee->id) }}" class="mg-list-card__btn" title="Votes"><i class="dripicons-mail"></i></a>
+                            @if(in_array("employees-delete", $all_permission))
+                                {{ Form::open(['route' => ['musician.destroy', $employee->id], 'method' => 'DELETE', 'style' => 'margin:0'] ) }}
+                                <button type="submit" class="mg-list-card__btn mg-list-card__btn--danger" title="Delete" onclick="return confirmDelete()"><i class="dripicons-trash"></i></button>
+                                {{ Form::close() }}
+                            @endif
+                        </div>
+                    </div>
                 @endforeach
-            </tbody>
-        </table>
+            </div>
+            <p class="mg-awaiting__none-match" id="mg-contestant-none" style="display:none;">No contestant matches your search.</p>
+        @endif
     </div>
 </section>
+@include('partials.grading-list-styles')
+<style>
+.mg-contestant-check { flex-shrink: 0; display:flex; align-items:center; margin:0 4px 0 0; }
+.mg-contestant-check input { width:18px; height:18px; }
+.mg-list-card__actions { flex-wrap: wrap; max-width: 120px; justify-content: flex-end; }
+@media (max-width: 575.98px) {
+    .mg-list-card__actions { max-width: none; flex-direction: row; }
+}
+</style>
 
 @php
     $cmr_regions_add = ['Adamawa','Centre','East','Far North','Littoral','North','North-West','South','South-West','West'];
@@ -262,39 +293,12 @@
         return false;
     }
 
-    // IMPORTANT: use only checked checkboxes — DataTables Select can mark every
-    // row "selected" after header select-all, which made Delete claim "all 62".
     function collectSelectedIds() {
         var ids = [];
-        var table = $('#employee-table').DataTable();
-        // table.$ covers rows on all pages (cached nodes), not only the current page.
-        table.$('tr').each(function () {
-            var $row = $(this);
-            var $cb = $row.find('input.dt-checkboxes').first();
-            if (!$cb.length || !$cb.prop('checked')) {
-                return;
-            }
-            var id = $row.attr('data-id');
-            if (id) {
-                ids.push(String(id));
-            }
+        $('.mg-contestant-cb:checked').each(function () {
+            ids.push(String($(this).val()));
         });
-        return ids.filter(function (v, i, a) { return a.indexOf(v) === i; });
-    }
-
-    function collectSelectedNames(ids) {
-        var names = [];
-        var table = $('#employee-table').DataTable();
-        var want = {};
-        ids.forEach(function (id) { want[String(id)] = true; });
-        table.$('tr').each(function () {
-            var $row = $(this);
-            var id = $row.attr('data-id');
-            if (!id || !want[String(id)]) { return; }
-            var name = $.trim($row.find('td').eq(2).text() || '');
-            if (name) { names.push(name); }
-        });
-        return names;
+        return ids;
     }
 
     $(document).on('click', '.edit-btn', function() {
@@ -316,170 +320,56 @@
         $('#addModal .selectpicker').selectpicker('refresh');
     });
 
-    $('#employee-table').DataTable( {
-        "order": [],
-        'language': {
-            'lengthMenu': '_MENU_ {{trans("file.records per page")}}',
-             "info":      '<small>{{trans("file.Showing")}} _START_ - _END_ (_TOTAL_)</small>',
-            "search":  '{{trans("file.Search")}}',
-            'paginate': {
-                    'previous': '<i class="dripicons-chevron-left"></i>',
-                    'next': '<i class="dripicons-chevron-right"></i>'
-            }
-        },
-        'columnDefs': [
-            {
-                "orderable": false,
-                'targets': [0, 1, 6]
-            },
-            {
-                'render': function(data, type, row, meta){
-                    if(type === 'display'){
-                        data = '<div class="checkbox"><input type="checkbox" class="dt-checkboxes"><label></label></div>';
-                    }
+    (function () {
+        var input = document.getElementById('mg-contestant-search');
+        var grid = document.getElementById('mg-contestant-grid');
+        var none = document.getElementById('mg-contestant-none');
+        if (!input || !grid) return;
+        input.addEventListener('input', function () {
+            var q = (input.value || '').toLowerCase().trim();
+            var shown = 0;
+            grid.querySelectorAll('.mg-list-card').forEach(function (card) {
+                var match = !q || (card.getAttribute('data-name') || '').indexOf(q) !== -1;
+                card.style.display = match ? '' : 'none';
+                if (match) shown++;
+            });
+            if (none) none.style.display = shown ? 'none' : 'block';
+        });
+    })();
 
-                   return data;
-                },
-                'checkboxes': {
-                   'selectRow': true,
-                   // Header checkbox = current page only (never every contestant in the table).
-                   'selectAllPages': false,
-                   'selectAllRender': '<div class="checkbox"><input type="checkbox" class="dt-checkboxes"><label></label></div>'
-                },
-                'targets': [0]
-            }
-        ],
-        'select': { style: 'multi',  selector: 'td:first-child', info: false },
-        // No "All" page size — showing every row + header select-all can wipe the whole list.
-        'lengthMenu': [[10, 25, 50], [10, 25, 50]],
-        'pageLength': 25,
-        dom: '<"row"lfB>rtip',
-        buttons: [
-            {
-                extend: 'pdf',
-                text: '<i title="export to pdf" class="fa fa-file-pdf-o"></i>',
-                exportOptions: {
-                    columns: ':visible:Not(.not-exported)',
-                    rows: ':visible',
-                    stripHtml: false
-                },
-                customize: function(doc) {
-                    for (var i = 1; i < doc.content[1].table.body.length; i++) {
-                        if (doc.content[1].table.body[i][0].text.indexOf('<img src=') !== -1) {
-                            var imagehtml = doc.content[1].table.body[i][0].text;
-                            var regex = /<img.*?src=['"](.*?)['"]/;
-                            var src = regex.exec(imagehtml)[1];
-                            var tempImage = new Image();
-                            tempImage.src = src;
-                            var canvas = document.createElement("canvas");
-                            canvas.width = tempImage.width;
-                            canvas.height = tempImage.height;
-                            var ctx = canvas.getContext("2d");
-                            ctx.drawImage(tempImage, 0, 0);
-                            var imagedata = canvas.toDataURL("image/png");
-                            delete doc.content[1].table.body[i][0].text;
-                            doc.content[1].table.body[i][0].image = imagedata;
-                            doc.content[1].table.body[i][0].fit = [30, 30];
-                        }
-                    }
-                },
-            },
-            {
-                extend: 'csv',
-                text: '<i title="export to csv" class="fa fa-file-text-o"></i>',
-                exportOptions: {
-                    columns: ':visible:Not(.not-exported)',
-                    rows: ':visible',
-                    format: {
-                        body: function ( data, row, column, node ) {
-                            if (column === 0 && (data.indexOf('<img src=') != -1)) {
-                                var regex = /<img.*?src=['"](.*?)['"]/;
-                                data = regex.exec(data)[1];
-                            }
-                            return data;
-                        }
-                    }
-                },
-            },
-            {
-                extend: 'print',
-                text: '<i title="print" class="fa fa-print"></i>',
-                exportOptions: {
-                    columns: ':visible:Not(.not-exported)',
-                    rows: ':visible',
-                    stripHtml: false
-                },
-            },
-            @if($pending == 1)
-            {
-                text: '<i class="fa fa-check"></i> Approve Selected',
-                className: 'buttons-approve btn-approve-selected',
-                action: function ( e, dt, node, config ) {
-                    var ids = collectSelectedIds();
-                    if(ids.length && confirm("Approve " + ids.length + " selected contestant(s)?")) {
-                        $.ajax({
-                            type:'POST',
-                            url:'{{ url("musician/approvebyselection") }}',
-                            data:{ employeeIdArray: ids },
-                            success:function(data){ alert(data); location.reload(); }
-                        });
-                    }
-                    else if(!ids.length)
-                        alert('No contestant is selected!');
-                }
-            },
-            @endif
-            {
-                text: '<i title="delete" class="dripicons-cross"></i> Delete Selected',
-                className: 'buttons-delete',
-                action: function ( e, dt, node, config ) {
-                    if(user_verified == '1') {
-                        var ids = collectSelectedIds();
-                        if(!ids.length) {
-                            alert('No contestant is selected! Tick the checkbox next to each contestant you want to delete.');
-                            return;
-                        }
-                        var names = collectSelectedNames(ids);
-                        var msg = "Delete " + ids.length + " selected contestant(s)?\n\n"
-                            + (names.length ? names.join("\n") : ("IDs: " + ids.join(", ")));
-                        if (ids.length === dt.rows().count() && ids.length > 1) {
-                            msg = "WARNING: You checked ALL " + ids.length + " contestants.\n\nThis removes everyone from the public site. Continue?";
-                        }
-                        if(confirm(msg)) {
-                            $.ajax({
-                                type:'POST',
-                                url:'{{ url("musician/deletebyselection") }}',
-                                data:{
-                                    employeeIdArray: ids
-                                },
-                                success:function(data){
-                                    alert(data);
-                                    location.reload();
-                                },
-                                error: function () {
-                                    alert('Delete failed. No contestants were changed.');
-                                }
-                            });
-                        }
-                    }
-                    else
-                        alert('This feature is disable for demo!');
-                }
-            },
-            {
-                extend: 'colvis',
-                text: '<i title="column visibility" class="fa fa-eye"></i>',
-                columns: ':gt(0)'
-            },
-        ],
-    } );
+    $('#mg-delete-selected').on('click', function () {
+        if (user_verified != '1') {
+            alert('This feature is disable for demo!');
+            return;
+        }
+        var ids = collectSelectedIds();
+        if (!ids.length) {
+            alert('No contestant is selected!');
+            return;
+        }
+        if (!confirm('Delete ' + ids.length + ' selected contestant(s)?')) return;
+        $.ajax({
+            type: 'POST',
+            url: '{{ url("musician/deletebyselection") }}',
+            data: { employeeIdArray: ids },
+            success: function (data) { alert(data); location.reload(); },
+            error: function () { alert('Delete failed. No contestants were changed.'); }
+        });
+    });
 
-    // Clear any stale Select-all state left over from a previous visit / plugin quirk.
-    try {
-        var employeeTable = $('#employee-table').DataTable();
-        employeeTable.rows().deselect();
-        employeeTable.$('input.dt-checkboxes').prop('checked', false).prop('indeterminate', false);
-        $('#employee-table thead input.dt-checkboxes').prop('checked', false).prop('indeterminate', false);
-    } catch (e) {}
+    $('#mg-approve-selected').on('click', function () {
+        var ids = collectSelectedIds();
+        if (!ids.length) {
+            alert('No contestant is selected!');
+            return;
+        }
+        if (!confirm('Approve ' + ids.length + ' selected contestant(s)?')) return;
+        $.ajax({
+            type: 'POST',
+            url: '{{ url("musician/approvebyselection") }}',
+            data: { employeeIdArray: ids },
+            success: function (data) { alert(data); location.reload(); }
+        });
+    });
 </script>
 @endsection

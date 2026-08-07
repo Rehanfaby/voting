@@ -24,12 +24,16 @@
                 <p class="mg-awaiting__eyebrow">Ambassador Grading</p>
                 <h1 class="mg-awaiting__title">{{ trans('file.Awaiting Candidate') }}</h1>
                 <p class="mg-awaiting__sub">
-                    Contestants you have not graded yet. Tap a card to give points (max 5).
+                    @if(!empty($adminView))
+                        All approved contestants. Tap a card to grade as an ambassador (max 5).
+                    @else
+                        Contestants you have not graded yet. Tap a card to give points (max 5).
+                    @endif
                 </p>
             </div>
             <div class="mg-awaiting__count" aria-label="{{ $count }} remaining">
                 <span class="mg-awaiting__count-num">{{ $count }}</span>
-                <span class="mg-awaiting__count-label">left to grade</span>
+                <span class="mg-awaiting__count-label">{{ !empty($adminView) ? 'contestants' : 'left to grade' }}</span>
             </div>
         </div>
 
@@ -43,11 +47,19 @@
             </a>
         </div>
 
-        @if($count === 0)
+        @if(!empty($grading_disabled))
+            <div class="alert alert-warning">{{ trans('file.Grading is not enabled yet') }}</div>
+        @elseif($count === 0)
             <div class="mg-awaiting__empty">
                 <i class="fa fa-check-circle"></i>
-                <h3>All caught up</h3>
-                <p>You have graded every contestant, or grading is not available right now.</p>
+                <h3>{{ !empty($adminView) ? 'No contestants' : 'All caught up' }}</h3>
+                <p>
+                    @if(!empty($adminView))
+                        There are no approved contestants to grade right now.
+                    @else
+                        You have graded every contestant, or grading is not available right now.
+                    @endif
+                </p>
                 <a href="{{ route('ambassador_points.index') }}" class="btn btn-primary">{{ trans('file.Grade Listing') }}</a>
             </div>
         @else

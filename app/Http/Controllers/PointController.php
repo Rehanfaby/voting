@@ -161,23 +161,34 @@ class PointController extends Controller
 
     public function awaitingCandidates()
     {
-        $user_id = Auth::user()->id;
-        $user_role = Auth::user()->role_id;
-        $judge_role_id = Role::where('name', 'judge')->first()->id;
+        $user_id = (int) Auth::id();
+        $user_role = (int) Auth::user()->role_id;
+        $judgeRole = Role::whereRaw('LOWER(name) = ?', ['judge'])->first();
+        $judge_role_id = $judgeRole ? (int) $judgeRole->id : 0;
+        $isJudge = $judge_role_id && $user_role === $judge_role_id;
+        $adminView = !$isJudge;
 
-        if ($user_role == $judge_role_id && $this->isGradingAvailable()) {
-            $awaiting_candidates = Employee::where('is_active', true)
-                ->where('is_approve', true)
-                ->whereNotIn('id', function($query) use ($user_id) {
-                    $query->select('candidate_id')
-                        ->from('points')
-                        ->where('judge_id', $user_id);
-                })
-                ->get();
-        } else {
-            $awaiting_candidates = [];
+        if (!$this->isGradingAvailable()) {
+            return view('points.awaiting_candidates', [
+                'awaiting_candidates' => collect(),
+                'adminView' => $adminView,
+                'grading_disabled' => true,
+            ]);
         }
-        return view('points.awaiting_candidates', compact('awaiting_candidates'));
+
+        $query = Employee::where('is_active', true)
+            ->where('is_approve', true)
+            ->orderBy('name');
+
+        if ($isJudge) {
+            $query->whereNotIn('id', function ($q) use ($user_id) {
+                $q->select('candidate_id')->from('points')->where('judge_id', $user_id);
+            });
+        }
+
+        $awaiting_candidates = $query->get();
+
+        return view('points.awaiting_candidates', compact('awaiting_candidates', 'adminView'));
     }
 
     public function deleteBySelection(Request $request)

@@ -385,6 +385,7 @@ Route::group(['middleware' => ['auth', 'active', 'checkOtp']], function() {
     Route::get('report/income-expense', 'ReportController@incomeExpenseReport')->name('report.income.expense');
     Route::get('report/ticket/purchase', 'ReportController@ticketPurchaseReport')->name('report.ticket.purchase');
     Route::get('report/contestant/ranking', 'ReportController@contestantRanking')->name('report.contestant.ranking');
+    Route::get('report/contestant/{id}/grading', 'ReportController@contestantGradingDetail')->name('report.contestant.grading');
     Route::get('report/contestant/qualified', 'ReportController@qualifiedContestantRanking')->name('report.contestant.qualified');
     Route::get('report/contestant/eliminated', 'ReportController@eliminatedContestantRanking')->name('report.contestant.eliminated');
     Route::get('/eliminate/contestants', 'ReportController@eliminateContestants')->name('eliminate.contestants');

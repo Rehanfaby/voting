@@ -7,7 +7,9 @@ use App\BookingProduct;
 use App\Category;
 use App\Employee;
 use App\GeneralSetting;
+use App\AmbassadorPoint;
 use App\Judge;
+use App\Point;
 use App\Ticket;
 use Illuminate\Http\Request;
 use App\Product;
@@ -160,6 +162,38 @@ class ReportController extends Controller
         $number_of_elimination = max(0, (int) $general_setting->number_of_elimination);
 
         return view('report.ranking', compact('contestants', 'number_of_elimination'));
+    }
+
+    /** Per-contestant breakdown of Judge and Ambassador grades. */
+    public function contestantGradingDetail($id)
+    {
+        $contestant = Employee::where('is_active', true)->findOrFail($id);
+
+        $judgeScores = Point::with('judge')
+            ->where('candidate_id', $contestant->id)
+            ->orderByDesc('total')
+            ->get();
+
+        $ambassadorScores = AmbassadorPoint::with('ambassador')
+            ->where('candidate_id', $contestant->id)
+            ->orderByDesc('points')
+            ->get();
+
+        $judgeTotal = (float) $judgeScores->sum('total');
+        $ambassadorTotal = (float) $ambassadorScores->sum('points');
+        $votesTotal = (int) \DB::table('votes')
+            ->where('status', 1)
+            ->where('musician_id', $contestant->id)
+            ->sum('vote');
+
+        return view('report.contestant_grading', compact(
+            'contestant',
+            'judgeScores',
+            'ambassadorScores',
+            'judgeTotal',
+            'ambassadorTotal',
+            'votesTotal'
+        ));
     }
 
     public function qualifiedContestantRanking() {
