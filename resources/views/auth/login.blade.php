@@ -6,6 +6,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>{{ $general_setting->site_title }} — Sign In</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
     <link rel="icon" type="image/png" href="{{ url('public/logo', $general_setting->site_logo) }}" />
     @include('auth.partials.auth-standalone-style')
 </head>

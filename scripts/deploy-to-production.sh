@@ -62,16 +62,16 @@ fi
 # Resolve the version that will land on production (from local tree).
 DEPLOY_VERSION="$(php -r "
 \$c = file_get_contents('config/app.php');
-preg_match(\"/env\\('APP_VERSION',\\s*'([^']+)'\\)/\", \$c, \$m);
+preg_match(\"/'version'\\s*=>\\s*'([^']+)'/\", \$c, \$m);
 echo \$m[1] ?? '';
 ")"
 
 echo "==> Deploying on $SSH_HOST:$REMOTE_DIR (v${DEPLOY_VERSION})"
 ssh "$SSH_HOST" "cd $REMOTE_DIR && chmod +x scripts/git-deploy.sh scripts/post-deploy.sh scripts/check-env.sh scripts/bump-version.sh 2>/dev/null; ./scripts/git-deploy.sh"
 
-# Keep production .env APP_VERSION in sync for cache-busting via env()
+# Mirror version into .env for ops visibility only (UI reads config/app.php).
 if [ -n "$DEPLOY_VERSION" ]; then
-  echo "==> Syncing APP_VERSION=${DEPLOY_VERSION} on production .env"
+  echo "==> Syncing APP_VERSION=${DEPLOY_VERSION} on production .env (mirror)"
   ssh "$SSH_HOST" "cd $REMOTE_DIR && \
     if grep -q '^APP_VERSION=' .env; then \
       sed -i 's|^APP_VERSION=.*|APP_VERSION=${DEPLOY_VERSION}|' .env; \
@@ -79,7 +79,7 @@ if [ -n "$DEPLOY_VERSION" ]; then
       printf '\nAPP_VERSION=${DEPLOY_VERSION}\n' >> .env; \
     fi && \
     php artisan config:clear && php artisan view:clear && \
-    echo \"    production APP_VERSION=\$(grep '^APP_VERSION=' .env | cut -d= -f2)\""
+    echo \"    production APP_VERSION=\$(grep '^APP_VERSION=' .env | cut -d= -f2) (UI from config/app.php)\""
 fi
 
 echo "==> Deploy complete — Mulema v${DEPLOY_VERSION}"

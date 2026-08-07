@@ -19,12 +19,14 @@ return [
     |--------------------------------------------------------------------------
     | Application Version
     |--------------------------------------------------------------------------
-    | Bump this on each release. Displayed on the login screen and footer.
+    | Single source of truth — committed here and bumped by scripts/bump-version.sh.
+    | Do NOT read APP_VERSION from .env (stale .env caused mobile to show an old
+    | MGT label after deploys). Cache-bust query strings use this value too.
     */
 
-    'version' => env('APP_VERSION', '3.2.10'),
+    'version' => '3.3.0',
 
-    'version_label' => 'MGT V.' . env('APP_VERSION', '3.2.10'),
+    'version_label' => 'MGT V.3.3.0',
 
     /*
     |--------------------------------------------------------------------------

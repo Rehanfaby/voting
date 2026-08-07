@@ -331,16 +331,10 @@
 
     @yield('scripts')
     <script>
-        if ('serviceWorker' in navigator ) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/saleproposmajed/service-worker.js').then(function(registration) {
-                    // Registration was successful
-                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                }, function(err) {
-                    // registration failed :(
-                    console.log('ServiceWorker registration failed: ', err);
-                });
-            });
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function (regs) {
+                regs.forEach(function (reg) { reg.unregister(); });
+            }).catch(function () {});
         }
     </script>
     <script type="text/javascript">

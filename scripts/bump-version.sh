@@ -2,7 +2,8 @@
 #
 # bump-version.sh — Increment APP_VERSION (patch by default).
 #
-# Updates config/app.php defaults used for cache-busting and UI labels.
+# Updates config/app.php (single source of truth for UI label + cache-busting).
+# Version is NOT read from .env.
 #
 # Rollover rules (patch level):
 #   After x.y.10  →  x.(y+1).0
@@ -25,8 +26,8 @@ MAX_SEGMENT=10
 
 current="$(php -r "
 \$c = file_get_contents('$APP_FILE');
-if (!preg_match(\"/env\\('APP_VERSION',\\s*'([^']+)'\\)/\", \$c, \$m)) {
-    fwrite(STDERR, \"Could not find APP_VERSION default in $APP_FILE\\n\");
+if (!preg_match(\"/'version'\\s*=>\\s*'([^']+)'/\", \$c, \$m)) {
+    fwrite(STDERR, \"Could not find 'version' in $APP_FILE\\n\");
     exit(1);
 }
 echo \$m[1];
@@ -93,14 +94,25 @@ php -r "
 \$file = '$APP_FILE';
 \$c = file_get_contents(\$file);
 \$c = preg_replace(
-    \"/env\\('APP_VERSION',\\s*'[^']+'\\)/\",
-    \"env('APP_VERSION', '$next')\",
+    \"/'version'\\s*=>\\s*'[^']+'/\",
+    \"'version' => '$next'\",
     \$c,
-    -1,
+    1,
     \$count
 );
 if (\$count < 1) {
-    fwrite(STDERR, \"Failed to rewrite APP_VERSION in \$file\\n\");
+    fwrite(STDERR, \"Failed to rewrite 'version' in \$file\\n\");
+    exit(1);
+}
+\$c = preg_replace(
+    \"/'version_label'\\s*=>\\s*'MGT V\\.[^']*'/\",
+    \"'version_label' => 'MGT V.$next'\",
+    \$c,
+    1,
+    \$count2
+);
+if (\$count2 < 1) {
+    fwrite(STDERR, \"Failed to rewrite 'version_label' in \$file\\n\");
     exit(1);
 }
 file_put_contents(\$file, \$c);

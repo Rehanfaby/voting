@@ -26,12 +26,12 @@ SITE_URL="${1:-https://mulemagc.com/}"
 echo "==> [1/5] Validating .env"
 ./scripts/check-env.sh
 
-# Keep production .env APP_VERSION in sync with the committed config default.
-# Otherwise the UI keeps showing an old MGT V.x.y.z after deploys.
+# UI version is read from config/app.php only (not .env). Still sync .env so
+# any leftover tooling that echoes APP_VERSION stays aligned.
 if [ -f .env ] && [ -f config/app.php ]; then
   CODE_VERSION="$(php -r "
 \$c = file_get_contents('config/app.php');
-if (preg_match(\"/env\\('APP_VERSION',\\s*'([^']+)'\\)/\", \$c, \$m)) {
+if (preg_match(\"/'version'\\s*=>\\s*'([^']+)'/\", \$c, \$m)) {
     echo \$m[1];
 }
 ")"
@@ -42,7 +42,7 @@ if (preg_match(\"/env\\('APP_VERSION',\\s*'([^']+)'\\)/\", \$c, \$m)) {
       printf '\nAPP_VERSION=%s\n' "${CODE_VERSION}" >> .env
     fi
     rm -f .env.bak-appver
-    echo "    APP_VERSION -> ${CODE_VERSION}"
+    echo "    APP_VERSION -> ${CODE_VERSION} (UI uses config/app.php)"
   fi
 fi
 
@@ -73,6 +73,22 @@ if [ "$code" != "200" ] || [ "${size:-0}" -lt 1000 ]; then
 fi
 
 echo "==> [5/5] Version check"
-php -r "require 'vendor/autoload.php'; \$app=require 'bootstrap/app.php'; \$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap(); echo '    '.config('app.version_label').PHP_EOL;"
+RUNTIME_VERSION="$(php -r "require 'vendor/autoload.php'; \$app=require 'bootstrap/app.php'; \$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap(); echo config('app.version');")"
+echo "    MGT V.${RUNTIME_VERSION}"
+if [ -n "${CODE_VERSION:-}" ] && [ "$RUNTIME_VERSION" != "$CODE_VERSION" ]; then
+  echo "" >&2
+  echo "!! Version mismatch: config file=${CODE_VERSION} runtime=${RUNTIME_VERSION}" >&2
+  echo "   Clear config cache and ensure config/app.php was deployed." >&2
+  exit 1
+fi
+
+LOGIN_LABEL="$(curl -sS "${SITE_URL%/}/login" | grep -oE 'MGT V\.[0-9]+\.[0-9]+\.[0-9]+' | head -1 || true)"
+echo "    login page: ${LOGIN_LABEL:-'(label not found)'}"
+if [ -n "${CODE_VERSION:-}" ] && [ -n "$LOGIN_LABEL" ] && [ "$LOGIN_LABEL" != "MGT V.${CODE_VERSION}" ]; then
+  echo "" >&2
+  echo "!! Login page still shows ${LOGIN_LABEL} (expected MGT V.${CODE_VERSION})." >&2
+  echo "   Likely CDN/HTML cache — retry after cache purge." >&2
+  exit 1
+fi
 
 echo "==> Deploy OK — site is up."
