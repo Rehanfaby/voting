@@ -218,7 +218,8 @@
                                             <div class="form-group">
                                                 <label>{{trans('file.Time Zone')}} *</label>
                                                 <input type="hidden" name="timezone_hidden" value="{{ $appTimezone ?? config('app.timezone') }}">
-                                                <select name="timezone" class="selectpicker form-control" data-live-search="true" title="Select TimeZone..." required>
+                                                {{-- Native select: bootstrap-select with 400+ zones broke tab layout (huge gap + floating menu) --}}
+                                                <select name="timezone" id="gs-timezone" class="form-control" required>
                                                     @foreach($zones_array as $zone)
                                                         <option value="{{ $zone['zone'] }}" {{ ($appTimezone ?? '') === $zone['zone'] ? 'selected' : '' }}>
                                                             {{ $zone['diff_from_GMT'] . ' — ' . $zone['zone'] }}
@@ -305,8 +306,9 @@
                                                 ])
                                             </div>
                                         </div>
-                                        <div class="col-md-4">
-                                            <div class="form-group">
+                                        <div class="col-md-12">
+                                            <hr>
+                                            <div class="form-group mb-0">
                                                 <label>Require Contestant Approval</label><br>
                                                 <label class="checkbox-inline">
                                                     <input type="checkbox" class="setting-toggle" name="require_contestant_approval" value="1"
@@ -321,7 +323,7 @@
                                     </div>
                                 </div>
 
-                                <div class="form-group mt-3" id="gs-main-submit">
+                                <div class="form-group mt-3 mb-0" id="gs-main-submit">
                                     <input type="submit" value="{{trans('file.submit')}}" class="btn btn-primary">
                                 </div>
                         {!! Form::close() !!}
@@ -362,7 +364,6 @@
 </section>
 
 <style>
-    /* Readable colored pills — theme .nav-tabs defaults were rendering near-black */
     .mg-setting-tabs { border-bottom: none; flex-wrap: wrap; gap: 6px; }
     .mg-setting-tabs .nav-item { margin: 0 4px 6px 0; }
     .mg-setting-tabs .nav-link {
@@ -388,6 +389,21 @@
     .mg-setting-tabs .nav-item:nth-child(3) .nav-link.active { background: #e87722 !important; color: #fff !important; border-color: #e87722 !important; }
     .mg-setting-tabs .nav-item:nth-child(4) .nav-link { border-color: #7c3aed !important; color: #7c3aed !important; }
     .mg-setting-tabs .nav-item:nth-child(4) .nav-link.active { background: #7c3aed !important; color: #fff !important; border-color: #7c3aed !important; }
+
+    /* Force inactive panes fully out of layout (panes may be nested inside the form) */
+    #gs-tab-content .tab-pane {
+        display: none !important;
+    }
+    #gs-tab-content .tab-pane.active {
+        display: block !important;
+    }
+    #gs-tab-content {
+        overflow: visible;
+        min-height: 0;
+    }
+    #gs-main-submit {
+        margin-top: 1rem;
+    }
 </style>
 <script type="text/javascript">
     $("ul#setting").siblings('a').attr('aria-expanded','true');
@@ -403,17 +419,19 @@
             $("#state").removeClass('d-none');
             $("input[name=state]").prop("required", true);
         }
-    })
-    if($("input[name='timezone_hidden']").val()){
+    });
+
+    if ($("input[name='timezone_hidden']").val()) {
         $('select[name=timezone]').val($("input[name='timezone_hidden']").val());
         $('select[name=staff_access]').val($("input[name='staff_access_hidden']").val());
         $('select[name=date_format]').val($("input[name='date_format_hidden']").val());
         $('select[name=invoice_format]').val($("input[name='invoice_format_hidden']").val());
-        if($("input[name='invoice_format_hidden']").val() == 'gst') {
+        if ($("input[name='invoice_format_hidden']").val() == 'gst') {
             $('select[name=state]').val($("input[name='state_hidden']").val());
             $("#state").removeClass('d-none');
         }
-        $('.selectpicker').selectpicker('refresh');
+        // Only refresh pickers that still use bootstrap-select (not timezone)
+        $('#gs-general .selectpicker, #gs-general select.selectpicker').selectpicker('refresh');
     }
 
     $('.theme-option').on('click', function() {
@@ -431,6 +449,15 @@
         }
     });
 
+    function gsSyncSubmit(target) {
+        var isElim = target === '#gs-eliminations';
+        $('#gs-main-submit').toggle(!isElim);
+        // Keep submit with the active main form panes visually
+        if (!isElim && $('#gs-main-submit').parent().is('form')) {
+            // ok
+        }
+    }
+
     function gsActivateTab(hash) {
         var target = hash || '#gs-general';
         if (target.charAt(0) !== '#') target = '#' + target;
@@ -439,22 +466,24 @@
             target = '#gs-general';
             $link = $('#gs-tabs a[href="' + target + '"]');
         }
-        $link.tab('show');
+        $('#gs-tabs a.nav-link').removeClass('active').attr('aria-selected', 'false');
+        $('#gs-tab-content > .tab-pane').removeClass('active show');
+        $link.addClass('active').attr('aria-selected', 'true');
+        $(target).addClass('active show');
         $('#gs-active-tab').val(target.replace(/^#/, ''));
-        $('#gs-main-submit').toggle(target !== '#gs-eliminations');
+        gsSyncSubmit(target);
         if (window.history && window.history.replaceState) {
             window.history.replaceState(null, '', target);
+        }
+        var $panePickers = $(target).find('.selectpicker');
+        if ($panePickers.length) {
+            $panePickers.selectpicker('refresh');
         }
     }
 
-    $('#gs-tabs a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-        $('.selectpicker').selectpicker('refresh');
-        var target = $(e.target).attr('href') || '#gs-general';
-        $('#gs-active-tab').val(target.replace(/^#/, ''));
-        $('#gs-main-submit').toggle(target !== '#gs-eliminations');
-        if (window.history && window.history.replaceState) {
-            window.history.replaceState(null, '', target);
-        }
+    $('#gs-tabs a[data-toggle="tab"]').on('click', function (e) {
+        e.preventDefault();
+        gsActivateTab($(this).attr('href'));
     });
 
     // Restore tab after save (or deep link)
