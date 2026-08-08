@@ -128,28 +128,13 @@
                     exportOptions: {
                         columns: ':visible:Not(.not-exported)',
                         rows: ':visible',
-                        stripHtml: false
-                    },
-                    customize: function(doc) {
-                        for (var i = 1; i < doc.content[1].table.body.length; i++) {
-                            if (doc.content[1].table.body[i][0].text.indexOf('<img src=') !== -1) {
-                                var imagehtml = doc.content[1].table.body[i][0].text;
-                                var regex = /<img.*?src=['"](.*?)['"]/;
-                                var src = regex.exec(imagehtml)[1];
-                                var tempImage = new Image();
-                                tempImage.src = src;
-                                var canvas = document.createElement("canvas");
-                                canvas.width = tempImage.width;
-                                canvas.height = tempImage.height;
-                                var ctx = canvas.getContext("2d");
-                                ctx.drawImage(tempImage, 0, 0);
-                                var imagedata = canvas.toDataURL("image/png");
-                                delete doc.content[1].table.body[i][0].text;
-                                doc.content[1].table.body[i][0].image = imagedata;
-                                doc.content[1].table.body[i][0].fit = [30, 30];
+                        stripHtml: true,
+                        format: {
+                            body: function (data) {
+                                return $('<div>').html(data == null ? '' : data).text().replace(/\s+/g, ' ').trim();
                             }
                         }
-                    },
+                    }
                 },
                 {
                     extend: 'csv',
@@ -157,13 +142,10 @@
                     exportOptions: {
                         columns: ':visible:Not(.not-exported)',
                         rows: ':visible',
+                        stripHtml: true,
                         format: {
-                            body: function ( data, row, column, node ) {
-                                if (column === 0 && (data.indexOf('<img src=') != -1)) {
-                                    var regex = /<img.*?src=['"](.*?)['"]/;
-                                    data = regex.exec(data)[1];
-                                }
-                                return data;
+                            body: function (data) {
+                                return $('<div>').html(data == null ? '' : data).text().replace(/\s+/g, ' ').trim();
                             }
                         }
                     },
@@ -174,7 +156,12 @@
                     exportOptions: {
                         columns: ':visible:Not(.not-exported)',
                         rows: ':visible',
-                        stripHtml: false
+                        stripHtml: true,
+                        format: {
+                            body: function (data) {
+                                return $('<div>').html(data == null ? '' : data).text().replace(/\s+/g, ' ').trim();
+                            }
+                        }
                     },
                 },
                 {

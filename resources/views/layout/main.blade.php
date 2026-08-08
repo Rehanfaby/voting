@@ -327,21 +327,13 @@
                     </li>
                 @endif
 
-                {{-- Dedicated Contestants menu --}}
-                @if($index_employee_active || in_array('qualified_candidate', $all_permission) || in_array('contestant_ranking', $all_permission))
+                {{-- Contestants list only — Qualified / Contestant Grading live under Grading so tabs stay consistent --}}
+                @if($index_employee_active)
                     <li data-menu-key="contestants"><a href="#contestants" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-microphone"></i><span>{{trans('file.Contestants')}}</span></a>
                         <ul id="contestants" class="collapse list-unstyled ">
-                            @if($index_employee_active)
-                                <li id="employee-menu"><a href="{{route('musician.index')}}">{{trans('file.Contestants')}}</a></li>
-                                @if($role->id == 1)
-                                    <li id="employee-pending-menu"><a href="{{route('musician.pending.index')}}">{{trans('file.Pending Contestants')}}</a></li>
-                                @endif
-                            @endif
-                            @if(in_array('qualified_candidate', $all_permission))
-                                <li id="contestants-qualified"><a href="{{route('report.contestant.qualified')}}">{{trans('file.Qualified Contestants')}}</a></li>
-                            @endif
-                            @if(in_array('contestant_ranking', $all_permission))
-                                <li id="contestants-ranking"><a href="{{url('report/contestant/ranking')}}">{{trans('file.Contestant Grading')}}</a></li>
+                            <li id="employee-menu"><a href="{{route('musician.index')}}">{{trans('file.Contestants')}}</a></li>
+                            @if($role->id == 1)
+                                <li id="employee-pending-menu"><a href="{{route('musician.pending.index')}}">{{trans('file.Pending Contestants')}}</a></li>
                             @endif
                         </ul>
                     </li>
@@ -1072,6 +1064,8 @@
             var path = normalizePath(window.location.pathname);
             var groups = document.querySelectorAll('nav.side-navbar .side-menu ul.collapse');
             var activeGroup = null, activeLink = null, bestLen = -1, singleLi = null, singleLink = null;
+            // Prefer Grading menu for ranking/qualified/eliminated so top tabs do not jump to Contestants.
+            var preferGrading = /\/report\/contestant\//.test(path) || /\/setting\/grading/.test(path) || path.indexOf('/grading') !== -1;
             groups.forEach(function (ul) {
                 ul.querySelectorAll('a').forEach(function (a) {
                     var href = a.getAttribute('href');
@@ -1080,7 +1074,11 @@
                     try { lp = normalizePath(new URL(a.href, window.location.origin).pathname); } catch (e) { return; }
                     if (lp === '/') return;
                     if (path === lp || path.indexOf(lp + '/') === 0) {
-                        if (lp.length > bestLen) { bestLen = lp.length; activeGroup = ul; activeLink = a; }
+                        var score = lp.length;
+                        if (preferGrading && ul.id === 'grading-setting') {
+                            score += 1000;
+                        }
+                        if (score > bestLen) { bestLen = score; activeGroup = ul; activeLink = a; }
                     }
                 });
             });

@@ -72,17 +72,17 @@
                         @else
                             <td>No Image</td>
                         @endif
-                        <td>
+                        <td data-export="{{ $contestant ? $contestant->name : $employee->name }}">
                             <a href="{{ route('report.contestant.grading', $employee->id) }}" class="font-weight-bold" style="color:#0a2350;text-decoration:underline;">
                                 {{ $contestant ? $contestant->name : $employee->name }}
                             </a>
-                            <div><small class="text-muted">Tap for judge &amp; ambassador scores</small></div>
+                            <div class="d-print-none"><small class="text-muted">Tap for judge &amp; ambassador scores</small></div>
                         </td>
-                        <td>
+                        <td data-export="{{ number_format((float) ($employee->score_votes ?? 0), 2) }} / {{ (int) ($vote_percentage ?? 10) }} ({{ (int) $employee->total_votes }} raw)">
                             {{ number_format((float) ($employee->score_votes ?? 0), 2) }} / {{ (int) ($vote_percentage ?? 10) }}
-                            <div><small class="text-muted">{{ (int) $employee->total_votes }} raw votes</small></div>
+                            <div class="d-print-none"><small class="text-muted">{{ (int) $employee->total_votes }} raw votes</small></div>
                         </td>
-                        <td>
+                        <td data-export="{{ number_format((float) ($employee->score_points ?? 0), 2) }} / {{ (int) ($judges_percentage ?? 60) }}">
                             {{ number_format((float) ($employee->score_points ?? 0), 2) }} / {{ (int) ($judges_percentage ?? 60) }}
                         </td>
                         <td>{{ number_format((float) $employee->total_ambassador_points, 2) }}</td>
@@ -139,7 +139,7 @@
         });
 
 
-        $('#employee-table').DataTable( {
+        var rankingTable = $('#employee-table').DataTable( {
             "order": [],
             'pageLength': 50,
             'language': {
@@ -178,29 +178,31 @@
                 {
                     extend: 'pdf',
                     text: '<i title="export to pdf" class="fa fa-file-pdf-o"></i>',
+                    title: 'Contestant Ranking Report',
                     exportOptions: {
                         columns: ':visible:Not(.not-exported)',
-                        rows: ':visible',
-                        stripHtml: false
-                    },
-                    customize: function(doc) {
-                        for (var i = 1; i < doc.content[1].table.body.length; i++) {
-                            if (doc.content[1].table.body[i][0].text.indexOf('<img src=') !== -1) {
-                                var imagehtml = doc.content[1].table.body[i][0].text;
-                                var regex = /<img.*?src=['"](.*?)['"]/;
-                                var src = regex.exec(imagehtml)[1];
-                                var tempImage = new Image();
-                                tempImage.src = src;
-                                var canvas = document.createElement("canvas");
-                                canvas.width = tempImage.width;
-                                canvas.height = tempImage.height;
-                                var ctx = canvas.getContext("2d");
-                                ctx.drawImage(tempImage, 0, 0);
-                                var imagedata = canvas.toDataURL("image/png");
-                                delete doc.content[1].table.body[i][0].text;
-                                doc.content[1].table.body[i][0].image = imagedata;
-                                doc.content[1].table.body[i][0].fit = [30, 30];
+                        rows: function (idx, data, node) {
+                            var selected = rankingTable.rows({ selected: true }).count();
+                            if (selected > 0) {
+                                return $(node).hasClass('selected');
                             }
+                            return true;
+                        },
+                        stripHtml: true,
+                        format: {
+                            body: function (data, row, column, node) {
+                                var exportText = $(node).attr('data-export');
+                                if (exportText) { return exportText; }
+                                var text = $('<div>').html(data == null ? '' : data).text();
+                                return text.replace(/\s+/g, ' ').trim();
+                            }
+                        }
+                    },
+                    customize: function (doc) {
+                        doc.styles.tableHeader.alignment = 'left';
+                        doc.defaultStyle.fontSize = 9;
+                        if (doc.content[1] && doc.content[1].table) {
+                            doc.content[1].table.widths = Array(doc.content[1].table.body[0].length).fill('*');
                         }
                     },
                 },
@@ -209,14 +211,20 @@
                     text: '<i title="export to csv" class="fa fa-file-text-o"></i>',
                     exportOptions: {
                         columns: ':visible:Not(.not-exported)',
-                        rows: ':visible',
+                        rows: function (idx, data, node) {
+                            var selected = rankingTable.rows({ selected: true }).count();
+                            if (selected > 0) {
+                                return $(node).hasClass('selected');
+                            }
+                            return true;
+                        },
+                        stripHtml: true,
                         format: {
-                            body: function ( data, row, column, node ) {
-                                if (column === 0 && (data.indexOf('<img src=') != -1)) {
-                                    var regex = /<img.*?src=['"](.*?)['"]/;
-                                    data = regex.exec(data)[1];
-                                }
-                                return data;
+                            body: function (data, row, column, node) {
+                                var exportText = $(node).attr('data-export');
+                                if (exportText) { return exportText; }
+                                var text = $('<div>').html(data == null ? '' : data).text();
+                                return text.replace(/\s+/g, ' ').trim();
                             }
                         }
                     },
@@ -226,8 +234,22 @@
                     text: '<i title="print" class="fa fa-print"></i>',
                     exportOptions: {
                         columns: ':visible:Not(.not-exported)',
-                        rows: ':visible',
-                        stripHtml: false
+                        rows: function (idx, data, node) {
+                            var selected = rankingTable.rows({ selected: true }).count();
+                            if (selected > 0) {
+                                return $(node).hasClass('selected');
+                            }
+                            return true;
+                        },
+                        stripHtml: true,
+                        format: {
+                            body: function (data, row, column, node) {
+                                var exportText = $(node).attr('data-export');
+                                if (exportText) { return exportText; }
+                                var text = $('<div>').html(data == null ? '' : data).text();
+                                return text.replace(/\s+/g, ' ').trim();
+                            }
+                        }
                     },
                 },
                 {
