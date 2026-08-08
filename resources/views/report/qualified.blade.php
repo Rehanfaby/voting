@@ -137,16 +137,24 @@
         dom: '<"row"lfB>rtip',
         buttons: [
             {
-                extend: 'pdf',
+                extend: 'pdfHtml5',
                 text: '<i title="export to pdf" class="fa fa-file-pdf-o"></i>',
                 title: '',
+                filename: 'qualified-list',
+                orientation: 'landscape',
+                pageSize: 'A4',
                 exportOptions: {
-                    columns: ':visible:Not(.not-exported)',
+                    // Always include identity + scores + status (ignore column visibility)
+                    columns: [2, 3, 4, 5, 6, 7, 8],
                     rows: ':visible',
                     stripHtml: true,
                     format: { body: mgExportBody }
                 },
-                customize: window.mgCustomizeReportPdf
+                customize: function (doc) {
+                    if (typeof window.mgCustomizeReportPdf === 'function') {
+                        window.mgCustomizeReportPdf(doc);
+                    }
+                }
             },
             {
                 extend: 'csv',

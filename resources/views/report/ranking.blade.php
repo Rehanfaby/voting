@@ -182,11 +182,14 @@
             dom: '<"row"lfB>rtip',
             buttons: [
                 {
-                    extend: 'pdf',
+                    extend: 'pdfHtml5',
                     text: '<i title="export to pdf" class="fa fa-file-pdf-o"></i>',
                     title: '',
+                    filename: 'contestant-ranking',
+                    orientation: 'landscape',
+                    pageSize: 'A4',
                     exportOptions: {
-                        columns: ':visible:Not(.not-exported)',
+                        columns: [2, 3, 4, 5, 6, 7, 8],
                         rows: function (idx, data, node) {
                             var selected = rankingTable.rows({ selected: true }).count();
                             if (selected > 0) {
@@ -204,7 +207,11 @@
                             }
                         }
                     },
-                    customize: window.mgCustomizeReportPdf,
+                    customize: function (doc) {
+                        if (typeof window.mgCustomizeReportPdf === 'function') {
+                            window.mgCustomizeReportPdf(doc);
+                        }
+                    }
                 },
                 {
                     extend: 'csv',

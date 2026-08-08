@@ -2,23 +2,31 @@
   Colorful pdfMake customize helper for ranking / qualified / eliminated exports.
   Expects: $pdfTheme ('qualified'|'eliminated'|'ranking'), $pdfTitle, $pdfSubtitle (optional)
 --}}
+@php
+    $pdfBrand = $general_setting->site_title ?? ($general_setting->CompanyName ?? 'MULEMA GOSPEL');
+@endphp
 <script>
 window.mgReportPdfTheme = {
-    brand: @json($general_setting->site_title ?? 'MULEMA GOSPEL'),
+    brand: @json($pdfBrand),
     title: @json($pdfTitle ?? 'Report'),
     subtitle: @json($pdfSubtitle ?? ''),
-    theme: @json($pdfTheme ?? 'qualified')
+    theme: @json($pdfTheme ?? 'qualified'),
+    generatedAt: @json(now()->format('d M Y H:i'))
 };
 
 window.mgCustomizeReportPdf = function (doc) {
     var cfg = window.mgReportPdfTheme || {};
     var theme = cfg.theme || 'qualified';
-    var headerColor = theme === 'eliminated' ? '#b91c1c' : (theme === 'ranking' ? '#0a2350' : '#047857');
-    var altRow = theme === 'eliminated' ? '#fef2f2' : (theme === 'ranking' ? '#eff6ff' : '#ecfdf5');
-    var accentRow = theme === 'eliminated' ? '#fee2e2' : (theme === 'ranking' ? '#dbeafe' : '#d1fae5');
-    var totalColColor = theme === 'eliminated' ? '#b91c1c' : '#047857';
+    var isElim = theme === 'eliminated';
+    var isQual = theme === 'qualified';
+    var headerColor = isElim ? '#b91c1c' : (theme === 'ranking' ? '#0a2350' : '#047857');
+    var bannerSoft = isElim ? '#fee2e2' : (theme === 'ranking' ? '#dbeafe' : '#d1fae5');
+    var altRow = isElim ? '#fef2f2' : (theme === 'ranking' ? '#eff6ff' : '#ecfdf5');
+    var lightRow = isElim ? '#fff1f2' : (theme === 'ranking' ? '#f8fafc' : '#f0fdf4');
+    var totalColColor = isElim ? '#b91c1c' : (theme === 'ranking' ? '#0a2350' : '#047857');
+    var listLabel = isElim ? 'ELIMINATION LIST' : (isQual ? 'QUALIFIED LIST' : 'CONTESTANT RANKING');
 
-    doc.pageMargins = [28, 48, 28, 40];
+    doc.pageMargins = [24, 36, 24, 36];
     doc.defaultStyle = doc.defaultStyle || {};
     doc.defaultStyle.fontSize = 9;
     doc.defaultStyle.color = '#111827';
@@ -28,53 +36,114 @@ window.mgCustomizeReportPdf = function (doc) {
         fillColor: headerColor,
         color: '#ffffff',
         bold: true,
-        fontSize: 10,
+        fontSize: 9,
         alignment: 'left',
-        margin: [4, 4, 4, 4]
+        margin: [3, 4, 3, 4]
     };
-    doc.styles.brand = { fontSize: 14, bold: true, color: headerColor };
-    doc.styles.reportTitle = { fontSize: 12, bold: true, color: '#111827' };
-    doc.styles.reportSub = { fontSize: 9, color: '#4b5563' };
+    doc.styles.tableBodyEven = { fillColor: altRow };
+    doc.styles.tableBodyOdd = { fillColor: lightRow };
 
-    // Replace default title block with branded header
-    if (doc.content && doc.content.length && doc.content[0].text) {
-        doc.content.shift();
+    // Strip DataTables default title / message blocks
+    if (Array.isArray(doc.content)) {
+        doc.content = doc.content.filter(function (node) {
+            if (!node) return false;
+            if (node.style === 'title' || node.style === 'message') return false;
+            return true;
+        });
+    } else {
+        doc.content = [];
     }
+
+    // Branded header band + list-type badge
     doc.content.unshift(
-        { text: String(cfg.brand || '').toUpperCase(), style: 'brand', alignment: 'center', margin: [0, 0, 0, 2] },
-        { text: cfg.title || '', style: 'reportTitle', alignment: 'center', margin: [0, 0, 0, 2] },
         {
-            text: cfg.subtitle || '',
-            style: 'reportSub',
-            alignment: 'center',
-            margin: [0, 0, 0, 12]
+            table: {
+                widths: ['*'],
+                body: [[
+                    {
+                        stack: [
+                            {
+                                text: String(cfg.brand || 'MULEMA GOSPEL').toUpperCase(),
+                                color: '#ffffff',
+                                bold: true,
+                                fontSize: 15,
+                                alignment: 'center',
+                                margin: [0, 2, 0, 4]
+                            },
+                            {
+                                text: listLabel,
+                                color: '#ffffff',
+                                bold: true,
+                                fontSize: 12,
+                                alignment: 'center',
+                                margin: [0, 0, 0, 2]
+                            },
+                            {
+                                text: cfg.subtitle || cfg.title || '',
+                                color: bannerSoft,
+                                fontSize: 9,
+                                alignment: 'center'
+                            },
+                            {
+                                text: 'Generated ' + (cfg.generatedAt || ''),
+                                color: '#ffffff',
+                                fontSize: 8,
+                                alignment: 'center',
+                                margin: [0, 4, 0, 0]
+                            }
+                        ],
+                        fillColor: headerColor,
+                        margin: [10, 12, 10, 12]
+                    }
+                ]]
+            },
+            layout: 'noBorders',
+            margin: [0, 0, 0, 14]
         }
     );
 
     // Find table node
     var tableNode = null;
     for (var c = 0; c < doc.content.length; c++) {
-        if (doc.content[c].table) { tableNode = doc.content[c]; break; }
+        if (doc.content[c] && doc.content[c].table && doc.content[c].table.body && doc.content[c].table.body.length > 1) {
+            tableNode = doc.content[c];
+            break;
+        }
     }
-    if (!tableNode || !tableNode.table || !tableNode.table.body) return;
+    if (!tableNode || !tableNode.table || !tableNode.table.body) {
+        return;
+    }
 
     var body = tableNode.table.body;
     var colCount = body[0] ? body[0].length : 0;
-    tableNode.table.widths = Array(colCount).fill('*');
+    tableNode.table.widths = [];
+    for (var w = 0; w < colCount; w++) {
+        tableNode.table.widths.push('*');
+    }
     tableNode.layout = {
         hLineWidth: function () { return 0.4; },
         vLineWidth: function () { return 0.3; },
-        hLineColor: function () { return '#cbd5e1';
-        vLineColor: function () { return '#e2e8f0';
-        paddingLeft: function () { return 6; },
-        paddingRight: function () { return 6; },
-        paddingTop: function () { return 5; },
-        paddingBottom: function () { return 5; }
+        hLineColor: function () { return isElim ? '#fecaca' : (isQual ? '#a7f3d0' : '#cbd5e1'); },
+        vLineColor: function () { return isElim ? '#fecaca' : (isQual ? '#a7f3d0' : '#e2e8f0'); },
+        paddingLeft: function () { return 5; },
+        paddingRight: function () { return 5; },
+        paddingTop: function () { return 4; },
+        paddingBottom: function () { return 4; },
+        fillColor: function (rowIndex) {
+            if (rowIndex === 0) return headerColor;
+            return (rowIndex % 2 === 0) ? altRow : lightRow;
+        }
     };
 
     function cellText(cell) {
         if (cell == null) return '';
-        if (typeof cell === 'object') return String(cell.text != null ? cell.text : '');
+        if (typeof cell === 'object') {
+            if (cell.text != null) return String(cell.text);
+            if (Array.isArray(cell.stack)) {
+                return cell.stack.map(cellText).join(' ');
+            }
+            return '';
+        }
         return String(cell);
     }
 
@@ -87,10 +156,10 @@ window.mgCustomizeReportPdf = function (doc) {
         if (o.color) cell.color = o.color;
         if (o.bold) cell.bold = true;
         if (o.alignment) cell.alignment = o.alignment;
+        if (o.fontSize) cell.fontSize = o.fontSize;
         return cell;
     }
 
-    // Detect column indexes by header labels
     var headers = body[0] || [];
     var totalIdx = -1, posIdx = -1, statusIdx = -1, nameIdx = 0;
     for (var h = 0; h < headers.length; h++) {
@@ -99,37 +168,43 @@ window.mgCustomizeReportPdf = function (doc) {
         if (label.indexOf('position') !== -1) posIdx = h;
         if (label.indexOf('status') !== -1) statusIdx = h;
         if (label.indexOf('name') !== -1) nameIdx = h;
-        headers[h] = paintCell(headers[h], { fillColor: headerColor, color: '#ffffff', bold: true });
+        headers[h] = paintCell(headers[h], {
+            fillColor: headerColor,
+            color: '#ffffff',
+            bold: true,
+            fontSize: 9
+        });
     }
 
     for (var i = 1; i < body.length; i++) {
         var row = body[i];
         var statusText = statusIdx >= 0 ? cellText(row[statusIdx]).toLowerCase() : '';
-        var isElim = theme === 'eliminated' || statusText.indexOf('elimin') !== -1;
-        var isQual = theme === 'qualified' || statusText.indexOf('qualif') !== -1;
-        var fill = (i % 2 === 0) ? altRow : '#ffffff';
+        var rowElim = isElim || statusText.indexOf('elimin') !== -1;
+        var rowQual = isQual || statusText.indexOf('qualif') !== -1;
+        var fill = (i % 2 === 0) ? altRow : lightRow;
+
         if (theme === 'ranking') {
-            fill = isElim ? ((i % 2 === 0) ? '#fef2f2' : '#fff1f2') : ((i % 2 === 0) ? '#ecfdf5' : '#f0fdf4');
-        } else if (isElim) {
-            fill = (i % 2 === 0) ? '#fef2f2' : '#fff1f2';
-        } else if (isQual) {
-            fill = (i % 2 === 0) ? '#ecfdf5' : '#f0fdf4';
+            fill = rowElim
+                ? ((i % 2 === 0) ? '#fef2f2' : '#fff1f2')
+                : ((i % 2 === 0) ? '#ecfdf5' : '#f0fdf4');
         }
 
         for (var j = 0; j < row.length; j++) {
             var opts = { fillColor: fill };
             if (j === totalIdx) {
                 opts.bold = true;
-                opts.color = isElim ? '#b91c1c' : totalColColor;
+                opts.color = rowElim ? '#b91c1c' : totalColColor;
             }
             if (j === posIdx) {
                 opts.bold = true;
                 opts.alignment = 'center';
-                opts.color = headerColor;
+                opts.color = rowElim ? '#b91c1c' : (rowQual ? '#047857' : headerColor);
             }
             if (j === statusIdx) {
                 opts.bold = true;
-                opts.color = isElim ? '#b91c1c' : '#047857';
+                opts.alignment = 'center';
+                opts.color = '#ffffff';
+                opts.fillColor = rowElim ? '#dc2626' : '#059669';
             }
             if (j === nameIdx) {
                 opts.bold = true;
@@ -140,9 +215,20 @@ window.mgCustomizeReportPdf = function (doc) {
 
     doc.footer = function (page, pages) {
         return {
+            margin: [24, 0, 24, 0],
             columns: [
-                { text: String(cfg.brand || ''), color: '#6b7280', fontSize: 8, margin: [28, 0, 0, 0] },
-                { text: page + ' / ' + pages, alignment: 'right', color: '#6b7280', fontSize: 8, margin: [0, 0, 28, 0] }
+                {
+                    text: String(cfg.brand || '') + '  ·  ' + listLabel,
+                    color: headerColor,
+                    fontSize: 8,
+                    bold: true
+                },
+                {
+                    text: page + ' / ' + pages,
+                    alignment: 'right',
+                    color: '#6b7280',
+                    fontSize: 8
+                }
             ]
         };
     };

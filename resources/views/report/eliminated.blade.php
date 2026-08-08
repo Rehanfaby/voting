@@ -57,6 +57,11 @@
     <div class="container-fluid">
         <div class="mg-list-hero">
             <div class="mg-hero-action">
+                @if(in_array('employees-delete', $all_permission ?? []))
+                <button type="button" id="mg-elim-delete-selected" class="btn btn-dark btn-sm font-weight-bold mr-2">
+                    <i class="dripicons-trash"></i> Delete Selected
+                </button>
+                @endif
                 <a class="btn btn-light btn-sm font-weight-bold" href="{{ route('eliminate.contestants') }}">{{ trans('file.Generate Elimination List') }}</a>
             </div>
             <h3><i class="fa fa-times-circle"></i> {{ trans('file.Eliminated Contestants') }}</h3>
@@ -78,7 +83,7 @@
                 <th>{{trans('file.Total')}}</th>
                 <th>{{trans('file.Position')}}</th>
                 <th>Status</th>
-                <th class="not-exported">{{trans('file.Eliminate')}}</th>
+                <th class="not-exported">Delete</th>
             </tr>
             </thead>
             <tbody>
@@ -106,7 +111,7 @@
                     <td>
                         @if(in_array("employees-delete", $all_permission))
                             {{ Form::open(['route' => ['musician.destroy', $employee->id], 'method' => 'DELETE'] ) }}
-                                <button type="submit" class="btn btn-link text-danger" onclick="return confirmDelete()"><i class="dripicons-trash"></i> {{trans('file.Eliminate')}}</button>
+                                <button type="submit" class="btn btn-link text-danger" onclick="return confirm('Delete this contestant from the system? They will be removed from contestants and rankings.')"><i class="dripicons-trash"></i> Delete</button>
                             {{ Form::close() }}
                         @endif
                     </td>
@@ -128,20 +133,49 @@
     $("ul#grading-setting").addClass("show");
     $("ul#grading-setting #grading-eliminated").addClass("active");
 
-    function confirmDelete() {
-        return confirm("Are you sure want to delete?");
-    }
-
     function mgExportBody(data, row, column, node) {
         var exportText = $(node).attr('data-export');
         if (exportText) return exportText;
         return $('<div>').html(data == null ? '' : data).text().replace(/\s+/g, ' ').trim();
     }
 
-    var employee_id = [];
     $.ajaxSetup({
         headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') }
     });
+
+    function deleteSelectedEliminated() {
+        var ids = typeof collectSelectedTableIds === 'function'
+            ? collectSelectedTableIds('#employee-table')
+            : [];
+        if (!ids.length) {
+            // Fallback: DataTables Select API
+            $('#employee-table').DataTable().rows({ selected: true }).every(function () {
+                var id = $(this.node()).data('id');
+                if (id) ids.push(id);
+            });
+        }
+        if (!ids.length) {
+            alert('No contestant is selected!');
+            return;
+        }
+        if (!confirm('Delete ' + ids.length + ' selected contestant(s) from the system?\n\nThey will be removed from Contestants, rankings, and this elimination list.')) {
+            return;
+        }
+        $.ajax({
+            type: 'POST',
+            url: '{{ url("musician/deletebyselection") }}',
+            data: { employeeIdArray: ids },
+            success: function (data) {
+                alert(data);
+                location.reload();
+            },
+            error: function () {
+                alert('Delete failed. No contestants were changed.');
+            }
+        });
+    }
+
+    $('#mg-elim-delete-selected').on('click', deleteSelectedEliminated);
 
     $('#employee-table').DataTable({
         order: [],
@@ -176,16 +210,24 @@
         dom: '<"row"lfB>rtip',
         buttons: [
             {
-                extend: 'pdf',
+                extend: 'pdfHtml5',
                 text: '<i title="export to pdf" class="fa fa-file-pdf-o"></i>',
                 title: '',
+                filename: 'elimination-list',
+                orientation: 'landscape',
+                pageSize: 'A4',
                 exportOptions: {
-                    columns: ':visible:Not(.not-exported)',
+                    // Always include identity + scores + status (ignore column visibility)
+                    columns: [2, 3, 4, 5, 6, 7, 8],
                     rows: ':visible',
                     stripHtml: true,
                     format: { body: mgExportBody }
                 },
-                customize: window.mgCustomizeReportPdf
+                customize: function (doc) {
+                    if (typeof window.mgCustomizeReportPdf === 'function') {
+                        window.mgCustomizeReportPdf(doc);
+                    }
+                }
             },
             {
                 extend: 'csv',
@@ -207,6 +249,15 @@
                     format: { body: mgExportBody }
                 }
             },
+            @if(in_array('employees-delete', $all_permission ?? []))
+            {
+                text: '<i title="delete selected" class="dripicons-trash"></i>',
+                className: 'buttons-delete',
+                action: function () {
+                    deleteSelectedEliminated();
+                }
+            },
+            @endif
             {
                 extend: 'colvis',
                 text: '<i title="column visibility" class="fa fa-eye"></i>',
