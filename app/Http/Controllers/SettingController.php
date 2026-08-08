@@ -63,13 +63,15 @@ class SettingController extends Controller
             }
         }
         $current_time_label = \Carbon\Carbon::now($appTimezone)->format('l, j M Y · H:i:s') . ' (' . $appTimezone . ')';
+        $site_content = SiteContent::all();
         return view('setting.general_setting', compact(
             'lims_general_setting_data',
             'lims_account_list',
             'zones_array',
             'lims_currency_list',
             'appTimezone',
-            'current_time_label'
+            'current_time_label',
+            'site_content'
         ));
     }
 
@@ -497,11 +499,14 @@ class SettingController extends Controller
 
         SiteContent::save($data);
 
+        if ($section === 'eliminations') {
+            return redirect(route('setting.general') . '#gs-eliminations')->with('message', $message);
+        }
+
         $anchors = [
             'homepage_sections' => 'sc-homepage_sections',
             'popup' => 'sc-popup',
             'most_voted_hero' => 'sc-most_voted_hero',
-            'eliminations' => 'sc-eliminations',
             'rate_us' => 'sc-rate_us',
             'casting' => 'sc-casting',
             'primes' => 'sc-primes',

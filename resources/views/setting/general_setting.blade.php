@@ -16,7 +16,6 @@
                     </div>
                     <div class="card-body">
                         <p class="italic"><small>{{trans('file.The field labels marked with * are required input fields')}}.</small></p>
-                        {!! Form::open(['route' => 'setting.generalStore', 'files' => true, 'method' => 'post']) !!}
 
                             <ul class="nav nav-tabs mg-setting-tabs mb-3" id="gs-tabs" role="tablist">
                                 <li class="nav-item">
@@ -28,9 +27,13 @@
                                 <li class="nav-item">
                                     <a class="nav-link" id="gs-voting-tab" data-toggle="tab" href="#gs-voting" role="tab">Voting &amp; Grading</a>
                                 </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="gs-eliminations-tab" data-toggle="tab" href="#gs-eliminations" role="tab"><i class="dripicons-warning"></i> Eliminations for the week</a>
+                                </li>
                             </ul>
 
                             <div class="tab-content" id="gs-tab-content">
+                        {!! Form::open(['route' => 'setting.generalStore', 'files' => true, 'method' => 'post', 'id' => 'gs-main-form']) !!}
                                 <div class="tab-pane fade show active" id="gs-general" role="tabpanel">
                                     <div class="row">
                                         @php
@@ -316,12 +319,40 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div class="form-group mt-3">
-                                <input type="submit" value="{{trans('file.submit')}}" class="btn btn-primary">
-                            </div>
+                                <div class="form-group mt-3" id="gs-main-submit">
+                                    <input type="submit" value="{{trans('file.submit')}}" class="btn btn-primary">
+                                </div>
                         {!! Form::close() !!}
+
+                                <div class="tab-pane fade" id="gs-eliminations" role="tabpanel">
+                                    @php $siteContent = $site_content ?? []; @endphp
+                                    <h5 class="mb-3"><i class="dripicons-warning"></i> Eliminations for the week</h5>
+                                    <p class="alert alert-info py-2 small mb-3">
+                                        <i class="dripicons-information"></i>
+                                        When enabled, Vote Now shows Green / Orange zones: the bottom N contestants appear below the elimination line.
+                                    </p>
+                                    {!! Form::open(['route' => 'setting.site_content.section', 'method' => 'post']) !!}
+                                    <input type="hidden" name="section" value="eliminations">
+                                    <div class="row">
+                                        <div class="col-md-8 col-lg-6">
+                                            <div class="form-group">
+                                                <label class="checkbox-inline">
+                                                    <input type="checkbox" name="eliminations_enabled" value="1" {{ !empty($siteContent['eliminations_enabled']) ? 'checked' : '' }}>
+                                                    Enable elimination zones on Vote Now
+                                                </label>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>No. of eliminations (bottom contestants below the line)</label>
+                                                <input type="number" name="eliminations_count" class="form-control" min="0" max="500" value="{{ (int) ($siteContent['eliminations_count'] ?? 0) }}">
+                                                <small class="text-muted">Example: 48 contestants + 20 eliminations → bottom 20 appear in the Orange Zone.</small>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary">Save eliminations</button>
+                                        </div>
+                                    </div>
+                                    {!! Form::close() !!}
+                                </div>
+                            </div>
                     </div>
                 </div>
             </div>
@@ -372,8 +403,16 @@
     });
 
     // Keep Time tab selectpicker visible after tab switch
-    $('a[data-toggle="tab"]').on('shown.bs.tab', function () {
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
         $('.selectpicker').selectpicker('refresh');
+        var target = $(e.target).attr('href');
+        $('#gs-main-submit').toggle(target !== '#gs-eliminations');
     });
+
+    // Open Eliminations tab when landing with #gs-eliminations
+    if (window.location.hash === '#gs-eliminations') {
+        $('#gs-eliminations-tab').tab('show');
+        $('#gs-main-submit').hide();
+    }
 </script>
 @endsection

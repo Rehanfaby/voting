@@ -54,7 +54,7 @@
                         <h6>Typical weekly flow</h6>
                         <ol class="mg-help-steps">
                             <li>Approve / update contestants under <strong>Contestants</strong>.</li>
-                            <li>Set Green/Orange zone count in <strong>Site Content → Eliminations for the week</strong>.</li>
+                            <li>Set Green/Orange zone count in <strong>Settings → General Setting → Eliminations for the week</strong>.</li>
                             <li>Monitor votes under <strong>Vote</strong>; reconcile pending payments if needed.</li>
                             <li>Moderate <strong>Rate Us</strong> reviews before they appear publicly.</li>
                             <li>Send WhatsApp updates via <strong>Announcements</strong>.</li>
@@ -63,8 +63,8 @@
                         <table class="table table-sm table-bordered mg-help-table">
                             <thead><tr><th>Task</th><th>Menu</th></tr></thead>
                             <tbody>
-                                <tr><td>Homepage sections, popup, Rate Us, zones, gallery</td><td>Site Content</td></tr>
-                                <tr><td>Vote price, voting window, hide votes</td><td>Settings → General Setting / Vote settings</td></tr>
+                                <tr><td>Homepage sections, popup, Rate Us, gallery</td><td>Site Content</td></tr>
+                                <tr><td>Vote price, voting window, hide votes, eliminations zones</td><td>Settings → General Setting</td></tr>
                                 <tr><td>Contestant profiles &amp; approval</td><td>Contestants</td></tr>
                                 <tr><td>Ticket products &amp; hall seating</td><td>Ticket / Product · Halls</td></tr>
                                 <tr><td>Judge / ambassador points</td><td>Judge Grading · Ambassador Grading · Grading</td></tr>
@@ -131,7 +131,7 @@
                         </figure>
                         <h6>How to configure</h6>
                         <ol class="mg-help-steps">
-                            <li>Go to <strong>Site Content → Eliminations for the week</strong>.</li>
+                            <li>Go to <strong>Settings → General Setting → Eliminations for the week</strong>.</li>
                             <li>Enable the red-line feature (now shown as Green / Orange zones).</li>
                             <li>Set <strong>No. of eliminations</strong> = how many contestants sit in the Orange Zone (bottom of the list).</li>
                             <li>Save, then open Vote Now to verify.</li>
@@ -195,7 +195,6 @@
                                 <tr><td>Sections</td><td>Turn homepage blocks on/off (judges, casting, most voted, etc.).</td></tr>
                                 <tr><td>Popup</td><td>Homepage flyer image, optional link &amp; countdown.</td></tr>
                                 <tr><td>Most Voted &amp; Hero</td><td>How many top contestants to feature; EN/FR hero banners.</td></tr>
-                                <tr><td>Eliminations for the week</td><td>Enable Green/Orange zones and set N.</td></tr>
                                 <tr><td>Rate Us</td><td>Enable page + approve which ratings show.</td></tr>
                                 <tr><td>Casting / Primes</td><td>Provincial calendar and finals schedule with countdowns.</td></tr>
                                 <tr><td>Gallery / About / Judges / Ambassadors / Logos</td><td>Media and people content for the public site.</td></tr>
