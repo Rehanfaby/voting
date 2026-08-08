@@ -528,6 +528,154 @@ class ReportController extends Controller
         ));
     }
 
+    /**
+     * Selection page: pick one contestant or all, then generate anonymized grading report.
+     */
+    public function detailedGradingReport(Request $request)
+    {
+        if (!$this->canAccessReports()) {
+            return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
+        }
+
+        $contestants = Employee::where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'image']);
+
+        return view('report.detailed-grading', compact('contestants'));
+    }
+
+    /**
+     * Generate anonymized detailed grading report (HTML or PDF) for selected contestants.
+     */
+    public function detailedGradingReportGenerate(Request $request)
+    {
+        if (!$this->canAccessReports()) {
+            return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
+        }
+
+        $selectAll = $request->has('select_all') && (string) $request->input('select_all') !== '0';
+        $ids = $request->input('contestant_ids', []);
+        if (!is_array($ids)) {
+            $ids = [$ids];
+        }
+        $ids = array_values(array_unique(array_filter(array_map(function ($id) {
+            return (is_numeric($id) && (int) $id > 0) ? (int) $id : null;
+        }, $ids))));
+
+        if ($selectAll) {
+            $ids = Employee::where('is_active', true)->orderBy('name')->pluck('id')->map(function ($id) {
+                return (int) $id;
+            })->all();
+        }
+
+        if (count($ids) === 0) {
+            return redirect()->route('report.detailed.grading')
+                ->with('not_permitted', 'Please select at least one contestant.');
+        }
+
+        $reports = $this->buildAnonymizedGradingReports($ids);
+        $general_setting = GeneralSetting::latest()->first();
+        $siteTitle = $general_setting->site_title ?? 'MULEMA GOSPEL';
+        $generatedAt = now()->format('d M Y H:i');
+
+        if ($request->input('export') === 'pdf') {
+            $filename = count($reports) === 1
+                ? 'detailed-grading-' . \Illuminate\Support\Str::slug($reports[0]['contestant_name'] ?? 'contestant') . '.pdf'
+                : 'detailed-grading-all.pdf';
+
+            return $this->pdfDownload(
+                'report.exports.detailed-grading',
+                compact('reports', 'siteTitle', 'generatedAt'),
+                $filename,
+                'portrait'
+            );
+        }
+
+        return view('report.detailed-grading-result', compact('reports', 'siteTitle', 'generatedAt'));
+    }
+
+    /**
+     * Build anonymized grading payloads (Judge 1..N, Ambassador 1..N + judge criteria).
+     */
+    private function buildAnonymizedGradingReports(array $ids)
+    {
+        $criteriaLabels = [
+            'depth' => 'Depth and atmosphere / Spiritual impact',
+            'accuracy' => 'Accuracy (Intonation/Rhythm, diction/articulation, vocal technique)',
+            'interpretation' => 'Interpretation, emotion and heartfelt engagement, originality and style',
+            'song_choice' => 'Choice of song & Key, microphone technique',
+            'overall_presentation' => 'General presentation',
+        ];
+
+        $employees = Employee::where('is_active', true)
+            ->whereIn('id', $ids)
+            ->get()
+            ->keyBy('id');
+
+        $reports = [];
+        foreach ($ids as $id) {
+            $contestant = $employees->get($id);
+            if (!$contestant) {
+                continue;
+            }
+
+            $judgeScores = Point::where('candidate_id', $contestant->id)
+                ->orderByDesc('total')
+                ->orderBy('id')
+                ->get();
+
+            $ambassadorScores = AmbassadorPoint::where('candidate_id', $contestant->id)
+                ->orderByDesc('points')
+                ->orderBy('id')
+                ->get();
+
+            $judgeTotal = (float) $judgeScores->sum('total');
+            $ambassadorTotal = (float) $ambassadorScores->sum('points');
+            $votesTotal = (int) DB::table('votes')
+                ->where('status', 1)
+                ->where('musician_id', $contestant->id)
+                ->sum('vote');
+
+            $judges = [];
+            foreach ($judgeScores->values() as $index => $point) {
+                $criteria = [];
+                foreach ($criteriaLabels as $field => $label) {
+                    $criteria[] = [
+                        'label' => $label,
+                        'score' => (float) ($point->{$field} ?? 0),
+                        'highlight' => $field === 'accuracy',
+                    ];
+                }
+                $judges[] = [
+                    'label' => 'Judge ' . ($index + 1),
+                    'total' => (float) $point->total,
+                    'criteria' => $criteria,
+                ];
+            }
+
+            $ambassadors = [];
+            foreach ($ambassadorScores->values() as $index => $row) {
+                $ambassadors[] = [
+                    'label' => 'Ambassador ' . ($index + 1),
+                    'points' => (float) $row->points,
+                ];
+            }
+
+            $reports[] = [
+                'contestant_id' => $contestant->id,
+                'contestant_name' => $contestant->name,
+                'contestant_image' => $contestant->image,
+                'judge_total' => $judgeTotal,
+                'ambassador_total' => $ambassadorTotal,
+                'votes_total' => $votesTotal,
+                'judges' => $judges,
+                'ambassadors' => $ambassadors,
+            ];
+        }
+
+        return $reports;
+    }
+
     private function canAccessReports()
     {
         $role = Role::find(Auth::user()->role_id);
@@ -546,12 +694,12 @@ class ReportController extends Controller
         }, $filename, ['Content-Type' => 'text/csv']);
     }
 
-    private function pdfDownload($view, array $data, $filename)
+    private function pdfDownload($view, array $data, $filename, $orientation = 'landscape')
     {
         if (!class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
             return redirect()->back()->with('not_permitted', 'PDF export is not available.');
         }
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView($view, $data)->setPaper('a4', 'landscape');
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView($view, $data)->setPaper('a4', $orientation);
         return $pdf->download($filename);
     }
 

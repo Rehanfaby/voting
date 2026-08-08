@@ -380,6 +380,7 @@
                                 <li id="votes-region-report-menu"><a href="{{ route('report.votes.by.region') }}">{{ trans('file.Votes by Region') }}</a></li>
                                 <li id="ticket-report-menu"><a href="{{ route('report.ticket.sales') }}">{{ trans('file.Total Ticket Sales') }}</a></li>
                                 <li id="contestants-list-report-menu"><a href="{{ route('report.contestants.list') }}">{{ trans('file.Contestants List') }}</a></li>
+                                <li id="detailed-grading-report-menu"><a href="{{ route('report.detailed.grading') }}">Detailed Grading Report</a></li>
                                 <li id="income-expense-report-menu"><a href="{{ route('report.income.expense') }}">{{ trans('file.Income and Expenses') }}</a></li>
                             @endif
                         </ul>

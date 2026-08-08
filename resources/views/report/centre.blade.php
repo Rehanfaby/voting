@@ -51,6 +51,14 @@
                 </div>
             </a>
         </div>
+        <div class="col-md-4 mb-3">
+            <a href="{{ route('report.detailed.grading') }}" class="card h-100 text-decoration-none">
+                <div class="card-body">
+                    <h5><i class="fa fa-list-alt text-primary"></i> Detailed Grading Report</h5>
+                    <p class="text-muted mb-0">Anonymized judge criteria (Accuracy) + votes &amp; ambassadors for one or all contestants.</p>
+                </div>
+            </a>
+        </div>
     </div>
 </section>
 @endsection
