@@ -115,12 +115,21 @@ class ImageOptimizer
     public static function employeeImageUrl($filename, $preferThumb = true)
     {
         $filename = (string) $filename;
-        if ($preferThumb && $filename !== '') {
+        if ($filename === '') {
+            return url('public/images/employee/');
+        }
+
+        $rel = 'public/images/employee/' . $filename;
+        if ($preferThumb) {
             $thumbRel = 'public/images/employee/thumbs/' . $filename;
             if (is_file(base_path($thumbRel))) {
-                return url($thumbRel);
+                $rel = $thumbRel;
             }
         }
-        return url('public/images/employee/' . $filename);
+
+        $path = base_path($rel);
+        $version = is_file($path) ? (string) filemtime($path) : (string) time();
+
+        return url($rel) . '?v=' . $version;
     }
 }

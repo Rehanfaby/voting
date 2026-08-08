@@ -23,7 +23,11 @@ class JudgeController extends Controller
                 $all_permission[] = $permission->name;
             if(empty($all_permission))
                 $all_permission[] = 'dummy text';
-            $lims_employee_all = Judge::orderByDesc('is_active')->orderBy('sort_order')->orderBy('id')->get();
+            $lims_employee_all = Judge::realJudgesQuery()
+                ->orderByDesc('is_active')
+                ->orderBy('sort_order')
+                ->orderBy('id')
+                ->get();
             return view('judge.index', compact('lims_employee_all', 'all_permission'));
         }
         else
@@ -57,16 +61,11 @@ class JudgeController extends Controller
                 }),
             ],
             'phone_number' => 'required',
-            'image' => 'image|mimes:jpg,jpeg,png,gif|max:100000',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:100000',
         ]);
 
-        $image = $request->image;
-        if ($image) {
-            $ext = pathinfo($image->getClientOriginalName(), PATHINFO_EXTENSION);
-            $imageName = preg_replace('/[^a-zA-Z0-9]/', '', $request['email']);
-            $imageName = $imageName . '.' . $ext;
-            $image->move('public/images/employee', $imageName);
-            ImageOptimizer::afterUpload(public_path('images/employee/' . $imageName), 'portrait');
+        $imageName = $this->storeJudgeImage($request);
+        if ($imageName) {
             $data['image'] = $imageName;
         }
 
@@ -104,19 +103,14 @@ class JudgeController extends Controller
                 }),
             ],
             'password' => 'nullable|min:4',
-            'image' => 'image|mimes:jpg,jpeg,png,gif|max:100000',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:100000',
         ]);
 
         $data = $request->except('image', 'judge_id', 'password', 'user', 'is_active');
         $data['is_active'] = (string) $request->input('is_active', '0') === '1';
 
-        $image = $request->image;
-        if ($image) {
-            $ext = pathinfo($image->getClientOriginalName(), PATHINFO_EXTENSION);
-            $imageName = preg_replace('/[^a-zA-Z0-9]/', '', $request['email']);
-            $imageName = $imageName . '.' . $ext;
-            $image->move('public/images/employee', $imageName);
-            ImageOptimizer::afterUpload(public_path('images/employee/' . $imageName), 'portrait');
+        $imageName = $this->storeJudgeImage($request, $lims_employee_data->image);
+        if ($imageName) {
             $data['image'] = $imageName;
         }
 
@@ -161,6 +155,46 @@ class JudgeController extends Controller
                 ->ensureForProfile($lims_employee_data->fresh(), 'Judge');
         }
         return redirect('judge')->with('not_permitted', 'Judge deleted successfully');
+    }
+
+    /**
+     * Store a new judge photo with a unique filename so browsers do not keep
+     * showing a cached thumbnail after an overwrite of the same email-based name.
+     */
+    protected function storeJudgeImage(Request $request, $previousImage = null)
+    {
+        $image = $request->file('image');
+        if (!$image) {
+            return null;
+        }
+
+        $ext = strtolower($image->getClientOriginalExtension() ?: $image->extension() ?: 'jpg');
+        $slug = preg_replace('/[^a-zA-Z0-9]/', '', (string) $request->input('email', 'judge'));
+        if ($slug === '') {
+            $slug = 'judge';
+        }
+        $imageName = $slug . '_' . time() . '.' . $ext;
+
+        $dir = public_path('images/employee');
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0775, true);
+        }
+
+        $image->move($dir, $imageName);
+        ImageOptimizer::afterUpload($dir . DIRECTORY_SEPARATOR . $imageName, 'portrait');
+
+        if ($previousImage && $previousImage !== $imageName) {
+            foreach ([
+                $dir . DIRECTORY_SEPARATOR . $previousImage,
+                $dir . DIRECTORY_SEPARATOR . 'thumbs' . DIRECTORY_SEPARATOR . $previousImage,
+            ] as $oldPath) {
+                if (is_file($oldPath)) {
+                    @unlink($oldPath);
+                }
+            }
+        }
+
+        return $imageName;
     }
 
     public function awaitingCandidates()
