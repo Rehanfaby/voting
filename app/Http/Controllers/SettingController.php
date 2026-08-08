@@ -207,6 +207,15 @@ class SettingController extends Controller
             $general_setting->email_water_mark = $waterMarkName;
         }
         $general_setting->save();
+
+        // Eliminations for the week (stored in Site Content JSON)
+        if ($request->has('eliminations_count') || $request->has('eliminations_enabled') || $request->input('active_tab') === 'gs-eliminations') {
+            $site = SiteContent::all();
+            $site['eliminations_enabled'] = $request->has('eliminations_enabled');
+            $site['eliminations_count'] = max(0, min(500, (int) $request->input('eliminations_count', 0)));
+            SiteContent::save($site);
+        }
+
         AppCache::forgetSharedData();
         VoteSettings::applySchedules();
 

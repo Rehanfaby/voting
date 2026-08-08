@@ -6,6 +6,17 @@
 @if(session()->has('not_permitted'))
   <div class="alert alert-danger alert-dismissible text-center"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>{{ session()->get('not_permitted') }}</div>
 @endif
+
+@php
+    $siteContent = $site_content ?? [];
+    $__gsRole = strtolower((string) (
+        optional(Auth::user()->role)->name
+        ?: optional(\DB::table('roles')->find(Auth::user()->role_id))->name
+        ?: ''
+    ));
+    $__lockTitle = in_array($__gsRole, ['judge', 'ambassador'], true);
+@endphp
+
 <section class="forms">
     <div class="container-fluid">
         <div class="row">
@@ -17,345 +28,324 @@
                     <div class="card-body">
                         <p class="italic"><small>{{trans('file.The field labels marked with * are required input fields')}}.</small></p>
 
-                            <ul class="nav nav-tabs mg-setting-tabs mb-3" id="gs-tabs" role="tablist">
-                                <li class="nav-item">
-                                    <a class="nav-link active" id="gs-general-tab" data-toggle="tab" href="#gs-general" role="tab">General</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" id="gs-time-tab" data-toggle="tab" href="#gs-time" role="tab">Time</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" id="gs-voting-tab" data-toggle="tab" href="#gs-voting" role="tab">Voting &amp; Grading</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" id="gs-eliminations-tab" data-toggle="tab" href="#gs-eliminations" role="tab"><i class="dripicons-warning"></i> Eliminations for the week</a>
-                                </li>
-                            </ul>
-
-                            <div class="tab-content" id="gs-tab-content">
                         {!! Form::open(['route' => 'setting.generalStore', 'files' => true, 'method' => 'post', 'id' => 'gs-main-form']) !!}
-                                <input type="hidden" name="active_tab" id="gs-active-tab" value="gs-general">
-                                <div class="tab-pane fade show active" id="gs-general" role="tabpanel">
-                                    <div class="row">
-                                        @php
-                                            $__gsRole = strtolower((string) (
-                                                optional(Auth::user()->role)->name
-                                                ?: optional(\DB::table('roles')->find(Auth::user()->role_id))->name
-                                                ?: ''
-                                            ));
-                                            $__lockTitle = in_array($__gsRole, ['judge', 'ambassador'], true);
-                                        @endphp
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>{{trans('file.System Title')}} *</label>
-                                                <input type="text" name="site_title" class="form-control" value="@if($lims_general_setting_data){{$lims_general_setting_data->site_title}}@endif" required {{ $__lockTitle ? 'readonly' : '' }} />
-                                                @if($__lockTitle)
-                                                    <small class="text-muted">System title cannot be changed from a Judge or Ambassador account.</small>
-                                                @endif
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>{{trans('file.System Logo')}} *</label>
-                                                <input type="file" name="site_logo" class="form-control" value=""/>
-                                            </div>
-                                            @if($errors->has('site_logo'))
-                                           <span>
-                                               <strong>{{ $errors->first('site_logo') }}</strong>
-                                            </span>
+                        <input type="hidden" name="active_tab" id="gs-active-tab" value="gs-general">
+
+                        <ul class="nav nav-tabs mg-setting-tabs mb-3" id="gs-tabs" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="gs-general-tab" href="#gs-general" role="tab" data-gs-tab="gs-general">General</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="gs-time-tab" href="#gs-time" role="tab" data-gs-tab="gs-time">Time</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="gs-voting-tab" href="#gs-voting" role="tab" data-gs-tab="gs-voting">Voting &amp; Grading</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="gs-eliminations-tab" href="#gs-eliminations" role="tab" data-gs-tab="gs-eliminations"><i class="dripicons-warning"></i> Eliminations for the week</a>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content" id="gs-tab-content">
+
+                            {{-- GENERAL --}}
+                            <div class="tab-pane active" id="gs-general" role="tabpanel" data-gs-pane="gs-general">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>{{trans('file.System Title')}} *</label>
+                                            <input type="text" name="site_title" class="form-control" value="@if($lims_general_setting_data){{$lims_general_setting_data->site_title}}@endif" required {{ $__lockTitle ? 'readonly' : '' }} />
+                                            @if($__lockTitle)
+                                                <small class="text-muted">System title cannot be changed from a Judge or Ambassador account.</small>
                                             @endif
                                         </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>{{trans('file.Currency')}} *</label>
-                                                <select name="currency" class="form-control" required>
-                                                    @foreach($lims_currency_list as $key => $currency)
-                                                        @if($lims_general_setting_data->currency == $currency->id)
-                                                            <option value="{{$currency->id}}" selected>{{$currency->name}}</option>
-                                                        @else
-                                                            <option value="{{$currency->id}}">{{$currency->name}}</option>
-                                                        @endif
-                                                    @endforeach
-                                                </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>{{trans('file.System Logo')}} *</label>
+                                            <input type="file" name="site_logo" class="form-control" value=""/>
+                                        </div>
+                                        @if($errors->has('site_logo'))
+                                            <span><strong>{{ $errors->first('site_logo') }}</strong></span>
+                                        @endif
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>{{trans('file.Currency')}} *</label>
+                                            <select name="currency" class="form-control" required>
+                                                @foreach($lims_currency_list as $key => $currency)
+                                                    <option value="{{$currency->id}}" @if($lims_general_setting_data->currency == $currency->id) selected @endif>{{$currency->name}}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 d-none">
+                                        <div class="form-group">
+                                            <label>{{trans('file.Currency Position')}} *</label><br>
+                                            @if($lims_general_setting_data->currency_position == 'prefix')
+                                                <label class="radio-inline"><input type="radio" name="currency_position" value="prefix" checked> {{trans('file.Prefix')}}</label>
+                                                <label class="radio-inline"><input type="radio" name="currency_position" value="suffix"> {{trans('file.Suffix')}}</label>
+                                            @else
+                                                <label class="radio-inline"><input type="radio" name="currency_position" value="prefix"> {{trans('file.Prefix')}}</label>
+                                                <label class="radio-inline"><input type="radio" name="currency_position" value="suffix" checked> {{trans('file.Suffix')}}</label>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 d-none">
+                                        <div class="form-group">
+                                            <label>{{trans('file.Theme')}} *</label>
+                                            <div class="row ml-1">
+                                                <div class="col-md-3 theme-option" data-color="default.css" style="background:#7c5cc4;min-height:40px;max-width:50px;" title="Purple"></div>&nbsp;&nbsp;
+                                                <div class="col-md-3 theme-option" data-color="green.css" style="background:#1abc9c;min-height:40px;max-width:50px;" title="Green"></div>&nbsp;&nbsp;
+                                                <div class="col-md-3 theme-option" data-color="blue.css" style="background:#3498db;min-height:40px;max-width:50px;" title="Blue"></div>&nbsp;&nbsp;
+                                                <div class="col-md-3 theme-option" data-color="dark.css" style="background:#34495e;min-height:40px;max-width:50px;" title="Dark"></div>
                                             </div>
                                         </div>
-                                        <div class="col-md-6 d-none">
-                                            <div class="form-group">
-                                                <label>{{trans('file.Currency Position')}} *</label><br>
-                                                @if($lims_general_setting_data->currency_position == 'prefix')
-                                                <label class="radio-inline">
-                                                    <input type="radio" name="currency_position" value="prefix" checked> {{trans('file.Prefix')}}
-                                                </label>
-                                                <label class="radio-inline">
-                                                  <input type="radio" name="currency_position" value="suffix"> {{trans('file.Suffix')}}
-                                                </label>
-                                                @else
-                                                <label class="radio-inline">
-                                                    <input type="radio" name="currency_position" value="prefix"> {{trans('file.Prefix')}}
-                                                </label>
-                                                <label class="radio-inline">
-                                                  <input type="radio" name="currency_position" value="suffix" checked> {{trans('file.Suffix')}}
-                                                </label>
-                                                @endif
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6 d-none">
-                                            <div class="form-group">
-                                                <label>{{trans('file.Theme')}} *</label>
-                                                <div class="row ml-1">
-                                                    <div class="col-md-3 theme-option" data-color="default.css" style="background: #7c5cc4; min-height: 40px; max-width: 50px;" title="Purple"></div>&nbsp;&nbsp;
-                                                    <div class="col-md-3 theme-option" data-color="green.css" style="background: #1abc9c; min-height: 40px;max-width: 50px;" title="Green"></div>&nbsp;&nbsp;
-                                                    <div class="col-md-3 theme-option" data-color="blue.css" style="background: #3498db; min-height: 40px;max-width: 50px;" title="Blue"></div>&nbsp;&nbsp;
-                                                    <div class="col-md-3 theme-option" data-color="dark.css" style="background: #34495e; min-height: 40px;max-width: 50px;" title="Dark"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6 d-none">
-                                            <div class="form-group">
-                                                <label>{{trans('file.Staff Access')}} *</label>
-                                                @if($lims_general_setting_data)
+                                    </div>
+                                    <div class="col-md-6 d-none">
+                                        <div class="form-group">
+                                            <label>{{trans('file.Staff Access')}} *</label>
+                                            @if($lims_general_setting_data)
                                                 <input type="hidden" name="staff_access_hidden" value="{{$lims_general_setting_data->staff_access}}">
-                                                @endif
-                                                <select name="staff_access" class="selectpicker form-control">
-                                                    <option value="all"> {{trans('file.All Records')}}</option>
-                                                    <option value="own"> {{trans('file.Own Records')}}</option>
-                                                </select>
-                                            </div>
+                                            @endif
+                                            <select name="staff_access" class="form-control">
+                                                <option value="all">{{trans('file.All Records')}}</option>
+                                                <option value="own">{{trans('file.Own Records')}}</option>
+                                            </select>
                                         </div>
-                                        <div class="col-md-6 d-none">
-                                            <div class="form-group">
-                                                <label>{{trans('file.Invoice Format')}} *</label>
-                                                @if($lims_general_setting_data)
+                                    </div>
+                                    <div class="col-md-6 d-none">
+                                        <div class="form-group">
+                                            <label>{{trans('file.Invoice Format')}} *</label>
+                                            @if($lims_general_setting_data)
                                                 <input type="hidden" name="invoice_format_hidden" value="{{$lims_general_setting_data->invoice_format}}">
-                                                @endif
-                                                <select name="invoice_format" class="selectpicker form-control" required>
-                                                    <option value="standard">Standard</option>
-                                                    <option value="gst">Indian GST</option>
-                                                    <option value="beyond_a4">Beyond A4</option>
-                                                </select>
-                                            </div>
+                                            @endif
+                                            <select name="invoice_format" class="form-control" required>
+                                                <option value="standard">Standard</option>
+                                                <option value="gst">Indian GST</option>
+                                                <option value="beyond_a4">Beyond A4</option>
+                                            </select>
                                         </div>
-                                        <div id="state" class="col-md-6 d-none">
-                                            <div class="form-group">
-                                                <label>{{trans('file.State')}} *</label>
-                                                @if($lims_general_setting_data)
+                                    </div>
+                                    <div id="state" class="col-md-6 d-none">
+                                        <div class="form-group">
+                                            <label>{{trans('file.State')}} *</label>
+                                            @if($lims_general_setting_data)
                                                 <input type="hidden" name="state_hidden" value="{{$lims_general_setting_data->state}}">
-                                                @endif
-                                                <select name="state" class="selectpicker form-control">
-                                                    <option value="1">Home State</option>
-                                                    <option value="2">Buyer State</option>
-                                                </select>
-                                            </div>
+                                            @endif
+                                            <select name="state" class="form-control">
+                                                <option value="1">Home State</option>
+                                                <option value="2">Buyer State</option>
+                                            </select>
                                         </div>
-                                        <div class="col-md-6 d-none">
-                                            <div class="form-group">
-                                                <label>{{trans('file.Date Format')}} *</label>
-                                                @if($lims_general_setting_data)
+                                    </div>
+                                    <div class="col-md-6 d-none">
+                                        <div class="form-group">
+                                            <label>{{trans('file.Date Format')}} *</label>
+                                            @if($lims_general_setting_data)
                                                 <input type="hidden" name="date_format_hidden" value="{{$lims_general_setting_data->date_format}}">
-                                                @endif
-                                                <select name="date_format" class="selectpicker form-control">
-                                                    <option value="d-m-Y"> dd-mm-yyy</option>
-                                                    <option value="d/m/Y"> dd/mm/yyy</option>
-                                                    <option value="d.m.Y"> dd.mm.yyy</option>
-                                                    <option value="m-d-Y"> mm-dd-yyy</option>
-                                                    <option value="m/d/Y"> mm/dd/yyy</option>
-                                                    <option value="m.d.Y"> mm.dd.yyy</option>
-                                                    <option value="Y-m-d"> yyy-mm-dd</option>
-                                                    <option value="Y/m/d"> yyy/mm/dd</option>
-                                                    <option value="Y.m.d"> yyy.mm.dd</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>1 vote Price</label>
-                                                <input type="text" name="vote_price" class="form-control" value="{{$lims_general_setting_data->vote_price}}">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>1 vote Beyond Coin</label>
-                                                <input type="text" name="vote_coin" class="form-control" value="{{$lims_general_setting_data->vote_coin}}">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-12">
-                                            <hr>
-                                            <h5 class="mb-3">{{ trans('file.Announcement Reference') }}</h5>
-                                            <p class="alert alert-info py-2 small mb-3"><i class="dripicons-information"></i> {{ trans('file.Reference format help') }} <strong>{{ ($lims_general_setting_data->announcement_ref_prefix ?? 'MGT') }}/{{ ($lims_general_setting_data->announcement_ref_season ?? 'S02') }}/ADMIN/L-{{ str_pad(($lims_general_setting_data->announcement_ref_next ?? 1), 3, '0', STR_PAD_LEFT) }}</strong></p>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label>{{ trans('file.Reference prefix') }}</label>
-                                                <input type="text" name="announcement_ref_prefix" class="form-control" value="{{ $lims_general_setting_data->announcement_ref_prefix ?? 'MGT' }}" placeholder="MGT">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label>{{ trans('file.Season code') }}</label>
-                                                <input type="text" name="announcement_ref_season" class="form-control" value="{{ $lims_general_setting_data->announcement_ref_season ?? 'S02' }}" placeholder="S02">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label>{{ trans('file.Next reference number') }}</label>
-                                                <input type="number" min="1" name="announcement_ref_next" class="form-control" value="{{ $lims_general_setting_data->announcement_ref_next ?? 1 }}">
-                                                <small class="form-text text-muted">{{ trans('file.Next reference help') }}</small>
-                                            </div>
+                                            @endif
+                                            <select name="date_format" class="form-control">
+                                                <option value="d-m-Y"> dd-mm-yyy</option>
+                                                <option value="d/m/Y"> dd/mm/yyy</option>
+                                                <option value="d.m.Y"> dd.mm.yyy</option>
+                                                <option value="m-d-Y"> mm-dd-yyy</option>
+                                                <option value="m/d/Y"> mm/dd/yyy</option>
+                                                <option value="m.d.Y"> mm.dd.yyy</option>
+                                                <option value="Y-m-d"> yyy-mm-dd</option>
+                                                <option value="Y/m/d"> yyy/mm/dd</option>
+                                                <option value="Y.m.d"> yyy.mm.dd</option>
+                                            </select>
                                         </div>
                                     </div>
-                                </div>
-
-                                <div class="tab-pane fade" id="gs-time" role="tabpanel">
-                                    <div class="row">
-                                        <div class="col-md-12">
-                                            <p class="alert alert-info py-2 small mb-3">
-                                                <i class="dripicons-clock"></i>
-                                                Application clock for <strong>voting/grading schedules</strong> and <strong>announcement schedule messages</strong>.
-                                                Default for Cameroon is <strong>Africa/Douala (GMT+1)</strong>.
-                                            </p>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>{{trans('file.Time Zone')}} *</label>
-                                                <input type="hidden" name="timezone_hidden" value="{{ $appTimezone ?? config('app.timezone') }}">
-                                                {{-- Native select: bootstrap-select with 400+ zones broke tab layout (huge gap + floating menu) --}}
-                                                <select name="timezone" id="gs-timezone" class="form-control" required>
-                                                    @foreach($zones_array as $zone)
-                                                        <option value="{{ $zone['zone'] }}" {{ ($appTimezone ?? '') === $zone['zone'] ? 'selected' : '' }}>
-                                                            {{ $zone['diff_from_GMT'] . ' — ' . $zone['zone'] }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
-                                                <small class="form-text text-muted">Recommended: Africa/Douala (GMT+01:00)</small>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>Current application time</label>
-                                                <div class="form-control-plaintext font-weight-bold" id="gs-current-time">{{ $current_time_label ?? '' }}</div>
-                                                <small class="form-text text-muted">Updates when you save a timezone change.</small>
-                                            </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>1 vote Price</label>
+                                            <input type="text" name="vote_price" class="form-control" value="{{$lims_general_setting_data->vote_price}}">
                                         </div>
                                     </div>
-                                </div>
-
-                                <div class="tab-pane fade" id="gs-voting" role="tabpanel">
-                                    <div class="row">
-                                        <div class="col-md-12">
-                                            <h5 class="mb-3">Voting, Grading &amp; Contestants</h5>
-                                            <p class="alert alert-info py-2 small mb-3"><i class="dripicons-information"></i> These toggles only change voting, grading access, and contestant workflow. Schedule windows use the <strong>Time</strong> tab timezone (Douala GMT+1).</p>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label>Hide Votes</label><br>
-                                                <label class="checkbox-inline">
-                                                    <input type="checkbox" class="setting-toggle" name="hide_votes" value="1"
-                                                        data-confirm-on="Hide all vote counts on the public website?"
-                                                        data-confirm-off="Show vote counts on the public website again?"
-                                                        {{ (int) ($lims_general_setting_data->hide_votes ?? 0) === 1 ? 'checked' : '' }}>
-                                                    Hide all vote counts on the public site
-                                                </label>
-                                                @include('setting.partials.schedule_window', [
-                                                    'label' => 'Hide Votes',
-                                                    'startName' => 'hide_votes_starts_at',
-                                                    'endName' => 'hide_votes_ends_at',
-                                                    'startValue' => $lims_general_setting_data->hide_votes_starts_at ?? null,
-                                                    'endValue' => $lims_general_setting_data->hide_votes_ends_at ?? null,
-                                                    'flagCol' => 'hide_votes',
-                                                ])
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label>Enable Voting</label><br>
-                                                <label class="checkbox-inline">
-                                                    <input type="checkbox" class="setting-toggle" name="is_voting_start" value="1"
-                                                        data-confirm-on="Enable public voting? Visitors will be able to cast votes."
-                                                        data-confirm-off="Disable public voting? Visitors will not be able to cast new votes."
-                                                        {{ (int) ($lims_general_setting_data->is_voting_start ?? 0) === 1 ? 'checked' : '' }}>
-                                                    Allow visitors to cast votes
-                                                </label>
-                                                @include('setting.partials.schedule_window', [
-                                                    'label' => 'Enable Voting',
-                                                    'startName' => 'voting_starts_at',
-                                                    'endName' => 'voting_ends_at',
-                                                    'startValue' => $lims_general_setting_data->voting_starts_at ?? null,
-                                                    'endValue' => $lims_general_setting_data->voting_ends_at ?? null,
-                                                    'flagCol' => 'is_voting_start',
-                                                ])
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label>{{ trans('file.Available for Grading') }}</label><br>
-                                                <label class="checkbox-inline">
-                                                    <input type="checkbox" class="setting-toggle" name="available_grading" value="1"
-                                                        data-confirm-on="Enable grading? Judges and Ambassadors will be able to grade contestants."
-                                                        data-confirm-off="Disable grading? Judges and Ambassadors will not be able to grade contestants."
-                                                        {{ (int) ($lims_general_setting_data->available_grading ?? 0) === 1 ? 'checked' : '' }}>
-                                                    {{ trans('file.Available for Grading') }}
-                                                </label>
-                                                <small class="form-text text-muted">When off, Judge/Ambassador grading is closed.</small>
-                                                @include('setting.partials.schedule_window', [
-                                                    'label' => 'Available for Grading',
-                                                    'startName' => 'grading_starts_at',
-                                                    'endName' => 'grading_ends_at',
-                                                    'startValue' => $lims_general_setting_data->grading_starts_at ?? null,
-                                                    'endValue' => $lims_general_setting_data->grading_ends_at ?? null,
-                                                    'flagCol' => 'available_grading',
-                                                ])
-                                            </div>
-                                        </div>
-                                        <div class="col-md-12">
-                                            <hr>
-                                            <div class="form-group mb-0">
-                                                <label>Require Contestant Approval</label><br>
-                                                <label class="checkbox-inline">
-                                                    <input type="checkbox" class="setting-toggle" name="require_contestant_approval" value="1"
-                                                        data-confirm-on="Require admin approval before new contestants go live?"
-                                                        data-confirm-off="Auto-approve new contestants immediately? They will appear on the site without admin review."
-                                                        {{ (int) ($lims_general_setting_data->require_contestant_approval ?? 1) === 1 ? 'checked' : '' }}>
-                                                    New contestants must be approved before going live
-                                                </label>
-                                                <small class="form-text text-muted">Uncheck to auto-approve new contestants instantly.</small>
-                                            </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>1 vote Beyond Coin</label>
+                                            <input type="text" name="vote_coin" class="form-control" value="{{$lims_general_setting_data->vote_coin}}">
                                         </div>
                                     </div>
-                                </div>
-
-                                <div class="form-group mt-3 mb-0" id="gs-main-submit">
-                                    <input type="submit" value="{{trans('file.submit')}}" class="btn btn-primary">
-                                </div>
-                        {!! Form::close() !!}
-
-                                <div class="tab-pane fade" id="gs-eliminations" role="tabpanel">
-                                    @php $siteContent = $site_content ?? []; @endphp
-                                    <h5 class="mb-3"><i class="dripicons-warning"></i> Eliminations for the week</h5>
-                                    <p class="alert alert-info py-2 small mb-3">
-                                        <i class="dripicons-information"></i>
-                                        When enabled, Vote Now shows Green / Orange zones: the bottom N contestants appear below the elimination line.
-                                    </p>
-                                    {!! Form::open(['route' => 'setting.site_content.section', 'method' => 'post']) !!}
-                                    <input type="hidden" name="section" value="eliminations">
-                                    <div class="row">
-                                        <div class="col-md-8 col-lg-6">
-                                            <div class="form-group">
-                                                <label class="checkbox-inline">
-                                                    <input type="checkbox" name="eliminations_enabled" value="1" {{ !empty($siteContent['eliminations_enabled']) ? 'checked' : '' }}>
-                                                    Enable elimination zones on Vote Now
-                                                </label>
-                                            </div>
-                                            <div class="form-group">
-                                                <label>No. of eliminations (bottom contestants below the line)</label>
-                                                <input type="number" name="eliminations_count" class="form-control" min="0" max="500" value="{{ (int) ($siteContent['eliminations_count'] ?? 0) }}">
-                                                <small class="text-muted">Example: 48 contestants + 20 eliminations → bottom 20 appear in the Orange Zone.</small>
-                                            </div>
-                                            <button type="submit" class="btn btn-primary">Save eliminations</button>
+                                    <div class="col-md-12">
+                                        <hr>
+                                        <h5 class="mb-3">{{ trans('file.Announcement Reference') }}</h5>
+                                        <p class="alert alert-info py-2 small mb-3"><i class="dripicons-information"></i> {{ trans('file.Reference format help') }} <strong>{{ ($lims_general_setting_data->announcement_ref_prefix ?? 'MGT') }}/{{ ($lims_general_setting_data->announcement_ref_season ?? 'S02') }}/ADMIN/L-{{ str_pad(($lims_general_setting_data->announcement_ref_next ?? 1), 3, '0', STR_PAD_LEFT) }}</strong></p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>{{ trans('file.Reference prefix') }}</label>
+                                            <input type="text" name="announcement_ref_prefix" class="form-control" value="{{ $lims_general_setting_data->announcement_ref_prefix ?? 'MGT' }}" placeholder="MGT">
                                         </div>
                                     </div>
-                                    {!! Form::close() !!}
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>{{ trans('file.Season code') }}</label>
+                                            <input type="text" name="announcement_ref_season" class="form-control" value="{{ $lims_general_setting_data->announcement_ref_season ?? 'S02' }}" placeholder="S02">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>{{ trans('file.Next reference number') }}</label>
+                                            <input type="number" min="1" name="announcement_ref_next" class="form-control" value="{{ $lims_general_setting_data->announcement_ref_next ?? 1 }}">
+                                            <small class="form-text text-muted">{{ trans('file.Next reference help') }}</small>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+
+                            {{-- TIME --}}
+                            <div class="tab-pane" id="gs-time" role="tabpanel" data-gs-pane="gs-time">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <p class="alert alert-info py-2 small mb-3">
+                                            <i class="dripicons-clock"></i>
+                                            Application clock for <strong>voting/grading schedules</strong> and <strong>announcement schedule messages</strong>.
+                                            Default for Cameroon is <strong>Africa/Douala (GMT+1)</strong>.
+                                        </p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>{{trans('file.Time Zone')}} *</label>
+                                            <input type="hidden" name="timezone_hidden" value="{{ $appTimezone ?? config('app.timezone') }}">
+                                            <select name="timezone" id="gs-timezone" class="form-control" required>
+                                                @foreach($zones_array as $zone)
+                                                    <option value="{{ $zone['zone'] }}" {{ ($appTimezone ?? '') === $zone['zone'] ? 'selected' : '' }}>
+                                                        {{ $zone['diff_from_GMT'] . ' — ' . $zone['zone'] }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            <small class="form-text text-muted">Recommended: Africa/Douala (GMT+01:00)</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>Current application time</label>
+                                            <div class="form-control-plaintext font-weight-bold" id="gs-current-time">{{ $current_time_label ?? '' }}</div>
+                                            <small class="form-text text-muted">Updates when you save a timezone change.</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- VOTING & GRADING --}}
+                            <div class="tab-pane" id="gs-voting" role="tabpanel" data-gs-pane="gs-voting">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <h5 class="mb-3">Voting, Grading &amp; Contestants</h5>
+                                        <p class="alert alert-info py-2 small mb-3"><i class="dripicons-information"></i> These toggles only change voting, grading access, and contestant workflow. Schedule windows use the <strong>Time</strong> tab timezone (Douala GMT+1).</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>Hide Votes</label><br>
+                                            <label class="checkbox-inline">
+                                                <input type="checkbox" class="setting-toggle" name="hide_votes" value="1"
+                                                    data-confirm-on="Hide all vote counts on the public website?"
+                                                    data-confirm-off="Show vote counts on the public website again?"
+                                                    {{ (int) ($lims_general_setting_data->hide_votes ?? 0) === 1 ? 'checked' : '' }}>
+                                                Hide all vote counts on the public site
+                                            </label>
+                                            @include('setting.partials.schedule_window', [
+                                                'label' => 'Hide Votes',
+                                                'startName' => 'hide_votes_starts_at',
+                                                'endName' => 'hide_votes_ends_at',
+                                                'startValue' => $lims_general_setting_data->hide_votes_starts_at ?? null,
+                                                'endValue' => $lims_general_setting_data->hide_votes_ends_at ?? null,
+                                                'flagCol' => 'hide_votes',
+                                            ])
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>Enable Voting</label><br>
+                                            <label class="checkbox-inline">
+                                                <input type="checkbox" class="setting-toggle" name="is_voting_start" value="1"
+                                                    data-confirm-on="Enable public voting? Visitors will be able to cast votes."
+                                                    data-confirm-off="Disable public voting? Visitors will not be able to cast new votes."
+                                                    {{ (int) ($lims_general_setting_data->is_voting_start ?? 0) === 1 ? 'checked' : '' }}>
+                                                Allow visitors to cast votes
+                                            </label>
+                                            @include('setting.partials.schedule_window', [
+                                                'label' => 'Enable Voting',
+                                                'startName' => 'voting_starts_at',
+                                                'endName' => 'voting_ends_at',
+                                                'startValue' => $lims_general_setting_data->voting_starts_at ?? null,
+                                                'endValue' => $lims_general_setting_data->voting_ends_at ?? null,
+                                                'flagCol' => 'is_voting_start',
+                                            ])
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>{{ trans('file.Available for Grading') }}</label><br>
+                                            <label class="checkbox-inline">
+                                                <input type="checkbox" class="setting-toggle" name="available_grading" value="1"
+                                                    data-confirm-on="Enable grading? Judges and Ambassadors will be able to grade contestants."
+                                                    data-confirm-off="Disable grading? Judges and Ambassadors will not be able to grade contestants."
+                                                    {{ (int) ($lims_general_setting_data->available_grading ?? 0) === 1 ? 'checked' : '' }}>
+                                                {{ trans('file.Available for Grading') }}
+                                            </label>
+                                            <small class="form-text text-muted">When off, Judge/Ambassador grading is closed.</small>
+                                            @include('setting.partials.schedule_window', [
+                                                'label' => 'Available for Grading',
+                                                'startName' => 'grading_starts_at',
+                                                'endName' => 'grading_ends_at',
+                                                'startValue' => $lims_general_setting_data->grading_starts_at ?? null,
+                                                'endValue' => $lims_general_setting_data->grading_ends_at ?? null,
+                                                'flagCol' => 'available_grading',
+                                            ])
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <hr>
+                                        <div class="form-group mb-0">
+                                            <label>Require Contestant Approval</label><br>
+                                            <label class="checkbox-inline">
+                                                <input type="checkbox" class="setting-toggle" name="require_contestant_approval" value="1"
+                                                    data-confirm-on="Require admin approval before new contestants go live?"
+                                                    data-confirm-off="Auto-approve new contestants immediately? They will appear on the site without admin review."
+                                                    {{ (int) ($lims_general_setting_data->require_contestant_approval ?? 1) === 1 ? 'checked' : '' }}>
+                                                New contestants must be approved before going live
+                                            </label>
+                                            <small class="form-text text-muted">Uncheck to auto-approve new contestants instantly.</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- ELIMINATIONS --}}
+                            <div class="tab-pane" id="gs-eliminations" role="tabpanel" data-gs-pane="gs-eliminations">
+                                <div class="row">
+                                    <div class="col-md-8 col-lg-6">
+                                        <h5 class="mb-3"><i class="dripicons-warning"></i> Eliminations for the week</h5>
+                                        <p class="alert alert-info py-2 small mb-3">
+                                            <i class="dripicons-information"></i>
+                                            When enabled, Vote Now shows Green / Orange zones: the bottom N contestants appear below the elimination line.
+                                        </p>
+                                        <div class="form-group">
+                                            <label class="checkbox-inline">
+                                                <input type="checkbox" name="eliminations_enabled" value="1" {{ !empty($siteContent['eliminations_enabled']) ? 'checked' : '' }}>
+                                                Enable elimination zones on Vote Now
+                                            </label>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>No. of eliminations (bottom contestants below the line)</label>
+                                            <input type="number" name="eliminations_count" class="form-control" min="0" max="500" value="{{ (int) ($siteContent['eliminations_count'] ?? 0) }}">
+                                            <small class="text-muted">Example: 48 contestants + 20 eliminations → bottom 20 appear in the Orange Zone.</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>{{-- /tab-content --}}
+
+                        <div class="form-group mt-3 mb-0">
+                            <input type="submit" value="{{trans('file.submit')}}" class="btn btn-primary">
+                        </div>
+                        {!! Form::close() !!}
                     </div>
                 </div>
             </div>
@@ -373,49 +363,64 @@
         border-radius: 30px;
         padding: 8px 18px;
         background: #fff !important;
-        transition: .18s;
+        cursor: pointer;
+        display: inline-block;
+        text-decoration: none !important;
     }
     .mg-setting-tabs .nav-link i { margin-right: 6px; }
-    .mg-setting-tabs .nav-link:hover {
-        transform: translateY(-1px);
-        color: #0f172a !important;
-        background: #f8fafc !important;
-    }
+    .mg-setting-tabs .nav-link:hover { transform: translateY(-1px); background: #f8fafc !important; }
     .mg-setting-tabs .nav-item:nth-child(1) .nav-link { border-color: #2563eb !important; color: #2563eb !important; }
-    .mg-setting-tabs .nav-item:nth-child(1) .nav-link.active { background: #2563eb !important; color: #fff !important; border-color: #2563eb !important; }
+    .mg-setting-tabs .nav-item:nth-child(1) .nav-link.active { background: #2563eb !important; color: #fff !important; }
     .mg-setting-tabs .nav-item:nth-child(2) .nav-link { border-color: #0d9488 !important; color: #0d9488 !important; }
-    .mg-setting-tabs .nav-item:nth-child(2) .nav-link.active { background: #0d9488 !important; color: #fff !important; border-color: #0d9488 !important; }
+    .mg-setting-tabs .nav-item:nth-child(2) .nav-link.active { background: #0d9488 !important; color: #fff !important; }
     .mg-setting-tabs .nav-item:nth-child(3) .nav-link { border-color: #e87722 !important; color: #e87722 !important; }
-    .mg-setting-tabs .nav-item:nth-child(3) .nav-link.active { background: #e87722 !important; color: #fff !important; border-color: #e87722 !important; }
+    .mg-setting-tabs .nav-item:nth-child(3) .nav-link.active { background: #e87722 !important; color: #fff !important; }
     .mg-setting-tabs .nav-item:nth-child(4) .nav-link { border-color: #7c3aed !important; color: #7c3aed !important; }
-    .mg-setting-tabs .nav-item:nth-child(4) .nav-link.active { background: #7c3aed !important; color: #fff !important; border-color: #7c3aed !important; }
+    .mg-setting-tabs .nav-item:nth-child(4) .nav-link.active { background: #7c3aed !important; color: #fff !important; }
 
-    /* Force inactive panes fully out of layout (panes may be nested inside the form) */
-    #gs-tab-content .tab-pane {
+    /* Only the active pane is visible */
+    #gs-tab-content > .tab-pane {
         display: none !important;
     }
-    #gs-tab-content .tab-pane.active {
+    #gs-tab-content > .tab-pane.active {
         display: block !important;
     }
-    #gs-tab-content {
-        overflow: visible;
-        min-height: 0;
-    }
-    #gs-main-submit {
-        margin-top: 1rem;
-    }
 </style>
+
 <script type="text/javascript">
-    $("ul#setting").siblings('a').attr('aria-expanded','true');
+(function () {
+    $("ul#setting").siblings('a').attr('aria-expanded', 'true');
     $("ul#setting").addClass("show");
     $("ul#setting #general-setting-menu").addClass("active");
 
-    $("select[name=invoice_format]").on("change", function (argument) {
-        if($(this).val() == 'standard') {
+    var allowed = { 'gs-general': 1, 'gs-time': 1, 'gs-voting': 1, 'gs-eliminations': 1 };
+
+    function activateTab(id) {
+        if (!allowed[id]) id = 'gs-general';
+
+        $('#gs-tabs .nav-link').removeClass('active');
+        $('#gs-tabs .nav-link[data-gs-tab="' + id + '"]').addClass('active');
+
+        $('#gs-tab-content > .tab-pane').removeClass('active');
+        $('#gs-tab-content > .tab-pane[data-gs-pane="' + id + '"]').addClass('active');
+
+        $('#gs-active-tab').val(id);
+
+        if (window.history && window.history.replaceState) {
+            window.history.replaceState(null, '', '#' + id);
+        }
+    }
+
+    $('#gs-tabs').on('click', 'a.nav-link', function (e) {
+        e.preventDefault();
+        activateTab($(this).data('gs-tab'));
+    });
+
+    $("select[name=invoice_format]").on("change", function () {
+        if ($(this).val() == 'standard') {
             $("#state").addClass('d-none');
             $("input[name=state]").prop("required", false);
-        }
-        else if($(this).val() == 'gst') {
+        } else if ($(this).val() == 'gst') {
             $("#state").removeClass('d-none');
             $("input[name=state]").prop("required", true);
         }
@@ -430,14 +435,11 @@
             $('select[name=state]').val($("input[name='state_hidden']").val());
             $("#state").removeClass('d-none');
         }
-        // Only refresh pickers that still use bootstrap-select (not timezone)
-        $('#gs-general .selectpicker, #gs-general select.selectpicker').selectpicker('refresh');
     }
 
-    $('.theme-option').on('click', function() {
-        $.get('general_setting/change-theme/' + $(this).data('color'), function(data) {
-        });
-        var style_link= $('#custom-style').attr('href').replace(/([^-]*)$/, $(this).data('color') );
+    $('.theme-option').on('click', function () {
+        $.get('general_setting/change-theme/' + $(this).data('color'), function () {});
+        var style_link = $('#custom-style').attr('href').replace(/([^-]*)$/, $(this).data('color'));
         $('#custom-style').attr('href', style_link);
     });
 
@@ -449,44 +451,8 @@
         }
     });
 
-    function gsSyncSubmit(target) {
-        var isElim = target === '#gs-eliminations';
-        $('#gs-main-submit').toggle(!isElim);
-        // Keep submit with the active main form panes visually
-        if (!isElim && $('#gs-main-submit').parent().is('form')) {
-            // ok
-        }
-    }
-
-    function gsActivateTab(hash) {
-        var target = hash || '#gs-general';
-        if (target.charAt(0) !== '#') target = '#' + target;
-        var $link = $('#gs-tabs a[href="' + target + '"]');
-        if (!$link.length) {
-            target = '#gs-general';
-            $link = $('#gs-tabs a[href="' + target + '"]');
-        }
-        $('#gs-tabs a.nav-link').removeClass('active').attr('aria-selected', 'false');
-        $('#gs-tab-content > .tab-pane').removeClass('active show');
-        $link.addClass('active').attr('aria-selected', 'true');
-        $(target).addClass('active show');
-        $('#gs-active-tab').val(target.replace(/^#/, ''));
-        gsSyncSubmit(target);
-        if (window.history && window.history.replaceState) {
-            window.history.replaceState(null, '', target);
-        }
-        var $panePickers = $(target).find('.selectpicker');
-        if ($panePickers.length) {
-            $panePickers.selectpicker('refresh');
-        }
-    }
-
-    $('#gs-tabs a[data-toggle="tab"]').on('click', function (e) {
-        e.preventDefault();
-        gsActivateTab($(this).attr('href'));
-    });
-
-    // Restore tab after save (or deep link)
-    gsActivateTab(window.location.hash || '#gs-general');
+    var hash = (window.location.hash || '#gs-general').replace(/^#/, '');
+    activateTab(hash);
+})();
 </script>
 @endsection
