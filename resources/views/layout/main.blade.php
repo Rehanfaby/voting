@@ -713,7 +713,7 @@
                     {!! Form::open(['route' => 'votes.store', 'method' => 'post']) !!}
                     <?php
                     $users = \App\User::where('role_id', 3)->where('is_active', true)->where('is_deleted', false)->orderBy('id', 'desc')->get();
-                    $contentants = \App\Employee::where('is_active', true)->where('is_approve', true)->orderBy('id', 'desc')->get();
+                    $contentants = \App\Employee::publiclyListed()->orderBy('id', 'desc')->get();
                     ?>
                     <div class="row">
                         <div class="col-md-6 form-group">

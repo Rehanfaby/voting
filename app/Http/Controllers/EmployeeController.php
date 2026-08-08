@@ -275,8 +275,9 @@ class EmployeeController extends Controller
             if (!$lims_employee_data || !$lims_employee_data->is_active) {
                 continue;
             }
-            // Soft-delete only: keep votes and the linked user account.
+            // Soft-delete: hide from admin + public site; keep votes and linked user.
             $lims_employee_data->is_active = false;
+            $lims_employee_data->is_eliminate = 1;
             $lims_employee_data->save();
             $count++;
         }
@@ -302,9 +303,10 @@ class EmployeeController extends Controller
     {
         $lims_employee_data = Employee::find($id);
         if($lims_employee_data) {
-            // Only deactivate the contestant profile; keep the linked user account
-            // (the same person may also be a voter/judge/jury).
+            // Deactivate + mark eliminated so they leave Vote Now / public listings.
+            // Keep the linked user account (same person may also be a voter/judge).
             $lims_employee_data->is_active = false;
+            $lims_employee_data->is_eliminate = 1;
             $lims_employee_data->save();
         }
         return redirect()->back()->with('not_permitted', 'Contestant deleted successfully');

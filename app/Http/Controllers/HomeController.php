@@ -334,7 +334,7 @@ class HomeController extends Controller
         // Note: '/' always renders the public website, even for logged-in admins.
         // Admins reach the dashboard via '/admin' (see HomeController@admin).
 
-        $musicians = Employee::where('is_active', true)->where('is_approve', true)->get();
+        $musicians = Employee::publiclyListed()->get();
         $judges = Judge::where('is_active', true)
             ->whereNotIn('name', Ambassador::pluck('name'))
             ->where('name', 'not like', 'Ambassador %')
@@ -356,6 +356,10 @@ class HomeController extends Controller
             ->join('employees', 'employees.id', '=', 'votes.musician_id')
             ->where('employees.is_active', true)
             ->where('employees.is_approve', true)
+            ->where(function ($q) {
+                $q->whereNull('employees.is_eliminate')
+                    ->orWhere('employees.is_eliminate', 0);
+            })
             ->where('votes.status', true)
             ->orderBy('total_vote', 'desc')
             ->groupBy('votes.musician_id')
@@ -385,6 +389,10 @@ class HomeController extends Controller
 //            ->whereDate('votes.created_at', '<=', $end_date)
             ->where('employees.is_active', true)
             ->where('employees.is_approve', true)
+            ->where(function ($q) {
+                $q->whereNull('employees.is_eliminate')
+                    ->orWhere('employees.is_eliminate', 0);
+            })
             ->where('votes.status', true)
             ->orderBy('total_vote', 'desc')
             ->groupBy('votes.musician_id')
@@ -428,7 +436,7 @@ class HomeController extends Controller
     }
 
     public function employee($id) {
-        $musician = Employee::where('is_active', true)->where('is_approve', true)->findOrFail($id);
+        $musician = Employee::publiclyListed()->findOrFail($id);
         $vote_count = vote::where('status', true)->where('musician_id', $id)->sum('vote');
         $images = Gallery::where('employee_id', $id)->where('type', 'image')->get();
         $audios = Gallery::where('employee_id', $id)->where('type', 'audio')->get();
@@ -436,7 +444,7 @@ class HomeController extends Controller
         $socialLinks = Gallery::where('employee_id', $id)
             ->whereIn('type', \App\Helpers\SocialEmbed::linkTypes())
             ->get();
-        $contentants = Employee::where('is_active', true)->where('is_approve', true)->get();
+        $contentants = Employee::publiclyListed()->get();
         $teamData = $this->contestantTeamPageData($contentants);
 
         return view('frontend.employee', array_merge(
@@ -494,9 +502,8 @@ class HomeController extends Controller
 
     public function employeeFind(Request $request) {
         $search = substr((string) $request->input('search', ''), 0, 100);
-        $musicians = Employee::where('name', 'LIKE', '%' . $search . '%')
-            ->where('is_active', true)
-            ->where('is_approve', true)
+        $musicians = Employee::publiclyListed()
+            ->where('name', 'LIKE', '%' . $search . '%')
             ->get();
 
         return view('frontend.team', $this->contestantTeamPageData($musicians));
@@ -512,8 +519,7 @@ class HomeController extends Controller
             'vote' => 'required|integer|min:1|max:1000',
         ]);
 
-        $musician = Employee::where('is_active', true)->where('is_approve', true)
-            ->findOrFail($request->musician_id);
+        $musician = Employee::publiclyListed()->findOrFail($request->musician_id);
 
         $data = $request->all();
         $data['vote'] = (int) $request->vote;
@@ -534,6 +540,11 @@ class HomeController extends Controller
     public function musicianVotePayment(Request $request) {
         if (!\App\Helpers\VoteSettings::votingEnabled()) {
             return redirect()->route('home')->with('not_permitted', trans('file.Voting is currently closed'));
+        }
+
+        $musicianId = (int) $request->input('musician_id');
+        if (!$musicianId || !Employee::publiclyListed()->where('id', $musicianId)->exists()) {
+            return redirect()->route('team')->with('not_permitted', 'This contestant is no longer available for voting.');
         }
 
         if ($request->input('payment_method') === 'card') {
@@ -1048,7 +1059,7 @@ class HomeController extends Controller
     private function contestantTeamPageData($musicians = null)
     {
         if ($musicians === null) {
-            $musicians = Employee::where('is_active', true)->where('is_approve', true)->get();
+            $musicians = Employee::publiclyListed()->get();
         }
 
         $see_votes = \App\Helpers\VoteSettings::showPublicCounts();
