@@ -62,8 +62,6 @@
             <h3><i class="fa fa-times-circle"></i> {{ trans('file.Eliminated Contestants') }}</h3>
             <p>Bottom {{ $elimN }} by current ranking · Elimination zone</p>
             <span class="mg-chip">{{ $count }} Eliminated</span>
-            <span class="mg-chip">Votes /{{ $votePct }}</span>
-            <span class="mg-chip">Judges /{{ $judgePct }}</span>
         </div>
     </div>
 

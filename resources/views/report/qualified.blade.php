@@ -40,8 +40,6 @@
             <h3><i class="fa fa-trophy"></i> {{ trans('file.Qualified Contestants') }}</h3>
             <p>Top contestants above the elimination cut-off · Number of Elimination = {{ $elimN }}</p>
             <span class="mg-chip">{{ $count }} Qualified</span>
-            <span class="mg-chip">Votes /{{ $votePct }}</span>
-            <span class="mg-chip">Judges /{{ $judgePct }}</span>
         </div>
     </div>
 
