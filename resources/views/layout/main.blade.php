@@ -1106,13 +1106,22 @@
             var palette = ['#3b82f6', '#22c55e', '#f59e0b', '#a855f7', '#ec4899', '#14b8a6', '#ef4444', '#6366f1', '#0ea5e9', '#84cc16'];
             var frag = document.createDocumentFragment(), i = 0;
 
+            function tabColorForLink(a, fallback) {
+                var label = ((a.textContent || '') + ' ' + (a.getAttribute('href') || '')).toLowerCase();
+                if (label.indexOf('eliminat') !== -1) return '#dc2626'; // Elimination list → red
+                if (label.indexOf('qualified') !== -1) return '#16a34a'; // Qualified Contestants → green
+                if (label.indexOf('contestant') !== -1 && label.indexOf('grading') !== -1) return '#a855f7';
+                if (label.indexOf('grading setting') !== -1 || label.indexOf('grading_setting') !== -1) return '#3b82f6';
+                return fallback;
+            }
+
             if (activeGroup) {
                 activeGroup.querySelectorAll('a').forEach(function (a) {
                     var href = a.getAttribute('href');
                     if (!href || href === '#' || href === '') return;
                     // Avoid duplicate Help pills (Settings submenu + appended Help tab).
                     if (isHelpNavLink(a)) return;
-                    var color = palette[i % palette.length]; i++;
+                    var color = tabColorForLink(a, palette[i % palette.length]); i++;
                     var pill = document.createElement('a');
                     pill.href = a.href;
                     pill.className = 'ms-tab';
