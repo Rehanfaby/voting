@@ -1727,7 +1727,9 @@ class HomeController extends Controller
     public function otpCheck(){
         $user = Auth::user();
         $this->syncLoginOtpPhoneFromProfile($user);
-        $sent = $this->sendOTP($user);
+        // Defer WhatsApp API call until after the HTML response is sent so mobile
+        // users are not blocked by the UltraMsg throttle (up to ~12s) before the form appears.
+        $sent = $this->sendOTP($user, true);
         $user->refresh();
         $recipient = $this->loginOtpRecipient($user);
         $masked = $recipient
@@ -1767,8 +1769,14 @@ class HomeController extends Controller
 
         if (hash_equals((string) $user->otp, (string) $request->otp)) {
             $user->update(['otp' => null, 'otp_time' => null, 'otp_verify' => '1']);
+            // Release session lock before the browser follows the redirect (helps mobile).
+            try {
+                $request->session()->save();
+            } catch (\Throwable $e) {
+            }
+
             if ((int) $user->role_id === 3) {
-                return redirect()->route('home');
+                return redirect()->route('home', [], 303);
             }
 
             $role = strtolower((string) (
@@ -1777,19 +1785,23 @@ class HomeController extends Controller
                 ?: ''
             ));
             if ($role === 'judge') {
-                return redirect()->route('points.awaiting_candidates');
+                return redirect()->route('points.awaiting_candidates', [], 303);
             }
             if ($role === 'ambassador') {
-                return redirect()->route('ambassador_points.awaiting_candidates');
+                return redirect()->route('ambassador_points.awaiting_candidates', [], 303);
             }
 
-            return redirect('/admin');
+            return redirect('/admin', 303);
         } else {
             return redirect()->back()->with('not_permitted', trans('file.Invalid OTP'));
         }
     }
 
-    public function sendOTP($user) {
+    /**
+     * @param  bool  $deferWhatsApp  When true, save OTP and return immediately; send WhatsApp
+     *                               after the HTTP response (avoids UltraMsg throttle blocking mobile UI).
+     */
+    public function sendOTP($user, $deferWhatsApp = false) {
         if ($user->otp_time != null && $user->otp_time >= date('Y-m-d H:i:s', strtotime('-1 minutes'))) {
             return null;
         }
@@ -1819,6 +1831,31 @@ class HomeController extends Controller
             WhatsAppFormatter::currentLocale()
         );
 
+        // Persist OTP first so the verify form can work even if WhatsApp is slow.
+        $user->update(['otp' => $otp, 'otp_time' => date('Y-m-d H:i:s')]);
+
+        if ($deferWhatsApp) {
+            $controller = $this;
+            $userId = $user->id;
+            app()->terminating(function () use ($controller, $to, $msg, $userId) {
+                try {
+                    if (!$controller->wpMessage($to, $msg)) {
+                        \Log::warning('Login OTP WhatsApp delivery failed (deferred)', [
+                            'user_id' => $userId,
+                            'to' => $to,
+                        ]);
+                    }
+                } catch (\Throwable $e) {
+                    \Log::warning('Login OTP WhatsApp deferred send error', [
+                        'user_id' => $userId,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            });
+
+            return true;
+        }
+
         if (!$this->wpMessage($to, $msg)) {
             \Log::warning('Login OTP WhatsApp delivery failed', [
                 'user_id' => $user->id,
@@ -1826,8 +1863,6 @@ class HomeController extends Controller
             ]);
             return false;
         }
-
-        $user->update(['otp' => $otp, 'otp_time' => date('Y-m-d H:i:s')]);
 
         return true;
     }
