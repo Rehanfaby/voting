@@ -78,12 +78,12 @@
                             </a>
                             <div class="d-print-none"><small class="text-muted">Tap for judge &amp; ambassador scores</small></div>
                         </td>
-                        <td data-export="{{ number_format((float) ($employee->score_votes ?? 0), 2) }} / {{ (int) ($vote_percentage ?? 10) }} ({{ (int) $employee->total_votes }} raw)">
-                            {{ number_format((float) ($employee->score_votes ?? 0), 2) }} / {{ (int) ($vote_percentage ?? 10) }}
+                        <td data-export="{{ number_format((float) ($employee->score_votes ?? 0), 2) }} ({{ (int) $employee->total_votes }} raw)">
+                            {{ number_format((float) ($employee->score_votes ?? 0), 2) }}
                             <div class="d-print-none"><small class="text-muted">{{ (int) $employee->total_votes }} raw votes</small></div>
                         </td>
-                        <td data-export="{{ number_format((float) ($employee->score_points ?? 0), 2) }} / {{ (int) ($judges_percentage ?? 60) }}">
-                            {{ number_format((float) ($employee->score_points ?? 0), 2) }} / {{ (int) ($judges_percentage ?? 60) }}
+                        <td data-export="{{ number_format((float) ($employee->score_points ?? 0), 2) }}">
+                            {{ number_format((float) ($employee->score_points ?? 0), 2) }}
                         </td>
                         <td>{{ number_format((float) $employee->total_ambassador_points, 2) }}</td>
                         <td class="{{ $isQualified ? 'text-success font-weight-bold' : 'text text-danger' }}">{{ round($employee->final_score, 2) }}</td>

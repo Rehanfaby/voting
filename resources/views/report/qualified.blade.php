@@ -71,12 +71,12 @@
                         <td>No Image</td>
                     @endif
                     <td data-export="{{ $contestant ? $contestant->name : $employee->name }}">{{ $contestant ? $contestant->name : $employee->name }}</td>
-                    <td data-export="{{ number_format((float) ($employee->score_votes ?? 0), 2) }} / {{ $votePct }}">
-                        {{ number_format((float) ($employee->score_votes ?? 0), 2) }} / {{ $votePct }}
+                    <td data-export="{{ number_format((float) ($employee->score_votes ?? 0), 2) }} ({{ (int) $employee->total_votes }} raw)">
+                        {{ number_format((float) ($employee->score_votes ?? 0), 2) }}
                         <div><small class="text-muted">{{ (int) $employee->total_votes }} raw votes</small></div>
                     </td>
-                    <td data-export="{{ number_format((float) ($employee->score_points ?? 0), 2) }} / {{ $judgePct }}">
-                        {{ number_format((float) ($employee->score_points ?? 0), 2) }} / {{ $judgePct }}
+                    <td data-export="{{ number_format((float) ($employee->score_points ?? 0), 2) }}">
+                        {{ number_format((float) ($employee->score_points ?? 0), 2) }}
                     </td>
                     <td>{{ number_format((float) $employee->total_ambassador_points, 2) }}</td>
                     <td class="mg-total">{{ number_format((float) $employee->final_score, 2) }}</td>
