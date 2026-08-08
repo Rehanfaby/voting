@@ -14,8 +14,17 @@
         .hero {
             background: #0a2350; color: #fff; padding: 12px 14px; margin-bottom: 10px;
         }
+        .hero-table { width: 100%; border-collapse: collapse; }
+        .hero-table td { vertical-align: middle; color: #fff; border: 0; padding: 0; }
         .hero .eyebrow { font-size: 9px; color: #fbbf24; text-transform: uppercase; letter-spacing: 1px; }
-        .hero h2 { color: #fff; margin: 2px 0 0; }
+        .hero h2 { color: #fff; margin: 2px 0 0; font-size: 16px; }
+        .hero-score {
+            text-align: right; background: #12306a; border: 1px solid #33508a;
+            border-radius: 8px; padding: 8px 10px; min-width: 110px;
+        }
+        .hero-score .lbl { font-size: 8px; color: #fbbf24; text-transform: uppercase; font-weight: bold; }
+        .hero-score .val { font-size: 18px; font-weight: bold; color: #fff; }
+        .hero-score .sub { font-size: 8px; color: #cbd5e1; }
         .stats { width: 100%; margin-bottom: 12px; border-collapse: collapse; }
         .stats td {
             width: 33%; background: #f8fafc; border: 1px solid #e2e8f0;
@@ -34,6 +43,22 @@
         .accuracy { background: #dbeafe; padding: 3px 5px; }
         .page-break { page-break-after: always; }
         .footer-note { font-size: 9px; color: #64748b; margin-top: 8px; }
+        .chart-wrap { margin-top: 12px; page-break-inside: avoid; }
+        .chart-title { font-size: 12px; color: #1d4ed8; font-weight: bold; margin: 12px 0 4px; }
+        .bar-row { margin-bottom: 8px; }
+        .bar-meta { font-size: 9px; margin-bottom: 2px; }
+        .bar-meta strong { color: #0a2350; }
+        .bar-track { background: #e2e8f0; height: 12px; border: 1px solid #cbd5e1; }
+        .bar-fill { height: 12px; background: #1d4ed8; }
+        .bar-fill.accuracy { background: #d97706; }
+        .col-chart { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .col-chart td { vertical-align: bottom; text-align: center; border: 0; padding: 0 4px; width: 20%; }
+        .col-track { height: 90px; background: #eef2ff; border: 1px solid #dbeafe; position: relative; }
+        .col-fill { background: #1d4ed8; width: 100%; }
+        .col-track.accuracy { background: #fff7ed; border-color: #fed7aa; }
+        .col-fill.accuracy { background: #d97706; }
+        .col-val { font-size: 9px; font-weight: bold; color: #0a2350; margin-top: 3px; }
+        .col-name { font-size: 8px; color: #334155; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -46,8 +71,27 @@
     @foreach($reports as $index => $report)
         <div class="{{ $index < count($reports) - 1 ? 'page-break' : '' }}">
             <div class="hero">
-                <div class="eyebrow">Contestant Grading Report</div>
-                <h2>{{ $report['contestant_name'] }}</h2>
+                <table class="hero-table">
+                    <tr>
+                        <td style="width:70%;">
+                            <div class="eyebrow">Contestant Grading Report</div>
+                            <h2>{{ $report['contestant_name'] }}</h2>
+                        </td>
+                        <td style="width:30%;">
+                            <div class="hero-score">
+                                <div class="lbl">Overall score</div>
+                                <div class="val">
+                                    @if($report['overall_score'] !== null)
+                                        {{ number_format($report['overall_score'], 2) }} / 100
+                                    @else
+                                        —
+                                    @endif
+                                </div>
+                                <div class="sub">Avg of {{ (int) $report['judge_count'] }} judge(s)</div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
             </div>
 
             <table class="stats">
@@ -123,6 +167,51 @@
             @empty
                 <p>No judge grading details available.</p>
             @endforelse
+
+            @if(!empty($report['rubric_chart']) && (int) $report['judge_count'] > 0)
+            <div class="chart-wrap">
+                <div class="chart-title">Performance by grading rubric</div>
+                <p class="footer-note">Average across judges. Bar length = % of each criterion maximum (Accuracy highlighted).</p>
+
+                @foreach($report['rubric_chart'] as $bar)
+                    <div class="bar-row">
+                        <div class="bar-meta">
+                            <strong>{{ $bar['short'] }}</strong>
+                            — {{ number_format($bar['average'], 2) }} / {{ $bar['max'] }}
+                            ({{ $bar['percent'] }}%)
+                        </div>
+                        <div class="bar-track">
+                            <div class="bar-fill {{ !empty($bar['highlight']) ? 'accuracy' : '' }}" style="width: {{ $bar['percent'] }}%;"></div>
+                        </div>
+                    </div>
+                @endforeach
+
+                <table class="col-chart">
+                    <tr>
+                        @foreach($report['rubric_chart'] as $bar)
+                            @php
+                                $pct = max(4, (float) $bar['percent']);
+                                $empty = max(0, 100 - $pct);
+                                $fillColor = !empty($bar['highlight']) ? '#d97706' : '#1d4ed8';
+                                $trackBg = !empty($bar['highlight']) ? '#fff7ed' : '#eef2ff';
+                            @endphp
+                            <td>
+                                <table style="width:100%;height:90px;border-collapse:collapse;background:{{ $trackBg }};border:1px solid #cbd5e1;">
+                                    @if($empty > 0)
+                                    <tr style="height:{{ $empty }}%;"><td style="padding:0;border:0;"></td></tr>
+                                    @endif
+                                    <tr style="height:{{ $pct }}%;">
+                                        <td style="padding:0;border:0;background:{{ $fillColor }};"></td>
+                                    </tr>
+                                </table>
+                                <div class="col-val">{{ number_format($bar['average'], 1) }}</div>
+                                <div class="col-name">{{ $bar['short'] }}</div>
+                            </td>
+                        @endforeach
+                    </tr>
+                </table>
+            </div>
+            @endif
         </div>
     @endforeach
 </body>

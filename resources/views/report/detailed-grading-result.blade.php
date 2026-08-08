@@ -23,16 +23,29 @@
         <div class="mg-dgr-block mb-4" style="page-break-after:always;">
             <div class="card mb-3" style="border:0;border-radius:16px;overflow:hidden;box-shadow:0 8px 24px rgba(15,23,42,.08);">
                 <div style="background:linear-gradient(135deg,#0a2350,#1d4ed8);color:#fff;padding:18px 20px;">
-                    <div class="d-flex align-items-center" style="gap:14px;">
-                        <div style="width:64px;height:64px;border-radius:50%;overflow:hidden;background:rgba(255,255,255,.15);flex-shrink:0;">
-                            @if(!empty($report['contestant_image']))
-                                <img src="{{ ImageOptimizer::employeeImageUrl($report['contestant_image']) }}" alt="" style="width:64px;height:64px;object-fit:cover;">
-                            @endif
+                    <div class="d-flex align-items-center justify-content-between" style="gap:14px;flex-wrap:wrap;">
+                        <div class="d-flex align-items-center" style="gap:14px;min-width:0;">
+                            <div style="width:64px;height:64px;border-radius:50%;overflow:hidden;background:rgba(255,255,255,.15);flex-shrink:0;">
+                                @if(!empty($report['contestant_image']))
+                                    <img src="{{ ImageOptimizer::employeeImageUrl($report['contestant_image']) }}" alt="" style="width:64px;height:64px;object-fit:cover;">
+                                @endif
+                            </div>
+                            <div style="min-width:0;">
+                                <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#fbbf24;font-weight:700;">Contestant Grading Report</div>
+                                <h2 style="margin:4px 0 0;font-size:1.45rem;font-weight:800;">{{ $report['contestant_name'] }}</h2>
+                                <div style="opacity:.9;font-size:13px;">Anonymized judge &amp; ambassador results</div>
+                            </div>
                         </div>
-                        <div>
-                            <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#fbbf24;font-weight:700;">Contestant Grading Report</div>
-                            <h2 style="margin:4px 0 0;font-size:1.45rem;font-weight:800;">{{ $report['contestant_name'] }}</h2>
-                            <div style="opacity:.9;font-size:13px;">Anonymized judge &amp; ambassador results</div>
+                        <div style="text-align:right;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);border-radius:14px;padding:10px 16px;min-width:120px;">
+                            <div style="font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:#fbbf24;font-weight:700;">Overall score</div>
+                            <div style="font-size:1.75rem;font-weight:800;line-height:1.1;">
+                                @if($report['overall_score'] !== null)
+                                    {{ number_format($report['overall_score'], 2) }}<span style="font-size:1rem;opacity:.85;"> / 100</span>
+                                @else
+                                    —
+                                @endif
+                            </div>
+                            <div style="font-size:11px;opacity:.85;">Avg of {{ (int) $report['judge_count'] }} judge(s)</div>
                         </div>
                     </div>
                 </div>
@@ -139,11 +152,70 @@
             @empty
                 <div class="alert alert-light border">No judge grading details available for this contestant.</div>
             @endforelse
+
+            @if(!empty($report['rubric_chart']) && (int) $report['judge_count'] > 0)
+            <div class="card mt-3" style="border:0;border-radius:14px;box-shadow:0 6px 18px rgba(15,23,42,.06);">
+                <div class="card-header" style="background:#0a2350;color:#fff;border:0;">
+                    <strong>Performance by grading rubric</strong>
+                    <span class="d-block" style="font-size:12px;opacity:.85;font-weight:400;">Average score across judges · bars show % of each criterion maximum</span>
+                </div>
+                <div class="card-body">
+                    <div class="mg-rubric-bars">
+                        @foreach($report['rubric_chart'] as $bar)
+                            <div class="mg-rubric-row {{ !empty($bar['highlight']) ? 'is-accuracy' : '' }}">
+                                <div class="mg-rubric-label">
+                                    <strong>{{ $bar['short'] }}</strong>
+                                    <span>{{ number_format($bar['average'], 2) }} / {{ $bar['max'] }}</span>
+                                </div>
+                                <div class="mg-rubric-track">
+                                    <div class="mg-rubric-fill" style="width: {{ $bar['percent'] }}%;"></div>
+                                </div>
+                                <div class="mg-rubric-pct">{{ $bar['percent'] }}%</div>
+                            </div>
+                        @endforeach
+                    </div>
+                    <div class="mg-rubric-columns mt-4">
+                        @foreach($report['rubric_chart'] as $bar)
+                            <div class="mg-rubric-col {{ !empty($bar['highlight']) ? 'is-accuracy' : '' }}">
+                                <div class="mg-rubric-col-track">
+                                    <div class="mg-rubric-col-fill" style="height: {{ max(4, $bar['percent']) }}%;"></div>
+                                </div>
+                                <div class="mg-rubric-col-value">{{ number_format($bar['average'], 1) }}</div>
+                                <div class="mg-rubric-col-name">{{ $bar['short'] }}</div>
+                                <div class="mg-rubric-col-max">/{{ $bar['max'] }}</div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+            @endif
         </div>
     @endforeach
 </section>
 
 <style>
+.mg-rubric-row { display:grid; grid-template-columns: 160px 1fr 52px; gap:10px; align-items:center; margin-bottom:12px; }
+.mg-rubric-label { display:flex; flex-direction:column; font-size:12px; color:#334155; }
+.mg-rubric-label strong { color:#0a2350; font-size:13px; }
+.mg-rubric-track { background:#e2e8f0; border-radius:999px; height:14px; overflow:hidden; }
+.mg-rubric-fill { height:100%; background:linear-gradient(90deg,#1d4ed8,#38bdf8); border-radius:999px; }
+.mg-rubric-row.is-accuracy .mg-rubric-fill { background:linear-gradient(90deg,#b45309,#f59e0b); }
+.mg-rubric-pct { font-weight:800; color:#0a2350; text-align:right; }
+.mg-rubric-columns { display:flex; align-items:flex-end; justify-content:space-between; gap:10px; min-height:180px; padding:8px 4px 0; border-top:1px solid #e2e8f0; }
+.mg-rubric-col { flex:1; text-align:center; }
+.mg-rubric-col-track { height:140px; background:#eef2ff; border-radius:10px 10px 4px 4px; display:flex; align-items:flex-end; overflow:hidden; border:1px solid #dbeafe; }
+.mg-rubric-col-fill { width:100%; background:linear-gradient(180deg,#38bdf8,#1d4ed8); border-radius:8px 8px 0 0; min-height:4px; }
+.mg-rubric-col.is-accuracy .mg-rubric-col-track { background:#fff7ed; border-color:#fed7aa; }
+.mg-rubric-col.is-accuracy .mg-rubric-col-fill { background:linear-gradient(180deg,#fbbf24,#b45309); }
+.mg-rubric-col-value { margin-top:6px; font-weight:800; color:#0a2350; font-size:13px; }
+.mg-rubric-col-name { font-size:11px; font-weight:700; color:#334155; }
+.mg-rubric-col-max { font-size:10px; color:#94a3b8; }
+@media (max-width: 767px) {
+    .mg-rubric-row { grid-template-columns: 1fr; gap:4px; }
+    .mg-rubric-pct { text-align:left; }
+    .mg-rubric-columns { min-height:140px; }
+    .mg-rubric-col-track { height:100px; }
+}
 @media print {
     .btn, .sidebar, nav, .navbar, aside { display: none !important; }
     .mg-dgr-block { page-break-after: always; }

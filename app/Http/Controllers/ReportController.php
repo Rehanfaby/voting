@@ -599,12 +599,32 @@ class ReportController extends Controller
      */
     private function buildAnonymizedGradingReports(array $ids)
     {
-        $criteriaLabels = [
-            'depth' => 'Depth and atmosphere / Spiritual impact',
-            'accuracy' => 'Accuracy (Intonation/Rhythm, diction/articulation, vocal technique)',
-            'interpretation' => 'Interpretation, emotion and heartfelt engagement, originality and style',
-            'song_choice' => 'Choice of song & Key, microphone technique',
-            'overall_presentation' => 'General presentation',
+        $criteriaMeta = [
+            'depth' => [
+                'label' => 'Depth and atmosphere / Spiritual impact',
+                'short' => 'Depth',
+                'max' => 20,
+            ],
+            'accuracy' => [
+                'label' => 'Accuracy (Intonation/Rhythm, diction/articulation, vocal technique)',
+                'short' => 'Accuracy',
+                'max' => 30,
+            ],
+            'interpretation' => [
+                'label' => 'Interpretation, emotion and heartfelt engagement, originality and style',
+                'short' => 'Interpretation',
+                'max' => 20,
+            ],
+            'song_choice' => [
+                'label' => 'Choice of song & Key, microphone technique',
+                'short' => 'Song & Key',
+                'max' => 10,
+            ],
+            'overall_presentation' => [
+                'label' => 'General presentation',
+                'short' => 'Presentation',
+                'max' => 20,
+            ],
         ];
 
         $employees = Employee::where('is_active', true)
@@ -629,7 +649,9 @@ class ReportController extends Controller
                 ->orderBy('id')
                 ->get();
 
+            $judgeCount = $judgeScores->count();
             $judgeTotal = (float) $judgeScores->sum('total');
+            $overallScore = $judgeCount > 0 ? round($judgeTotal / $judgeCount, 2) : null;
             $ambassadorTotal = (float) $ambassadorScores->sum('points');
             $votesTotal = (int) DB::table('votes')
                 ->where('status', 1)
@@ -639,10 +661,12 @@ class ReportController extends Controller
             $judges = [];
             foreach ($judgeScores->values() as $index => $point) {
                 $criteria = [];
-                foreach ($criteriaLabels as $field => $label) {
+                foreach ($criteriaMeta as $field => $meta) {
                     $criteria[] = [
-                        'label' => $label,
+                        'field' => $field,
+                        'label' => $meta['label'],
                         'score' => (float) ($point->{$field} ?? 0),
+                        'max' => $meta['max'],
                         'highlight' => $field === 'accuracy',
                     ];
                 }
@@ -661,15 +685,36 @@ class ReportController extends Controller
                 ];
             }
 
+            // Average rubric scores across judges (for bar chart)
+            $rubricChart = [];
+            foreach ($criteriaMeta as $field => $meta) {
+                $avg = $judgeCount > 0
+                    ? round((float) $judgeScores->avg($field), 2)
+                    : 0.0;
+                $percent = $meta['max'] > 0 ? min(100, round(($avg / $meta['max']) * 100, 1)) : 0;
+                $rubricChart[] = [
+                    'field' => $field,
+                    'short' => $meta['short'],
+                    'label' => $meta['label'],
+                    'average' => $avg,
+                    'max' => $meta['max'],
+                    'percent' => $percent,
+                    'highlight' => $field === 'accuracy',
+                ];
+            }
+
             $reports[] = [
                 'contestant_id' => $contestant->id,
                 'contestant_name' => $contestant->name,
                 'contestant_image' => $contestant->image,
                 'judge_total' => $judgeTotal,
+                'judge_count' => $judgeCount,
+                'overall_score' => $overallScore,
                 'ambassador_total' => $ambassadorTotal,
                 'votes_total' => $votesTotal,
                 'judges' => $judges,
                 'ambassadors' => $ambassadors,
+                'rubric_chart' => $rubricChart,
             ];
         }
 
