@@ -19,17 +19,14 @@
                     <th class="not-exported"></th>
                     <th class="not-exported">{{trans('file.Image')}}</th>
                     <th>{{trans('file.name')}}</th>
-                    <th>{{trans('file.Votes')}}</th>
-                    <th>{{trans('file.Points')}}</th>
+                    <th>{{trans('file.Votes')}} (/{{ (int) ($vote_percentage ?? 10) }})</th>
+                    <th>{{trans('file.Points')}} (/{{ (int) ($judges_percentage ?? 60) }})</th>
                     <th>{{trans('file.Ambassador Points')}}</th>
                     <th>{{trans('file.Total')}}</th>
                     <th>{{trans('file.Position')}}</th>
                 </tr>
                 </thead>
                 <tbody>
-                @php
-                    $total_votes = 0;
-                @endphp
                 @foreach($contestants as $key=>$employee)
                     @php $contestant = \App\Employee::find($employee->id); @endphp
                     <tr>
@@ -40,9 +37,12 @@
                             <td>No Image</td>
                         @endif
                         <td>{{ $contestant->name }}</td>
-                        <td>{{ $employee->total_votes }}</td>
-                        <td>{{ $employee->total_points }}</td>
-                        <td>{{ $employee->total_ambassador_points }}</td>
+                        <td>
+                            {{ number_format((float) ($employee->score_votes ?? 0), 2) }} / {{ (int) ($vote_percentage ?? 10) }}
+                            <div><small class="text-muted">{{ (int) $employee->total_votes }} raw votes</small></div>
+                        </td>
+                        <td>{{ number_format((float) ($employee->score_points ?? 0), 2) }} / {{ (int) ($judges_percentage ?? 60) }}</td>
+                        <td>{{ number_format((float) $employee->total_ambassador_points, 2) }}</td>
                         <td class="text text-danger">{{ round($employee->final_score, 2) }}</td>
                         <td class="badge badge-info">{{ $key + 1}}</td>
                     </tr>
