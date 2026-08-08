@@ -34,6 +34,7 @@
 
                             <div class="tab-content" id="gs-tab-content">
                         {!! Form::open(['route' => 'setting.generalStore', 'files' => true, 'method' => 'post', 'id' => 'gs-main-form']) !!}
+                                <input type="hidden" name="active_tab" id="gs-active-tab" value="gs-general">
                                 <div class="tab-pane fade show active" id="gs-general" role="tabpanel">
                                     <div class="row">
                                         @php
@@ -360,6 +361,34 @@
     </div>
 </section>
 
+<style>
+    /* Readable colored pills — theme .nav-tabs defaults were rendering near-black */
+    .mg-setting-tabs { border-bottom: none; flex-wrap: wrap; gap: 6px; }
+    .mg-setting-tabs .nav-item { margin: 0 4px 6px 0; }
+    .mg-setting-tabs .nav-link {
+        color: #334155 !important;
+        font-weight: 700;
+        border: 2px solid #cbd5e1 !important;
+        border-radius: 30px;
+        padding: 8px 18px;
+        background: #fff !important;
+        transition: .18s;
+    }
+    .mg-setting-tabs .nav-link i { margin-right: 6px; }
+    .mg-setting-tabs .nav-link:hover {
+        transform: translateY(-1px);
+        color: #0f172a !important;
+        background: #f8fafc !important;
+    }
+    .mg-setting-tabs .nav-item:nth-child(1) .nav-link { border-color: #2563eb !important; color: #2563eb !important; }
+    .mg-setting-tabs .nav-item:nth-child(1) .nav-link.active { background: #2563eb !important; color: #fff !important; border-color: #2563eb !important; }
+    .mg-setting-tabs .nav-item:nth-child(2) .nav-link { border-color: #0d9488 !important; color: #0d9488 !important; }
+    .mg-setting-tabs .nav-item:nth-child(2) .nav-link.active { background: #0d9488 !important; color: #fff !important; border-color: #0d9488 !important; }
+    .mg-setting-tabs .nav-item:nth-child(3) .nav-link { border-color: #e87722 !important; color: #e87722 !important; }
+    .mg-setting-tabs .nav-item:nth-child(3) .nav-link.active { background: #e87722 !important; color: #fff !important; border-color: #e87722 !important; }
+    .mg-setting-tabs .nav-item:nth-child(4) .nav-link { border-color: #7c3aed !important; color: #7c3aed !important; }
+    .mg-setting-tabs .nav-item:nth-child(4) .nav-link.active { background: #7c3aed !important; color: #fff !important; border-color: #7c3aed !important; }
+</style>
 <script type="text/javascript">
     $("ul#setting").siblings('a').attr('aria-expanded','true');
     $("ul#setting").addClass("show");
@@ -402,17 +431,33 @@
         }
     });
 
-    // Keep Time tab selectpicker visible after tab switch
-    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-        $('.selectpicker').selectpicker('refresh');
-        var target = $(e.target).attr('href');
+    function gsActivateTab(hash) {
+        var target = hash || '#gs-general';
+        if (target.charAt(0) !== '#') target = '#' + target;
+        var $link = $('#gs-tabs a[href="' + target + '"]');
+        if (!$link.length) {
+            target = '#gs-general';
+            $link = $('#gs-tabs a[href="' + target + '"]');
+        }
+        $link.tab('show');
+        $('#gs-active-tab').val(target.replace(/^#/, ''));
         $('#gs-main-submit').toggle(target !== '#gs-eliminations');
+        if (window.history && window.history.replaceState) {
+            window.history.replaceState(null, '', target);
+        }
+    }
+
+    $('#gs-tabs a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+        $('.selectpicker').selectpicker('refresh');
+        var target = $(e.target).attr('href') || '#gs-general';
+        $('#gs-active-tab').val(target.replace(/^#/, ''));
+        $('#gs-main-submit').toggle(target !== '#gs-eliminations');
+        if (window.history && window.history.replaceState) {
+            window.history.replaceState(null, '', target);
+        }
     });
 
-    // Open Eliminations tab when landing with #gs-eliminations
-    if (window.location.hash === '#gs-eliminations') {
-        $('#gs-eliminations-tab').tab('show');
-        $('#gs-main-submit').hide();
-    }
+    // Restore tab after save (or deep link)
+    gsActivateTab(window.location.hash || '#gs-general');
 </script>
 @endsection

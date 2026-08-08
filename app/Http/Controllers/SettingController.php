@@ -156,7 +156,14 @@ class SettingController extends Controller
 
         $scheduleError = $this->saveSettingSchedules($request, $general_setting);
         if ($scheduleError) {
-            return redirect()->back()->withInput()->with('not_permitted', $scheduleError);
+            $tab = (string) $request->input('active_tab', 'gs-general');
+            $allowedTabs = ['gs-general', 'gs-time', 'gs-voting', 'gs-eliminations'];
+            if (!in_array($tab, $allowedTabs, true)) {
+                $tab = 'gs-general';
+            }
+            return redirect(route('setting.general') . '#' . $tab)
+                ->withInput()
+                ->with('not_permitted', $scheduleError);
         }
         if (Schema::hasColumn('general_settings', 'announcement_ref_prefix') && $request->filled('announcement_ref_prefix')) {
             $general_setting->announcement_ref_prefix = strtoupper(trim($request->announcement_ref_prefix));
@@ -203,7 +210,14 @@ class SettingController extends Controller
         AppCache::forgetSharedData();
         VoteSettings::applySchedules();
 
-        return redirect()->back()->with('message', 'Data updated successfully');
+        $tab = (string) $request->input('active_tab', 'gs-general');
+        $allowedTabs = ['gs-general', 'gs-time', 'gs-voting', 'gs-eliminations'];
+        if (!in_array($tab, $allowedTabs, true)) {
+            $tab = 'gs-general';
+        }
+
+        return redirect(route('setting.general') . '#' . $tab)
+            ->with('message', 'Data updated successfully');
     }
 
     public function gradingSettingStore(Request $request)
