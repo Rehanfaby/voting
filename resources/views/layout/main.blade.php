@@ -1322,26 +1322,52 @@
         return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     }
 
-    /** Collect row ids from a DataTables listing (selected rows + checked boxes). */
+    /** Collect row ids from a DataTables listing (checked boxes only).
+     *  Do NOT use rows({selected:true}) unless Select is loaded — without it,
+     *  DataTables ignores the filter and returns every row. */
     function collectSelectedTableIds(tableSelector) {
         var ids = [];
+        var seen = {};
         var $table = $(tableSelector);
         if (!$table.length || !$.fn.DataTable.isDataTable($table)) {
             return ids;
         }
         var table = $table.DataTable();
-        table.rows({ selected: true }).every(function () {
-            var id = $(this.node()).data('id');
-            if (id) { ids.push(id); }
+
+        function pushId(id) {
+            if (id == null || id === '') return;
+            id = String(id);
+            if (seen[id]) return;
+            seen[id] = true;
+            ids.push(id);
+        }
+
+        // 1) Checked boxes across all pages (what the user actually ticked)
+        table.$('tr').each(function () {
+            var $row = $(this);
+            var $cb = $row.find('td:first-child input[type="checkbox"]');
+            if ($cb.length && $cb.prop('checked')) {
+                pushId($row.attr('data-id') || $row.data('id'));
+            }
         });
-        if (!ids.length) {
-            $table.find('tbody tr').each(function () {
-                if ($(this).find('input[type="checkbox"]').is(':checked')) {
-                    var id = $(this).data('id');
-                    if (id) { ids.push(id); }
+
+        // 2) Gyrocode Checkboxes API (cell value = unique id when column stores ids)
+        if (!ids.length && table.column(0).checkboxes) {
+            try {
+                var selected = table.column(0).checkboxes.selected();
+                for (var i = 0; i < selected.length; i++) {
+                    pushId(selected[i]);
                 }
+            } catch (e) { /* ignore */ }
+        }
+
+        // 3) Select extension only when it is actually present
+        if (!ids.length && $.fn.dataTable && $.fn.dataTable.Select) {
+            table.rows({ selected: true }).every(function () {
+                pushId($(this.node()).attr('data-id') || $(this.node()).data('id'));
             });
         }
+
         return ids;
     }
 </script>

@@ -90,7 +90,7 @@
             @foreach($contestants as $key=>$employee)
                 @php $contestant = \App\Employee::find($employee->id); @endphp
                 <tr data-id="{{ $employee->id }}">
-                    <td>{{$key}}</td>
+                    <td>{{ $employee->id }}</td>
                     @if($contestant && $contestant->image)
                         <td><img src="{{url('public/images/employee',$contestant->image)}}" height="80" width="80"></td>
                     @else
@@ -147,11 +147,18 @@
         var ids = typeof collectSelectedTableIds === 'function'
             ? collectSelectedTableIds('#employee-table')
             : [];
+        // Extra safety: only rows whose checkbox is actually checked
         if (!ids.length) {
-            // Fallback: DataTables Select API
-            $('#employee-table').DataTable().rows({ selected: true }).every(function () {
-                var id = $(this.node()).data('id');
-                if (id) ids.push(id);
+            var seen = {};
+            $('#employee-table').DataTable().$('tr').each(function () {
+                var $row = $(this);
+                if ($row.find('td:first-child input[type="checkbox"]').prop('checked')) {
+                    var id = $row.attr('data-id');
+                    if (id && !seen[id]) {
+                        seen[id] = true;
+                        ids.push(id);
+                    }
+                }
             });
         }
         if (!ids.length) {
