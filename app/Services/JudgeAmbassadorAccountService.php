@@ -51,18 +51,31 @@ class JudgeAmbassadorAccountService
                 $user->role_id = $role->id;
                 $dirty = true;
             }
-            if (!(int) $user->is_active) {
-                $user->is_active = true;
+
+            // Profile is_active is source of truth (do not force-reactivate).
+            $shouldBeActive = (bool) $profile->is_active;
+            if ((int) $user->is_active !== (int) $shouldBeActive) {
+                $user->is_active = $shouldBeActive;
                 $dirty = true;
             }
-            if ((int) $user->is_deleted) {
+            if ($shouldBeActive && (int) $user->is_deleted) {
                 $user->is_deleted = false;
                 $dirty = true;
             }
 
+            $profileName = trim((string) $profile->name);
+            if ($profileName !== '' && (string) $user->name !== $profileName) {
+                $user->name = $profileName;
+                $dirty = true;
+            }
+
             $phone = $this->bestPhone($profile, $user);
-            if ($phone && $user->phone !== $phone) {
+            if ($phone && (string) $user->phone !== (string) $phone) {
                 $user->phone = $phone;
+                $dirty = true;
+            }
+            if ($phone && (string) ($user->whatsapp_number ?? '') !== (string) $phone) {
+                $user->whatsapp_number = $phone;
                 $dirty = true;
             }
 
@@ -83,10 +96,13 @@ class JudgeAmbassadorAccountService
             $linked = true;
         }
 
-        $profilePhone = $this->bestPhone($profile, $user);
-        if ($profilePhone && (string) $profile->phone_number !== (string) $profilePhone) {
-            $profile->phone_number = $profilePhone;
-            $linked = true;
+        // Backfill profile phone only when empty — never overwrite a saved profile phone.
+        if (empty($profile->phone_number)) {
+            $profilePhone = $this->bestPhone($profile, $user);
+            if ($profilePhone) {
+                $profile->phone_number = $profilePhone;
+                $linked = true;
+            }
         }
 
         if ($linked || $profile->isDirty()) {
@@ -219,15 +235,16 @@ class JudgeAmbassadorAccountService
 
     protected function bestPhone(Model $profile, $user = null)
     {
+        // Prefer profile phone so admin edits are not overwritten by a stale login user phone.
         $candidates = [];
+        if (!empty($profile->phone_number)) {
+            $candidates[] = $profile->phone_number;
+        }
         if ($user && !empty($user->phone)) {
             $candidates[] = $user->phone;
         }
         if ($user && !empty($user->whatsapp_number)) {
             $candidates[] = $user->whatsapp_number;
-        }
-        if (!empty($profile->phone_number)) {
-            $candidates[] = $profile->phone_number;
         }
 
         foreach ($candidates as $raw) {

@@ -35,13 +35,14 @@
                     <th>{{trans('file.Address')}}</th>
                     <th>{{trans('file.Country')}}</th>
                     <th>{{trans('file.Sort Order')}}</th>
+                    <th>{{trans('file.Active')}}</th>
                     <th class="not-exported">{{trans('file.action')}}</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($lims_employee_all as $key=>$employee)
                 @php $department = \App\Department::find($employee->department_id); @endphp
-                <tr data-id="{{$employee->id}}">
+                <tr data-id="{{$employee->id}}" @if(!$employee->is_active) class="table-secondary" @endif>
                     <td>{{$key}}</td>
                     @if($employee->image)
                     <td> <img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($employee->image) }}" height="80" width="80" loading="lazy">
@@ -64,6 +65,13 @@
                     </td>
                     <td>{{ $employee->sort_order }}</td>
                     <td>
+                        @if($employee->is_active)
+                            <span class="badge badge-success">{{trans('file.Active')}}</span>
+                        @else
+                            <span class="badge badge-secondary">Disabled</span>
+                        @endif
+                    </td>
+                    <td>
                         <div class="btn-group">
                             <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{trans('file.action')}}
                                 <span class="caret"></span>
@@ -72,7 +80,17 @@
                             <ul class="dropdown-menu edit-options dropdown-menu-right dropdown-default" user="menu">
                                 @if(in_array("employees-edit", $all_permission))
                                 <li>
-                                    <button type="button" data-id="{{$employee->id}}" data-name="{{$employee->name}}" data-email="{{$employee->email}}" data-phone_number="{{$employee->phone_number}}" data-address="{{$employee->address}}" data-city="{{$employee->city}}" data-country="{{$employee->country}}" data-sort_order="{{$employee->sort_order}}" class="edit-btn btn btn-link" data-toggle="modal" data-target="#editModal"><i class="dripicons-document-edit"></i> {{trans('file.edit')}}</button>
+                                    <button type="button"
+                                        data-id="{{$employee->id}}"
+                                        data-name="{{$employee->name}}"
+                                        data-email="{{$employee->email}}"
+                                        data-phone-number="{{$employee->phone_number}}"
+                                        data-address="{{$employee->address}}"
+                                        data-city="{{$employee->city}}"
+                                        data-country="{{$employee->country}}"
+                                        data-sort-order="{{$employee->sort_order}}"
+                                        data-is-active="{{ $employee->is_active ? '1' : '0' }}"
+                                        class="edit-btn btn btn-link" data-toggle="modal" data-target="#editModal"><i class="dripicons-document-edit"></i> {{trans('file.edit')}}</button>
                                 </li>
                                 @endif
                                 <li class="divider"></li>
@@ -136,6 +154,10 @@
                         <label>{{trans('file.Sort Order')}}</label>
                         <input type="number" name="sort_order" class="form-control" value="0" min="0">
                     </div>
+                    <div class="col-md-6 form-group">
+                        <label>{{trans('file.Password')}}</label>
+                        <input type="text" name="password" class="form-control" autocomplete="new-password" placeholder="Optional login password">
+                    </div>
                 </div>
                 <div class="form-group">
                     <button type="submit" class="btn btn-primary">{{trans('file.submit')}}</button>
@@ -150,7 +172,7 @@
     <div role="document" class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 id="exampleModalLabel" class="modal-title">{{trans('file.Update Employee')}}</h5>
+                <h5 id="exampleModalLabel" class="modal-title">Update Judge</h5>
                 <button type="button" data-dismiss="modal" aria-label="Close" class="close"><span aria-hidden="true"><i class="dripicons-cross"></i></span></button>
             </div>
             <div class="modal-body">
@@ -190,6 +212,19 @@
                         <label>{{trans('file.Sort Order')}}</label>
                         <input type="number" name="sort_order" class="form-control" value="0" min="0">
                     </div>
+                    <div class="col-md-6 form-group">
+                        <label>{{trans('file.Password')}}</label>
+                        <input type="text" name="password" class="form-control" autocomplete="new-password" placeholder="Leave blank to keep current">
+                        <small class="text-muted">Optional. Sets the judge login password.</small>
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label>{{trans('file.Active')}}</label>
+                        <div class="form-check mt-2">
+                            <input type="hidden" name="is_active" value="0">
+                            <input type="checkbox" name="is_active" value="1" id="edit_is_active" class="form-check-input" checked>
+                            <label class="form-check-label" for="edit_is_active">Enabled (can log in &amp; grade)</label>
+                        </div>
+                    </div>
                 </div>
                 <div class="form-group">
                     <button type="submit" class="btn btn-primary">{{trans('file.submit')}}</button>
@@ -223,14 +258,17 @@
     }
 
     $(document).on('click', '.edit-btn', function() {
-        $("#editModal input[name='judge_id']").val( $(this).data('id') );
-        $("#editModal input[name='name']").val( $(this).data('name') );
-        $("#editModal input[name='email']").val( $(this).data('email') );
-        $("#editModal input[name='phone_number']").val( $(this).data('phone_number') );
-        $("#editModal input[name='address']").val( $(this).data('address') );
-        $("#editModal input[name='city']").val( $(this).data('city') );
-        $("#editModal select[name='country']").val( $(this).data('country') || '' );
-        $("#editModal input[name='sort_order']").val( $(this).data('sort_order') );
+        var $btn = $(this);
+        $("#editModal input[name='judge_id']").val($btn.attr('data-id'));
+        $("#editModal input[name='name']").val($btn.attr('data-name'));
+        $("#editModal input[name='email']").val($btn.attr('data-email'));
+        $("#editModal input[name='phone_number']").val($btn.attr('data-phone-number'));
+        $("#editModal input[name='address']").val($btn.attr('data-address') || '');
+        $("#editModal input[name='city']").val($btn.attr('data-city') || '');
+        $("#editModal select[name='country']").val($btn.attr('data-country') || '');
+        $("#editModal input[name='sort_order']").val($btn.attr('data-sort-order') || 0);
+        $("#editModal input[name='password']").val('');
+        $("#edit_is_active").prop('checked', $btn.attr('data-is-active') === '1');
         $('.selectpicker').selectpicker('refresh');
     });
 
@@ -255,7 +293,7 @@
         'columnDefs': [
             {
                 "orderable": false,
-                'targets': [0, 1, 8]
+                'targets': [0, 1, 9]
             },
             {
                 'render': function(data, type, row, meta){

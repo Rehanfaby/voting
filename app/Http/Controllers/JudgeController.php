@@ -23,7 +23,7 @@ class JudgeController extends Controller
                 $all_permission[] = $permission->name;
             if(empty($all_permission))
                 $all_permission[] = 'dummy text';
-            $lims_employee_all = Judge::where('is_active', true)->get();
+            $lims_employee_all = Judge::orderByDesc('is_active')->orderBy('sort_order')->orderBy('id')->get();
             return view('judge.index', compact('lims_employee_all', 'all_permission'));
         }
         else
@@ -88,18 +88,28 @@ class JudgeController extends Controller
     public function update(Request $request, $id)
     {
         $lims_employee_data = Judge::find($request->judge_id);
+        if (!$lims_employee_data) {
+            return redirect('judge')->with('not_permitted', 'Judge not found');
+        }
+
         $this->validate($request, [
+            'name' => 'required|max:255',
+            'phone_number' => 'required',
             'email' => [
+                'required',
                 'email',
                 'max:255',
                 Rule::unique('judges')->ignore($lims_employee_data->id)->where(function ($query) {
                     return $query->where('is_active', true);
                 }),
             ],
+            'password' => 'nullable|min:4',
             'image' => 'image|mimes:jpg,jpeg,png,gif|max:100000',
         ]);
 
-        $data = $request->except('image', 'judge_id', 'password', 'user');
+        $data = $request->except('image', 'judge_id', 'password', 'user', 'is_active');
+        $data['is_active'] = (string) $request->input('is_active', '0') === '1';
+
         $image = $request->image;
         if ($image) {
             $ext = pathinfo($image->getClientOriginalName(), PATHINFO_EXTENSION);
@@ -111,10 +121,20 @@ class JudgeController extends Controller
         }
 
         $lims_employee_data->update($data);
-        app(JudgeAmbassadorAccountService::class)
-            ->ensureForProfile($lims_employee_data->fresh(), 'Judge');
 
-        return redirect('judge')->with('message', 'Judge updated successfully');
+        $plainPassword = $request->filled('password') ? $request->password : null;
+        $result = app(JudgeAmbassadorAccountService::class)
+            ->ensureForProfile($lims_employee_data->fresh(), 'Judge', $plainPassword, (bool) $plainPassword);
+
+        $message = 'Judge updated successfully';
+        if (!empty($result['password'])) {
+            $message .= '. Login password set to: ' . $result['password'];
+        }
+        if (!$data['is_active']) {
+            $message .= '. Judge is disabled (cannot log in).';
+        }
+
+        return redirect('judge')->with('message', $message);
     }
 
     public function deleteBySelection(Request $request)
@@ -125,6 +145,8 @@ class JudgeController extends Controller
             if ($lims_employee_data) {
                 $lims_employee_data->is_active = false;
                 $lims_employee_data->save();
+                app(JudgeAmbassadorAccountService::class)
+                    ->ensureForProfile($lims_employee_data->fresh(), 'Judge');
             }
         }
         return 'Judge deleted successfully!';
@@ -132,8 +154,12 @@ class JudgeController extends Controller
     public function destroy($id)
     {
         $lims_employee_data = Judge::find($id);
-        $lims_employee_data->is_active = false;
-        $lims_employee_data->save();
+        if ($lims_employee_data) {
+            $lims_employee_data->is_active = false;
+            $lims_employee_data->save();
+            app(JudgeAmbassadorAccountService::class)
+                ->ensureForProfile($lims_employee_data->fresh(), 'Judge');
+        }
         return redirect('judge')->with('not_permitted', 'Judge deleted successfully');
     }
 
