@@ -115,6 +115,12 @@
         </div>
     </section>
 
+@include('partials.report_pdf_theme', [
+    'pdfTheme' => 'ranking',
+    'pdfTitle' => 'Contestant Ranking Report',
+    'pdfSubtitle' => 'Green = Qualified · Red = Elimination zone',
+])
+
     <script type="text/javascript">
 
         $("ul#grading-setting").siblings('a').attr('aria-expanded','true');
@@ -178,7 +184,7 @@
                 {
                     extend: 'pdf',
                     text: '<i title="export to pdf" class="fa fa-file-pdf-o"></i>',
-                    title: 'Contestant Ranking Report',
+                    title: '',
                     exportOptions: {
                         columns: ':visible:Not(.not-exported)',
                         rows: function (idx, data, node) {
@@ -198,13 +204,7 @@
                             }
                         }
                     },
-                    customize: function (doc) {
-                        doc.styles.tableHeader.alignment = 'left';
-                        doc.defaultStyle.fontSize = 9;
-                        if (doc.content[1] && doc.content[1].table) {
-                            doc.content[1].table.widths = Array(doc.content[1].table.body[0].length).fill('*');
-                        }
-                    },
+                    customize: window.mgCustomizeReportPdf,
                 },
                 {
                     extend: 'csv',

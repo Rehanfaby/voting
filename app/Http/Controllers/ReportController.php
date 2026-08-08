@@ -255,12 +255,21 @@ class ReportController extends Controller
         $elimN = min($number_of_elimination, $total);
         $contestants = $contestants->slice(max(0, $total - $elimN), $elimN)->values();
 
+        $all_permission = [];
+        $role = Role::find(Auth::user()->role_id);
+        if ($role) {
+            foreach (Role::findByName($role->name)->permissions as $permission) {
+                $all_permission[] = $permission->name;
+            }
+        }
+
         return view('report.eliminated', compact(
             'contestants',
             'number_of_elimination',
             'vote_percentage',
             'judges_percentage',
-            'ambassadors_percentage'
+            'ambassadors_percentage',
+            'all_permission'
         ));
     }
 
