@@ -1,10 +1,13 @@
 @php
     use App\Employee;
     use App\Helpers\ImageOptimizer;
-    $candidates = Employee::where('is_active', true)
-        ->where('is_approve', true)
-        ->orderBy('name')
-        ->get(['id', 'name', 'image']);
+    // Help gallery is embedded on every admin page; cache briefly so grading pages stay snappy.
+    $candidates = \Cache::remember('module_help_candidates_gallery_v1', 120, function () {
+        return Employee::where('is_active', true)
+            ->where('is_approve', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'image']);
+    });
 @endphp
 @if($candidates->isNotEmpty())
     <h6>All candidates to grade ({{ $candidates->count() }})</h6>

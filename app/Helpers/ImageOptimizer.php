@@ -114,9 +114,16 @@ class ImageOptimizer
      */
     public static function employeeImageUrl($filename, $preferThumb = true)
     {
+        static $urlCache = [];
+
         $filename = (string) $filename;
         if ($filename === '') {
             return url('public/images/employee/');
+        }
+
+        $cacheKey = ($preferThumb ? '1' : '0') . '|' . $filename;
+        if (isset($urlCache[$cacheKey])) {
+            return $urlCache[$cacheKey];
         }
 
         $rel = 'public/images/employee/' . $filename;
@@ -128,8 +135,9 @@ class ImageOptimizer
         }
 
         $path = base_path($rel);
-        $version = is_file($path) ? (string) filemtime($path) : (string) time();
+        // Avoid per-image filemtime on large mobile card grids; day bucket is enough for cache-bust.
+        $version = is_file($path) ? date('Ymd', @filemtime($path) ?: time()) : date('Ymd');
 
-        return url($rel) . '?v=' . $version;
+        return $urlCache[$cacheKey] = url($rel) . '?v=' . $version;
     }
 }

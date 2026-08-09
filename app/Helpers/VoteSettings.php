@@ -23,15 +23,22 @@ class VoteSettings
     /** @var bool */
     protected static $schedulesAppliedThisRequest = false;
 
+    /** @var object|null|false false = not loaded yet */
+    protected static $settingsRowCache = false;
+
     protected static function settingsRow()
     {
+        if (self::$settingsRowCache !== false) {
+            return self::$settingsRowCache;
+        }
+
         try {
             if (!Schema::hasTable('general_settings')) {
-                return null;
+                return self::$settingsRowCache = null;
             }
-            return DB::table('general_settings')->orderByDesc('id')->first();
+            return self::$settingsRowCache = DB::table('general_settings')->orderByDesc('id')->first();
         } catch (\Throwable $e) {
-            return null;
+            return self::$settingsRowCache = null;
         }
     }
 

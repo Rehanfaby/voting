@@ -74,7 +74,7 @@
                     <a class="mg-awaiting-card" href="{{ $href }}" data-name="{{ strtolower($candidate->name) }}">
                         <div class="mg-awaiting-card__photo">
                             @if(!empty($candidate->image))
-                                <img src="{{ $img }}" alt="{{ $candidate->name }}" loading="lazy" width="88" height="88">
+                                <img src="{{ $img }}" alt="{{ $candidate->name }}" loading="lazy" decoding="async" width="88" height="88">
                             @else
                                 <span class="mg-awaiting-card__initial">{{ strtoupper(substr($candidate->name, 0, 1)) }}</span>
                             @endif

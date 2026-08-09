@@ -1,6 +1,7 @@
 <link rel="stylesheet" href="<?php echo asset('public/vendor/font-awesome/css/font-awesome.min.css') ?>" type="text/css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap">
 <style>
     :root {
         --brand-blue: #1d4ed8;
@@ -13,13 +14,15 @@
     body {
         margin: 0;
         min-height: 100vh;
-        font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+        min-height: 100dvh;
+        font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         background: linear-gradient(135deg, #0c2f6b 0%, #0a2350 55%, #07172f 100%);
         color: var(--ink);
         display: flex;
         align-items: center;
         justify-content: center;
         position: relative;
+        -webkit-tap-highlight-color: transparent;
     }
     .auth-wrap { position: relative; z-index: 1; width: 100%; max-width: 430px; padding: 24px; }
     .auth-card {
@@ -74,7 +77,7 @@
     .field input {
         width: 100%;
         padding: 14px 16px 14px 44px;
-        font-size: 14.5px;
+        font-size: 16px; /* prevents iOS zoom on focus */
         color: var(--ink);
         background: #faf6f0;
         border: 1px solid #ece1d3;
@@ -82,6 +85,7 @@
         outline: none;
         font-family: inherit;
         transition: border-color .2s, box-shadow .2s;
+        min-height: 48px;
     }
     .field input:focus {
         border-color: var(--brand-gold);
@@ -94,10 +98,10 @@
     }
     .otp-field input {
         width: 100%;
-        padding: 16px;
-        font-size: 24px;
+        padding: 16px 10px;
+        font-size: 22px;
         font-weight: 700;
-        letter-spacing: 12px;
+        letter-spacing: 0.35em;
         text-align: center;
         color: var(--ink);
         background: #fff;
@@ -105,8 +109,10 @@
         border-radius: 14px;
         outline: none;
         font-family: inherit;
+        min-height: 56px;
     }
     .otp-field input:focus { box-shadow: 0 0 0 3px rgba(245,197,24,.25); }
+    .btn-auth:disabled { opacity: .55; cursor: not-allowed; filter: none; }
     .otp-dest {
         text-align: center;
         margin: 0 0 14px;
@@ -127,13 +133,18 @@
     }
     .otp-timer.expired { color: #94a3b8; }
     @media (max-width: 480px) {
-        .auth-wrap { padding: 14px; max-width: 100%; }
-        .auth-card__head { padding: 28px 18px 18px; }
-        .auth-body { padding: 18px 16px 24px; }
-        .otp-field input { font-size: 22px; letter-spacing: 8px; padding: 14px 8px; }
-        .btn-auth { min-height: 48px; font-size: 16px; }
-        .auth-logo { width: 84px; height: 84px; }
+        .auth-wrap { padding: 12px; max-width: 100%; padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
+        .auth-card__head { padding: 24px 16px 16px; }
+        .auth-body { padding: 16px 14px 22px; }
+        .otp-field input { font-size: 20px; letter-spacing: 0.28em; padding: 14px 6px; }
+        .btn-auth { min-height: 50px; font-size: 16px; }
+        .auth-logo { width: 76px; height: 76px; }
+        .auth-logo img { animation: none; } /* save battery on mobile grading logins */
+        .auth-logo { animation: mg-logo-in .6s ease-out both; }
         .page-credit { position: static; margin: 18px 12px 10px; }
+    }
+    @media (prefers-reduced-motion: reduce), (max-width: 480px) {
+        .auth-logo img { animation: none !important; }
     }
     .btn-auth {
         width: 100%;

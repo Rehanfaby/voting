@@ -1757,7 +1757,8 @@ class HomeController extends Controller
     public function otpResend()
     {
         $user = Auth::user();
-        if ($this->sendOTP($user)) {
+        // Defer WhatsApp like first send — mobile resend must not wait on UltraMsg.
+        if ($this->sendOTP($user, true)) {
             return redirect()->route('check.otp')->with('message', trans('file.OTP resent successfully'));
         }
 
@@ -1768,7 +1769,7 @@ class HomeController extends Controller
     {
         Auth::logout();
 
-        return redirect()->route('home');
+        return redirect()->route('login');
     }
 
     public function otpCheckStore(Request $request) {

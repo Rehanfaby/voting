@@ -1,34 +1,48 @@
 <!DOCTYPE html>
 <html>
+@php
+    $mgBodyRole = strtolower((string) (
+        optional(Auth::user()->role)->name
+        ?: optional(DB::table('roles')->find(Auth::user()->role_id))->name
+        ?: ''
+    ));
+    // Judges / ambassadors only need grading UI — skip TinyMCE, DataTables/pdfmake, charts, etc.
+    $mgLiteAssets = in_array($mgBodyRole, ['judge', 'ambassador'], true);
+@endphp
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <link rel="icon" type="image/png" href="{{url('public/logo', $general_setting->site_logo)}}" />
     <title>{{$general_setting->site_title}}</title>
     <meta name="description" content="">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="robots" content="all,follow">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="theme-color" content="#0a2350">
     <link rel="manifest" href="{{url('manifest.json')}}">
     <!-- Bootstrap CSS-->
     <link rel="stylesheet" href="<?php echo asset('public/vendor/bootstrap/css/bootstrap.min.css') ?>" type="text/css">
+    @unless($mgLiteAssets)
     <link rel="stylesheet" href="<?php echo asset('public/vendor/bootstrap-toggle/css/bootstrap-toggle.min.css') ?>" type="text/css">
     <link rel="stylesheet" href="<?php echo asset('public/vendor/bootstrap/css/bootstrap-datepicker.min.css') ?>" type="text/css">
     <link rel="stylesheet" href="<?php echo asset('public/vendor/jquery-timepicker/jquery.timepicker.min.css') ?>" type="text/css">
+    @endunless
     <link rel="stylesheet" href="<?php echo asset('public/vendor/bootstrap/css/awesome-bootstrap-checkbox.css') ?>" type="text/css">
     <link rel="stylesheet" href="<?php echo asset('public/vendor/bootstrap/css/bootstrap-select.min.css') ?>" type="text/css">
     <!-- Font Awesome CSS-->
     <link rel="stylesheet" href="<?php echo asset('public/vendor/font-awesome/css/font-awesome.min.css') ?>" type="text/css">
     <!-- Drip icon font-->
     <link rel="stylesheet" href="<?php echo asset('public/vendor/dripicons/webfont.css') ?>" type="text/css">
-    <!-- Google fonts - Roboto -->
+    @unless($mgLiteAssets)
+    <!-- Google fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito:400,500,700">
     <!-- jQuery Circle-->
     <link rel="stylesheet" href="<?php echo asset('public/css/grasp_mobile_progress_circle-1.0.0.min.css') ?>" type="text/css">
+    @endunless
     <!-- Custom Scrollbar-->
     <link rel="stylesheet" href="<?php echo asset('public/vendor/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.css') ?>" type="text/css">
 
-    @if(Route::current()->getName() != '/')
+    @if(!$mgLiteAssets && Route::current() && Route::current()->getName() != '/')
         <!-- date range stylesheet-->
         <link rel="stylesheet" href="<?php echo asset('public/vendor/daterange/css/daterangepicker.min.css') ?>" type="text/css">
         <!-- table sorter stylesheet-->
@@ -38,30 +52,40 @@
     @endif
 
     <link rel="stylesheet" href="<?php echo asset('public/css/style.default.css') ?>" id="theme-stylesheet" type="text/css">
+    @unless($mgLiteAssets)
     <link rel="stylesheet" href="<?php echo asset('public/css/dropzone.css') ?>">
+    @endunless
 
 
     <script type="text/javascript" src="<?php echo asset('public/vendor/jquery/jquery.min.js') ?>"></script>
+    @unless($mgLiteAssets)
     <script type="text/javascript" src="<?php echo asset('public/vendor/jquery/jquery-ui.min.js') ?>"></script>
     <script type="text/javascript" src="<?php echo asset('public/vendor/jquery/bootstrap-datepicker.min.js') ?>"></script>
     <script type="text/javascript" src="<?php echo asset('public/vendor/jquery/jquery.timepicker.min.js') ?>"></script>
+    @endunless
     <script type="text/javascript" src="<?php echo asset('public/vendor/popper.js/umd/popper.min.js') ?>">
     </script>
     <script type="text/javascript" src="<?php echo asset('public/vendor/bootstrap/js/bootstrap.min.js') ?>"></script>
+    @unless($mgLiteAssets)
     <script type="text/javascript" src="<?php echo asset('public/vendor/bootstrap-toggle/js/bootstrap-toggle.min.js') ?>"></script>
+    @endunless
     <script type="text/javascript" src="<?php echo asset('public/vendor/bootstrap/js/bootstrap-select.min.js') ?>"></script>
 
+    @unless($mgLiteAssets)
     <script type="text/javascript" src="<?php echo asset('public/js/grasp_mobile_progress_circle-1.0.0.min.js') ?>"></script>
+    @endunless
     <script type="text/javascript" src="<?php echo asset('public/vendor/jquery.cookie/jquery.cookie.js') ?>">
     </script>
+    @unless($mgLiteAssets)
     <script type="text/javascript" src="<?php echo asset('public/vendor/chart.js/Chart.min.js') ?>"></script>
     <script type="text/javascript" src="<?php echo asset('public/js/charts-custom.js') ?>"></script>
+    @endunless
     <script type="text/javascript" src="<?php echo asset('public/vendor/jquery-validation/jquery.validate.min.js') ?>"></script>
     <script type="text/javascript" src="<?php echo asset('public/vendor/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.concat.min.js')?>"></script>
 
     <script type="text/javascript" src="<?php echo asset('public/js/front.js') ?>"></script>
 
-    @if(Route::current()->getName() != '/')
+    @if(!$mgLiteAssets && Route::current() && Route::current()->getName() != '/')
         <script type="text/javascript" src="<?php echo asset('public/vendor/daterange/js/moment.min.js') ?>"></script>
         <script type="text/javascript" src="<?php echo asset('public/vendor/daterange/js/knockout-3.4.2.js') ?>"></script>
         <script type="text/javascript" src="<?php echo asset('public/vendor/daterange/js/daterangepicker.min.js') ?>"></script>
@@ -89,7 +113,7 @@
     <!-- Custom stylesheet - for your changes-->
     <link rel="stylesheet" href="<?php echo asset('public/css/custom-'.$general_setting->theme) ?>" type="text/css" id="custom-style">
     <!-- Modern admin theme overlay (Alpha Bridge inspired) -->
-    <link rel="stylesheet" href="<?php echo asset('public/css/admin-modern.css') ?>?v=20260806-mobile-menu-scroll" type="text/css" id="admin-modern-style">
+    <link rel="stylesheet" href="<?php echo asset('public/css/admin-modern.css') ?>?v=20260809-grader-mobile" type="text/css" id="admin-modern-style">
     <style>
         /* Header layout guarantee: logo top-left ALONE, fullscreen + language top-right.
            Inline so it always wins over any cached copy of the base theme / admin-modern.css. */
@@ -103,17 +127,14 @@
         .header .navbar-holder .nav-menu { margin-left: auto !important; margin-right: 8px !important; order: 9 !important; flex: 1 1 auto; }
         .header .navbar-holder .nav-menu.ms-header-nav { justify-content: flex-end; }
         .header .navbar-holder .ms-lang-switch--header-end { margin-left: auto !important; }
+        @if($mgLiteAssets)
+        body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+        #loader { display: none !important; }
+        @endif
     </style>
 </head>
 
-@php
-    $mgBodyRole = strtolower((string) (
-        optional(Auth::user()->role)->name
-        ?: optional(DB::table('roles')->find(Auth::user()->role_id))->name
-        ?: ''
-    ));
-@endphp
-<body onload="myFunction()" class="mg-role-{{ preg_replace('/[^a-z0-9]+/', '-', $mgBodyRole) }}">
+<body onload="myFunction()" class="mg-role-{{ preg_replace('/[^a-z0-9]+/', '-', $mgBodyRole) }}{{ $mgLiteAssets ? ' mg-lite-assets' : '' }}">
 <div id="loader"></div>
 <!-- Side Navbar -->
 <nav class="side-navbar">

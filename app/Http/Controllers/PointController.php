@@ -10,6 +10,7 @@ use App\Point;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Spatie\Permission\Models\Role;
 
 class PointController extends Controller
@@ -25,7 +26,7 @@ class PointController extends Controller
         $isJudge = $judgeRole && (int) Auth::user()->role_id === (int) $judgeRole->id;
         $grading_disabled = !$this->isGradingAvailable();
 
-        $query = Point::with(['judge', 'contestant'])
+        $query = Point::with(['judge:id,name', 'contestant:id,name,image'])
             ->whereHas('contestant', function ($q) {
                 $q->where('is_active', true)->where('is_approve', true);
             });
@@ -44,17 +45,27 @@ class PointController extends Controller
         $candidate_id = $candidate_id ?? $request->candidate_id;
         $candidate_name = null;
         if ($candidate_id) {
-            $candidate_name = Employee::where('id', $candidate_id)->where('is_active', true)->where('is_approve', true)->first()->name;
+            $candidate = Employee::where('id', $candidate_id)->where('is_active', true)->where('is_approve', true)->first(['id', 'name']);
+            $candidate_name = $candidate ? $candidate->name : null;
         }
 
-        $judge_role_id = Role::where('name', 'judge')->first()->id;
-        $judges = User::where('is_deleted', false)->where('role_id', $judge_role_id)->get();
-        if ($this->isGradingAvailable()) {
-            $candidates = Employee::orderBy('name')->where('is_active', true)->where('is_approve', true)->get();
+        $judge_role_id = (int) $this->getJudgeRoleId();
+        $isJudge = (int) Auth::user()->role_id === $judge_role_id;
+
+        // Mobile grading path: card → create/{id} — skip loading full judge/candidate lists.
+        if ($isJudge && $candidate_id) {
+            $judges = collect();
+            $candidates = collect();
         } else {
-            $candidates = [];
+            $judges = User::where('is_deleted', false)->where('role_id', $judge_role_id)->get(['id', 'name']);
+            if ($this->isGradingAvailable()) {
+                $candidates = Employee::orderBy('name')->where('is_active', true)->where('is_approve', true)->get(['id', 'name']);
+            } else {
+                $candidates = collect();
+            }
         }
-        return view('points.create', compact('judges','candidates', 'candidate_id', 'candidate_name'));
+
+        return view('points.create', compact('judges','candidates', 'candidate_id', 'candidate_name', 'judge_role_id'));
     }
 
     public function store(StorePointRequest $request)
@@ -72,6 +83,7 @@ class PointController extends Controller
         $point = Point::create($data);
         $point->calculateTotal();
         $point->save();
+        Cache::forget('grader_dash_stats_judge_' . Auth::id());
 
         return redirect()->route('points.awaiting_candidates')->with('success', 'Point saved successfully');
     }
@@ -85,10 +97,10 @@ class PointController extends Controller
     public function edit(Point $point)
     {
 //        $judges = Judge::orderBy('name')->where('is_active', true)->get();
-        $judge_role_id = Role::where('name', 'judge')->first()->id;
-        $judges = User::where('is_deleted', false)->where('role_id', $judge_role_id)->get();
-        $candidates = Employee::orderBy('name')->where('is_active', true)->where('is_approve', true)->get();
-        return view('points.edit', compact('point','judges','candidates'));
+        $judge_role_id = (int) $this->getJudgeRoleId();
+        $judges = User::where('is_deleted', false)->where('role_id', $judge_role_id)->get(['id', 'name']);
+        $candidates = Employee::orderBy('name')->where('is_active', true)->where('is_approve', true)->get(['id', 'name']);
+        return view('points.edit', compact('point','judges','candidates', 'judge_role_id'));
     }
 
     public function update(StorePointRequest $request, $id)
@@ -114,6 +126,7 @@ class PointController extends Controller
         $point = Point::where('id', $id)->first();
         $point->calculateTotal();
         $point->save();
+        Cache::forget('grader_dash_stats_judge_' . Auth::id());
 
         return redirect()->route('points.awaiting_candidates')->with('success', 'Point updated');
     }
@@ -137,7 +150,7 @@ class PointController extends Controller
             ->toArray();
 
         // Fetch all contestants with a "rated" flag
-        $contestants = Employee::where('is_active', true)->where('is_approve', true)->get()->map(function ($contestant) use ($ratedContestants) {
+        $contestants = Employee::where('is_active', true)->where('is_approve', true)->get(['id', 'name'])->map(function ($contestant) use ($ratedContestants) {
             return [
                 'id'     => $contestant->id,
                 'name'   => $contestant->name,
@@ -160,7 +173,8 @@ class PointController extends Controller
 
         $query = Employee::where('is_active', true)
             ->where('is_approve', true)
-            ->orderBy('name');
+            ->orderBy('name')
+            ->select(['id', 'name', 'image']);
 
         if ($isJudge) {
             $gradedIds = Point::where('judge_id', $user_id)

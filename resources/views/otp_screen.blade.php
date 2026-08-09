@@ -1,11 +1,11 @@
-<?php $general_setting = DB::table('general_settings')->find(1); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>{{ $general_setting->site_title }} — {{ trans('file.Verify OTP') }}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#0a2350">
     <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <link rel="icon" type="image/png" href="{{ url('public/logo', $general_setting->site_logo) }}" />
@@ -41,10 +41,10 @@
                 <form action="{{ route('check.otp.store') }}" method="post">
                     @csrf
                     <div class="otp-field">
-                        <input id="login-otp" type="text" name="otp" required inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="000000" autocomplete="one-time-code" autofocus>
+                        <input id="login-otp" type="text" name="otp" required inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="000000" autocomplete="one-time-code" enterkeyhint="done" autofocus>
                     </div>
                     <p class="otp-timer" id="otp-expiry">{{ trans('file.Code expires in') }} <span id="otp-expiry-time">3:00</span></p>
-                    <button type="submit" class="btn-auth">{{ trans('file.Verify OTP') }}</button>
+                    <button type="submit" class="btn-auth" id="otp-submit">{{ trans('file.Verify OTP') }}</button>
                 </form>
 
                 <div class="resend-row">
@@ -83,10 +83,16 @@
             var resendForm = document.getElementById('resend-form');
             var otpInput = document.getElementById('login-otp');
 
+            var otpSubmit = document.getElementById('otp-submit');
             if (otpInput) {
+                var syncOtpBtn = function () {
+                    if (otpSubmit) otpSubmit.disabled = otpInput.value.length !== 6;
+                };
                 otpInput.addEventListener('input', function () {
                     this.value = this.value.replace(/\D/g, '').slice(0, 6);
+                    syncOtpBtn();
                 });
+                syncOtpBtn();
             }
 
             function pad(n) { return n < 10 ? '0' + n : '' + n; }

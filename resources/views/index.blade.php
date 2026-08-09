@@ -29,36 +29,46 @@
     $pendingGrading = 0;
     if ($isGraderDashboard) {
         $uid = (int) Auth::id();
-        // Only count grades for current active+approved contestants (same pool as Awaiting Grading).
-        // Orphan rows left after contestant purge must not inflate "Number Graded".
-        if ($roleNameLower === 'ambassador') {
-            $gradedByMe = (int) $__safe(function () use ($uid) {
-                return \App\Employee::where('is_active', true)
-                    ->where('is_approve', true)
-                    ->whereIn('id', function ($q) use ($uid) {
-                        $q->select('candidate_id')
-                            ->from('ambassador_points')
-                            ->where('ambassador_id', $uid);
-                    })
-                    ->count();
-            });
-            $awaitingRoute = route('ambassador_points.awaiting_candidates');
-            $listingRoute = route('ambassador_points.index');
-        } else {
-            $gradedByMe = (int) $__safe(function () use ($uid) {
-                return \App\Employee::where('is_active', true)
-                    ->where('is_approve', true)
-                    ->whereIn('id', function ($q) use ($uid) {
-                        $q->select('candidate_id')
-                            ->from('points')
-                            ->where('judge_id', $uid);
-                    })
-                    ->count();
-            });
-            $awaitingRoute = route('points.awaiting_candidates');
-            $listingRoute = route('points.index');
-        }
-        $pendingGrading = max(0, $totalContestants - $gradedByMe);
+        $awaitingRoute = $roleNameLower === 'ambassador'
+            ? route('ambassador_points.awaiting_candidates')
+            : route('points.awaiting_candidates');
+        $listingRoute = $roleNameLower === 'ambassador'
+            ? route('ambassador_points.index')
+            : route('points.index');
+
+        // Brief cache so post-OTP mobile dashboard is not rebuilding counts every tap.
+        $graderStats = \Cache::remember('grader_dash_stats_' . $roleNameLower . '_' . $uid, 60, function () use ($__safe, $uid, $roleNameLower, $totalContestants) {
+            if ($roleNameLower === 'ambassador') {
+                $graded = (int) $__safe(function () use ($uid) {
+                    return \App\Employee::where('is_active', true)
+                        ->where('is_approve', true)
+                        ->whereIn('id', function ($q) use ($uid) {
+                            $q->select('candidate_id')
+                                ->from('ambassador_points')
+                                ->where('ambassador_id', $uid);
+                        })
+                        ->count();
+                });
+            } else {
+                $graded = (int) $__safe(function () use ($uid) {
+                    return \App\Employee::where('is_active', true)
+                        ->where('is_approve', true)
+                        ->whereIn('id', function ($q) use ($uid) {
+                            $q->select('candidate_id')
+                                ->from('points')
+                                ->where('judge_id', $uid);
+                        })
+                        ->count();
+                });
+            }
+
+            return [
+                'graded' => $graded,
+                'pending' => max(0, (int) $totalContestants - $graded),
+            ];
+        });
+        $gradedByMe = (int) ($graderStats['graded'] ?? 0);
+        $pendingGrading = (int) ($graderStats['pending'] ?? 0);
     }
 @endphp
 

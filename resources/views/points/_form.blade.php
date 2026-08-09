@@ -28,7 +28,7 @@
             <div class="mg-grade__field">
                 <label for="judge_id">Judge</label>
                 <select name="judge_id" id="judge_id" class="form-control" required data-live-search="true">
-                    @if(auth()->user()->role_id == \App\Roles::where('name', 'judge')->where('is_active', true)->first()->id)
+                    @if((int) auth()->user()->role_id === (int) ($judge_role_id ?? 0))
                         <option value="{{ auth()->user()->id }}" selected>{{ auth()->user()->name }}</option>
                     @else
                         <option value="">Choose</option>

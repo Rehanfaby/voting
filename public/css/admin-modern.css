@@ -1161,11 +1161,33 @@ a.ms-stat:hover::after {
 }
 
 /* Ambassador / Judge grading portal — phone layout */
+body.mg-lite-assets .header .brand-big img.mg-spin-logo {
+    animation: none;
+}
+body.mg-role-ambassador .mg-awaiting-card,
+body.mg-role-judge .mg-awaiting-card,
+body.mg-role-ambassador .mg-list-card,
+body.mg-role-judge .mg-list-card {
+    content-visibility: auto;
+    contain-intrinsic-size: 88px;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+body.mg-role-ambassador .mg-awaiting-card img,
+body.mg-role-judge .mg-awaiting-card img {
+    content-visibility: auto;
+}
+
 @media (max-width: 991.98px) {
+    body.mg-role-ambassador,
+    body.mg-role-judge {
+        -webkit-text-size-adjust: 100%;
+    }
     body.mg-role-ambassador #content,
     body.mg-role-judge #content {
         padding-left: 6px !important;
         padding-right: 6px !important;
+        padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
     }
     body.mg-role-ambassador .ms-section-tabs,
     body.mg-role-judge .ms-section-tabs {
@@ -1188,14 +1210,19 @@ a.ms-stat:hover::after {
     body.mg-role-ambassador .btn,
     body.mg-role-judge .bootstrap-select .dropdown-toggle,
     body.mg-role-judge .form-control,
-    body.mg-role-judge .btn {
-        min-height: 44px;
+    body.mg-role-judge .btn,
+    body.mg-role-ambassador input[type="number"],
+    body.mg-role-judge input[type="number"],
+    body.mg-role-ambassador input[type="search"],
+    body.mg-role-judge input[type="search"] {
+        min-height: 48px;
+        font-size: 16px; /* prevent iOS input zoom */
     }
     body.mg-role-ambassador .mg-grade-page,
     body.mg-role-judge .mg-grade-page,
     body.mg-role-ambassador .mg-awaiting,
     body.mg-role-judge .mg-awaiting {
-        padding-bottom: 88px;
+        padding-bottom: 96px;
     }
     body.mg-role-ambassador .mg-grade,
     body.mg-role-judge .mg-grade,
@@ -1213,6 +1240,8 @@ a.ms-stat:hover::after {
         margin-right: -6px;
         border-radius: 16px 16px 0 0;
         padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+        box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.12);
+        background: #fff;
     }
     body.mg-role-ambassador .mg-awaiting-card,
     body.mg-role-judge .mg-awaiting-card,
@@ -1220,6 +1249,7 @@ a.ms-stat:hover::after {
     body.mg-role-judge .mg-list-card {
         width: 100%;
         max-width: 100%;
+        min-height: 72px;
     }
     body.mg-role-ambassador .mg-grade-page__hero,
     body.mg-role-judge .mg-grade-page__hero,
@@ -1233,6 +1263,19 @@ a.ms-stat:hover::after {
     body.mg-role-ambassador .mg-awaiting__title,
     body.mg-role-judge .mg-awaiting__title {
         font-size: 1.15rem !important;
+    }
+    body.mg-role-ambassador .mg-awaiting__hero,
+    body.mg-role-judge .mg-awaiting__hero {
+        flex-direction: column;
+        gap: 10px;
+    }
+    body.mg-role-ambassador .mg-awaiting__count,
+    body.mg-role-judge .mg-awaiting__count {
+        align-self: flex-start;
+    }
+    body.mg-role-ambassador .side-navbar,
+    body.mg-role-judge .side-navbar {
+        overscroll-behavior: contain;
     }
 }
 

@@ -1,11 +1,11 @@
-<?php $general_setting = DB::table('general_settings')->find(1); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>{{ $general_setting->site_title }} — Sign In</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#0a2350">
     <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <link rel="icon" type="image/png" href="{{ url('public/logo', $general_setting->site_logo) }}" />
@@ -35,7 +35,7 @@
                     @csrf
                     <div class="field">
                         <i class="fa fa-user fld-icon"></i>
-                        <input type="text" name="name" placeholder="Username" required autofocus value="{{ old('name') }}" autocomplete="username">
+                        <input type="text" name="name" placeholder="Name, email or phone" required autofocus value="{{ old('name') }}" autocomplete="username" enterkeyhint="next" autocapitalize="none" spellcheck="false">
                     </div>
                     @if ($errors->has('name'))
                         <p class="field-error">{{ $errors->first('name') }}</p>
