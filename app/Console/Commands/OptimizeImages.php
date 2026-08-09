@@ -11,9 +11,9 @@ use App\Helpers\ImageOptimizer;
  */
 class OptimizeImages extends Command
 {
-    protected $signature = 'images:optimize {--max=1000 : Max longest edge in px} {--quality=78 : JPEG/PNG quality}';
+    protected $signature = 'images:optimize {--max=800 : Max longest edge in px} {--quality=68 : JPEG/PNG quality}';
 
-    protected $description = 'Downscale and compress existing contestant images (and build thumbnails) for faster loading';
+    protected $description = 'Downscale and compress existing site images (and build thumbnails) for faster loading';
 
     public function handle()
     {
@@ -22,17 +22,22 @@ class OptimizeImages extends Command
         $max = (int) $this->option('max');
         $quality = (int) $this->option('quality');
 
-        // folder => build thumbnails?
+        // folder => [makeThumb, thumbSize]
         $targets = [
-            public_path('images/employee') => true,
-            public_path('employee/data')   => false,
+            public_path('images/employee') => [true, 240],
+            public_path('employee/data')   => [true, 480],
+            public_path('images/product')  => [true, 280],
+            public_path('images/category') => [true, 280],
+            public_path('uploads/gallery') => [true, 480],
+            public_path('images/gallery')  => [true, 480],
         ];
 
         $exts = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
         $total = 0;
         $savedBytes = 0;
 
-        foreach ($targets as $dir => $makeThumb) {
+        foreach ($targets as $dir => $opts) {
+            list($makeThumb, $thumbSize) = $opts;
             if (!is_dir($dir)) {
                 $this->warn("Skip (missing): {$dir}");
                 continue;
@@ -51,7 +56,7 @@ class OptimizeImages extends Command
                 $before = filesize($path);
                 ImageOptimizer::optimize($path, $max, $quality);
                 if ($makeThumb) {
-                    ImageOptimizer::thumbnail($path, 320, 70);
+                    ImageOptimizer::thumbnail($path, $thumbSize, 65);
                 }
                 clearstatcache(true, $path);
                 $after = filesize($path);

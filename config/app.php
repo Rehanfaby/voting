@@ -24,9 +24,9 @@ return [
     | MGT label after deploys). Cache-bust query strings use this value too.
     */
 
-    'version' => '3.5.3',
+    'version' => '3.5.4',
 
-    'version_label' => 'MGT V.3.5.3',
+    'version_label' => 'MGT V.3.5.4',
 
     /*
     |--------------------------------------------------------------------------

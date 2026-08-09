@@ -334,13 +334,19 @@ class HomeController extends Controller
         // Note: '/' always renders the public website, even for logged-in admins.
         // Admins reach the dashboard via '/admin' (see HomeController@admin).
 
-        $musicians = Employee::publiclyListed()->get();
-        $judges = Judge::where('is_active', true)
-            ->whereNotIn('name', Ambassador::pluck('name'))
-            ->where('name', 'not like', 'Ambassador %')
-            ->orderBy('sort_order')->orderBy('id')->get();
-        $ambassadors = Ambassador::where('is_active', true)->orderBy('sort_order')->orderBy('id')->get();
-        $partners = \App\Partner::where('is_active', true)->orderBy('sort_order')->orderBy('id')->get();
+        $musicians = $this->cachedPublicContestants();
+        $judges = \Cache::remember('home_judges_v1', 120, function () {
+            return Judge::where('is_active', true)
+                ->whereNotIn('name', Ambassador::pluck('name'))
+                ->where('name', 'not like', 'Ambassador %')
+                ->orderBy('sort_order')->orderBy('id')->get();
+        });
+        $ambassadors = \Cache::remember('home_ambassadors_v1', 120, function () {
+            return Ambassador::where('is_active', true)->orderBy('sort_order')->orderBy('id')->get();
+        });
+        $partners = \Cache::remember('home_partners_v1', 120, function () {
+            return \App\Partner::where('is_active', true)->orderBy('sort_order')->orderBy('id')->get();
+        });
 
 //        $judges = User::where('is_active', true)->where('role_id', $judge_role_id)->get();
 //        $ambassadors = User::where('is_active', true)->where('role_id', $ambassador_role_id)->get();
@@ -409,14 +415,7 @@ class HomeController extends Controller
 
         SiteContent::expirePastEvents();
 
-        // Total valid (paid) votes per contestant, keyed by musician id, for the
-        // top carousel. Without this the view falls back to 0 for everyone.
-        $vote_counts = DB::table('votes')
-            ->select('musician_id', DB::raw('SUM(vote) as total_vote'))
-            ->where('status', true)
-            ->groupBy('musician_id')
-            ->pluck('total_vote', 'musician_id')
-            ->toArray();
+        $vote_counts = $this->cachedPublicVoteCounts();
 
         return view('frontend.home', compact('musicians', 'judges', 'best_musician', 'see_votes', 'ambassadors', 'partners', 'best_musicians', 'best_musician_data', 'vote_counts', 'weekly_top'));
     }
@@ -444,8 +443,13 @@ class HomeController extends Controller
         $socialLinks = Gallery::where('employee_id', $id)
             ->whereIn('type', \App\Helpers\SocialEmbed::linkTypes())
             ->get();
-        $contentants = Employee::publiclyListed()->get();
-        $teamData = $this->contestantTeamPageData($contentants);
+        $all = $this->cachedPublicContestants();
+        $contentants = $all->where('id', '!=', (int) $id)->take(12)->values();
+        $teamData = [
+            'musicians' => $contentants,
+            'see_votes' => \App\Helpers\VoteSettings::showPublicCounts(),
+            'vote_counts' => $this->cachedPublicVoteCounts(),
+        ];
 
         return view('frontend.employee', array_merge(
             compact('musician', 'contentants', 'images', 'audios', 'videos', 'socialLinks', 'vote_count'),
@@ -1059,18 +1063,34 @@ class HomeController extends Controller
     private function contestantTeamPageData($musicians = null)
     {
         if ($musicians === null) {
-            $musicians = Employee::publiclyListed()->get();
+            $musicians = $this->cachedPublicContestants();
         }
 
         $see_votes = \App\Helpers\VoteSettings::showPublicCounts();
-        $vote_counts = DB::table('votes')
-            ->select('musician_id', DB::raw('SUM(vote) as total_vote'))
-            ->where('status', true)
-            ->groupBy('musician_id')
-            ->pluck('total_vote', 'musician_id')
-            ->toArray();
+        $vote_counts = $this->cachedPublicVoteCounts();
 
         return compact('musicians', 'see_votes', 'vote_counts');
+    }
+
+    private function cachedPublicContestants()
+    {
+        return \Cache::remember(\App\Helpers\AppCache::PUBLIC_CONTESTANTS, 90, function () {
+            return Employee::publiclyListed()
+                ->orderBy('name')
+                ->get(['id', 'name', 'image', 'city', 'department_id', 'is_active', 'is_approve', 'is_eliminate']);
+        });
+    }
+
+    private function cachedPublicVoteCounts()
+    {
+        return \Cache::remember(\App\Helpers\AppCache::PUBLIC_VOTE_COUNTS, 60, function () {
+            return DB::table('votes')
+                ->select('musician_id', DB::raw('SUM(vote) as total_vote'))
+                ->where('status', true)
+                ->groupBy('musician_id')
+                ->pluck('total_vote', 'musician_id')
+                ->toArray();
+        });
     }
 
     /**
@@ -1449,6 +1469,9 @@ class HomeController extends Controller
         }
 
         if ($vote) {
+            \Cache::forget(\App\Helpers\AppCache::PUBLIC_VOTE_COUNTS);
+            \Cache::forget('admin_dashboard_stats_v2');
+
             // Use the account holder name registered on the paying MoMo number as
             // the authoritative voter name once the payment is confirmed.
             try {

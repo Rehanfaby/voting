@@ -54,7 +54,7 @@
                             <div class="tab-content br-15 ms-bg-2 d-flex align-items-center" id="modalTabContent">
                                 <div class="tab-pane fade active show" id="nav1" role="tabpanel" aria-labelledby="nav1-tab">
                                     <div class="product__modal-img w-img">
-                                        <img src="{{url('public/images/employee',$musician->image)}}" alt="{{ $musician->name }}" loading="lazy" decoding="async">
+                                        <img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($musician->image, false) }}" alt="{{ $musician->name }}" loading="eager" decoding="async">
                                     </div>
                                 </div>
                             </div>
@@ -121,7 +121,7 @@
                                                 <div class="row">
                                                     @foreach($images as $image)
                                                         <div class="col-md-2">
-                                                            <img src="{{asset('public/employee/data/'.$image->file)}}" class="img-fluid">
+                                                            <img src="{{ \App\Helpers\ImageOptimizer::publicImageUrl('public/employee/data/'.$image->file) }}" class="img-fluid" loading="lazy" decoding="async" alt="">
                                                         </div>
                                                     @endforeach
                                                 </div>

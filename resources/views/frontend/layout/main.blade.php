@@ -23,7 +23,6 @@
     <link rel="stylesheet" href="{{ asset('public/frontend/css/css-main.css') }}">
     <link rel="stylesheet" href="{{ asset('public/css/frontend-modern.css') }}?v={{ config('app.version') }}" type="text/css" id="frontend-modern-style">
     @yield('styles')
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 
 <body>
@@ -464,7 +463,10 @@
             </div>
             <!-- Back to top end -->
 
-            <!-- JS here -->
+            <!-- JS here — single jQuery; heavy animation/player libs only on home -->
+            @php
+                $mgFeHeavy = request()->is('/') || request()->routeIs('home');
+            @endphp
             <script data-cfasync="false" src="{{ asset('public/frontend/js/cloudflare-static-email-decode.min.js') }}"></script>
             <script src="{{ asset('public/frontend/js/js-jquery-3.6.0.min.js') }}"></script>
             <script src="{{ asset('public/frontend/js/js-waypoints.min.js') }}"></script>
@@ -472,10 +474,13 @@
             <script src="{{ asset('public/frontend/js/js-nice-select.min.js') }}"></script>
             <script src="{{ asset('public/frontend/js/js-meanmenu.min.js') }}"></script>
             <script src="{{ asset('public/frontend/js/js-swiper-bundle.min.js') }}"></script>
+            @if($mgFeHeavy)
             <script src="{{ asset('public/frontend/js/js-slick.min.js') }}"></script>
+            @endif
             <script src="{{ asset('public/frontend/js/js-magnific-popup.min.js') }}"></script>
             <script src="{{ asset('public/frontend/js/js-backtotop.js') }}"></script>
             <script src="{{ asset('public/frontend/js/js-ajax-form.js') }}"></script>
+            @if($mgFeHeavy)
             <script src="{{ asset('public/frontend/js/js-jquery-ui.min.js') }}"></script>
             <script src="{{ asset('public/frontend/js/js-gsap.min.js') }}"></script>
             <script src="{{ asset('public/frontend/js/js-ScrollToPlugin.min.js') }}"></script>
@@ -483,8 +488,9 @@
             <script src="{{ asset('public/frontend/js/js-ScrollTrigger.min.js') }}"></script>
             <script src="{{ asset('public/frontend/js/js-jquery.jplayer.min.js') }}"></script>
             <script src="{{ asset('public/frontend/js/js-jplayer.playlist.js') }}"></script>
-{{--            <script src="{{ asset('public/frontend/js/js-settings.js') }}"></script>--}}
+            @endif
             <script src="{{ asset('public/frontend/js/js-main.js') }}"></script>
+            @stack('frontend-heavy')
             <script>
             (function () {
                 document.querySelectorAll('.mg-fe-user-dropdown').forEach(function (wrap) {

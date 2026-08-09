@@ -22,8 +22,14 @@
     ));
     $isGraderDashboard = in_array($roleNameLower, ['judge', 'ambassador'], true);
 
-    $totalContestants   = (int) $__safe(function () { return \App\Employee::where('is_active', true)->where('is_approve', true)->count(); });
-    $pendingContestants = (int) $__safe(function () { return \App\Employee::where('is_active', true)->where('is_approve', false)->count(); });
+    $contestantCounts = \Cache::remember('dash_contestant_counts_v1', 120, function () use ($__safe) {
+        return [
+            'total' => (int) $__safe(function () { return \App\Employee::where('is_active', true)->where('is_approve', true)->count(); }),
+            'pending' => (int) $__safe(function () { return \App\Employee::where('is_active', true)->where('is_approve', false)->count(); }),
+        ];
+    });
+    $totalContestants   = (int) ($contestantCounts['total'] ?? 0);
+    $pendingContestants = (int) ($contestantCounts['pending'] ?? 0);
 
     $gradedByMe = 0;
     $pendingGrading = 0;
@@ -36,7 +42,6 @@
             ? route('ambassador_points.index')
             : route('points.index');
 
-        // Brief cache so post-OTP mobile dashboard is not rebuilding counts every tap.
         $graderStats = \Cache::remember('grader_dash_stats_' . $roleNameLower . '_' . $uid, 60, function () use ($__safe, $uid, $roleNameLower, $totalContestants) {
             if ($roleNameLower === 'ambassador') {
                 $graded = (int) $__safe(function () use ($uid) {
@@ -113,15 +118,24 @@
 </style>
 @else
 @php
-    /* Admin / staff dashboard — cached ~2 min so post-OTP mobile login is not rebuilding every chart. */
-    $__dash = \Cache::remember('admin_dashboard_stats_v1', 120, function () use ($__safe, $totalContestants) {
-        $voteTxns           = (int) $__safe(function () { return \DB::table('votes')->where('status', 1)->count(); });
-        $voteUnitsSuccess   = (int) $__safe(function () { return \DB::table('votes')->where('status', 1)->sum('vote'); });
-        $totalVoters        = (int) $__safe(function () { return \DB::table('votes')->where('status', 1)->distinct('user_id')->count('user_id'); });
-        $failedTxns         = (int) $__safe(function () { return \DB::table('votes')->where('status', 2)->count(); });
-        $voteUnitsFailed    = (int) $__safe(function () { return \DB::table('votes')->where('status', 2)->sum('vote'); });
-        $pendingTxns        = (int) $__safe(function () { return \DB::table('votes')->where('status', 0)->count(); });
-        $voteUnitsPending   = (int) $__safe(function () { return \DB::table('votes')->where('status', 0)->sum('vote'); });
+    /* Admin / staff dashboard — cached ~2 min; v2 uses SQL aggregates (no full vote dump). */
+    $__dash = \Cache::remember('admin_dashboard_stats_v2', 120, function () use ($__safe, $totalContestants) {
+        $byStatus = $__safe(function () {
+            return \DB::table('votes')
+                ->select('status', \DB::raw('COUNT(*) as txns'), \DB::raw('COALESCE(SUM(vote),0) as units'))
+                ->groupBy('status')
+                ->get()
+                ->keyBy('status');
+        }, collect());
+        $voteTxns = (int) optional($byStatus->get(1))->txns;
+        $voteUnitsSuccess = (int) optional($byStatus->get(1))->units;
+        $failedTxns = (int) optional($byStatus->get(2))->txns;
+        $voteUnitsFailed = (int) optional($byStatus->get(2))->units;
+        $pendingTxns = (int) optional($byStatus->get(0))->txns;
+        $voteUnitsPending = (int) optional($byStatus->get(0))->units;
+        $totalVoters = (int) $__safe(function () {
+            return \DB::table('votes')->where('status', 1)->distinct('user_id')->count('user_id');
+        });
 
         $totalJudges = (int) $__safe(function () { return \App\Judge::where('is_active', true)->count(); });
         $totalAmbassadors = (int) $__safe(function () {
@@ -132,25 +146,26 @@
             return $q->count();
         });
 
-        $buildTrend = function ($status) use ($__safe) {
-            $raw = $__safe(function () use ($status) {
-                return \DB::table('votes')->where('status', $status)
-                    ->where('created_at', '>=', \Carbon\Carbon::now()->subDays(13)->startOfDay())
-                    ->select(\DB::raw('DATE(created_at) as d'), \DB::raw('SUM(vote) as t'))
-                    ->groupBy('d')->pluck('t', 'd');
-            }, collect());
-            $labels = []; $data = [];
-            for ($i = 13; $i >= 0; $i--) {
-                $day = \Carbon\Carbon::now()->subDays($i);
-                $labels[] = $day->format('M j');
-                $data[]   = (int) ($raw[$day->format('Y-m-d')] ?? 0);
-            }
-            return [$labels, $data];
-        };
-
-        list($trendLabels, $trendSuccess) = $buildTrend(1);
-        list(, $trendFailed) = $buildTrend(2);
-        list(, $trendPending) = $buildTrend(0);
+        $trendRaw = $__safe(function () {
+            return \DB::table('votes')
+                ->where('created_at', '>=', \Carbon\Carbon::now()->subDays(13)->startOfDay())
+                ->select('status', \DB::raw('DATE(created_at) as d'), \DB::raw('SUM(vote) as t'))
+                ->groupBy('status', 'd')
+                ->get();
+        }, collect());
+        $trendMap = [];
+        foreach ($trendRaw as $row) {
+            $trendMap[(int) $row->status][$row->d] = (int) $row->t;
+        }
+        $trendLabels = []; $trendSuccess = []; $trendFailed = []; $trendPending = [];
+        for ($i = 13; $i >= 0; $i--) {
+            $day = \Carbon\Carbon::now()->subDays($i);
+            $key = $day->format('Y-m-d');
+            $trendLabels[] = $day->format('M j');
+            $trendSuccess[] = (int) ($trendMap[1][$key] ?? 0);
+            $trendFailed[] = (int) ($trendMap[2][$key] ?? 0);
+            $trendPending[] = (int) ($trendMap[0][$key] ?? 0);
+        }
 
         $topRows = $__safe(function () {
             return \DB::table('votes')
@@ -162,47 +177,23 @@
         }, collect());
 
         $regionRows = $__safe(function () {
-            $counts = [];
-            $rows = \DB::table('employees')
+            return \DB::table('employees')
                 ->where('is_active', true)->where('is_approve', true)
-                ->get(['city']);
-            foreach ($rows as $row) {
-                $region = trim((string) $row->city);
-                if ($region === '') {
-                    $region = 'Unassigned';
-                }
-                $counts[$region] = ($counts[$region] ?? 0) + 1;
-            }
-            arsort($counts);
-            $out = collect();
-            foreach ($counts as $name => $c) {
-                $out->push((object) ['name' => $name, 'c' => (int) $c]);
-            }
-            return $out;
+                ->select(\DB::raw("COALESCE(NULLIF(TRIM(city), ''), 'Unassigned') as name"), \DB::raw('COUNT(*) as c'))
+                ->groupBy(\DB::raw("COALESCE(NULLIF(TRIM(city), ''), 'Unassigned')"))
+                ->orderByDesc('c')
+                ->get();
         }, collect());
 
         $votesByRegion = $__safe(function () {
-            $totals = [];
-            $rows = \DB::table('votes')
+            return \DB::table('votes')
                 ->join('employees', 'employees.id', '=', 'votes.musician_id')
                 ->where('votes.status', 1)
                 ->where('employees.is_active', true)
-                ->select('employees.city', \DB::raw('SUM(votes.vote) as t'))
-                ->groupBy('employees.city')
+                ->select(\DB::raw("COALESCE(NULLIF(TRIM(employees.city), ''), 'Unassigned') as name"), \DB::raw('SUM(votes.vote) as t'))
+                ->groupBy(\DB::raw("COALESCE(NULLIF(TRIM(employees.city), ''), 'Unassigned')"))
+                ->orderByDesc('t')
                 ->get();
-            foreach ($rows as $row) {
-                $region = trim((string) $row->city);
-                if ($region === '') {
-                    $region = 'Unassigned';
-                }
-                $totals[$region] = ($totals[$region] ?? 0) + (int) $row->t;
-            }
-            arsort($totals);
-            $out = collect();
-            foreach ($totals as $name => $t) {
-                $out->push((object) ['name' => $name, 't' => (int) $t]);
-            }
-            return $out;
         }, collect());
 
         $totalTicketsSold = (int) $__safe(function () {
@@ -226,48 +217,36 @@
         }, collect());
 
         $paymentMethodStats = $__safe(function () {
-            $counts = ['momo' => 0, 'om' => 0, 'card' => 0, 'other' => 0];
-            $units = ['momo' => 0, 'om' => 0, 'card' => 0, 'other' => 0];
+            $counts = ['momo' => 0, 'om' => 0, 'card' => 0];
+            $units = ['momo' => 0, 'om' => 0, 'card' => 0];
             $hasMethodCol = \Schema::hasColumn('votes', 'payment_method');
-            $hasProviderCol = \Schema::hasColumn('votes', 'payment_provider');
-            $hasMmpId = \Schema::hasColumn('votes', 'mobile_money_payment_id');
-
-            $q = \DB::table('votes')->where('votes.status', 1);
-            if ($hasMmpId && \Schema::hasTable('mobile_money_payments')) {
-                $q->leftJoin('mobile_money_payments', 'mobile_money_payments.id', '=', 'votes.mobile_money_payment_id');
-            }
-            $select = ['votes.vote', 'votes.reference'];
             if ($hasMethodCol) {
-                $select[] = 'votes.payment_method';
-            }
-            if ($hasProviderCol) {
-                $select[] = 'votes.payment_provider';
-            }
-            if ($hasMmpId && \Schema::hasTable('mobile_money_payments')) {
-                $select[] = 'mobile_money_payments.mobile_network';
-                $select[] = 'mobile_money_payments.request_payload';
-            }
-            $rows = $q->get($select);
-
-            foreach ($rows as $row) {
-                $method = strtolower(trim((string) ($row->payment_method ?? '')));
-                if (!in_array($method, ['momo', 'om', 'card'], true)) {
-                    $provider = strtolower(trim((string) ($row->payment_provider ?? '')));
-                    $ref = (string) ($row->reference ?? '');
-                    $network = strtoupper((string) ($row->mobile_network ?? ''));
-                    $payload = (string) ($row->request_payload ?? '');
-                    if ($provider === 'stripe' || strpos($ref, 'pi_') === 0) {
-                        $method = 'card';
-                    } elseif (strpos($network, 'ORANGE') !== false || strpos($payload, '"payment_method":"om"') !== false) {
-                        $method = 'om';
-                    } elseif ($provider !== '' || $network !== '' || strpos($payload, '"payment_method":"momo"') !== false) {
-                        $method = 'momo';
-                    } else {
-                        $method = 'other';
+                $rows = \DB::table('votes')
+                    ->where('status', 1)
+                    ->select(\DB::raw('LOWER(TRIM(COALESCE(payment_method, ""))) as method'), \DB::raw('COUNT(*) as txns'), \DB::raw('COALESCE(SUM(vote),0) as units'))
+                    ->groupBy(\DB::raw('LOWER(TRIM(COALESCE(payment_method, "")))'))
+                    ->get();
+                foreach ($rows as $row) {
+                    $method = (string) $row->method;
+                    if (!in_array($method, ['momo', 'om', 'card'], true)) {
+                        continue;
                     }
+                    $counts[$method] += (int) $row->txns;
+                    $units[$method] += (int) $row->units;
                 }
-                $counts[$method] = ($counts[$method] ?? 0) + 1;
-                $units[$method] = ($units[$method] ?? 0) + (int) $row->vote;
+            } else {
+                // Fallback without loading every row: classify via payment_provider / reference prefixes in SQL.
+                $hasProviderCol = \Schema::hasColumn('votes', 'payment_provider');
+                $cardExpr = $hasProviderCol
+                    ? "LOWER(COALESCE(payment_provider,'')) = 'stripe' OR reference LIKE 'pi_%'"
+                    : "reference LIKE 'pi_%'";
+                $counts['card'] = (int) \DB::table('votes')->where('status', 1)->whereRaw("($cardExpr)")->count();
+                $units['card'] = (int) \DB::table('votes')->where('status', 1)->whereRaw("($cardExpr)")->sum('vote');
+                $rest = (int) \DB::table('votes')->where('status', 1)->whereRaw("NOT ($cardExpr)")->count();
+                $restUnits = (int) \DB::table('votes')->where('status', 1)->whereRaw("NOT ($cardExpr)")->sum('vote');
+                // Without method column, attribute remaining successful votes to MoMo (dominant channel).
+                $counts['momo'] = $rest;
+                $units['momo'] = $restUnits;
             }
 
             return [

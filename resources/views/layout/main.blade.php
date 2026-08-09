@@ -6,8 +6,12 @@
         ?: optional(DB::table('roles')->find(Auth::user()->role_id))->name
         ?: ''
     ));
-    // Judges / ambassadors only need grading UI — skip TinyMCE, DataTables/pdfmake, charts, etc.
-    $mgLiteAssets = in_array($mgBodyRole, ['judge', 'ambassador'], true);
+    // Lite shell: graders always; admin dashboard also skips DataTables/pdfmake/TinyMCE.
+    $mgDashLite = request()->is('admin');
+    $mgLiteAssets = in_array($mgBodyRole, ['judge', 'ambassador'], true) || $mgDashLite;
+    $mgSkipCharts = in_array($mgBodyRole, ['judge', 'ambassador'], true);
+    // Dashboard loads Chart.js from the page scripts — skip layout Chart duplicate.
+    $mgSkipLayoutCharts = $mgLiteAssets || $mgDashLite;
 @endphp
 <head>
     <meta charset="utf-8">
@@ -42,7 +46,7 @@
     <!-- Custom Scrollbar-->
     <link rel="stylesheet" href="<?php echo asset('public/vendor/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.css') ?>" type="text/css">
 
-    @if(!$mgLiteAssets && Route::current() && Route::current()->getName() != '/')
+    @if(!$mgLiteAssets && Route::current() && Route::current()->getName() != '/' && !$mgDashLite)
         <!-- date range stylesheet-->
         <link rel="stylesheet" href="<?php echo asset('public/vendor/daterange/css/daterangepicker.min.css') ?>" type="text/css">
         <!-- table sorter stylesheet-->
@@ -76,7 +80,7 @@
     @endunless
     <script type="text/javascript" src="<?php echo asset('public/vendor/jquery.cookie/jquery.cookie.js') ?>">
     </script>
-    @unless($mgLiteAssets)
+    @unless($mgSkipLayoutCharts || $mgSkipCharts)
     <script type="text/javascript" src="<?php echo asset('public/vendor/chart.js/Chart.min.js') ?>"></script>
     <script type="text/javascript" src="<?php echo asset('public/js/charts-custom.js') ?>"></script>
     @endunless
@@ -85,7 +89,7 @@
 
     <script type="text/javascript" src="<?php echo asset('public/js/front.js') ?>"></script>
 
-    @if(!$mgLiteAssets && Route::current() && Route::current()->getName() != '/')
+    @if(!$mgLiteAssets && Route::current() && Route::current()->getName() != '/' && !$mgDashLite)
         <script type="text/javascript" src="<?php echo asset('public/vendor/daterange/js/moment.min.js') ?>"></script>
         <script type="text/javascript" src="<?php echo asset('public/vendor/daterange/js/knockout-3.4.2.js') ?>"></script>
         <script type="text/javascript" src="<?php echo asset('public/vendor/daterange/js/daterangepicker.min.js') ?>"></script>
@@ -113,7 +117,7 @@
     <!-- Custom stylesheet - for your changes-->
     <link rel="stylesheet" href="<?php echo asset('public/css/custom-'.$general_setting->theme) ?>" type="text/css" id="custom-style">
     <!-- Modern admin theme overlay (Alpha Bridge inspired) -->
-    <link rel="stylesheet" href="<?php echo asset('public/css/admin-modern.css') ?>?v=20260809-grader-mobile" type="text/css" id="admin-modern-style">
+    <link rel="stylesheet" href="<?php echo asset('public/css/admin-modern.css') ?>?v={{ config('app.version') }}-speed" type="text/css" id="admin-modern-style">
     <style>
         /* Header layout guarantee: logo top-left ALONE, fullscreen + language top-right.
            Inline so it always wins over any cached copy of the base theme / admin-modern.css. */
@@ -144,23 +148,19 @@
         <div class="main-menu">
             <ul id="side-main-menu" class="side-menu list-unstyled">
                 <?php
-                $role = \Spatie\Permission\Models\Role::find(Auth::user()->role_id);
-                if(!isset($all_permission)) {
-                    $permissions = $role->permissions;
-                    foreach ($permissions as $permission) {
-                        $all_permission[] = $permission->name;
-                    }
-                }
-                $category_permission_active = DB::table('permissions')
-                    ->join('role_has_permissions', 'permissions.id', '=', 'role_has_permissions.permission_id')
-                    ->where([
-                        ['permissions.name', 'category'],
-                        ['role_id', $role->id] ])->first();
-                $index_permission = DB::table('permissions')->where('name', 'products-index')->first();
-                $index_permission_active = DB::table('role_has_permissions')->where([
-                    ['permission_id', $index_permission->id],
-                    ['role_id', $role->id]
-                ])->first();
+                $roleId = (int) Auth::user()->role_id;
+                $all_permission = \Cache::remember('role_menu_perms_v1_' . $roleId, 600, function () use ($roleId) {
+                    $r = \Spatie\Permission\Models\Role::with('permissions')->find($roleId);
+                    return $r ? $r->permissions->pluck('name')->all() : [];
+                });
+                $role = (object) ['id' => $roleId, 'name' => $mgBodyRole ? ucfirst($mgBodyRole) : 'Staff'];
+                $mgHas = function ($name) use ($all_permission) {
+                    return in_array($name, $all_permission, true);
+                };
+                $category_permission_active = $mgHas('category');
+                $index_permission_active = $mgHas('products-index');
+                $add_permission_active = $mgHas('products-add');
+                $halls_permission_active = $mgHas('halls-index');
                 ?>
                 @if(in_array('dashboard', $all_permission) || in_array($mgBodyRole, ['ambassador', 'judge'], true))
                     <li data-menu-key="dashboard"><a href="{{ url('/admin') }}"> <i class="dripicons-meter"></i><span>{{ __('file.dashboard') }}</span></a></li>
@@ -173,13 +173,6 @@
                                 @endif
                                 @if($index_permission_active)
                                     <li id="product-list-menu"><a href="{{route('products.index')}}">{{__('file.product_list')}}</a></li>
-                                        <?php
-                                        $add_permission = DB::table('permissions')->where('name', 'products-add')->first();
-                                        $add_permission_active = DB::table('role_has_permissions')->where([
-                                            ['permission_id', $add_permission->id],
-                                            ['role_id', $role->id]
-                                        ])->first();
-                                        ?>
                                     @if($add_permission_active)
                                         <li id="product-create-menu"><a href="{{route('products.create')}}">{{__('file.add_product')}}</a></li>
                                     @endif
@@ -193,26 +186,12 @@
                             </ul>
                         </li>
                     @endif
-                <?php
-                $halls_permission = DB::table('permissions')->where('name', 'halls-index')->first();
-                $halls_permission_active = $halls_permission ? DB::table('role_has_permissions')->where([
-                    ['permission_id', $halls_permission->id],
-                    ['role_id', $role->id]
-                ])->first() : null;
-                ?>
                 @if($halls_permission_active)
                     <li data-menu-key="halls" id="halls-menu">
                         <a href="{{ route('halls.index') }}"><i class="dripicons-map"></i><span>{{ __('file.Halls') }}</span></a>
                     </li>
                 @endif
-                <?php
-                $role = DB::table('roles')->find(Auth::user()->role_id);
-                $index_permission = DB::table('permissions')->where('name', 'votes-index')->first();
-                $index_permission_active = DB::table('role_has_permissions')->where([
-                    ['permission_id', $index_permission->id],
-                    ['role_id', $role->id]
-                ])->first();
-                ?>
+                <?php $index_permission_active = $mgHas('votes-index'); ?>
                 @if($index_permission_active)
                     <li data-menu-key="vote"><a href="#vote" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-mail"></i><span>{{trans('file.Vote')}}</span></a>
                         <ul id="vote" class="collapse list-unstyled ">
@@ -260,11 +239,7 @@
                     </li>
                 @endif
                 <?php
-                $index_permission = DB::table('permissions')->where('name', 'coins-index')->first();
-                $index_permission_active = DB::table('role_has_permissions')->where([
-                    ['permission_id', $index_permission->id],
-                    ['role_id', $role->id]
-                ])->first();
+                $index_permission_active = $mgHas('coins-index');
                 ?>
                 @if($index_permission_active)
                     <li data-menu-key="coin"><a href="#coin" aria-expanded="false" data-toggle="collapse"> <i class="fa fa-usd"></i><span>{{trans('file.Coins')}}</span></a>
@@ -276,11 +251,8 @@
                     <li>
                 @endif
                 <?php
-                $index_permission = DB::table('permissions')->where('name', 'expenses-index')->first();
-                $index_permission_active = DB::table('role_has_permissions')->where([
-                    ['permission_id', $index_permission->id],
-                    ['role_id', $role->id]
-                ])->first();
+                $index_permission_active = $mgHas('expenses-index');
+                $add_permission_active = $mgHas('expenses-add');
                 ?>
 
                 @if($index_permission_active)
@@ -290,13 +262,6 @@
                             @if(Auth::user()->role_id != 7)
                                 <li id="exp-list-menu"><a href="{{route('expenses.index')}}">{{trans('file.Expense List')}}</a></li>
                             @endif
-                                <?php
-                                $add_permission = DB::table('permissions')->where('name', 'expenses-add')->first();
-                                $add_permission_active = DB::table('role_has_permissions')->where([
-                                    ['permission_id', $add_permission->id],
-                                    ['role_id', $role->id]
-                                ])->first();
-                                ?>
                             @if($add_permission_active)
                                 <li><a id="add-expense" href=""> {{trans('file.Add Expense')}}</a></li>
                             @endif
@@ -305,35 +270,14 @@
                 @endif
 
                 <?php
-
-                $user_index_permission_active = DB::table('permissions')
-                    ->join('role_has_permissions', 'permissions.id', '=', 'role_has_permissions.permission_id')
-                    ->where([
-                        ['permissions.name', 'users-index'],
-                        ['role_id', $role->id] ])->first();
-
-                $index_employee = DB::table('permissions')->where('name', 'employees-index')->first();
-                $index_employee_active = DB::table('role_has_permissions')->where([
-                    ['permission_id', $index_employee->id],
-                    ['role_id', $role->id]
-                ])->first();
-
-                $general_setting_permission = DB::table('permissions')->where('name', 'general_setting')->first();
-                $general_setting_permission_active = DB::table('role_has_permissions')->where([
-                    ['permission_id', $general_setting_permission->id],
-                    ['role_id', $role->id]
-                ])->first();
+                $user_index_permission_active = $mgHas('users-index');
+                $index_employee_active = $mgHas('employees-index');
+                $general_setting_permission_active = $mgHas('general_setting');
+                $user_add_permission_active = $mgHas('users-add');
                 ?>
                 @if($user_index_permission_active || $index_employee_active)
                     <li data-menu-key="people"><a href="#people" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-user"></i><span>{{trans('file.People')}}</span></a>
                         <ul id="people" class="collapse list-unstyled ">
-
-                                    <?php $user_add_permission_active = DB::table('permissions')
-                                    ->join('role_has_permissions', 'permissions.id', '=', 'role_has_permissions.permission_id')
-                                    ->where([
-                                        ['permissions.name', 'users-add'],
-                                        ['role_id', $role->id] ])->first();
-                                    ?>
                                 @if($user_add_permission_active)
                                     <li id="user-create-menu"><a href="{{route('user.create')}}">{{trans('file.Add User')}}</a></li>
                                 @endif
@@ -360,17 +304,15 @@
                     </li>
                 @endif
                 <?php
-                $department = DB::table('permissions')->where('name', 'department')->first();
-                $department_active = DB::table('role_has_permissions')->where([
-                    ['permission_id', $department->id],
-                    ['role_id', $role->id]
-                ])->first();
-                $index_permission = DB::table('permissions')->where('name', 'account-index')->first();
-                $index_permission_active = DB::table('role_has_permissions')->where([
-                    ['permission_id', $index_permission->id],
-                    ['role_id', $role->id]
-                ])->first();
-
+                $department_active = $mgHas('department');
+                $index_permission_active = $mgHas('account-index');
+                $voting_report_active = $mgHas('vote-report');
+                $announcement_menu_active = $mgHas('announcement_index');
+                $send_notification_permission_active = $mgHas('send_notification');
+                $currency_permission_active = $mgHas('currency');
+                $brand_permission_active = $mgHas('brand');
+                $unit_permission_active = $mgHas('unit');
+                $warehouse_permission_active = $mgHas('warehouse');
                 ?>
                 @if($index_permission_active)
                     <li class="" data-menu-key="account"><a href="#account" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-briefcase"></i><span>{{trans('file.Accounting')}}</span></a>
@@ -385,13 +327,6 @@
                         </ul>
                     </li>
                 @endif
-                <?php
-                $voting_report_active = DB::table('permissions')
-                    ->join('role_has_permissions', 'permissions.id', '=', 'role_has_permissions.permission_id')
-                    ->where([
-                        ['permissions.name', 'vote-report'],
-                        ['role_id', $role->id] ])->first();
-                ?>
                 @if($voting_report_active)
                     <li data-menu-key="report"><a href="#report" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-document-remove"></i><span>{{trans('file.Reports')}}</span></a>
                         <ul id="report" class="collapse list-unstyled ">
@@ -411,69 +346,12 @@
                     <li data-menu-key="site-content" id="site-content-top-menu"><a href="{{ route('setting.site_content') }}"><i class="dripicons-view-apps"></i><span>{{ trans('file.Site Content') }}</span></a></li>
                     <li data-menu-key="gallery-admin" id="gallery-admin-top-menu"><a href="{{ route('gallery.admin') }}"><i class="dripicons-photo-group"></i><span>{{ trans('file.Gallery') }}</span></a></li>
                 @endif
-                <?php
-                $announcement_permission = DB::table('permissions')->where('name', 'announcement_index')->first();
-                $announcement_menu_active = $announcement_permission ? DB::table('role_has_permissions')->where([
-                    ['permission_id', $announcement_permission->id],
-                    ['role_id', $role->id]
-                ])->first() : null;
-                ?>
                 @if($announcement_menu_active)
                     <li data-menu-key="announcement" id="announcement-top-menu"><a href="{{ route('announcement.index') }}"><i class="dripicons-message"></i><span>{{ trans('file.Announcement') }}</span></a></li>
                 @endif
                 <li data-menu-key="setting"><a href="#setting" aria-expanded="false" data-toggle="collapse"> <i class="dripicons-gear"></i><span>{{trans('file.settings')}}</span></a>
                     <ul id="setting" class="collapse list-unstyled ">
-                        <?php
-                        $send_notification_permission = DB::table('permissions')->where('name', 'send_notification')->first();
-                        $send_notification_permission_active = DB::table('role_has_permissions')->where([
-                            ['permission_id', $send_notification_permission->id],
-                            ['role_id', $role->id]
-                        ])->first();
-
-                        $currency_permission = DB::table('permissions')->where('name', 'currency')->first();
-                        $currency_permission_active = DB::table('role_has_permissions')->where([
-                            ['permission_id', $currency_permission->id],
-                            ['role_id', $role->id]
-                        ])->first();
-
-
-                        $general_setting_permission = DB::table('permissions')->where('name', 'general_setting')->first();
-                        $general_setting_permission_active = DB::table('role_has_permissions')->where([
-                            ['permission_id', $general_setting_permission->id],
-                            ['role_id', $role->id]
-                        ])->first();
-
-                        $brand_permission = DB::table('permissions')->where('name', 'brand')->first();
-                        $brand_permission_active = DB::table('role_has_permissions')->where([
-                            ['permission_id', $brand_permission->id],
-                            ['role_id', $role->id]
-                        ])->first();
-
-                        $unit_permission = DB::table('permissions')->where('name', 'unit')->first();
-                        $unit_permission_active = DB::table('role_has_permissions')->where([
-                            ['permission_id', $unit_permission->id],
-                            ['role_id', $role->id]
-                        ])->first();
-
-                        $tax_permission = DB::table('permissions')->where('name', 'tax')->first();
-                        $tax_permission_active = DB::table('role_has_permissions')->where([
-                            ['permission_id', $tax_permission->id],
-                            ['role_id', $role->id]
-                        ])->first();
-
-//                        $customer_group_permission = DB::table('permissions')->where('name', 'customer_group')->first();
-//                        $customer_group_permission_active = DB::table('role_has_permissions')->where([
-//                            ['permission_id', $customer_group_permission->id],
-//                            ['role_id', $role->id]
-//                        ])->first();
-
-                        $warehouse_permission = DB::table('permissions')->where('name', 'warehouse')->first();
-                        $warehouse_permission_active = DB::table('role_has_permissions')->where([
-                            ['permission_id', $warehouse_permission->id],
-                            ['role_id', $role->id]
-                        ])->first();
-                        ?>
-                        @if($role->name == 'Admin')
+                        @if($mgBodyRole === 'admin' || $role->id == 1)
                             <li id="role-menu"><a href="{{route('role.index')}}">{{trans('file.Role Permission')}}</a></li>
                         @endif
                         @if($send_notification_permission_active)
@@ -485,16 +363,10 @@
                             <li id="currency-menu"><a href="{{route('currency.index')}}">{{trans('file.Currency')}}</a></li>
                         @endif
                         <li id="user-menu"><a href="{{route('user.profile', ['id' => Auth::id()])}}">{{trans('file.User Profile')}}</a></li>
-                        {{--                      @if($create_sms_permission_active)--}}
-                        {{--                      <li id="create-sms-menu"><a href="{{route('setting.createSms')}}">{{trans('file.Create SMS')}}</a></li>--}}
-                        {{--                      @endif--}}
                         @if($general_setting_permission_active)
                             <li id="general-setting-menu"><a href="{{route('setting.general')}}">{{trans('file.General Setting')}}</a></li>
                             <li id="env-setting-menu"><a href="{{ route('setting.env') }}">{{ trans('file.Environment File') }}</a></li>
                         @endif
-{{--                        @if($customer_group_permission_active)--}}
-{{--                            <li id="customer-group-menu"><a href="{{route('customer_group.index')}}">{{trans('file.Customer Group')}}</a></li>--}}
-{{--                        @endif--}}
                         @if($brand_permission_active)
                             <li id="brand-menu"><a href="{{route('brand.index')}}">{{trans('file.Brand')}}</a></li>
                         @endif
@@ -507,9 +379,6 @@
                         @if($warehouse_permission_active)
                             <li id="warehouse-menu"><a href="{{route('warehouse.index')}}">{{trans('file.Warehouse')}}</a></li>
                         @endif
-                        {{--                      @if($sms_setting_permission_active)--}}
-                        {{--                      <li id="sms-setting-menu"><a href="{{route('setting.sms')}}">{{trans('file.SMS Setting')}}</a></li>--}}
-                        {{--                      @endif--}}
                         @if(!in_array($mgBodyRole, ['judge', 'ambassador'], true))
                         <li id="help-setting-menu"><a href="{{ route('setting.help') }}">{{ trans('file.Help') }}</a></li>
                         @endif
@@ -677,9 +546,15 @@
                     <p class="italic"><small>{{trans('file.The field labels marked with * are required input fields')}}.</small></p>
                     {!! Form::open(['route' => 'expenses.store', 'method' => 'post']) !!}
                     <?php
-                    $lims_expense_category_list = DB::table('expense_categories')->where('is_active', true)->get();
-                    $lims_account_list = \App\Account::where('is_active', true)->get();
-                    $lims_department_list = \App\Department::where('is_active', true)->get();
+                    $lims_expense_category_list = \Cache::remember('modal_expense_categories_v1', 600, function () {
+                        return DB::table('expense_categories')->where('is_active', true)->get();
+                    });
+                    $lims_account_list = \Cache::remember('modal_accounts_v1', 600, function () {
+                        return \App\Account::where('is_active', true)->get();
+                    });
+                    $lims_department_list = \Cache::remember('modal_departments_v1', 600, function () {
+                        return \App\Department::where('is_active', true)->get();
+                    });
                     ?>
                     <div class="row">
                         <div class="col-md-6 form-group">
@@ -834,16 +709,18 @@
                     {!! Form::open(['route' => 'notifications.store', 'method' => 'post']) !!}
                     <div class="row">
                         <?php
-                        $lims_user_list = DB::table('users')->where([
-                            ['is_active', true],
-                            ['id', '!=', \Auth::user()->id]
-                        ])->get();
+                        $lims_user_list = \Cache::remember('modal_active_users_v1', 600, function () {
+                            return DB::table('users')->where('is_active', true)->get(['id', 'name', 'email']);
+                        });
+                        $lims_notify_uid = (int) Auth::id();
                         ?>
                         <div class="col-md-6 form-group">
                             <label>{{trans('file.User')}} *</label>
                             <select name="user_id" class="selectpicker form-control" required data-live-search="true"   title="Select user...">
                                 @foreach($lims_user_list as $user)
+                                    @if((int) $user->id !== $lims_notify_uid)
                                     <option value="{{$user->id}}">{{$user->name . ' (' . $user->email. ')'}}</option>
+                                    @endif
                                 @endforeach
                             </select>
                         </div>

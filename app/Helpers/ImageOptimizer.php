@@ -17,7 +17,7 @@ class ImageOptimizer
      * Downscale (in place) so the longest edge is <= $maxEdge and re-encode
      * with the given quality. Keeps aspect ratio, never upsizes.
      */
-    public static function optimize($path, $maxEdge = 1000, $quality = 78)
+    public static function optimize($path, $maxEdge = 800, $quality = 68)
     {
         try {
             if (!is_file($path)) {
@@ -47,7 +47,7 @@ class ImageOptimizer
      * Create a small square-ish thumbnail next to the source in a /thumbs
      * subfolder (same filename). Used for fast listing tables.
      */
-    public static function thumbnail($srcPath, $size = 320, $quality = 70)
+    public static function thumbnail($srcPath, $size = 240, $quality = 65)
     {
         try {
             if (!is_file($srcPath)) {
@@ -76,17 +76,18 @@ class ImageOptimizer
     /**
      * Optimize the main image and also produce a thumbnail in one call.
      */
-    public static function process($path, $maxEdge = 1000, $quality = 78, $thumbSize = 320)
+    public static function process($path, $maxEdge = 800, $quality = 68, $thumbSize = 240)
     {
         self::optimize($path, $maxEdge, $quality);
-        self::thumbnail($path, $thumbSize, 70);
+        self::thumbnail($path, $thumbSize, 65);
     }
 
     /**
      * Run the right optimization profile after any image upload.
      * portrait = contestant/judge/ambassador (resize + thumbnail)
-     * banner   = hero / popup (wide images, no thumbnail)
+     * banner   = hero / popup (wide images + card thumb)
      * logo     = site logos and email headers
+     * product  = tickets / shop
      */
     public static function afterUpload($path, $profile = 'portrait')
     {
@@ -95,14 +96,17 @@ class ImageOptimizer
         }
         switch ($profile) {
             case 'banner':
-                self::optimize($path, 1600, 72);
+                self::process($path, 1200, 65, 480);
+                break;
+            case 'product':
+                self::process($path, 900, 68, 280);
                 break;
             case 'logo':
-                self::optimize($path, 800, 80);
+                self::optimize($path, 600, 80);
                 break;
             case 'portrait':
             default:
-                self::process($path, 1000, 78, 320);
+                self::process($path, 800, 68, 240);
                 break;
         }
     }
@@ -139,5 +143,34 @@ class ImageOptimizer
         $version = is_file($path) ? date('Ymd', @filemtime($path) ?: time()) : date('Ymd');
 
         return $urlCache[$cacheKey] = url($rel) . '?v=' . $version;
+    }
+
+    /**
+     * Prefer thumbs for any public/… image that has a sibling thumbs/ file.
+     */
+    public static function publicImageUrl($relativePath, $preferThumb = true)
+    {
+        $relativePath = ltrim((string) $relativePath, '/');
+        if ($relativePath === '') {
+            return url('public/');
+        }
+        if (strpos($relativePath, 'public/') !== 0) {
+            $relativePath = 'public/' . $relativePath;
+        }
+
+        $rel = $relativePath;
+        if ($preferThumb) {
+            $dir = dirname($relativePath);
+            $base = basename($relativePath);
+            $thumbRel = $dir . '/thumbs/' . $base;
+            if (is_file(base_path($thumbRel))) {
+                $rel = $thumbRel;
+            }
+        }
+
+        $path = base_path($rel);
+        $version = is_file($path) ? date('Ymd', @filemtime($path) ?: time()) : date('Ymd');
+
+        return url($rel) . '?v=' . $version;
     }
 }

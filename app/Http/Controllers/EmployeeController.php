@@ -281,6 +281,7 @@ class EmployeeController extends Controller
             $lims_employee_data->save();
             $count++;
         }
+        \App\Helpers\AppCache::forgetPublicContestants();
 
         return $count . ' contestant(s) deleted successfully!';
     }
@@ -297,6 +298,7 @@ class EmployeeController extends Controller
                 $count++;
             }
         }
+        \App\Helpers\AppCache::forgetPublicContestants();
         return $count . ' contestant(s) approved successfully!';
     }
     public function destroy($id)
@@ -308,6 +310,7 @@ class EmployeeController extends Controller
             $lims_employee_data->is_active = false;
             $lims_employee_data->is_eliminate = 1;
             $lims_employee_data->save();
+            \App\Helpers\AppCache::forgetPublicContestants();
         }
         return redirect()->back()->with('not_permitted', 'Contestant deleted successfully');
     }
