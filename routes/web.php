@@ -389,6 +389,7 @@ Route::group(['middleware' => ['auth', 'active', 'checkOtp']], function() {
     Route::get('report/votes-by-region', 'ReportController@votesByRegionReport')->name('report.votes.by.region');
     Route::get('report/ticket/sales', 'ReportController@ticketSalesSummaryReport')->name('report.ticket.sales');
     Route::get('report/contestants/list', 'ReportController@contestantsListReport')->name('report.contestants.list');
+    Route::get('report/contestants/generate-pdf', 'ReportController@generateContestantsListPdf')->name('report.contestants.generate_pdf');
     Route::get('report/detailed-grading', 'ReportController@detailedGradingReport')->name('report.detailed.grading');
     Route::post('report/detailed-grading/generate', 'ReportController@detailedGradingReportGenerate')->name('report.detailed.grading.generate');
     Route::get('report/income-expense', 'ReportController@incomeExpenseReport')->name('report.income.expense');

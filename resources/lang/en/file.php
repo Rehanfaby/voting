@@ -1094,6 +1094,7 @@ return [
     'Votes by Region' => 'Votes by Region',
     'Total Ticket Sales' => 'Total Ticket Sales',
     'Contestants List' => 'Contestants List',
+    'Generate Contestant List' => 'Generate Contestant List',
     'Income and Expenses' => 'Income & Expenses',
     'About Page Content' => 'About Page Content',
     'Vote Now' => 'Vote Now',

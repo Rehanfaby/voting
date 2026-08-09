@@ -423,30 +423,14 @@ class ReportController extends Controller
 
     public function contestantsListReport(Request $request)
     {
-        if (!$this->canAccessReports()) {
+        if (!$this->canAccessContestantList()) {
             return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
         }
 
         $department_id = $request->input('department_id');
-        $rows = Employee::with('departments')
-            ->where('is_active', true)
-            ->when($department_id, function ($q) use ($department_id) {
-                $q->where('department_id', $department_id);
-            })
-            ->orderBy('name')
-            ->get()
-            ->map(function ($e) {
-                $votes = DB::table('votes')->where('musician_id', $e->id)->where('status', true)->sum('vote');
-                return (object) [
-                    'name' => $e->name,
-                    'region' => optional($e->departments)->name ?? 'Unassigned',
-                    'email' => $e->email,
-                    'phone' => $e->phone_number,
-                    'approved' => $e->is_approve ? 'Yes' : 'No',
-                    'total_votes' => (int) $votes,
-                ];
-            });
-
+        $approvedOnly = filter_var($request->input('approved_only'), FILTER_VALIDATE_BOOLEAN)
+            || $request->input('source') === 'contestants';
+        $rows = $this->buildContestantsListRows($department_id, $approvedOnly);
         $departments = Department::where('is_active', true)->orderBy('name')->get();
 
         if ($request->input('export') === 'csv') {
@@ -455,14 +439,95 @@ class ReportController extends Controller
             }));
         }
         if ($request->input('export') === 'pdf') {
-            return $this->pdfDownload('report.exports.table', [
-                'title' => 'Contestants List',
-                'headers' => ['Name', 'Region', 'Email', 'Phone', 'Approved', 'Votes'],
-                'rows' => $rows,
-            ], 'contestants.pdf');
+            return $this->downloadContestantsListPdf($rows, $department_id);
         }
 
         return view('report.contestants-list', compact('rows', 'departments', 'department_id'));
+    }
+
+    /**
+     * One-click branded PDF from Contestants admin (same look as Elimination / Qualified PDFs).
+     */
+    public function generateContestantsListPdf(Request $request)
+    {
+        if (!$this->canAccessContestantList()) {
+            return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
+        }
+
+        $department_id = $request->input('department_id');
+        $rows = $this->buildContestantsListRows($department_id, true);
+
+        return $this->downloadContestantsListPdf($rows, $department_id);
+    }
+
+    private function canAccessContestantList()
+    {
+        $role = Role::find(Auth::user()->role_id);
+        if (!$role) {
+            return false;
+        }
+        return $role->hasPermissionTo('vote-report') || $role->hasPermissionTo('employees-index');
+    }
+
+    private function buildContestantsListRows($department_id = null, $approvedOnly = false)
+    {
+        $voteTotals = DB::table('votes')
+            ->select('musician_id', DB::raw('COALESCE(SUM(vote),0) as total_votes'))
+            ->where('status', true)
+            ->groupBy('musician_id')
+            ->pluck('total_votes', 'musician_id');
+
+        $query = Employee::with('departments')
+            ->where('is_active', true)
+            ->when($approvedOnly, function ($q) {
+                $q->where('is_approve', true)
+                    ->where(function ($q2) {
+                        $q2->whereNull('is_eliminate')
+                            ->orWhere('is_eliminate', 0)
+                            ->orWhere('is_eliminate', false);
+                    });
+            })
+            ->when($department_id, function ($q) use ($department_id) {
+                $q->where('department_id', $department_id);
+            })
+            ->orderBy('name');
+
+        return $query->get()->map(function ($e) use ($voteTotals) {
+            return (object) [
+                'name' => $e->name,
+                'region' => optional($e->departments)->name ?? 'Unassigned',
+                'email' => $e->email,
+                'phone' => $e->phone_number,
+                'approved' => $e->is_approve ? 'Yes' : 'No',
+                'total_votes' => (int) ($voteTotals[$e->id] ?? 0),
+            ];
+        });
+    }
+
+    private function downloadContestantsListPdf($rows, $department_id = null)
+    {
+        $siteTitle = optional(GeneralSetting::latest()->first())->site_title ?: 'MULEMA GOSPEL';
+        $regionName = null;
+        if ($department_id) {
+            $regionName = optional(Department::find($department_id))->name;
+        }
+        $subtitle = $rows->count() . ' contestant' . ($rows->count() === 1 ? '' : 's');
+        if ($regionName) {
+            $subtitle .= ' · ' . $regionName;
+        }
+
+        return $this->pdfDownload('report.exports.contestants-list', [
+            'siteTitle' => $siteTitle,
+            'listLabel' => 'CONTESTANT LIST',
+            'subtitle' => $subtitle,
+            'generatedAt' => now()->format('d M Y H:i'),
+            'headerColor' => '#0a2350',
+            'bannerSoft' => '#dbeafe',
+            'altRow' => '#eff6ff',
+            'lightRow' => '#f8fafc',
+            'lineColor' => '#cbd5e1',
+            'rows' => $rows,
+        ], 'contestant-list.pdf', 'portrait');
     }
 
     public function incomeExpenseReport(Request $request)

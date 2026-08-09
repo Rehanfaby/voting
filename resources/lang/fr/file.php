@@ -1097,6 +1097,7 @@ return [
     'Votes by Region' => 'Votes par région',
     'Total Ticket Sales' => 'Ventes totales de billets',
     'Contestants List' => 'Liste des candidats',
+    'Generate Contestant List' => 'Générer la liste des candidats',
     'Income and Expenses' => 'Revenus et dépenses',
     'About Page Content' => 'Contenu de la page À propos',
     'Vote Now' => 'Voter maintenant',

@@ -24,7 +24,7 @@ window.mgCustomizeReportPdf = function (doc) {
     var altRow = isElim ? '#fef2f2' : (theme === 'ranking' ? '#eff6ff' : '#ecfdf5');
     var lightRow = isElim ? '#fff1f2' : (theme === 'ranking' ? '#f8fafc' : '#f0fdf4');
     var totalColColor = isElim ? '#b91c1c' : (theme === 'ranking' ? '#0a2350' : '#047857');
-    var listLabel = isElim ? 'ELIMINATION LIST' : (isQual ? 'QUALIFIED LIST' : 'CONTESTANT RANKING');
+    var listLabel = isElim ? 'ELIMINATION LIST' : (isQual ? 'QUALIFIED LIST' : (theme === 'contestants' ? 'CONTESTANT LIST' : 'CONTESTANT RANKING'));
 
     doc.pageMargins = [24, 36, 24, 36];
     doc.defaultStyle = doc.defaultStyle || {};

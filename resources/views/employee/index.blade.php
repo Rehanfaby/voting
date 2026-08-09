@@ -41,6 +41,11 @@
                 <i class="fa fa-search"></i>
                 <input type="search" id="mg-contestant-search" placeholder="Search contestant…" autocomplete="off">
             </div>
+            @if(empty($pending))
+                <a class="mg-awaiting__help-link" href="{{ route('report.contestants.generate_pdf') }}" style="text-decoration:none;">
+                    <i class="fa fa-file-pdf-o"></i> {{ trans('file.Generate Contestant List') }}
+                </a>
+            @endif
             @if(in_array("employees-add", $all_permission))
                 <button type="button" class="mg-awaiting__help-link" data-toggle="modal" data-target="#addModal" style="border:0;cursor:pointer;">
                     <i class="dripicons-plus"></i> Add Contestant
