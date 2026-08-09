@@ -69,12 +69,17 @@
             color: #64748b;
             text-align: center;
         }
+        @if(!empty($namesOnly))
+        td.name { font-size: 11px; font-weight: bold; }
+        @endif
     </style>
 </head>
 <body>
 @php
     $brand = strtoupper((string) ($siteTitle ?? 'MULEMA GOSPEL'));
     $label = strtoupper((string) ($listLabel ?? 'CONTESTANT LIST'));
+    $namesOnly = !empty($namesOnly);
+    $colspan = $namesOnly ? 2 : 7;
 @endphp
 <div class="banner">
     <p class="brand">{{ $brand }}</p>
@@ -90,30 +95,34 @@
         <tr>
             <th class="num">#</th>
             <th>Name</th>
-            <th>Region</th>
-            <th>Phone</th>
-            <th>Email</th>
-            <th>Approved</th>
-            <th style="text-align:right;">Votes</th>
+            @unless($namesOnly)
+                <th>Region</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Approved</th>
+                <th style="text-align:right;">Votes</th>
+            @endunless
         </tr>
     </thead>
     <tbody>
     @forelse($rows as $i => $r)
         <tr class="{{ $i % 2 === 0 ? 'even' : 'odd' }}">
             <td class="num">{{ $i + 1 }}</td>
-            <td>{{ $r->name }}</td>
-            <td>{{ $r->region }}</td>
-            <td>{{ $r->phone }}</td>
-            <td>{{ $r->email }}</td>
-            <td>{{ $r->approved }}</td>
-            <td class="votes">{{ number_format((int) $r->total_votes) }}</td>
+            <td class="name">{{ $r->name }}</td>
+            @unless($namesOnly)
+                <td>{{ $r->region }}</td>
+                <td>{{ $r->phone }}</td>
+                <td>{{ $r->email }}</td>
+                <td>{{ $r->approved }}</td>
+                <td class="votes">{{ number_format((int) $r->total_votes) }}</td>
+            @endunless
         </tr>
     @empty
-        <tr><td colspan="7" style="text-align:center;">No contestants found.</td></tr>
+        <tr><td colspan="{{ $colspan }}" style="text-align:center;">No contestants found.</td></tr>
     @endforelse
     </tbody>
 </table>
 
-<p class="footer-note">{{ $brand }} · {{ $label }} · {{ count($rows) }} contestant(s)</p>
+<p class="footer-note">{{ $brand }} · {{ $label }}{{ $namesOnly ? ' · Names only' : '' }} · {{ count($rows) }} contestant(s)</p>
 </body>
 </html>

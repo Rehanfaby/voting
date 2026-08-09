@@ -45,7 +45,7 @@
                 <i class="fa fa-filter"></i> <span id="mg-names-only-label">Names only</span>
             </button>
             @if(empty($pending))
-                <a class="mg-awaiting__help-link" href="{{ route('report.contestants.generate_pdf') }}" style="text-decoration:none;">
+                <a id="mg-generate-contestant-list" class="mg-awaiting__help-link" href="{{ route('report.contestants.generate_pdf') }}" style="text-decoration:none;" data-base-url="{{ route('report.contestants.generate_pdf') }}">
                     <i class="fa fa-file-pdf-o"></i> {{ trans('file.Generate Contestant List') }}
                 </a>
             @endif
@@ -359,13 +359,20 @@ body.mg-contestants-names-only .mg-contestant-meta { display: none !important; }
     (function () {
         var btn = document.getElementById('mg-names-only-toggle');
         var label = document.getElementById('mg-names-only-label');
+        var pdfLink = document.getElementById('mg-generate-contestant-list');
         if (!btn) return;
         var key = 'mg_contestants_names_only';
+        function syncPdfLink(on) {
+            if (!pdfLink) return;
+            var base = pdfLink.getAttribute('data-base-url') || pdfLink.getAttribute('href') || '';
+            pdfLink.setAttribute('href', on ? (base + (base.indexOf('?') >= 0 ? '&' : '?') + 'names_only=1') : base);
+        }
         function apply(on) {
             document.body.classList.toggle('mg-contestants-names-only', on);
             btn.classList.toggle('is-active', on);
             btn.setAttribute('aria-pressed', on ? 'true' : 'false');
             if (label) label.textContent = on ? 'Show details' : 'Names only';
+            syncPdfLink(on);
             try { localStorage.setItem(key, on ? '1' : '0'); } catch (e) {}
         }
         var saved = false;

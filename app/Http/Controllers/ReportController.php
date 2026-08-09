@@ -439,7 +439,8 @@ class ReportController extends Controller
             }));
         }
         if ($request->input('export') === 'pdf') {
-            return $this->downloadContestantsListPdf($rows, $department_id);
+            $namesOnly = filter_var($request->input('names_only'), FILTER_VALIDATE_BOOLEAN);
+            return $this->downloadContestantsListPdf($rows, $department_id, $namesOnly);
         }
 
         return view('report.contestants-list', compact('rows', 'departments', 'department_id'));
@@ -447,6 +448,7 @@ class ReportController extends Controller
 
     /**
      * One-click branded PDF from Contestants admin (same look as Elimination / Qualified PDFs).
+     * Pass names_only=1 to match the on-screen "Names only" filter.
      */
     public function generateContestantsListPdf(Request $request)
     {
@@ -455,9 +457,10 @@ class ReportController extends Controller
         }
 
         $department_id = $request->input('department_id');
+        $namesOnly = filter_var($request->input('names_only'), FILTER_VALIDATE_BOOLEAN);
         $rows = $this->buildContestantsListRows($department_id, true);
 
-        return $this->downloadContestantsListPdf($rows, $department_id);
+        return $this->downloadContestantsListPdf($rows, $department_id, $namesOnly);
     }
 
     private function canAccessContestantList()
@@ -504,7 +507,7 @@ class ReportController extends Controller
         });
     }
 
-    private function downloadContestantsListPdf($rows, $department_id = null)
+    private function downloadContestantsListPdf($rows, $department_id = null, $namesOnly = false)
     {
         $siteTitle = optional(GeneralSetting::latest()->first())->site_title ?: 'MULEMA GOSPEL';
         $regionName = null;
@@ -512,9 +515,14 @@ class ReportController extends Controller
             $regionName = optional(Department::find($department_id))->name;
         }
         $subtitle = $rows->count() . ' contestant' . ($rows->count() === 1 ? '' : 's');
+        if ($namesOnly) {
+            $subtitle .= ' · Names only';
+        }
         if ($regionName) {
             $subtitle .= ' · ' . $regionName;
         }
+
+        $filename = $namesOnly ? 'contestant-list-names.pdf' : 'contestant-list.pdf';
 
         return $this->pdfDownload('report.exports.contestants-list', [
             'siteTitle' => $siteTitle,
@@ -527,7 +535,8 @@ class ReportController extends Controller
             'lightRow' => '#f8fafc',
             'lineColor' => '#cbd5e1',
             'rows' => $rows,
-        ], 'contestant-list.pdf', 'portrait');
+            'namesOnly' => (bool) $namesOnly,
+        ], $filename, 'portrait');
     }
 
     public function incomeExpenseReport(Request $request)
