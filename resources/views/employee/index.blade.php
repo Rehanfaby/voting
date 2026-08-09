@@ -41,6 +41,9 @@
                 <i class="fa fa-search"></i>
                 <input type="search" id="mg-contestant-search" placeholder="Search contestant…" autocomplete="off">
             </div>
+            <button type="button" id="mg-names-only-toggle" class="mg-awaiting__help-link" style="border:0;cursor:pointer;" aria-pressed="false" title="Hide phone, email and votes — show name only">
+                <i class="fa fa-filter"></i> <span id="mg-names-only-label">Names only</span>
+            </button>
             @if(empty($pending))
                 <a class="mg-awaiting__help-link" href="{{ route('report.contestants.generate_pdf') }}" style="text-decoration:none;">
                     <i class="fa fa-file-pdf-o"></i> {{ trans('file.Generate Contestant List') }}
@@ -90,11 +93,16 @@
                         </div>
                         <div class="mg-awaiting-card__body">
                             <h3 class="mg-awaiting-card__name">{{ $employee->name }}</h3>
-                            <p class="mg-awaiting-card__hint">
-                                {{ $employee->phone_number }}
-                                @if(optional($department)->name) · {{ $department->name }}@endif
-                            </p>
-                            <p class="mg-awaiting-card__hint">{{ $employee->email }}</p>
+                            <div class="mg-contestant-meta">
+                                <p class="mg-awaiting-card__hint mg-contestant-meta__phone">
+                                    {{ $employee->phone_number }}
+                                    @if(optional($department)->name) · {{ $department->name }}@endif
+                                </p>
+                                <p class="mg-awaiting-card__hint mg-contestant-meta__votes">
+                                    Votes {{ number_format((int) (($vote_counts[$employee->id] ?? 0))) }}
+                                </p>
+                                <p class="mg-awaiting-card__hint mg-contestant-meta__email">{{ $employee->email }}</p>
+                            </div>
                         </div>
                         <div class="mg-list-card__actions">
                             <a href="{{ route('report.contestant.grading', $employee->id) }}" class="mg-list-card__btn" title="Grading scores"><i class="fa fa-star"></i></a>
@@ -136,6 +144,12 @@
 .mg-contestant-check { flex-shrink: 0; display:flex; align-items:center; margin:0 4px 0 0; }
 .mg-contestant-check input { width:18px; height:18px; }
 .mg-list-card__actions { flex-wrap: wrap; max-width: 120px; justify-content: flex-end; }
+body.mg-contestants-names-only .mg-contestant-meta { display: none !important; }
+#mg-names-only-toggle.is-active {
+    background: #0a2350 !important;
+    color: #fff !important;
+    border-color: #0a2350 !important;
+}
 @media (max-width: 575.98px) {
     .mg-list-card__actions { max-width: none; flex-direction: row; }
 }
@@ -339,6 +353,26 @@
                 if (match) shown++;
             });
             if (none) none.style.display = shown ? 'none' : 'block';
+        });
+    })();
+
+    (function () {
+        var btn = document.getElementById('mg-names-only-toggle');
+        var label = document.getElementById('mg-names-only-label');
+        if (!btn) return;
+        var key = 'mg_contestants_names_only';
+        function apply(on) {
+            document.body.classList.toggle('mg-contestants-names-only', on);
+            btn.classList.toggle('is-active', on);
+            btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+            if (label) label.textContent = on ? 'Show details' : 'Names only';
+            try { localStorage.setItem(key, on ? '1' : '0'); } catch (e) {}
+        }
+        var saved = false;
+        try { saved = localStorage.getItem(key) === '1'; } catch (e) {}
+        apply(saved);
+        btn.addEventListener('click', function () {
+            apply(!document.body.classList.contains('mg-contestants-names-only'));
         });
     })();
 

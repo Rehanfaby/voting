@@ -39,7 +39,8 @@ class EmployeeController extends Controller
             }
             $pending = 0;
             $lims_department_list = Department::where('is_active', true)->get();
-            return view('employee.index', compact('lims_employee_all', 'lims_department_list', 'all_permission', 'pending'));
+            $vote_counts = $this->contestantVoteCounts($lims_employee_all);
+            return view('employee.index', compact('lims_employee_all', 'lims_department_list', 'all_permission', 'pending', 'vote_counts'));
         }
         else
             return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
@@ -62,7 +63,8 @@ class EmployeeController extends Controller
             }
             $pending = 1;
             $lims_department_list = Department::where('is_active', true)->get();
-            return view('employee.index', compact('lims_employee_all', 'lims_department_list', 'all_permission', 'pending'));
+            $vote_counts = $this->contestantVoteCounts($lims_employee_all);
+            return view('employee.index', compact('lims_employee_all', 'lims_department_list', 'all_permission', 'pending', 'vote_counts'));
         }
         else
             return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
@@ -414,5 +416,21 @@ class EmployeeController extends Controller
                                 ->get();
 
         return view('employee.votes', compact('lims_employee_data', 'lims_employee_votes'));
+    }
+
+    private function contestantVoteCounts($employees)
+    {
+        $ids = collect($employees)->pluck('id')->filter()->values()->all();
+        if (empty($ids)) {
+            return [];
+        }
+
+        return DB::table('votes')
+            ->select('musician_id', DB::raw('COALESCE(SUM(vote),0) as total_votes'))
+            ->where('status', true)
+            ->whereIn('musician_id', $ids)
+            ->groupBy('musician_id')
+            ->pluck('total_votes', 'musician_id')
+            ->toArray();
     }
 }
