@@ -82,11 +82,11 @@
                                 <div class="product__modal-form">
                                     <div class="product-quantity-cart ms-product-quantity-flex mb-30">
                                         <div class="product-quantity-form">
-                                            <button class="cart-minus">
+                                            <button type="button" class="cart-minus" aria-label="Decrease votes">
                                                 <i class="far fa-minus"></i>
                                             </button>
-                                            <input class="cart-input" name="vote" type="text" value="1">
-                                            <button class="cart-plus">
+                                            <input class="cart-input" id="vote-qty-input" name="vote" type="number" value="1" min="1" max="1000" step="1" inputmode="numeric">
+                                            <button type="button" class="cart-plus" aria-label="Increase votes">
                                                 <i class="far fa-plus"></i>
                                             </button>
                                         </div>
@@ -239,64 +239,45 @@
 
 
         <script>
+            (function () {
+                var votePrice = {{ (float) $general_setting->vote_price }};
+                var qtyInput = document.getElementById('vote-qty-input');
+                var amountEl = document.getElementById('payable-amount');
+                var minusBtn = document.querySelector('.ms-vote-modern .cart-minus');
+                var plusBtn = document.querySelector('.ms-vote-modern .cart-plus');
+                if (!qtyInput || !amountEl) return;
 
-            /*======================================
-             Cart Quantity Js
-            ========================================*/
-            $(".cart-minus").on("click",function () {
-                var $input = $(this).parent().find("input");
-                var count = parseInt($input.val()) - 1;
-                count = count < 1 ? 1 : count;
-                if (count == undefined) {
-                    return false;
+                function clampQty(raw) {
+                    var n = parseInt(raw, 10);
+                    if (isNaN(n) || n < 1) n = 1;
+                    if (n > 1000) n = 1000;
+                    return n;
                 }
-                var price = count * {{ $general_setting->vote_price }};
-                $("#payable-amount").html(price);
-                $input.val(count);
-                $input.change();
-                return false;
-            });
 
-            $(".cart-plus").on("click",function () {
-                var $input = $(this).parent().find("input");
-                var count = parseInt($input.val()) + 1;
-                count = count < 1 ? 1 : count;
-                count = count < 1 ? 1 : count;
-                if (count == undefined) {
-                    return false;
+                function updatePayable() {
+                    var count = clampQty(qtyInput.value);
+                    qtyInput.value = count;
+                    amountEl.textContent = String(count * votePrice);
                 }
-                var price = count * {{ $general_setting->vote_price }};
-                $("#payable-amount").html(price);
-                $input.val(count);
-                $input.change();
-                return false;
-            });
 
-
-            {{--function priceCalculate(count, $input){--}}
-            {{--    var price = count * {{ $general_setting->vote_price }};--}}
-            {{--    $("#payable-amount").html(price);--}}
-            {{--    var coin = count * {{ $general_setting->vote_coin }};--}}
-            {{--    $("#payable-coin").html(coin);--}}
-            {{--    $input.val(count);--}}
-            {{--    $input.change();--}}
-            {{--    return false;--}}
-            {{--}--}}
-
-            $(".cart-input").on("change keyup input",function () {
-                var $input = $(this);
-                var count = $(this).val();
-                count = count < 1 ? 0 : count;
-                if (count == 0) {
-                    return false;
+                if (minusBtn) {
+                    minusBtn.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        qtyInput.value = clampQty(qtyInput.value) - 1;
+                        updatePayable();
+                    });
                 }
-                var price = count * {{ $general_setting->vote_price }};
-                $("#payable-amount").html(price);
-                $input.val(count);
-                $input.change();
-                return false;
-            });
-
+                if (plusBtn) {
+                    plusBtn.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        qtyInput.value = clampQty(qtyInput.value) + 1;
+                        updatePayable();
+                    });
+                }
+                qtyInput.addEventListener('input', updatePayable);
+                qtyInput.addEventListener('change', updatePayable);
+                updatePayable();
+            })();
         </script>
 
     </main>
