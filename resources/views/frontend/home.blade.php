@@ -377,15 +377,21 @@
                                     <div class="swiper-wrapper">
                                         @foreach($judges as $contentant)
                                             <div class="swiper-slide">
-                                                <div class="ms-popular__item p-relative mb-30">
-                                                    <div class="ms-popular__thumb ms-judge-glow">
+                                                <div class="ms-popular__item p-relative mb-30 mg-portrait-card">
+                                                    <div class="ms-popular__thumb ms-judge-glow mg-portrait-frame">
                                                         <div class="ms-popular-overlay"></div>
-                                                        <a><img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($contentant->image) }}" alt="{{ $contentant->name }}" loading="lazy" decoding="async"></a>
-                                                        <a class="ms-popular__link">
-                                                            <span class="ms-popular-icon"><i class="fa-regular fa-arrow-right-long"></i></span>
+                                                        <a class="mg-portrait-link" tabindex="-1" aria-hidden="true">
+                                                            <img
+                                                                src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($contentant->image, false) }}"
+                                                                alt="{{ $contentant->name }}"
+                                                                width="480"
+                                                                height="640"
+                                                                loading="lazy"
+                                                                decoding="async"
+                                                            >
                                                         </a>
                                                     </div>
-                                                    <h4 class="ms-popular__title">
+                                                    <h4 class="ms-popular__title mg-portrait-name">
                                                         <a>
                                                             {{ $contentant->name }}
                                                             @include('partials.country_flag', ['country' => $contentant->country, 'size' => 20, 'class' => 'mg-judge-flag-inline'])
@@ -402,25 +408,63 @@
                 </div>
             </div>
             <style>
-                .ms-judges-section .ms-judge-glow {
-                    border: 2px solid rgba(246, 196, 83, 0.55);
+                .ms-judges-section .mg-portrait-card { text-align: center; }
+                .ms-judges-section .mg-portrait-frame {
+                    width: min(100%, 280px);
+                    aspect-ratio: 3 / 4;
+                    margin: 0 auto;
+                    border-radius: 50%;
+                    overflow: hidden;
+                    border: 3px solid rgba(246, 196, 83, 0.75);
                     box-shadow:
-                        0 0 18px rgba(246, 196, 83, 0.45),
-                        0 0 36px rgba(246, 196, 83, 0.2),
-                        inset 0 0 12px rgba(246, 196, 83, 0.08);
+                        0 12px 28px rgba(0, 0, 0, 0.35),
+                        0 0 0 6px rgba(18, 41, 77, 0.9),
+                        0 0 24px rgba(246, 196, 83, 0.28);
+                    background: #0d1f3c;
+                    transition: transform .25s ease, box-shadow .25s ease;
                 }
-                .ms-judges-section .ms-popular__title a {
+                .ms-judges-section .mg-portrait-frame:hover {
+                    transform: translateY(-4px);
+                    box-shadow:
+                        0 16px 34px rgba(0, 0, 0, 0.4),
+                        0 0 0 6px rgba(18, 41, 77, 0.95),
+                        0 0 32px rgba(246, 196, 83, 0.4);
+                }
+                .ms-judges-section .mg-portrait-frame .mg-portrait-link,
+                .ms-judges-section .mg-portrait-frame img {
+                    display: block;
+                    width: 100%;
+                    height: 100%;
+                }
+                .ms-judges-section .mg-portrait-frame img {
+                    object-fit: cover;
+                    object-position: center 18%;
+                    image-rendering: auto;
+                }
+                .ms-judges-section .mg-portrait-frame .ms-popular-overlay,
+                .ms-judges-section .ms-popular__link { display: none !important; }
+                .ms-judges-section .mg-portrait-name {
+                    position: static !important;
+                    margin-top: 14px;
+                }
+                .ms-judges-section .mg-portrait-name a {
+                    position: static !important;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
                     color: #f6c453;
                     background: #12294d;
                     border: 1px solid rgba(246, 196, 83, 0.45);
                     font-weight: 600;
+                    max-width: 100%;
                 }
-                .ms-judges-section .ms-popular__title a:hover {
+                .ms-judges-section .mg-portrait-name a:hover {
                     color: #ffffff;
                     background: #1a3a6b;
                     border-color: #f6c453;
                 }
-                .ms-judges-section .mg-country-flag { display:inline-flex; align-items:center; margin-left:6px; vertical-align:middle; }
+                .ms-judges-section .mg-country-flag { display:inline-flex; align-items:center; vertical-align:middle; }
                 .ms-judges-section .mg-country-flag img { border-radius:2px; }
                 .ms-judges-section .mg-country-flag__emoji { font-size:1.1em; line-height:1; }
             </style>
@@ -519,17 +563,22 @@
                                     <div class="swiper-wrapper">
                                         @foreach($ambassadors as $ambassador)
                                             <div class="swiper-slide">
-                                                <div class="ms-popular__item p-relative mb-30">
-                                                    <div class="ms-popular__thumb ms-ambassador-glow">
+                                                <div class="ms-popular__item p-relative mb-30 mg-portrait-card">
+                                                    <div class="ms-popular__thumb ms-ambassador-glow mg-portrait-frame">
                                                         <div class="ms-popular-overlay"></div>
-                                                        <a><img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($ambassador->image) }}" alt="{{ $ambassador->name }}" loading="lazy" decoding="async"></a>
-                                                        <a class="ms-popular__link">
-                                                            <span class="ms-popular-icon"><i class="fa-regular fa-arrow-right-long"></i></span>
+                                                        <a class="mg-portrait-link" tabindex="-1" aria-hidden="true">
+                                                            <img
+                                                                src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($ambassador->image, false) }}"
+                                                                alt="{{ $ambassador->name }}"
+                                                                width="480"
+                                                                height="640"
+                                                                loading="lazy"
+                                                                decoding="async"
+                                                            >
                                                         </a>
                                                     </div>
-                                                    <h4 class="ms-popular__title"><a >
-                                                            {{ $ambassador->name }}
-                                                        </a>
+                                                    <h4 class="ms-popular__title mg-portrait-name">
+                                                        <a>{{ $ambassador->name }}</a>
                                                     </h4>
                                                 </div>
                                             </div>
@@ -542,22 +591,57 @@
                 </div>
             </div>
             <style>
-                .ms-ambassadors-section .ms-ambassador-glow {
+                .ms-ambassadors-section .mg-portrait-card { text-align: center; }
+                .ms-ambassadors-section .mg-portrait-frame {
+                    width: min(100%, 280px);
+                    aspect-ratio: 3 / 4;
+                    margin: 0 auto;
                     border-radius: 50%;
-                    border: 2px solid rgba(232, 119, 34, 0.65);
+                    overflow: hidden;
+                    border: 3px solid rgba(232, 119, 34, 0.8);
                     box-shadow:
-                        0 0 0 6px #12294d,
-                        0 0 22px rgba(232, 119, 34, 0.55),
-                        0 0 40px rgba(232, 119, 34, 0.25),
-                        inset 0 0 12px rgba(232, 119, 34, 0.08);
+                        0 12px 28px rgba(0, 0, 0, 0.35),
+                        0 0 0 6px rgba(18, 41, 77, 0.9),
+                        0 0 24px rgba(232, 119, 34, 0.3);
+                    background: #0d1f3c;
+                    transition: transform .25s ease, box-shadow .25s ease;
                 }
-                .ms-ambassadors-section .ms-popular__title a {
+                .ms-ambassadors-section .mg-portrait-frame:hover {
+                    transform: translateY(-4px);
+                    box-shadow:
+                        0 16px 34px rgba(0, 0, 0, 0.4),
+                        0 0 0 6px rgba(18, 41, 77, 0.95),
+                        0 0 32px rgba(232, 119, 34, 0.42);
+                }
+                .ms-ambassadors-section .mg-portrait-frame .mg-portrait-link,
+                .ms-ambassadors-section .mg-portrait-frame img {
+                    display: block;
+                    width: 100%;
+                    height: 100%;
+                }
+                .ms-ambassadors-section .mg-portrait-frame img {
+                    object-fit: cover;
+                    object-position: center 18%;
+                    image-rendering: auto;
+                }
+                .ms-ambassadors-section .mg-portrait-frame .ms-popular-overlay,
+                .ms-ambassadors-section .ms-popular__link { display: none !important; }
+                .ms-ambassadors-section .mg-portrait-name {
+                    position: static !important;
+                    margin-top: 14px;
+                }
+                .ms-ambassadors-section .mg-portrait-name a {
+                    position: static !important;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
                     color: #e87722;
                     background: #12294d;
                     border: 1px solid rgba(232, 119, 34, 0.45);
                     font-weight: 600;
+                    max-width: 100%;
                 }
-                .ms-ambassadors-section .ms-popular__title a:hover {
+                .ms-ambassadors-section .mg-portrait-name a:hover {
                     color: #ffffff;
                     background: #1a3a6b;
                     border-color: #e87722;

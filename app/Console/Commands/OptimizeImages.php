@@ -11,7 +11,7 @@ use App\Helpers\ImageOptimizer;
  */
 class OptimizeImages extends Command
 {
-    protected $signature = 'images:optimize {--max=800 : Max longest edge in px} {--quality=68 : JPEG/PNG quality}';
+    protected $signature = 'images:optimize {--max=1200 : Max longest edge in px} {--quality=82 : JPEG/PNG quality} {--thumb-size=320 : Thumbnail longest edge}';
 
     protected $description = 'Downscale and compress existing site images (and build thumbnails) for faster loading';
 
@@ -21,11 +21,13 @@ class OptimizeImages extends Command
 
         $max = (int) $this->option('max');
         $quality = (int) $this->option('quality');
+        $thumbSize = max(160, (int) $this->option('thumb-size'));
+        $thumbQuality = max($quality - 8, 72);
 
         // folder => [makeThumb, thumbSize]
         $targets = [
-            public_path('images/employee') => [true, 240],
-            public_path('employee/data')   => [true, 480],
+            public_path('images/employee') => [true, $thumbSize],
+            public_path('employee/data')   => [true, max($thumbSize, 480)],
             public_path('images/product')  => [true, 280],
             public_path('images/category') => [true, 280],
             public_path('uploads/gallery') => [true, 480],
@@ -56,7 +58,7 @@ class OptimizeImages extends Command
                 $before = filesize($path);
                 ImageOptimizer::optimize($path, $max, $quality);
                 if ($makeThumb) {
-                    ImageOptimizer::thumbnail($path, $thumbSize, 65);
+                    ImageOptimizer::thumbnail($path, $thumbSize, $thumbQuality);
                 }
                 clearstatcache(true, $path);
                 $after = filesize($path);

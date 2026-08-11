@@ -106,7 +106,8 @@ class ImageOptimizer
                 break;
             case 'portrait':
             default:
-                self::process($path, 800, 68, 240);
+                // Keep portraits sharp enough for homepage judge/ambassador ovals.
+                self::process($path, 1200, 85, 320);
                 break;
         }
     }
