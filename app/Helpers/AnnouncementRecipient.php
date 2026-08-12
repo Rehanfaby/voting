@@ -7,10 +7,11 @@ use App\Announcement;
 use App\Employee;
 use App\Judge;
 use App\User;
-use Illuminate\Support\Collection;
 
 class AnnouncementRecipient
 {
+    public const SEARCH_LIMIT = 25;
+
     public static function categories(): array
     {
         return [
@@ -24,15 +25,56 @@ class AnnouncementRecipient
         ];
     }
 
+    public static function categoryKeys(): array
+    {
+        return ['everyone', 'contestants', 'voters', 'users', 'judges', 'ambassadors'];
+    }
+
+    public static function isCategoryAudience(string $category): bool
+    {
+        return in_array(strtolower(trim($category)), self::categoryKeys(), true);
+    }
+
     /** @return array<int, array{type:string,id:int|string,name:string,phone:string,email:string,label:string}> */
-    public static function listForCategory(string $category, ?string $query = null): array
+    public static function listForCategory(string $category, ?string $query = null, ?int $limit = null): array
     {
         $category = strtolower(trim($category));
         if ($category === 'everyone') {
-            return self::dedupe(self::mergeAllCategories($query));
+            $rows = self::dedupe(self::mergeAllCategories($query, $limit));
+        } else {
+            $rows = self::dedupe(self::categoryRows($category, $query, $limit));
         }
 
-        return self::dedupe(self::categoryRows($category, $query));
+        if ($limit) {
+            return array_slice($rows, 0, $limit);
+        }
+
+        return $rows;
+    }
+
+    public static function searchForCategory(string $category, string $query, int $limit = self::SEARCH_LIMIT): array
+    {
+        $query = trim($query);
+        if ($query === '') {
+            return [];
+        }
+
+        return self::listForCategory($category, $query, $limit);
+    }
+
+    public static function countForCategory(string $category): int
+    {
+        $category = strtolower(trim($category));
+        if ($category === 'everyone') {
+            $n = 0;
+            foreach (['contestants', 'voters', 'users', 'judges', 'ambassadors'] as $cat) {
+                $n += self::countCategoryRows($cat);
+            }
+
+            return $n;
+        }
+
+        return self::countCategoryRows($category);
     }
 
     public static function resolveForAnnouncement(Announcement $announcement): array
@@ -40,6 +82,16 @@ class AnnouncementRecipient
         $stored = self::decodeJson($announcement->recipients_json);
         if (!empty($stored)) {
             return self::dedupe($stored);
+        }
+
+        $audience = strtolower(trim((string) ($announcement->audience_category ?? '')));
+        if (self::isCategoryAudience($audience)) {
+            return self::listForCategory($audience);
+        }
+
+        $to = (string) ($announcement->to ?? '');
+        if (strpos($to, 'category:') === 0) {
+            return self::listForCategory(substr($to, 9));
         }
 
         return self::resolveLegacy($announcement);
@@ -111,36 +163,65 @@ class AnnouncementRecipient
     }
 
     /** @return array<int, array{type:string,id:int|string,name:string,phone:string,email:string,label:string}> */
-    private static function mergeAllCategories(?string $query): array
+    private static function mergeAllCategories(?string $query, ?int $limit = null): array
     {
         $all = [];
         foreach (['contestants', 'voters', 'users', 'judges', 'ambassadors'] as $cat) {
-            $all = array_merge($all, self::categoryRows($cat, $query));
+            $all = array_merge($all, self::categoryRows($cat, $query, $limit));
+            if ($limit && count($all) >= $limit) {
+                break;
+            }
         }
 
         return $all;
     }
 
     /** @return array<int, array{type:string,id:int|string,name:string,phone:string,email:string,label:string}> */
-    private static function categoryRows(string $category, ?string $query): array
+    private static function categoryRows(string $category, ?string $query, ?int $limit = null): array
     {
         switch ($category) {
             case 'contestants':
-                return self::fromContestants($query);
+                return self::fromContestants($query, $limit);
             case 'voters':
-                return self::fromUsersByRoles([3], 'voter', $query);
+                return self::fromUsersByRoles([3], 'voter', $query, $limit);
             case 'users':
-                return self::fromUsersByRoles([1, 4, 5, 6, 9, 10, 11, 12, 13, 52, 53, 55], 'user', $query);
+                return self::fromUsersByRoles([1, 4, 5, 6, 9, 10, 11, 12, 13, 52, 53, 55], 'user', $query, $limit);
             case 'judges':
-                return self::fromJudges($query);
+                return self::fromJudges($query, $limit);
             case 'ambassadors':
-                return self::fromAmbassadors($query);
+                return self::fromAmbassadors($query, $limit);
             default:
                 return [];
         }
     }
 
-    private static function fromContestants(?string $query): array
+    private static function countCategoryRows(string $category): int
+    {
+        switch ($category) {
+            case 'contestants':
+                return (int) Employee::where('is_active', true)->where('is_approve', true)->count()
+                    + self::countUsersByRoles([2]);
+            case 'voters':
+                return self::countUsersByRoles([3]);
+            case 'users':
+                return self::countUsersByRoles([1, 4, 5, 6, 9, 10, 11, 12, 13, 52, 53, 55]);
+            case 'judges':
+                return (int) Judge::where('is_active', true)->count()
+                    + self::countUsersByRoles([54]);
+            case 'ambassadors':
+                return (int) Ambassador::where('is_active', true)->count()
+                    + self::countUsersByRoles([14]);
+            default:
+                return 0;
+        }
+    }
+
+    private static function countUsersByRoles(array $roleIds): int
+    {
+        return (int) User::where('is_active', true)->where('is_deleted', false)->whereIn('role_id', $roleIds)->count();
+    }
+
+    private static function fromContestants(?string $query, ?int $limit = null): array
     {
         $rows = [];
         $q = Employee::where('is_active', true)->where('is_approve', true);
@@ -150,6 +231,9 @@ class AnnouncementRecipient
                     ->orWhere('email', 'like', '%' . $query . '%')
                     ->orWhere('phone_number', 'like', '%' . $query . '%');
             });
+        }
+        if ($limit) {
+            $q->limit($limit);
         }
         foreach ($q->orderBy('name')->get() as $e) {
             $rows[] = self::row('contestant', $e->id, $e->name, $e->phone_number, $e->email, 'Contestant');
@@ -163,6 +247,9 @@ class AnnouncementRecipient
                     ->orWhere('phone', 'like', '%' . $query . '%');
             });
         }
+        if ($limit) {
+            $userQ->limit($limit);
+        }
         foreach ($userQ->orderBy('name')->get() as $u) {
             $rows[] = self::row('contestant', 'u' . $u->id, $u->name, $u->phone ?? $u->whatsapp_number, $u->email, 'Contestant (user)');
         }
@@ -170,7 +257,7 @@ class AnnouncementRecipient
         return $rows;
     }
 
-    private static function fromUsersByRoles(array $roleIds, string $type, ?string $query): array
+    private static function fromUsersByRoles(array $roleIds, string $type, ?string $query, ?int $limit = null): array
     {
         $q = User::where('is_active', true)->where('is_deleted', false)->whereIn('role_id', $roleIds);
         if ($query) {
@@ -180,15 +267,19 @@ class AnnouncementRecipient
                     ->orWhere('phone', 'like', '%' . $query . '%');
             });
         }
+        $q->orderBy('name');
+        if ($limit) {
+            $q->limit($limit);
+        }
         $rows = [];
-        foreach ($q->orderBy('name')->get() as $u) {
+        foreach ($q->get() as $u) {
             $rows[] = self::row($type, $u->id, $u->name, $u->phone ?? $u->whatsapp_number, $u->email, ucfirst($type));
         }
 
         return $rows;
     }
 
-    private static function fromJudges(?string $query): array
+    private static function fromJudges(?string $query, ?int $limit = null): array
     {
         $rows = [];
         $q = Judge::where('is_active', true);
@@ -198,6 +289,9 @@ class AnnouncementRecipient
                     ->orWhere('email', 'like', '%' . $query . '%')
                     ->orWhere('phone_number', 'like', '%' . $query . '%');
             });
+        }
+        if ($limit) {
+            $q->limit($limit);
         }
         foreach ($q->orderBy('name')->get() as $j) {
             $rows[] = self::row('judge', $j->id, $j->name, $j->phone_number, $j->email, 'Judge');
@@ -211,6 +305,9 @@ class AnnouncementRecipient
                     ->orWhere('phone', 'like', '%' . $query . '%');
             });
         }
+        if ($limit) {
+            $userQ->limit($limit);
+        }
         foreach ($userQ->orderBy('name')->get() as $u) {
             $rows[] = self::row('judge', 'u' . $u->id, $u->name, $u->phone ?? $u->whatsapp_number, $u->email, 'Judge (user)');
         }
@@ -218,7 +315,7 @@ class AnnouncementRecipient
         return $rows;
     }
 
-    private static function fromAmbassadors(?string $query): array
+    private static function fromAmbassadors(?string $query, ?int $limit = null): array
     {
         $rows = [];
         $q = Ambassador::where('is_active', true);
@@ -228,6 +325,9 @@ class AnnouncementRecipient
                     ->orWhere('email', 'like', '%' . $query . '%')
                     ->orWhere('phone_number', 'like', '%' . $query . '%');
             });
+        }
+        if ($limit) {
+            $q->limit($limit);
         }
         foreach ($q->orderBy('name')->get() as $a) {
             $rows[] = self::row('ambassador', $a->id, $a->name, $a->phone_number, $a->email, 'Ambassador');
@@ -240,6 +340,9 @@ class AnnouncementRecipient
                     ->orWhere('email', 'like', '%' . $query . '%')
                     ->orWhere('phone', 'like', '%' . $query . '%');
             });
+        }
+        if ($limit) {
+            $userQ->limit($limit);
         }
         foreach ($userQ->orderBy('name')->get() as $u) {
             $rows[] = self::row('ambassador', 'u' . $u->id, $u->name, $u->phone ?? $u->whatsapp_number, $u->email, 'Ambassador (user)');

@@ -1,8 +1,20 @@
 @extends('layout.main') @section('content')
     @php
         $cloneRecipients = [];
+        $cloneEntireCategory = false;
+        $cloneEntireCount = 0;
         if (!empty($clone)) {
-            $cloneRecipients = \App\Helpers\AnnouncementRecipient::resolveForAnnouncement($clone);
+            $stored = json_decode($clone->recipients_json, true);
+            $audience = (string) ($clone->audience_category ?? '');
+            if (is_array($stored) && count($stored) > 100 && \App\Helpers\AnnouncementRecipient::isCategoryAudience($audience)) {
+                $cloneEntireCategory = true;
+                $cloneEntireCount = count($stored);
+            } elseif (is_array($stored) && count($stored)) {
+                $cloneRecipients = $stored;
+            } elseif (\App\Helpers\AnnouncementRecipient::isCategoryAudience($audience)) {
+                $cloneEntireCategory = true;
+                $cloneEntireCount = \App\Helpers\AnnouncementRecipient::countForCategory($audience);
+            }
         }
         $prefillCategory = old('audience_category', optional($clone)->audience_category ?? 'contestants');
     @endphp
@@ -21,7 +33,7 @@
         .mg-recipient-results button:hover { background:#f8f9fc; }
         .mg-recipient-chips { display:flex; flex-wrap:wrap; gap:8px; min-height:36px; }
         .mg-recipient-chip { display:inline-flex; align-items:center; gap:8px; background:#eef2ff; color:#4338ca; border-radius:999px; padding:6px 12px; font-size:12px; font-weight:600; }
-        .mg-recipient-chip.no-phone { background:#fff7ed; color:#c2410c; }
+        .mg-recipient-chip.entire { background:#dcfce7; color:#166534; }
         .mg-recipient-chip button { border:0; background:transparent; color:#dc2626; font-weight:700; line-height:1; }
         .mg-slot-row { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
     </style>
@@ -205,29 +217,47 @@
 
     <script type="text/javascript">
         var recipients = @json($cloneRecipients);
+        var entireCategory = @json((bool) $cloneEntireCategory);
+        var entireCount = @json((int) $cloneEntireCount);
         var activeCategory = '{{ $prefillCategory }}';
         var recipientsUrl = @json(route('announcement.recipients'));
+        var categoryLabels = @json($categories);
 
         function recipientKey(row) {
             return (row.type || 'user') + ':' + (row.id || '');
         }
 
+        function categoryLabel(cat) {
+            return categoryLabels[cat] || cat;
+        }
+
         function renderChips() {
             var $chips = $('#recipient-chips');
             $chips.empty();
+            if (entireCategory) {
+                var label = 'All ' + categoryLabel(activeCategory) + ' (' + entireCount + ')';
+                $chips.append('<span class="mg-recipient-chip entire">' + label + '</span>');
+                $('#recipient-count').text(entireCount);
+                return;
+            }
+            var html = '';
             recipients.forEach(function (row, index) {
                 var phone = row.phone || '';
                 var cls = phone ? 'mg-recipient-chip' : 'mg-recipient-chip no-phone';
-                var label = row.name + (phone ? ' (' + phone + ')' : ' (no phone)');
-                $chips.append(
-                    '<span class="' + cls + '">' + label +
-                    '<button type="button" data-index="' + index + '" class="chip-remove">&times;</button></span>'
-                );
+                var name = row.name + (phone ? ' (' + phone + ')' : ' (no phone)');
+                html += '<span class="' + cls + '">' + name +
+                    '<button type="button" data-index="' + index + '" class="chip-remove">&times;</button></span>';
             });
+            $chips.html(html);
             $('#recipient-count').text(recipients.length);
         }
 
         function addRecipient(row) {
+            if (entireCategory) {
+                entireCategory = false;
+                entireCount = 0;
+                recipients = [];
+            }
             var key = recipientKey(row);
             if (recipients.some(function (r) { return recipientKey(r) === key; })) {
                 return;
@@ -246,6 +276,7 @@
                 $('#recipient-picker').hide();
                 $('.csv-upload').hide();
                 $('.to-csv').prop('required', false);
+                entireCategory = true;
             } else {
                 $('#recipient-picker').show();
                 $('.csv-upload').hide();
@@ -257,28 +288,47 @@
         }
 
         function loadSearchResults() {
-            var q = $('#recipient-search').val();
+            var q = $.trim($('#recipient-search').val());
+            var $box = $('#recipient-results').empty();
+            if (q.length < 2) {
+                $box.append('<div class="p-3 text-muted text-center">Type at least 2 characters to search, or add everyone in this category.</div>');
+                return;
+            }
             $.get(recipientsUrl, { category: activeCategory, q: q }, function (res) {
-                var $box = $('#recipient-results').empty();
-                (res.items || []).forEach(function (item) {
+                var items = res.items || [];
+                items.forEach(function (item) {
                     var sub = [item.email, item.phone].filter(Boolean).join(' · ') || '—';
                     $box.append(
                         '<button type="button" class="pick-recipient" data-json=\'' + JSON.stringify(item).replace(/'/g, '&#39;') + '\'>' +
                         '<strong>' + item.name + '</strong><br><small class="text-muted">' + sub + '</small></button>'
                     );
                 });
-                if (!$box.children().length) {
+                if (!items.length) {
                     $box.append('<div class="p-3 text-muted text-center">No results</div>');
+                } else if ((res.total || 0) > items.length) {
+                    $box.append('<div class="p-2 text-muted text-center small">Showing ' + items.length + ' matches. Refine your search.</div>');
                 }
             });
         }
 
-        $('#audience_category').on('change', toggleAudienceUi);
+        $('#audience_category').on('change', function () {
+            entireCategory = ($('#audience_category').val() === 'everyone');
+            if (!entireCategory) {
+                entireCount = 0;
+            }
+            toggleAudienceUi();
+            renderChips();
+            if ($('#recipient-picker').is(':visible')) { loadSearchResults(); }
+        });
         $('#category-tabs').on('click', 'button', function () {
             activeCategory = $(this).data('category');
+            $('#audience_category').val(activeCategory);
             $('#category-tabs button').removeClass('active');
             $(this).addClass('active');
+            entireCategory = false;
+            entireCount = 0;
             loadSearchResults();
+            renderChips();
         });
         $('#recipient-search-btn').on('click', loadSearchResults);
         $('#recipient-search').on('keypress', function (e) { if (e.which === 13) { e.preventDefault(); loadSearchResults(); } });
@@ -290,10 +340,27 @@
             recipients.splice(idx, 1);
             renderChips();
         });
-        $('#clear-recipients').on('click', function () { recipients = []; renderChips(); });
+        $('#clear-recipients').on('click', function () {
+            entireCategory = false;
+            entireCount = 0;
+            recipients = [];
+            renderChips();
+        });
         $('#select-all-category').on('click', function () {
+            var $btn = $(this).prop('disabled', true);
             $.get(recipientsUrl, { category: activeCategory }, function (res) {
-                (res.items || []).forEach(addRecipient);
+                var total = parseInt(res.total, 10) || 0;
+                if (total < 1) {
+                    alert('No recipients found in this category.');
+                    return;
+                }
+                entireCategory = true;
+                entireCount = total;
+                recipients = [];
+                $('#audience_category').val(activeCategory);
+                renderChips();
+            }).always(function () {
+                $btn.prop('disabled', false);
             });
         });
 
@@ -373,6 +440,10 @@
                         alert('Please upload a CSV file.');
                         return;
                     }
+                    if (cat !== 'csv' && cat !== 'everyone' && !entireCategory && !recipients.length) {
+                        alert('Please select at least one recipient, or add everyone in this category.');
+                        return;
+                    }
                     tinymce.triggerSave();
                     var $btn = $('#submit-btn');
                     $btn.prop('disabled', true).val('Saving…');
@@ -401,7 +472,12 @@
         function appendAnnouncementFields(formData) {
             var data = $('#product-form').serializeArray();
             $.each(data, function (_, el) { formData.append(el.name, el.value); });
-            formData.append('recipients', JSON.stringify(recipients));
+            if (entireCategory) {
+                formData.append('entire_category', '1');
+                formData.append('recipients', '[]');
+            } else {
+                formData.append('recipients', JSON.stringify(recipients));
+            }
         }
 
         function submitAnnouncementForm(formData) {

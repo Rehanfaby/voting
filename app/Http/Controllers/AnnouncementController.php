@@ -93,16 +93,26 @@ class AnnouncementController extends Controller
     public function recipients(Request $request)
     {
         $category = (string) $request->query('category', 'contestants');
-        $query = $request->query('q');
+        $query = trim((string) $request->query('q', ''));
+        $total = AnnouncementRecipient::countForCategory($category);
+        $items = [];
+        if ($query !== '' && mb_strlen($query) >= 2) {
+            $items = AnnouncementRecipient::searchForCategory(
+                $category,
+                $query,
+                AnnouncementRecipient::SEARCH_LIMIT
+            );
+        }
 
         return response()->json([
-            'items' => AnnouncementRecipient::listForCategory($category, $query),
+            'total' => $total,
+            'items' => $items,
         ]);
     }
 
     public function store(Request $request)
     {
-        $data = $request->except(['attachments', 'to_csv', 'recipients', 'schedule_times', 'reminder_times', 'send_now', 'schedule_later']);
+        $data = $request->except(['attachments', 'to_csv', 'recipients', 'schedule_times', 'reminder_times', 'send_now', 'schedule_later', 'entire_category']);
 
         $audience = $request->input('audience_category', $request->input('people_type', 'users'));
         $data['audience_category'] = $audience;
@@ -119,6 +129,11 @@ class AnnouncementController extends Controller
         if (is_string($recipientPayload)) {
             $recipientPayload = json_decode($recipientPayload, true);
         }
+        $hasExplicitRecipients = is_array($recipientPayload) && count($recipientPayload);
+        $entireCategory = $request->boolean('entire_category')
+            || $audience === 'everyone'
+            || (AnnouncementRecipient::isCategoryAudience((string) $audience) && !$hasExplicitRecipients);
+
         if ($audience === 'csv') {
             $toCsv = $request->file('to_csv');
             if ($toCsv) {
@@ -129,18 +144,18 @@ class AnnouncementController extends Controller
                 return $this->announcementStoreError($request, 'Please upload a CSV file.', 422);
             }
             $data['recipients_json'] = null;
-        } elseif (is_array($recipientPayload) && count($recipientPayload)) {
+        } elseif ($entireCategory && AnnouncementRecipient::isCategoryAudience((string) $audience)) {
+            $total = AnnouncementRecipient::countForCategory($audience);
+            if ($total < 1) {
+                return $this->announcementStoreError($request, 'No recipients found in this category.', 422);
+            }
+            $data['recipients_json'] = null;
+            $data['to'] = 'category:' . $audience;
+        } elseif ($hasExplicitRecipients) {
             $data['recipients_json'] = AnnouncementRecipient::storePayload($recipientPayload);
             $data['to'] = implode(',', array_map(function ($r) {
                 return AnnouncementRecipient::recipientKey($r);
             }, json_decode($data['recipients_json'], true)));
-        } elseif (in_array($audience, ['everyone', 'contestants', 'voters', 'users', 'judges', 'ambassadors'], true)) {
-            $all = AnnouncementRecipient::listForCategory($audience);
-            if (!count($all)) {
-                return $this->announcementStoreError($request, 'No recipients found in this category.', 422);
-            }
-            $data['recipients_json'] = AnnouncementRecipient::storePayload($all);
-            $data['to'] = implode(',', array_map([AnnouncementRecipient::class, 'recipientKey'], $all));
         } else {
             return $this->announcementStoreError($request, 'Please select at least one recipient.', 422);
         }
