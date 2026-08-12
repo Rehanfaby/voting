@@ -219,17 +219,48 @@ class AnnouncementController extends Controller
     /** Fire-and-forget CLI delivery so the browser is never blocked by the 6s throttle. */
     private function dispatchAnnouncementDelivery(int $announcementId): void
     {
-        $php = defined('PHP_BINARY') && PHP_BINARY ? PHP_BINARY : 'php';
+        $php = (defined('PHP_BINARY') && PHP_BINARY) ? PHP_BINARY : 'php';
         $artisan = base_path('artisan');
+        $log = storage_path('logs/announcement-deliver-' . $announcementId . '.log');
         $cmd = sprintf(
-            'cd %s && nohup %s %s announcements:deliver %d > %s 2>&1 &',
+            'cd %s; nohup %s %s announcements:deliver %d >> %s 2>&1 &',
             escapeshellarg(base_path()),
             escapeshellarg($php),
             escapeshellarg($artisan),
             $announcementId,
-            escapeshellarg(storage_path('logs/announcement-deliver-' . $announcementId . '.log'))
+            escapeshellarg($log)
         );
-        @exec($cmd);
+
+        $disabled = array_map('trim', explode(',', (string) ini_get('disable_functions')));
+        $started = false;
+
+        // Hostinger disables exec()/shell_exec(); proc_open is usually still allowed.
+        if (function_exists('proc_open') && !in_array('proc_open', $disabled, true)) {
+            $pipes = [];
+            $proc = @proc_open($cmd, [
+                0 => ['file', '/dev/null', 'r'],
+                1 => ['file', $log, 'a'],
+                2 => ['file', $log, 'a'],
+            ], $pipes, base_path());
+            if (is_resource($proc)) {
+                foreach ($pipes as $pipe) {
+                    if (is_resource($pipe)) {
+                        fclose($pipe);
+                    }
+                }
+                proc_close($proc);
+                $started = true;
+            }
+        } elseif (function_exists('exec') && !in_array('exec', $disabled, true)) {
+            @exec($cmd);
+            $started = true;
+        }
+
+        if (!$started) {
+            \Log::error('Could not background announcement delivery (exec disabled)', [
+                'announcement_id' => $announcementId,
+            ]);
+        }
     }
 
     private function isAnnouncementAjax(Request $request): bool
@@ -328,11 +359,20 @@ class AnnouncementController extends Controller
         $announcement = $announcement->findOrFail($id);
         $this->assignReference($announcement);
         $slots = AnnouncementRecipient::parseSlots($announcement->schedules_json);
-        $slots[] = [
-            'at' => now()->toDateTimeString(),
-            'status' => 'pending',
-            'sent_at' => null,
-        ];
+        $hasPending = false;
+        foreach ($slots as $slot) {
+            if (($slot['status'] ?? '') !== 'sent') {
+                $hasPending = true;
+                break;
+            }
+        }
+        if (!$hasPending) {
+            $slots[] = [
+                'at' => now()->toDateTimeString(),
+                'status' => 'pending',
+                'sent_at' => null,
+            ];
+        }
         $announcement->update([
             'schedules_json' => json_encode($slots),
             'status' => 'queued',
