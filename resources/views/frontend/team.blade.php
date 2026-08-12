@@ -136,53 +136,38 @@
 }
 .mg-zone-divider--elim .mg-zone-divider__label i { color: #ff9533; }
 
-/* Blinking frame — Green Zone */
+/* Zone rings also live in frontend-modern.css; keep page overrides strong */
 .contestant-list.is-qual-zone .mg-contestant-card__avatar {
-    background: linear-gradient(145deg, #16a34a, #4ade80) !important;
-    animation: mg-blink-green 1.35s ease-in-out infinite;
+    background: linear-gradient(145deg, #15803d, #4ade80) !important;
+    box-shadow:
+        0 0 0 5px #14532d,
+        0 0 0 8px rgba(74, 222, 128, .95),
+        0 0 32px rgba(34, 197, 94, .85) !important;
+    animation: mg-zone-blink-green 1.35s ease-in-out infinite;
 }
 .contestant-list.is-qual-zone.is-search-hit .mg-contestant-card__avatar {
-    animation: mg-blink-green 0.7s ease-in-out infinite;
+    animation: mg-zone-blink-green 0.7s ease-in-out infinite;
+}
+.contestant-list.is-elim-zone .mg-contestant-card__avatar {
+    background: linear-gradient(145deg, #c2410c, #fb923c) !important;
+    box-shadow:
+        0 0 0 5px #7c2d12,
+        0 0 0 8px rgba(251, 146, 60, .95),
+        0 0 32px rgba(232, 119, 34, .85) !important;
+    animation: mg-zone-blink-orange 1.35s ease-in-out infinite;
+}
+.contestant-list.is-elim-zone.is-search-hit .mg-contestant-card__avatar {
+    animation: mg-zone-blink-orange 0.7s ease-in-out infinite;
 }
 .mg-contestant-card__badge.is-safe {
     background: #166534 !important;
     color: #bbf7d0 !important;
     border-color: #4ade80 !important;
 }
-
-/* Blinking frame — Orange Zone */
-.contestant-list.is-elim-zone .mg-contestant-card__avatar {
-    background: linear-gradient(145deg, #c65d0a, #e87722) !important;
-    animation: mg-blink-orange 1.35s ease-in-out infinite;
-}
-.contestant-list.is-elim-zone.is-search-hit .mg-contestant-card__avatar {
-    animation: mg-blink-orange 0.7s ease-in-out infinite;
-}
 .mg-contestant-card__badge.is-danger {
-    background: #e87722 !important;
+    background: #ea580c !important;
     color: #fff !important;
-    border-color: #ffb366 !important;
-}
-
-@keyframes mg-blink-orange {
-    0%, 100% {
-        box-shadow: 0 0 0 3px rgba(232, 119, 34, .25), 0 0 10px rgba(232, 119, 34, .25);
-        filter: brightness(1);
-    }
-    50% {
-        box-shadow: 0 0 0 6px rgba(232, 119, 34, .95), 0 0 28px rgba(255, 149, 51, .85);
-        filter: brightness(1.12);
-    }
-}
-@keyframes mg-blink-green {
-    0%, 100% {
-        box-shadow: 0 0 0 3px rgba(34, 197, 94, .25), 0 0 10px rgba(34, 197, 94, .25);
-        filter: brightness(1);
-    }
-    50% {
-        box-shadow: 0 0 0 6px rgba(34, 197, 94, .95), 0 0 28px rgba(34, 197, 94, .85);
-        filter: brightness(1.12);
-    }
+    border-color: #fdba74 !important;
 }
 
 @media (max-width: 575.98px) {
@@ -193,12 +178,6 @@
     .contestant-list.is-elim-zone .mg-contestant-card__avatar,
     .contestant-list.is-search-hit .mg-contestant-card__avatar {
         animation: none !important;
-    }
-    .contestant-list.is-qual-zone .mg-contestant-card__avatar {
-        box-shadow: 0 0 0 4px rgba(34, 197, 94, .85), 0 0 18px rgba(34, 197, 94, .55);
-    }
-    .contestant-list.is-elim-zone .mg-contestant-card__avatar {
-        box-shadow: 0 0 0 4px rgba(232, 119, 34, .85), 0 0 18px rgba(232, 119, 34, .55);
     }
 }
 </style>

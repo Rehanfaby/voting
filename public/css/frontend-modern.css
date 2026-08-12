@@ -1158,6 +1158,72 @@ footer .ms-footer-bg { background-color: transparent !important; }
     font-weight: 800; font-size: 14px; text-align: center;
     border: 2px solid var(--mg-cosmic); box-shadow: 0 3px 8px rgba(0,0,0,.35);
 }
+
+/* Vote Now zones — must beat the default orange avatar glow */
+.contestant-list.is-qual-zone .mg-contestant-card__avatar {
+    background: linear-gradient(145deg, #15803d, #4ade80) !important;
+    box-shadow:
+        0 0 0 5px #14532d,
+        0 0 0 8px rgba(74, 222, 128, .95),
+        0 0 32px rgba(34, 197, 94, .85) !important;
+    animation: mg-zone-blink-green 1.35s ease-in-out infinite;
+}
+.contestant-list.is-elim-zone .mg-contestant-card__avatar {
+    background: linear-gradient(145deg, #c2410c, #fb923c) !important;
+    box-shadow:
+        0 0 0 5px #7c2d12,
+        0 0 0 8px rgba(251, 146, 60, .95),
+        0 0 32px rgba(232, 119, 34, .85) !important;
+    animation: mg-zone-blink-orange 1.35s ease-in-out infinite;
+}
+.mg-contestant-card__badge.is-safe {
+    background: #166534 !important;
+    color: #bbf7d0 !important;
+    border-color: #4ade80 !important;
+}
+.mg-contestant-card__badge.is-danger {
+    background: #ea580c !important;
+    color: #fff !important;
+    border-color: #fdba74 !important;
+}
+@keyframes mg-zone-blink-green {
+    0%, 100% {
+        box-shadow:
+            0 0 0 5px #14532d,
+            0 0 0 7px rgba(74, 222, 128, .7),
+            0 0 18px rgba(34, 197, 94, .55);
+        filter: brightness(1);
+    }
+    50% {
+        box-shadow:
+            0 0 0 5px #14532d,
+            0 0 0 10px rgba(74, 222, 128, 1),
+            0 0 36px rgba(34, 197, 94, .95);
+        filter: brightness(1.1);
+    }
+}
+@keyframes mg-zone-blink-orange {
+    0%, 100% {
+        box-shadow:
+            0 0 0 5px #7c2d12,
+            0 0 0 7px rgba(251, 146, 60, .7),
+            0 0 18px rgba(232, 119, 34, .55);
+        filter: brightness(1);
+    }
+    50% {
+        box-shadow:
+            0 0 0 5px #7c2d12,
+            0 0 0 10px rgba(251, 146, 60, 1),
+            0 0 36px rgba(232, 119, 34, .95);
+        filter: brightness(1.1);
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .contestant-list.is-qual-zone .mg-contestant-card__avatar,
+    .contestant-list.is-elim-zone .mg-contestant-card__avatar {
+        animation: none !important;
+    }
+}
 .mg-contestant-card__name {
     font-size: 15px; font-weight: 700; margin: 0 0 6px; line-height: 1.3;
     min-height: 2.6em;
