@@ -181,6 +181,7 @@ class AnnouncementController extends Controller
         $attachments = $request->file('attachments', []);
         try {
             $announcement = Announcement::create($data);
+            $this->assignReference($announcement);
         } catch (\Throwable $e) {
             \Log::error('Announcement save failed', ['error' => $e->getMessage()]);
             return $this->announcementStoreError($request, 'Could not save announcement: ' . $e->getMessage(), 500);
@@ -325,6 +326,7 @@ class AnnouncementController extends Controller
     public function send(Announcement $announcement, $id)
     {
         $announcement = $announcement->findOrFail($id);
+        $this->assignReference($announcement);
         $slots = AnnouncementRecipient::parseSlots($announcement->schedules_json);
         $slots[] = [
             'at' => now()->toDateTimeString(),
@@ -344,33 +346,45 @@ class AnnouncementController extends Controller
 
     /**
      * Allocate a persistent, incrementing reference such as MGT/S02/ADMIN/L-001.
-     * The prefix, season and next counter live on general_settings so they persist.
+     * Assigned at create time so the list and WhatsApp body always have a serial.
      */
-    private function assignReference(Announcement $announcement): void
+    public function assignReference(Announcement $announcement): void
     {
         if (!empty($announcement->reference)) {
             return;
         }
 
-        $reference = DB::transaction(function () use ($announcement) {
-            $setting = GeneralSetting::lockForUpdate()->first();
-            $prefix = $setting->announcement_ref_prefix ?? 'MGT';
-            $season = $setting->announcement_ref_season ?? 'S02';
-            $next = (int) ($setting->announcement_ref_next ?? 1);
-            if ($next < 1) {
-                $next = 1;
-            }
+        try {
+            $reference = DB::transaction(function () use ($announcement) {
+                $setting = GeneralSetting::lockForUpdate()->first();
+                $prefix = 'MGT';
+                $season = 'S02';
+                $next = max(1, (int) $announcement->id);
 
-            $sender = strtoupper(optional($announcement->createdBy)->name ?: optional(Auth::user())->name ?: 'ADMIN');
-            $sender = preg_replace('/[^A-Z0-9]+/', '', $sender) ?: 'ADMIN';
+                if ($setting) {
+                    $prefix = trim((string) ($setting->announcement_ref_prefix ?? '')) ?: $prefix;
+                    $season = trim((string) ($setting->announcement_ref_season ?? '')) ?: $season;
+                    $counter = (int) ($setting->announcement_ref_next ?? 0);
+                    if ($counter < 1) {
+                        $counter = $next;
+                    }
+                    $next = $counter;
+                    $setting->announcement_ref_next = $next + 1;
+                    $setting->save();
+                }
 
-            $ref = sprintf('%s/%s/%s/L-%03d', $prefix, $season, $sender, $next);
+                $sender = strtoupper(optional($announcement->createdBy)->name ?: optional(Auth::user())->name ?: 'ADMIN');
+                $sender = preg_replace('/[^A-Z0-9]+/', '', $sender) ?: 'ADMIN';
 
-            $setting->announcement_ref_next = $next + 1;
-            $setting->save();
-
-            return $ref;
-        });
+                return sprintf('%s/%s/%s/L-%03d', $prefix, $season, $sender, $next);
+            });
+        } catch (\Throwable $e) {
+            \Log::error('Announcement reference allocation failed', [
+                'id' => $announcement->id,
+                'error' => $e->getMessage(),
+            ]);
+            $reference = sprintf('MGT/S02/ADMIN/L-%03d', max(1, (int) $announcement->id));
+        }
 
         $announcement->reference = $reference;
         $announcement->save();
@@ -526,7 +540,7 @@ class AnnouncementController extends Controller
         if ($header !== '') {
             $msg .= $header . "\n\n";
         }
-        $msg .= "*Réf / Ref:* " . ($announcement->reference ?: $announcement->id) . "\n";
+        $msg .= "*Réf / Ref:* " . ($announcement->reference ?: ('MGT/S02/L-' . $announcement->id)) . "\n";
         $msg .= "*Date:* " . $date . "\n\n";
         if (!empty($announcement->subject)) {
             $msg .= "*Objet / Subject:* " . $announcement->subject . "\n\n";
