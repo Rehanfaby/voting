@@ -17,34 +17,44 @@
             <a href="{{route('announcement.create')}}" class="btn btn-info"><i class="dripicons-plus"></i> {{trans('file.Create Announcement')}} </a>
         @endif
         <a href="{{ route('announcement.templates') }}" class="btn btn-secondary"><i class="dripicons-document"></i> {{ trans('file.Templates') }}</a>
+        @if(in_array("announcement_delete", $all_permission))
+            <button type="button" id="announcement-delete-selected" class="btn btn-danger"><i class="dripicons-trash"></i> {{ trans('file.Delete Selected') }}</button>
+        @endif
     </div>
     <div class="table-responsive">
         <table id="role-table" class="table">
             <thead>
             <tr>
+                <th class="not-exported"></th>
                 <th>ID</th>
                 <th>{{ trans('file.Reference') }}</th>
                 <th>{{trans('file.Subject')}}</th>
                 <th>{{trans('file.Created By')}}</th>
                 <th>{{trans('file.Date')}}</th>
                 <th>{{trans('file.Sent')}}</th>
-                <th>{{trans('file.Action')}}</th>
+                <th class="not-exported">{{trans('file.Action')}}</th>
             </tr>
             </thead>
             <tbody>
             @foreach($data as $key=>$item)
                 <tr  data-id="{{$item->id}}" class="clickable-row" style="cursor: pointer" data-href="{{ route('announcement.show', $item->id) }}">
+                    <td>{{ $key }}</td>
                     <td>{{$item->id}}</td>
                     <td>{{ $item->reference ?: '—' }}</td>
                     <td>{{ $item->subject }}</td>
                     <td>{{ $item->createdBy ? $item->createdBy->name : 'N/N'}}</td>
                     <td>{{ $item->created_at->format('d-M, Y')}}</td>
-                    @if($item->is_sent == 0)
-                        <td><span class="badge badge-warning">{{ ($item->status ?? '') === 'scheduled' ? 'Scheduled' : 'Pending' }}</span></td>
-                    @elseif($item->is_sent == 1)
+                    @php
+                        $sentStatus = (int) $item->is_sent === 1 ? 'sent' : (string) ($item->status ?? 'draft');
+                    @endphp
+                    @if($sentStatus === 'sent')
                         <td><span class="badge badge-success">Sent</span></td>
+                    @elseif($sentStatus === 'scheduled')
+                        <td><span class="badge badge-info">Scheduled</span></td>
+                    @elseif($sentStatus === 'queued')
+                        <td><span class="badge badge-warning">Queued</span></td>
                     @else
-                        <td><span class="badge badge-danger">Unknown</span></td>
+                        <td><span class="badge badge-secondary">Draft</span></td>
                     @endif
                     <td>
                         <div class="btn-group">
@@ -85,32 +95,18 @@
 
 
 <script type="text/javascript">
+    var announcement_id = [];
+
     $(document).ready(function($) {
         $('.clickable-row td:not(:last-child, :first-child)').click(function () {
             window.location = $(this).closest('tr').data("href");
         });
     });
 
-    $('.checkbox-options').click(function () {
-        $('.approve-btn').show();
-    });
-
     $("#announcement-top-menu").addClass("active");
 
     $(document).ready(function() {
-        $(document).on('click', '.open-EditroleDialog', function() {
-            var url = "role/"
-            var id = $(this).data('id').toString();
-            url = url.concat(id).concat("/edit");
-
-            $.get(url, function(data) {
-                $("input[name='name']").val(data['name']);
-                $("textarea[name='description']").val(data['description']);
-                $("input[name='role_id']").val(data['id']);
-            });
-        });
-
-        $('#role-table').DataTable( {
+        var table = $('#role-table').DataTable( {
             "order": [],
             'language': {
                 'lengthMenu': '_MENU_ {{trans("file.records per page")}}',
@@ -124,7 +120,20 @@
             'columnDefs': [
                 {
                     "orderable": false,
-                    'targets': [0, 3]
+                    'targets': [0, 4, 7]
+                },
+                {
+                    'render': function(data, type, row, meta){
+                        if(type === 'display'){
+                            data = '<div class="checkbox"><input type="checkbox" class="dt-checkboxes"><label></label></div>';
+                        }
+                       return data;
+                    },
+                    'checkboxes': {
+                       'selectRow': true,
+                       'selectAllRender': '<div class="checkbox"><input type="checkbox" class="dt-checkboxes"><label></label></div>'
+                    },
+                    'targets': [0]
                 }
             ],
             'select': { style: 'multi',  selector: 'td:first-child'},
@@ -156,13 +165,58 @@
                     },
                 },
                 {
+                    text: '<i title="delete" class="dripicons-cross"></i>',
+                    className: 'buttons-delete',
+                    action: function ( e, dt, node, config ) {
+                        deleteSelectedAnnouncements(dt);
+                    }
+                },
+                {
                     extend: 'colvis',
                     text: '<i title="column visibility" class="fa fa-eye"></i>',
                     columns: ':gt(0)'
                 },
             ],
         } );
+
+        $('#announcement-delete-selected').on('click', function () {
+            deleteSelectedAnnouncements(table);
+        });
     });
+
+    function deleteSelectedAnnouncements(dt) {
+        announcement_id.length = 0;
+        $(':checkbox:checked').each(function(i){
+            if(i){
+                var rowId = $(this).closest('tr').data('id');
+                if (rowId) {
+                    announcement_id.push(rowId);
+                }
+            }
+        });
+        if (!announcement_id.length) {
+            alert('No announcement is selected!');
+            return;
+        }
+        if (!confirm('Delete ' + announcement_id.length + ' selected announcement(s)? They will not be sent.')) {
+            return;
+        }
+        $.ajax({
+            type: 'POST',
+            url: '{{ route("announcement.deletebyselection") }}',
+            data: {
+                announcementIdArray: announcement_id,
+                _token: '{{ csrf_token() }}'
+            },
+            success: function (data) {
+                alert(data);
+                location.reload();
+            },
+            error: function () {
+                alert('Delete failed. No announcements were changed.');
+            }
+        });
+    }
 </script>
 
 @endsection

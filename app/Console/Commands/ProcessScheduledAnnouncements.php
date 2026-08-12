@@ -23,6 +23,8 @@ class ProcessScheduledAnnouncements extends Command
         $now = Carbon::now(config('app.timezone', 'Africa/Douala'));
 
         Announcement::where('is_active', true)
+            ->whereIn('status', ['queued', 'scheduled'])
+            ->where('is_sent', false)
             ->where(function ($q) {
                 $q->whereNotNull('schedules_json')
                     ->orWhereNotNull('reminders_json')

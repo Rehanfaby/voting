@@ -369,6 +369,7 @@ Route::group(['middleware' => ['auth', 'active', 'checkOtp']], function() {
     Route::put('/announcement/{announcement}', 'AnnouncementController@update')->name('announcement.update');
     Route::post('/announcement/update/{id}', 'AnnouncementController@update')->name('announcement.update');
     Route::get('/announcement/delete/{id}', 'AnnouncementController@destroy')->name('announcement.destroy');
+    Route::post('/announcement/deletebyselection', 'AnnouncementController@deleteBySelection')->name('announcement.deletebyselection');
 
     Route::post('/announcement/upload/image', 'AnnouncementController@imageUpload')->name('announcement.upload.image');
     Route::get('/announcement/{id}/send', 'AnnouncementController@send')->name('announcement.send');

@@ -349,9 +349,37 @@ class AnnouncementController extends Controller
     public function destroy($id)
     {
         $data = Announcement::find($id);
-        $data->is_active = false;
-        $data->save();
+        if ($data) {
+            $data->is_active = false;
+            $data->status = 'draft';
+            $data->schedules_json = null;
+            $data->reminders_json = null;
+            $data->save();
+        }
         return back()->with('not_permitted','Data deleted successfully');
+    }
+
+    public function deleteBySelection(Request $request)
+    {
+        $ids = $request->input('announcementIdArray', []);
+        if (!is_array($ids)) {
+            $ids = [];
+        }
+        $count = 0;
+        foreach ($ids as $id) {
+            $row = Announcement::find((int) $id);
+            if (!$row) {
+                continue;
+            }
+            $row->is_active = false;
+            $row->status = 'draft';
+            $row->schedules_json = null;
+            $row->reminders_json = null;
+            $row->save();
+            $count++;
+        }
+
+        return $count . ' announcement(s) deleted successfully!';
     }
 
     public function send(Announcement $announcement, $id)
