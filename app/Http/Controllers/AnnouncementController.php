@@ -650,16 +650,10 @@ class AnnouncementController extends Controller
     public function sendAnnouncementMsg($announcement, $lims_customer_data)
     {
         $msg = $this->buildAnnouncementMessage($announcement, $lims_customer_data);
-        $parts = \App\Helpers\WhatsAppFormatter::splitLinksForWhatsApp($msg);
         $ok = false;
 
         try {
-            $ok = (bool) $this->wpMessage($lims_customer_data->phone, $parts['text']);
-            if ($ok) {
-                foreach ($parts['urls'] as $url) {
-                    $this->wpMessage($lims_customer_data->phone, $url);
-                }
-            }
+            $ok = (bool) $this->wpMessage($lims_customer_data->phone, $msg);
         } catch (\Exception $e) {
             \Log::warning('Announcement WhatsApp send threw', [
                 'announcement_id' => $announcement->id ?? null,

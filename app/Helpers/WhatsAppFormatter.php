@@ -453,8 +453,9 @@ class WhatsAppFormatter
         $text = preg_replace('/([a-z0-9])www\./i', '$1 www.', $text);
         $text = preg_replace("/[ \t]+/", ' ', $text);
         $text = preg_replace("/\n{3,}/", "\n\n", $text);
+        $text = self::rewriteLinksInPlace(trim((string) $text));
 
-        return trim((string) $text);
+        return $text;
     }
 
     public static function replaceRecipientName(string $text, string $name): string
@@ -475,29 +476,13 @@ class WhatsAppFormatter
         return $url;
     }
 
-    /**
-     * WhatsApp often silently drops API chats that embed YouTube/http links.
-     * Send the text first, then each URL as its own follow-up message.
-     *
-     * @return array{text:string,urls:string[]}
-     */
-    public static function splitLinksForWhatsApp(string $text): array
+    /** Keep links in the message; only tidy broken/mobile YouTube URLs. */
+    public static function rewriteLinksInPlace(string $text): string
     {
-        $urls = [];
-        $text = preg_replace_callback('~https?://[^\s<>"\']+~i', function ($m) use (&$urls) {
-            $clean = self::cleanWhatsAppUrl($m[0]);
-            if ($clean !== '') {
-                $urls[$clean] = true;
-            }
-
-            return '';
+        $rewritten = preg_replace_callback('~https?://[^\s<>"\']+~i', function ($m) {
+            return self::cleanWhatsAppUrl($m[0]);
         }, $text);
-        $text = preg_replace("/[ \t]+/", ' ', (string) $text);
-        $text = preg_replace("/\n{3,}/", "\n\n", (string) $text);
 
-        return [
-            'text' => trim((string) $text),
-            'urls' => array_keys($urls),
-        ];
+        return is_string($rewritten) ? $rewritten : $text;
     }
 }
