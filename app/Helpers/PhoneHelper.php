@@ -2,6 +2,8 @@
 
 namespace App\Helpers;
 
+use App\User;
+
 class PhoneHelper
 {
     /** Developer number used for payment simulation (Papa Rolly). */
@@ -147,6 +149,65 @@ class PhoneHelper
     public static function forUltraMsg($phone)
     {
         return self::cameroon($phone);
+    }
+
+    /**
+     * Stable identity for one person: digits of the E.164 number
+     * (e.g. 237620771801). Collapses 0620…, 237620… and +237620….
+     */
+    public static function identityKey($phone)
+    {
+        $e164 = self::cameroon($phone);
+        if (!$e164) {
+            return null;
+        }
+        $digits = preg_replace('/\D/', '', $e164);
+
+        return $digits !== '' ? $digits : null;
+    }
+
+    /** Find an existing user by any stored format of the same phone. */
+    public static function findUserByPhone($phone, $roleId = 3)
+    {
+        $raw = trim((string) $phone);
+        if ($raw === '') {
+            return null;
+        }
+
+        $normalized = self::cameroon($raw);
+        $key = self::identityKey($raw);
+        $query = User::query()->where('is_deleted', false);
+        if ($roleId !== null) {
+            $query->where('role_id', $roleId);
+        }
+
+        $exact = (clone $query)->where(function ($q) use ($raw, $normalized) {
+            $q->where('phone', $raw);
+            if ($normalized && $normalized !== $raw) {
+                $q->orWhere('phone', $normalized)->orWhere('whatsapp_number', $normalized);
+            }
+        })->orderBy('id')->first();
+        if ($exact) {
+            return $exact;
+        }
+
+        if (!$key || strlen($key) < 8) {
+            return null;
+        }
+        $local = substr($key, -9);
+        $candidates = (clone $query)->where(function ($q) use ($local) {
+            $q->where('phone', 'like', '%' . $local)
+                ->orWhere('whatsapp_number', 'like', '%' . $local);
+        })->orderBy('id')->limit(25)->get();
+
+        foreach ($candidates as $user) {
+            $userKey = self::identityKey($user->phone) ?: self::identityKey($user->whatsapp_number);
+            if ($userKey === $key) {
+                return $user;
+            }
+        }
+
+        return null;
     }
 
     /**

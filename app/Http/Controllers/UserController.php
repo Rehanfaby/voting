@@ -57,7 +57,18 @@ class UserController extends Controller
             $permissions = Role::findByName($role->name)->permissions;
             foreach ($permissions as $permission)
                 $all_permission[] = $permission->name;
-            $lims_user_list = User::where('is_deleted', false)->where('role_id', 3)->get();
+            $lims_user_list = User::where('is_deleted', false)->where('role_id', 3)->orderBy('id')->get();
+            $seen = [];
+            $unique = collect();
+            foreach ($lims_user_list as $user) {
+                $key = \App\Helpers\PhoneHelper::identityKey($user->phone ?: $user->whatsapp_number) ?: ('id:' . $user->id);
+                if (isset($seen[$key])) {
+                    continue;
+                }
+                $seen[$key] = true;
+                $unique->push($user);
+            }
+            $lims_user_list = $unique;
             return view('user.voter', compact('lims_user_list', 'all_permission'));
         }
         else

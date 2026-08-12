@@ -749,7 +749,7 @@ class HomeController extends Controller
             return 'Phone cannot be null';
         }
 
-        if ($user_check = User::where('phone', $request->phone)->first()) {
+        if ($user_check = PhoneHelper::findUserByPhone($data['phone']) ?: User::where('phone', $request->phone)->first()) {
             $user = $user_check;
         }
 
@@ -864,7 +864,7 @@ class HomeController extends Controller
             return back()->with('not_permitted', trans('file.Please enter a valid mobile money number.'));
         }
 
-        if ($user_check = User::where('phone', $request->phone)->first()) {
+        if ($user_check = PhoneHelper::findUserByPhone($data['phone']) ?: User::where('phone', $request->phone)->first()) {
             if($user_check->whatsapp_number !== $request->whatsapp_number) {
                 $user_check->whatsapp_number = $request->whatsapp_number;
                 $user_check->save();
@@ -1706,7 +1706,8 @@ class HomeController extends Controller
         }
 
         if ($user == null) {
-            $user = User::where('phone', $request->phone_number)->first();
+            $user = PhoneHelper::findUserByPhone($request->phone_number)
+                ?: User::where('phone', $request->phone_number)->first();
         }
 
         if ($user == null) {
@@ -2801,7 +2802,7 @@ class HomeController extends Controller
             return $authUser->name;
         }
 
-        $existing = User::where('phone', $phone)->first();
+        $existing = \App\Helpers\PhoneHelper::findUserByPhone($phone);
         if ($existing && !PhoneHelper::looksLikePhone($existing->name)) {
             return $existing->name;
         }
@@ -2825,11 +2826,17 @@ class HomeController extends Controller
 
     private function findOrCreateVoterUser($phone, $whatsapp, $voterName)
     {
-        $user = User::where('phone', $phone)->first();
+        $normalized = PhoneHelper::cameroon($phone) ?: $phone;
+        $whatsapp = PhoneHelper::cameroon($whatsapp) ?: $whatsapp;
+        $user = PhoneHelper::findUserByPhone($normalized) ?: PhoneHelper::findUserByPhone($phone);
 
         if ($user) {
             $dirty = false;
-            if ($user->whatsapp_number !== $whatsapp) {
+            if ($normalized && $user->phone !== $normalized) {
+                $user->phone = $normalized;
+                $dirty = true;
+            }
+            if ($whatsapp && $user->whatsapp_number !== $whatsapp) {
                 $user->whatsapp_number = $whatsapp;
                 $dirty = true;
             }
@@ -2850,7 +2857,7 @@ class HomeController extends Controller
             'is_deleted' => false,
             'password' => bcrypt($password),
             'name' => $voterName,
-            'phone' => $phone,
+            'phone' => $normalized,
             'whatsapp_number' => $whatsapp,
             'email' => 'user@gmail.com',
             'role_id' => 3,

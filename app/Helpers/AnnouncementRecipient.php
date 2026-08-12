@@ -183,7 +183,7 @@ class AnnouncementRecipient
             case 'contestants':
                 return self::fromContestants($query, $limit);
             case 'voters':
-                return self::fromUsersByRoles([3], 'voter', $query, $limit);
+                return self::fromVoters($query, $limit);
             case 'users':
                 return self::fromUsersByRoles([1, 4, 5, 6, 9, 10, 11, 12, 13, 52, 53, 55], 'user', $query, $limit);
             case 'judges':
@@ -202,7 +202,7 @@ class AnnouncementRecipient
                 return (int) Employee::where('is_active', true)->where('is_approve', true)->count()
                     + self::countUsersByRoles([2]);
             case 'voters':
-                return self::countUsersByRoles([3]);
+                return count(self::fromVoters(null, null));
             case 'users':
                 return self::countUsersByRoles([1, 4, 5, 6, 9, 10, 11, 12, 13, 52, 53, 55]);
             case 'judges':
@@ -219,6 +219,37 @@ class AnnouncementRecipient
     private static function countUsersByRoles(array $roleIds): int
     {
         return (int) User::where('is_active', true)->where('is_deleted', false)->whereIn('role_id', $roleIds)->count();
+    }
+
+    /**
+     * One row per person who has cast at least one successful vote.
+     * 20 votes from the same phone still count as a single voter.
+     */
+    private static function fromVoters(?string $query, ?int $limit = null): array
+    {
+        $userIds = \DB::table('votes')->where('status', 1)->distinct()->pluck('user_id');
+        $q = User::whereIn('id', $userIds)->where('is_deleted', false);
+        if ($query) {
+            $q->where(function ($b) use ($query) {
+                $b->where('name', 'like', '%' . $query . '%')
+                    ->orWhere('email', 'like', '%' . $query . '%')
+                    ->orWhere('phone', 'like', '%' . $query . '%')
+                    ->orWhere('whatsapp_number', 'like', '%' . $query . '%');
+            });
+        }
+        $q->orderBy('name');
+        $rows = [];
+        foreach ($q->get() as $u) {
+            $raw = $u->phone ?: $u->whatsapp_number;
+            $phone = \App\Helpers\PhoneHelper::cameroon($raw) ?: $raw;
+            $rows[] = self::row('voter', $u->id, $u->name, $phone, $u->email, 'Voter');
+        }
+        $rows = self::dedupe($rows);
+        if ($limit) {
+            return array_slice($rows, 0, $limit);
+        }
+
+        return $rows;
     }
 
     private static function fromContestants(?string $query, ?int $limit = null): array
@@ -386,7 +417,8 @@ class AnnouncementRecipient
                 continue;
             }
             $phone = preg_replace('/\D+/', '', (string) ($row['phone'] ?? ''));
-            $key = $phone !== '' ? 'p:' . $phone : self::recipientKey($row);
+            $identity = \App\Helpers\PhoneHelper::identityKey($row['phone'] ?? '');
+            $key = $identity ? 'p:' . $identity : ($phone !== '' ? 'p:' . ltrim($phone, '0') : self::recipientKey($row));
             if (isset($seen[$key])) {
                 continue;
             }
