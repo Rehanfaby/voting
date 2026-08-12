@@ -53,6 +53,8 @@
                         <td><span class="badge badge-info">Scheduled</span></td>
                     @elseif($sentStatus === 'queued')
                         <td><span class="badge badge-warning">Queued</span></td>
+                    @elseif($sentStatus === 'failed')
+                        <td><span class="badge badge-danger">Failed</span></td>
                     @else
                         <td><span class="badge badge-secondary">Draft</span></td>
                     @endif

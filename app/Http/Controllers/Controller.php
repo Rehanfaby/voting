@@ -348,6 +348,12 @@ class Controller extends BaseController
                 return false;
             }
 
+            \Log::info('UltraMsg message accepted', [
+                'to' => $to,
+                'id' => $decoded['id'] ?? null,
+                'message' => $decoded['message'] ?? null,
+            ]);
+
             return true;
         });
     }

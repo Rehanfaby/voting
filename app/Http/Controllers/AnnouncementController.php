@@ -458,7 +458,7 @@ class AnnouncementController extends Controller
         $announcement->save();
     }
 
-    public function deliverAnnouncement(Announcement $announcement): void
+    public function deliverAnnouncement(Announcement $announcement): int
     {
         @set_time_limit(0);
         ignore_user_abort(true);
@@ -466,15 +466,34 @@ class AnnouncementController extends Controller
         $this->assignReference($announcement);
         $announcement->load('attachmentLib');
         $recipients = AnnouncementRecipient::resolveForAnnouncement($announcement);
+        $sent = 0;
+        $failed = 0;
 
         foreach ($recipients as $row) {
             $recipient = AnnouncementRecipient::toRecipientObject($row);
             if (empty($recipient->phone)) {
+                $failed++;
+                \Log::warning('Announcement skipped: empty phone', [
+                    'announcement_id' => $announcement->id,
+                    'name' => $recipient->name ?? null,
+                ]);
                 continue;
             }
             // Spacing between recipients is enforced centrally in Controller::withWhatsAppThrottle (6s).
-            $this->sendAnnouncementMsg($announcement, $recipient);
+            if ($this->sendAnnouncementMsg($announcement, $recipient)) {
+                $sent++;
+            } else {
+                $failed++;
+            }
         }
+
+        \Log::info('Announcement delivery finished', [
+            'announcement_id' => $announcement->id,
+            'sent' => $sent,
+            'failed' => $failed,
+        ]);
+
+        return $sent;
     }
 
 
@@ -628,11 +647,24 @@ class AnnouncementController extends Controller
     public function sendAnnouncementMsg($announcement, $lims_customer_data)
     {
         $msg = $this->buildAnnouncementMessage($announcement, $lims_customer_data);
+        $ok = false;
 
-        try{
-            $this->wpMessage($lims_customer_data->phone, $msg);
+        try {
+            $ok = (bool) $this->wpMessage($lims_customer_data->phone, $msg);
+        } catch (\Exception $e) {
+            \Log::warning('Announcement WhatsApp send threw', [
+                'announcement_id' => $announcement->id ?? null,
+                'phone' => $lims_customer_data->phone ?? null,
+                'error' => $e->getMessage(),
+            ]);
         }
-        catch(\Exception $e){
+
+        if (!$ok) {
+            \Log::warning('Announcement WhatsApp not delivered', [
+                'announcement_id' => $announcement->id ?? null,
+                'phone' => $lims_customer_data->phone ?? null,
+            ]);
+            return false;
         }
 
 //        $attachment_path = public_path('public/announcement/attachment/'); // for local

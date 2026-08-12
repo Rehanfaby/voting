@@ -58,7 +58,7 @@ class ProcessScheduledAnnouncements extends Command
 
         $changed = false;
         foreach ($slots as $i => $slot) {
-            if (($slot['status'] ?? '') === 'sent') {
+            if (in_array($slot['status'] ?? '', ['sent', 'failed'], true)) {
                 continue;
             }
             try {
@@ -70,7 +70,12 @@ class ProcessScheduledAnnouncements extends Command
                 continue;
             }
 
-            $controller->deliverAnnouncement($announcement);
+            $sentCount = $controller->deliverAnnouncement($announcement);
+            if ($sentCount < 1) {
+                $slots[$i]['status'] = 'failed';
+                $changed = true;
+                continue;
+            }
             $slots[$i]['status'] = 'sent';
             $slots[$i]['sent_at'] = $now->toDateTimeString();
             $changed = true;
@@ -82,16 +87,26 @@ class ProcessScheduledAnnouncements extends Command
 
         $announcement->{$column} = json_encode($slots);
         $pending = 0;
+        $failed = 0;
+        $sent = 0;
         foreach (['schedules_json', 'reminders_json'] as $col) {
             foreach (AnnouncementRecipient::parseSlots($announcement->{$col}) as $s) {
-                if (($s['status'] ?? '') !== 'sent') {
+                $st = $s['status'] ?? '';
+                if ($st === 'sent') {
+                    $sent++;
+                } elseif ($st === 'failed') {
+                    $failed++;
+                } else {
                     $pending++;
                 }
             }
         }
-        if ($pending === 0) {
+        if ($pending === 0 && $sent > 0 && $failed === 0) {
             $announcement->is_sent = true;
             $announcement->status = 'sent';
+        } elseif ($pending === 0 && $failed > 0) {
+            $announcement->is_sent = false;
+            $announcement->status = 'failed';
         } else {
             $announcement->status = 'scheduled';
         }

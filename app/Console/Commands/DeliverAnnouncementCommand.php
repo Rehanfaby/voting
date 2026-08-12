@@ -27,7 +27,15 @@ class DeliverAnnouncementCommand extends Command
         }
 
         $controller = app(AnnouncementController::class);
-        $controller->deliverAnnouncement($announcement);
+        $sentCount = $controller->deliverAnnouncement($announcement);
+
+        if ($sentCount < 1) {
+            $announcement->is_sent = false;
+            $announcement->status = 'failed';
+            $announcement->save();
+            $this->error('WhatsApp delivery failed for announcement #' . $id);
+            return 1;
+        }
 
         $now = Carbon::now()->toDateTimeString();
         foreach (['schedules_json', 'reminders_json'] as $column) {
