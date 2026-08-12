@@ -283,8 +283,8 @@ class Controller extends BaseController
             return false;
         }
 
-        if (!$to) {
-            \Log::warning('UltraMsg skipped: invalid phone number', ['raw' => $number]);
+        if (!$to || !\App\Helpers\PhoneHelper::isValidWhatsApp($to)) {
+            \Log::warning('UltraMsg skipped: invalid phone number', ['raw' => $number, 'to' => $to]);
             return false;
         }
 

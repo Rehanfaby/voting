@@ -152,6 +152,37 @@ class PhoneHelper
     }
 
     /**
+     * True when UltraMsg/WhatsApp can actually deliver to this number.
+     * Cameroon mobile: +237 and 9 digits starting with 6.
+     */
+    public static function isValidWhatsApp($phone)
+    {
+        $e164 = self::cameroon($phone);
+        if (!$e164) {
+            $e164 = self::e164($phone);
+        }
+        if (!$e164) {
+            return false;
+        }
+        $digits = preg_replace('/\D/', '', $e164);
+        $len = strlen($digits);
+        if ($len < 10 || $len > 15) {
+            return false;
+        }
+        if (strpos($digits, '237') === 0) {
+            $local = substr($digits, 3);
+
+            return strlen($local) === 9 && strpos($local, '6') === 0;
+        }
+        // Doubled country code, e.g. 2252250171730220
+        if (preg_match('/^(225|234|233|250|256|254)\1/', $digits)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Stable identity for one person: digits of the E.164 number
      * (e.g. 237620771801). Collapses 0620…, 237620… and +237620….
      */

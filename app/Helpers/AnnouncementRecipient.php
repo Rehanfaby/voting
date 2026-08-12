@@ -44,6 +44,7 @@ class AnnouncementRecipient
         } else {
             $rows = self::dedupe(self::categoryRows($category, $query, $limit));
         }
+        $rows = self::onlyValidWhatsApp($rows);
 
         if ($limit) {
             return array_slice($rows, 0, $limit);
@@ -81,7 +82,7 @@ class AnnouncementRecipient
     {
         $stored = self::decodeJson($announcement->recipients_json);
         if (!empty($stored)) {
-            return self::dedupe($stored);
+            return self::onlyValidWhatsApp(self::dedupe($stored));
         }
 
         $audience = strtolower(trim((string) ($announcement->audience_category ?? '')));
@@ -94,7 +95,7 @@ class AnnouncementRecipient
             return self::listForCategory(substr($to, 9));
         }
 
-        return self::resolveLegacy($announcement);
+        return self::onlyValidWhatsApp(self::resolveLegacy($announcement));
     }
 
     public static function storePayload(array $recipients): string
@@ -242,9 +243,14 @@ class AnnouncementRecipient
         foreach ($q->get() as $u) {
             $raw = $u->phone ?: $u->whatsapp_number;
             $phone = \App\Helpers\PhoneHelper::cameroon($raw) ?: $raw;
+            if (!\App\Helpers\PhoneHelper::isValidWhatsApp($phone)) {
+                continue;
+            }
             $rows[] = self::row('voter', $u->id, $u->name, $phone, $u->email, 'Voter');
         }
         $rows = self::dedupe($rows);
+        $rows = self::onlyValidWhatsApp($rows);
+
         if ($limit) {
             return array_slice($rows, 0, $limit);
         }
@@ -423,6 +429,25 @@ class AnnouncementRecipient
                 continue;
             }
             $seen[$key] = true;
+            $out[] = $row;
+        }
+
+        return $out;
+    }
+
+    /** Drop empty / malformed numbers so WhatsApp sends are not wasted. */
+    private static function onlyValidWhatsApp(array $rows): array
+    {
+        $out = [];
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $phone = \App\Helpers\PhoneHelper::cameroon($row['phone'] ?? '');
+            if (!\App\Helpers\PhoneHelper::isValidWhatsApp($phone)) {
+                continue;
+            }
+            $row['phone'] = $phone;
             $out[] = $row;
         }
 

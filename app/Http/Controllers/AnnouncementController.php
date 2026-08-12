@@ -486,11 +486,12 @@ class AnnouncementController extends Controller
 
         foreach ($recipients as $row) {
             $recipient = AnnouncementRecipient::toRecipientObject($row);
-            if (empty($recipient->phone)) {
+            if (empty($recipient->phone) || !\App\Helpers\PhoneHelper::isValidWhatsApp($recipient->phone)) {
                 $failed++;
-                \Log::warning('Announcement skipped: empty phone', [
+                \Log::warning('Announcement skipped: invalid phone', [
                     'announcement_id' => $announcement->id,
                     'name' => $recipient->name ?? null,
+                    'phone' => $recipient->phone ?? null,
                 ]);
                 continue;
             }
