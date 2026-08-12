@@ -147,14 +147,24 @@
                     $ranked = $musicians->sortByDesc(function ($m) use ($vote_counts) {
                         return $vote_counts[$m->id] ?? 0;
                     })->values();
+                    $homeElimCount = \App\Helpers\SiteContent::eliminationsCount();
+                    $homeTotalRanked = $ranked->count();
+                    $homeElimLine = ($homeElimCount > 0 && $homeElimCount < $homeTotalRanked)
+                        ? ($homeTotalRanked - $homeElimCount)
+                        : null;
                 @endphp
                 <div class="swiper-container ms-song-active fix">
                     <div class="swiper-wrapper">
                         @foreach($ranked as $key=>$musician)
-                            <div class="swiper-slide js-contestant-item" data-name="{{ strtolower($musician->name) }}">
+                            @php
+                                $homeInElim = $homeElimLine !== null && $key >= $homeElimLine;
+                                $homeInQual = $homeElimLine !== null && $key < $homeElimLine;
+                                $homeZoneClass = $homeInElim ? 'is-elim-zone' : ($homeInQual ? 'is-qual-zone' : '');
+                            @endphp
+                            <div class="swiper-slide js-contestant-item {{ $homeZoneClass }}" data-name="{{ strtolower($musician->name) }}" data-zone="{{ $homeInElim ? 'elim' : ($homeInQual ? 'qual' : '') }}">
                                 <div class="ms-rank-item">
                                     <div class="ms-rank-avatar">
-                                        <span class="ms-rank-badge">{{ $key + 1 }}</span>
+                                        <span class="ms-rank-badge {{ $homeInElim ? 'is-danger' : ($homeInQual ? 'is-safe' : '') }}">{{ $key + 1 }}</span>
                                         <a href="{{ route('musician.data', $musician->id) }}">
                                             <img src="{{ \App\Helpers\ImageOptimizer::employeeImageUrl($musician->image) }}" alt="{{ $musician->name }}" width="180" height="180" loading="lazy" decoding="async">
                                         </a>
@@ -195,6 +205,64 @@
                     box-shadow:0 8px 20px rgba(232,119,34,.35);
                 }
                 .ms-rank-vote-btn:hover { background:#ff9533; color:#fff !important; }
+
+                /* Match Vote Now: top N green, bottom N orange */
+                .ms-rank-area .js-contestant-item.is-qual-zone .ms-rank-avatar {
+                    background: linear-gradient(145deg, #15803d, #4ade80) !important;
+                    box-shadow:
+                        0 0 0 6px #14532d,
+                        0 0 0 9px rgba(74, 222, 128, .95),
+                        0 0 32px rgba(34, 197, 94, .85) !important;
+                    animation: mg-home-blink-green 1.35s ease-in-out infinite;
+                }
+                .ms-rank-area .js-contestant-item.is-elim-zone .ms-rank-avatar {
+                    background: linear-gradient(145deg, #c2410c, #fb923c) !important;
+                    box-shadow:
+                        0 0 0 6px #7c2d12,
+                        0 0 0 9px rgba(251, 146, 60, .95),
+                        0 0 32px rgba(232, 119, 34, .85) !important;
+                    animation: mg-home-blink-orange 1.35s ease-in-out infinite;
+                }
+                .ms-rank-area .ms-rank-badge.is-safe {
+                    background: #166534 !important;
+                    color: #bbf7d0 !important;
+                    border-color: #4ade80 !important;
+                }
+                .ms-rank-area .ms-rank-badge.is-danger {
+                    background: #ea580c !important;
+                    color: #fff !important;
+                    border-color: #fdba74 !important;
+                }
+                .ms-rank-area .js-contestant-item.is-qual-zone .ms-rank-votes { color: #4ade80; }
+                .ms-rank-area .js-contestant-item.is-qual-zone .ms-rank-vote-btn {
+                    background: #16a34a;
+                    box-shadow: 0 8px 20px rgba(22, 163, 74, .4);
+                }
+                .ms-rank-area .js-contestant-item.is-qual-zone .ms-rank-vote-btn:hover { background: #22c55e; }
+                @keyframes mg-home-blink-green {
+                    0%, 100% {
+                        box-shadow: 0 0 0 6px #14532d, 0 0 0 8px rgba(74,222,128,.7), 0 0 18px rgba(34,197,94,.55);
+                        filter: brightness(1);
+                    }
+                    50% {
+                        box-shadow: 0 0 0 6px #14532d, 0 0 0 11px rgba(74,222,128,1), 0 0 36px rgba(34,197,94,.95);
+                        filter: brightness(1.1);
+                    }
+                }
+                @keyframes mg-home-blink-orange {
+                    0%, 100% {
+                        box-shadow: 0 0 0 6px #7c2d12, 0 0 0 8px rgba(251,146,60,.7), 0 0 18px rgba(232,119,34,.55);
+                        filter: brightness(1);
+                    }
+                    50% {
+                        box-shadow: 0 0 0 6px #7c2d12, 0 0 0 11px rgba(251,146,60,1), 0 0 36px rgba(232,119,34,.95);
+                        filter: brightness(1.1);
+                    }
+                }
+                @media (prefers-reduced-motion: reduce) {
+                    .ms-rank-area .js-contestant-item.is-qual-zone .ms-rank-avatar,
+                    .ms-rank-area .js-contestant-item.is-elim-zone .ms-rank-avatar { animation: none !important; }
+                }
                 @media (max-width:575px){
                     .ms-rank-avatar { width:140px; height:140px; }
                     .ms-rank-name { font-size:16px; }
