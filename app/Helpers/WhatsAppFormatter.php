@@ -441,4 +441,63 @@ class WhatsAppFormatter
 
         return ['Paiement non abouti', 'Payment did not complete'];
     }
+
+    /** TinyMCE HTML → plain WhatsApp text (decode entities, keep line breaks). */
+    public static function htmlToWhatsAppText($html): string
+    {
+        $text = str_replace(['<br>', '<br/>', '<br />', '</p>', '</div>'], "\n", (string) $html);
+        $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $text = strip_tags($text);
+        $text = str_replace(["\r\n", "\r"], "\n", $text);
+        $text = preg_replace('/([a-z0-9])www\./i', '$1 www.', $text);
+        $text = preg_replace("/[ \t]+/", ' ', $text);
+        $text = preg_replace("/\n{3,}/", "\n\n", $text);
+
+        return trim((string) $text);
+    }
+
+    public static function replaceRecipientName(string $text, string $name): string
+    {
+        $name = trim($name) !== '' ? trim($name) : 'Recipient';
+
+        return str_ireplace(['{name}', '{nom}', '{{name}}'], $name, $text);
+    }
+
+    public static function cleanWhatsAppUrl(string $url): string
+    {
+        $url = html_entity_decode($url, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $url = rtrim($url, ".,);]\n\r");
+        if (preg_match('~(?:youtube\.com/(?:watch\\?v=|shorts/|embed/)|youtu\\.be/)([A-Za-z0-9_-]{6,})~i', $url, $m)) {
+            return 'https://youtu.be/' . $m[1];
+        }
+
+        return $url;
+    }
+
+    /**
+     * WhatsApp often silently drops API chats that embed YouTube/http links.
+     * Send the text first, then each URL as its own follow-up message.
+     *
+     * @return array{text:string,urls:string[]}
+     */
+    public static function splitLinksForWhatsApp(string $text): array
+    {
+        $urls = [];
+        $text = preg_replace_callback('~https?://[^\s<>"\']+~i', function ($m) use (&$urls) {
+            $clean = self::cleanWhatsAppUrl($m[0]);
+            if ($clean !== '') {
+                $urls[$clean] = true;
+            }
+
+            return '';
+        }, $text);
+        $text = preg_replace("/[ \t]+/", ' ', (string) $text);
+        $text = preg_replace("/\n{3,}/", "\n\n", (string) $text);
+
+        return [
+            'text' => trim((string) $text),
+            'urls' => array_keys($urls),
+        ];
+    }
 }

@@ -616,9 +616,12 @@ class AnnouncementController extends Controller
         $title = \App\Helpers\WhatsAppFormatter::announcementTitle();
         $name = trim((string) ($lims_customer_data->name ?? '')) ?: 'Recipient';
 
-        $header = trim(strip_tags(html_entity_decode((string) $announcement->header)));
-        $body = trim(strip_tags(html_entity_decode((string) $announcement->body)));
-        $footer = trim(strip_tags(html_entity_decode((string) $announcement->footer)));
+        $header = \App\Helpers\WhatsAppFormatter::htmlToWhatsAppText($announcement->header);
+        $body = \App\Helpers\WhatsAppFormatter::replaceRecipientName(
+            \App\Helpers\WhatsAppFormatter::htmlToWhatsAppText($announcement->body),
+            $name
+        );
+        $footer = \App\Helpers\WhatsAppFormatter::htmlToWhatsAppText($announcement->footer);
 
         $date = $announcement->created_at ? $announcement->created_at->format('d M Y, H:i') : date('d M Y, H:i');
 
@@ -647,10 +650,16 @@ class AnnouncementController extends Controller
     public function sendAnnouncementMsg($announcement, $lims_customer_data)
     {
         $msg = $this->buildAnnouncementMessage($announcement, $lims_customer_data);
+        $parts = \App\Helpers\WhatsAppFormatter::splitLinksForWhatsApp($msg);
         $ok = false;
 
         try {
-            $ok = (bool) $this->wpMessage($lims_customer_data->phone, $msg);
+            $ok = (bool) $this->wpMessage($lims_customer_data->phone, $parts['text']);
+            if ($ok) {
+                foreach ($parts['urls'] as $url) {
+                    $this->wpMessage($lims_customer_data->phone, $url);
+                }
+            }
         } catch (\Exception $e) {
             \Log::warning('Announcement WhatsApp send threw', [
                 'announcement_id' => $announcement->id ?? null,
