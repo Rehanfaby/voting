@@ -13,11 +13,13 @@
 @endif
 
 <section>
-    @if(in_array("users-add", $all_permission))
-        <div class="container-fluid">
+    <div class="container-fluid">
+        @if(in_array("users-add", $all_permission))
             <a href="{{route('user.create')}}" class="btn btn-info"><i class="dripicons-plus"></i> {{trans('file.Add User')}}</a>
-        </div>
-    @endif
+        @endif
+        <a href="{{ route('voter.export.vcf') }}" class="btn btn-success"><i class="dripicons-download"></i> Export phone contacts (.vcf)</a>
+        <small class="form-text text-muted mt-2">Phone: open the downloaded file → Contacts → Import → choose the Google/device account. WhatsApp will pick up the names after that.</small>
+    </div>
     <div class="table-responsive">
         <table id="user-table" class="table">
             <thead>

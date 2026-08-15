@@ -15,6 +15,7 @@ use Keygen;
 use Illuminate\Validation\Rule;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use App\Helpers\VoterVcf;
 use App\Mail\UserNotification;
 use Illuminate\Support\Facades\Mail;
 
@@ -57,22 +58,26 @@ class UserController extends Controller
             $permissions = Role::findByName($role->name)->permissions;
             foreach ($permissions as $permission)
                 $all_permission[] = $permission->name;
-            $lims_user_list = User::where('is_deleted', false)->where('role_id', 3)->orderBy('id')->get();
-            $seen = [];
-            $unique = collect();
-            foreach ($lims_user_list as $user) {
-                $key = \App\Helpers\PhoneHelper::identityKey($user->phone ?: $user->whatsapp_number) ?: ('id:' . $user->id);
-                if (isset($seen[$key])) {
-                    continue;
-                }
-                $seen[$key] = true;
-                $unique->push($user);
-            }
-            $lims_user_list = $unique;
+            $lims_user_list = VoterVcf::uniqueVoters();
             return view('user.voter', compact('lims_user_list', 'all_permission'));
         }
         else
             return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
+    }
+
+    public function exportVcf()
+    {
+        $role = Role::find(Auth::user()->role_id);
+        if (!$role || !$role->hasPermissionTo('users-index')) {
+            return redirect()->back()->with('not_permitted', 'Sorry! You are not allowed to access this module');
+        }
+
+        $vcf = VoterVcf::build();
+
+        return response($vcf, 200, [
+            'Content-Type' => 'text/vcard; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="mulema-voters.vcf"',
+        ]);
     }
 
     public function create()

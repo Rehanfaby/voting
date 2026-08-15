@@ -383,6 +383,7 @@ Route::group(['middleware' => ['auth', 'active', 'checkOtp']], function() {
 
 
     Route::get('admin/user', 'UserController@admin')->name('admin.index');
+    Route::get('voter/user/export.vcf', 'UserController@exportVcf')->name('voter.export.vcf');
     Route::get('voter/user', 'UserController@voter')->name('voter.index');
 
     Route::get('report/voting', 'ReportController@votingReport')->name('voting.report');
