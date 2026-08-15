@@ -47,7 +47,7 @@
             <a class="mg-awaiting__help-link mg-awaiting__help-link--ghost" href="{{ route('ambassador_points.awaiting_candidates') }}">
                 <i class="fa fa-list"></i> {{ trans('file.Awaiting Candidate') }}
             </a>
-            @if(in_array('ambassador_point_delete', $all_permission ?? []) && $count > 0)
+            @if(empty($isAmbassador) && in_array('ambassador_point_delete', $all_permission ?? []) && $count > 0)
                 <button type="button" class="mg-awaiting__help-link mg-awaiting__help-link--ghost" id="mg-select-all">
                     <i class="fa fa-check-square-o"></i> Select all
                 </button>
@@ -90,7 +90,7 @@
                         $img = $contestant ? ImageOptimizer::employeeImageUrl($contestant->image ?? '') : '';
                         $search = strtolower($name . ' ' . $ambName);
                         $canEdit = in_array('ambassador_point_edit', $all_permission ?? []);
-                        $canDelete = in_array('ambassador_point_delete', $all_permission ?? []);
+                        $canDelete = empty($isAmbassador) && in_array('ambassador_point_delete', $all_permission ?? []);
                         $editHref = $canEdit ? route('ambassador_points.edit', $point) : '#';
                     @endphp
                     <div class="mg-awaiting-card mg-list-card" data-name="{{ $search }}">

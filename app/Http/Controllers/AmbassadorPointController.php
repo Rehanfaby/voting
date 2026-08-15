@@ -40,7 +40,7 @@ class AmbassadorPointController extends Controller
 
         $points = $query->latest()->get();
 
-        return view('ambassador_points.index', compact('points', 'grading_disabled'));
+        return view('ambassador_points.index', compact('points', 'grading_disabled', 'isAmbassador'));
     }
 
     public function create(Request $request, $candidate_id = null)
@@ -143,17 +143,17 @@ class AmbassadorPointController extends Controller
     }
     public function destroy($id)
     {
+        $ambassadorRoleId = $this->ambassadorRoleId();
+        if ($ambassadorRoleId && (int) Auth::user()->role_id === $ambassadorRoleId) {
+            return redirect()->route('ambassador_points.index')->with('not_permitted', 'You do not have permission to delete this!');
+        }
+
         $role = Role::find(Auth::user()->role_id);
         if (!$role || !$role->hasPermissionTo('ambassador_point_delete')) {
             return redirect()->route('ambassador_points.index')->with('not_permitted', 'You do not have permission to delete this!');
         }
 
-        $query = AmbassadorPoint::where('id', $id);
-        $ambassadorRoleId = $this->ambassadorRoleId();
-        if ($ambassadorRoleId && (int) Auth::user()->role_id === $ambassadorRoleId) {
-            $query->where('ambassador_id', Auth::id());
-        }
-        $point = $query->first();
+        $point = AmbassadorPoint::where('id', $id)->first();
         if (!$point) {
             return redirect()->route('ambassador_points.index')->with('not_permitted', 'You do not have permission to delete this!');
         }
@@ -202,16 +202,16 @@ class AmbassadorPointController extends Controller
 
     public function deleteBySelection(Request $request)
     {
+        $ambassadorRoleId = $this->ambassadorRoleId();
+        if ($ambassadorRoleId && (int) Auth::user()->role_id === $ambassadorRoleId) {
+            return 'You do not have permission to delete this!';
+        }
+
         $role = Role::find(Auth::user()->role_id);
         if($role->hasPermissionTo('ambassador_point_delete')) {
             $ids = array_filter((array) $request->ids);
             if ($ids) {
-                $query = AmbassadorPoint::whereIn('id', $ids);
-                $ambassadorRoleId = $this->ambassadorRoleId();
-                if ($ambassadorRoleId && (int) Auth::user()->role_id === $ambassadorRoleId) {
-                    $query->where('ambassador_id', Auth::id());
-                }
-                $query->delete();
+                AmbassadorPoint::whereIn('id', $ids)->delete();
                 Cache::forget('grader_dash_stats_ambassador_' . Auth::id());
             }
             return 'Grading deleted successfully!';
