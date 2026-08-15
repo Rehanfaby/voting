@@ -45,7 +45,7 @@ class PointController extends Controller
         $candidate_id = $candidate_id ?? $request->candidate_id;
         $candidate_name = null;
         if ($candidate_id) {
-            $candidate = Employee::where('id', $candidate_id)->where('is_active', true)->where('is_approve', true)->first(['id', 'name']);
+            $candidate = Employee::publiclyListed()->where('id', $candidate_id)->first(['id', 'name']);
             $candidate_name = $candidate ? $candidate->name : null;
         }
 
@@ -59,7 +59,7 @@ class PointController extends Controller
         } else {
             $judges = User::where('is_deleted', false)->where('role_id', $judge_role_id)->get(['id', 'name']);
             if ($this->isGradingAvailable()) {
-                $candidates = Employee::orderBy('name')->where('is_active', true)->where('is_approve', true)->get(['id', 'name']);
+                $candidates = Employee::publiclyListed()->orderBy('name')->get(['id', 'name']);
             } else {
                 $candidates = collect();
             }
@@ -99,7 +99,7 @@ class PointController extends Controller
 //        $judges = Judge::orderBy('name')->where('is_active', true)->get();
         $judge_role_id = (int) $this->getJudgeRoleId();
         $judges = User::where('is_deleted', false)->where('role_id', $judge_role_id)->get(['id', 'name']);
-        $candidates = Employee::orderBy('name')->where('is_active', true)->where('is_approve', true)->get(['id', 'name']);
+        $candidates = Employee::publiclyListed()->orderBy('name')->get(['id', 'name']);
         return view('points.edit', compact('point','judges','candidates', 'judge_role_id'));
     }
 
@@ -150,7 +150,7 @@ class PointController extends Controller
             ->toArray();
 
         // Fetch all contestants with a "rated" flag
-        $contestants = Employee::where('is_active', true)->where('is_approve', true)->get(['id', 'name'])->map(function ($contestant) use ($ratedContestants) {
+        $contestants = Employee::publiclyListed()->get(['id', 'name'])->map(function ($contestant) use ($ratedContestants) {
             return [
                 'id'     => $contestant->id,
                 'name'   => $contestant->name,
@@ -171,8 +171,7 @@ class PointController extends Controller
         $adminView = !$isJudge;
         $grading_disabled = !$this->isGradingAvailable();
 
-        $query = Employee::where('is_active', true)
-            ->where('is_approve', true)
+        $query = Employee::publiclyListed()
             ->orderBy('name')
             ->select(['id', 'name', 'image']);
 

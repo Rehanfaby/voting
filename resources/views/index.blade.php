@@ -24,7 +24,7 @@
 
     $contestantCounts = \Cache::remember('dash_contestant_counts_v1', 120, function () use ($__safe) {
         return [
-            'total' => (int) $__safe(function () { return \App\Employee::where('is_active', true)->where('is_approve', true)->count(); }),
+            'total' => (int) $__safe(function () { return \App\Employee::publiclyListed()->count(); }),
             'pending' => (int) $__safe(function () { return \App\Employee::where('is_active', true)->where('is_approve', false)->count(); }),
         ];
     });

@@ -48,7 +48,7 @@ class AmbassadorPointController extends Controller
         $candidate_id = $candidate_id ?? $request->candidate_id;
         $candidate_name = null;
         if ($candidate_id) {
-            $candidate = Employee::where('id', $candidate_id)->where('is_active', true)->where('is_approve', true)->first(['id', 'name']);
+            $candidate = Employee::publiclyListed()->where('id', $candidate_id)->first(['id', 'name']);
             $candidate_name = $candidate ? $candidate->name : null;
         }
         $ambassador_role_id = $this->ambassadorRoleId();
@@ -60,7 +60,7 @@ class AmbassadorPointController extends Controller
             $candidates = collect();
         } else {
             $ambassadors = User::where('is_deleted', false)->where('role_id', $ambassador_role_id)->get(['id', 'name']);
-            $candidates = Employee::orderBy('name')->where('is_active', true)->where('is_approve', true)->get(['id', 'name']);
+            $candidates = Employee::publiclyListed()->orderBy('name')->get(['id', 'name']);
         }
         $grading_disabled = !$this->isGradingAvailable();
 
@@ -116,7 +116,7 @@ class AmbassadorPointController extends Controller
     {
         $point = AmbassadorPoint::where('id', $id)->firstOrFail();
 //        $judges = Ambassador::where('is_active', true)->orderBy('name')->get();
-        $candidates = Employee::orderBy('name')->where('is_active', true)->where('is_approve', true)->get(['id', 'name']);
+        $candidates = Employee::publiclyListed()->orderBy('name')->get(['id', 'name']);
         $ambassador_role_id = $this->ambassadorRoleId();
         return view('ambassador_points.edit', compact('point','candidates', 'ambassador_role_id'));
     }
@@ -160,8 +160,7 @@ class AmbassadorPointController extends Controller
 
         // Ambassadors: only contestants they have not graded yet (shrinks as they grade).
         // Admins/staff: all approved contestants so they can open any card to grade.
-        $query = Employee::where('is_active', true)
-            ->where('is_approve', true)
+        $query = Employee::publiclyListed()
             ->orderBy('name')
             ->select(['id', 'name', 'image']);
 
