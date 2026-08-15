@@ -46,12 +46,13 @@ button.mg-awaiting__help-link { border: 0; cursor: pointer; font-family: inherit
     box-shadow: 0 6px 18px rgba(15,23,42,.05);
     transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
 }
+.mg-list-card { align-items: flex-start; }
 .mg-list-card:hover {
     transform: translateY(-1px); border-color: #f5c518;
     box-shadow: 0 10px 24px rgba(10,35,80,.12);
 }
 .mg-list-card__main {
-    display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;
+    display: flex; align-items: flex-start; gap: 12px; flex: 1 1 auto; min-width: 0;
     text-decoration: none !important; color: inherit;
 }
 .mg-awaiting-card__photo {
@@ -61,12 +62,12 @@ button.mg-awaiting__help-link { border: 0; cursor: pointer; font-family: inherit
 }
 .mg-awaiting-card__photo img { width: 100%; height: 100%; object-fit: cover; }
 .mg-awaiting-card__initial { color: #f5c518; font-weight: 800; font-size: 1.4rem; }
-.mg-awaiting-card__body { flex: 1; min-width: 0; }
+.mg-awaiting-card__body { flex: 1 1 auto; min-width: 10rem; }
 .mg-awaiting-card__name {
     margin: 0; font-size: 15px; font-weight: 800; color: #0a2350;
-    line-height: 1.25; overflow-wrap: anywhere;
+    line-height: 1.35; white-space: normal; overflow-wrap: break-word; word-break: normal;
 }
-.mg-awaiting-card__hint { margin: 4px 0 0; font-size: 12px; color: #64748b; }
+.mg-awaiting-card__hint { margin: 4px 0 0; font-size: 12px; color: #64748b; overflow-wrap: break-word; }
 .mg-list-card__bar {
     margin-top: 8px; height: 7px; border-radius: 999px; background: #e8edf5; overflow: hidden;
 }
@@ -96,13 +97,11 @@ button.mg-awaiting__help-link { border: 0; cursor: pointer; font-family: inherit
 .mg-awaiting__empty p { color: #64748b; margin-bottom: 16px; }
 .mg-awaiting__none-match { text-align: center; color: #64748b; margin-top: 18px; }
 @media (min-width: 768px) {
-    .mg-awaiting__grid { grid-template-columns: 1fr 1fr; }
     .mg-awaiting__title { font-size: 1.75rem; }
     .mg-awaiting-card__photo { width: 72px; height: 72px; }
-    .mg-list-card__actions { flex-direction: row; }
 }
-@media (min-width: 1200px) {
-    .mg-awaiting__grid { grid-template-columns: 1fr 1fr 1fr; }
+@media (min-width: 1100px) {
+    .mg-awaiting__grid { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 575.98px) {
     .mg-awaiting { overflow-x: hidden; }
