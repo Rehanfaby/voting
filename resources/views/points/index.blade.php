@@ -59,7 +59,7 @@
             <a class="mg-awaiting__help-link mg-awaiting__help-link--ghost" href="{{ route('points.awaiting_candidates') }}">
                 <i class="fa fa-list"></i> {{ trans('file.Awaiting Candidate') }}
             </a>
-            @if(in_array('points_delete', $all_permission ?? []) && $count > 0)
+            @if(empty($isJudge) && in_array('points_delete', $all_permission ?? []) && $count > 0)
                 <button type="button" class="mg-awaiting__help-link mg-awaiting__help-link--ghost" id="mg-select-all">
                     <i class="fa fa-check-square-o"></i> Select all
                 </button>
@@ -101,7 +101,7 @@
                         $img = $contestant ? ImageOptimizer::employeeImageUrl($contestant->image ?? '') : '';
                         $search = strtolower($name . ' ' . $judgeName);
                         $canEdit = in_array('points_edit', $all_permission ?? []);
-                        $canDelete = in_array('points_delete', $all_permission ?? []);
+                        $canDelete = empty($isJudge) && in_array('points_delete', $all_permission ?? []);
                         $mainHref = $canEdit ? route('points.edit', $point) : route('points.show', $point);
                     @endphp
                     <div class="mg-awaiting-card mg-list-card" data-name="{{ $search }}">
