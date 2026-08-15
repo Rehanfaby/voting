@@ -32,6 +32,13 @@
 .mg-awaiting__help-link--ghost {
     background: #fff; color: #0a2350 !important; border: 1px solid #cbd5e1;
 }
+button.mg-awaiting__help-link { border: 0; cursor: pointer; font-family: inherit; }
+.mg-awaiting__help-link--danger { background: #dc2626; }
+.mg-list-card__check {
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    width: 28px; margin: 0; cursor: pointer;
+}
+.mg-list-card__check input { width: 18px; height: 18px; margin: 0; cursor: pointer; }
 .mg-awaiting__grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
 .mg-awaiting-card, .mg-list-card {
     display: flex; align-items: center; gap: 10px; padding: 12px;

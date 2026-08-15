@@ -59,6 +59,14 @@
             <a class="mg-awaiting__help-link mg-awaiting__help-link--ghost" href="{{ route('points.awaiting_candidates') }}">
                 <i class="fa fa-list"></i> {{ trans('file.Awaiting Candidate') }}
             </a>
+            @if(in_array('points_delete', $all_permission ?? []) && $count > 0)
+                <button type="button" class="mg-awaiting__help-link mg-awaiting__help-link--ghost" id="mg-select-all">
+                    <i class="fa fa-check-square-o"></i> Select all
+                </button>
+                <button type="button" class="mg-awaiting__help-link mg-awaiting__help-link--danger" id="mg-delete-selected">
+                    <i class="fa fa-trash"></i> Delete selected
+                </button>
+            @endif
         </div>
 
         @if(!empty($grading_disabled))
@@ -97,6 +105,11 @@
                         $mainHref = $canEdit ? route('points.edit', $point) : route('points.show', $point);
                     @endphp
                     <div class="mg-awaiting-card mg-list-card" data-name="{{ $search }}">
+                        @if($canDelete)
+                            <label class="mg-list-card__check">
+                                <input type="checkbox" class="mg-grade-check" data-id="{{ $point->id }}">
+                            </label>
+                        @endif
                         <a class="mg-list-card__main" href="{{ $mainHref }}">
                             <div class="mg-awaiting-card__photo">
                                 @if($contestant && !empty($contestant->image))
@@ -148,17 +161,66 @@
         var input = document.getElementById('mg-list-search');
         var grid = document.getElementById('mg-list-grid');
         var none = document.getElementById('mg-list-none');
-        if (!input || !grid) return;
-        input.addEventListener('input', function () {
-            var q = (input.value || '').toLowerCase().trim();
-            var visible = 0;
-            grid.querySelectorAll('.mg-list-card').forEach(function (card) {
-                var match = !q || (card.getAttribute('data-name') || '').indexOf(q) !== -1;
-                card.style.display = match ? '' : 'none';
-                if (match) visible++;
+        var selectAll = document.getElementById('mg-select-all');
+        var deleteBtn = document.getElementById('mg-delete-selected');
+        function visibleChecks() {
+            if (!grid) return [];
+            return Array.prototype.slice.call(grid.querySelectorAll('.mg-list-card')).filter(function (card) {
+                return card.style.display !== 'none';
+            }).map(function (card) {
+                return card.querySelector('.mg-grade-check');
+            }).filter(Boolean);
+        }
+        if (input && grid) {
+            input.addEventListener('input', function () {
+                var q = (input.value || '').toLowerCase().trim();
+                var visible = 0;
+                grid.querySelectorAll('.mg-list-card').forEach(function (card) {
+                    var match = !q || (card.getAttribute('data-name') || '').indexOf(q) !== -1;
+                    card.style.display = match ? '' : 'none';
+                    if (!match) {
+                        var cb = card.querySelector('.mg-grade-check');
+                        if (cb) cb.checked = false;
+                    }
+                    if (match) visible++;
+                });
+                if (none) none.style.display = visible ? 'none' : 'block';
             });
-            if (none) none.style.display = visible ? 'none' : 'block';
-        });
+        }
+        if (selectAll) {
+            selectAll.addEventListener('click', function () {
+                var boxes = visibleChecks();
+                var allOn = boxes.length && boxes.every(function (cb) { return cb.checked; });
+                boxes.forEach(function (cb) { cb.checked = !allOn; });
+            });
+        }
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', function () {
+                var ids = [];
+                visibleChecks().forEach(function (cb) {
+                    if (cb.checked && cb.getAttribute('data-id')) ids.push(cb.getAttribute('data-id'));
+                });
+                if (!ids.length) {
+                    alert('Select at least one grade to delete.');
+                    return;
+                }
+                if (!confirm('Delete ' + ids.length + ' grade(s)? Those candidates will show again under Awaiting Grading.')) {
+                    return;
+                }
+                $.ajax({
+                    type: 'POST',
+                    url: '{{ url("points/deletebyselection") }}',
+                    data: { ids: ids, _token: '{{ csrf_token() }}' },
+                    success: function (data) {
+                        alert(data);
+                        location.reload();
+                    },
+                    error: function () {
+                        alert('Delete failed. No grades were changed.');
+                    }
+                });
+            });
+        }
     })();
 </script>
 @endsection

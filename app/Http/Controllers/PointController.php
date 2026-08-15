@@ -133,7 +133,19 @@ class PointController extends Controller
 
     public function destroy(Point $point)
     {
+        $role = Role::find(Auth::user()->role_id);
+        if (!$role || !$role->hasPermissionTo('points_delete')) {
+            return redirect()->route('points.index')->with('not_permitted', 'You do not have permission to delete this!');
+        }
+
+        $judgeRole = Role::whereRaw('LOWER(name) = ?', ['judge'])->first();
+        $isJudge = $judgeRole && (int) Auth::user()->role_id === (int) $judgeRole->id;
+        if ($isJudge && (int) $point->judge_id !== (int) Auth::id()) {
+            return redirect()->route('points.index')->with('not_permitted', 'You do not have permission to delete this!');
+        }
+
         $point->delete();
+        Cache::forget('grader_dash_stats_judge_' . Auth::id());
         return redirect()->route('points.index')->with('success', 'Point deleted');
     }
 
@@ -200,9 +212,16 @@ class PointController extends Controller
     {
         $role = Role::find(Auth::user()->role_id);
         if($role->hasPermissionTo('points_delete')) {
-            $ids = array_filter($request->ids);
+            $ids = array_filter((array) $request->ids);
             if ($ids) {
-                Point::whereIn('id', $ids)->delete();
+                $query = Point::whereIn('id', $ids);
+                $judgeRole = Role::whereRaw('LOWER(name) = ?', ['judge'])->first();
+                $isJudge = $judgeRole && (int) Auth::user()->role_id === (int) $judgeRole->id;
+                if ($isJudge) {
+                    $query->where('judge_id', Auth::id());
+                }
+                $query->delete();
+                Cache::forget('grader_dash_stats_judge_' . Auth::id());
             }
             return 'Grading deleted successfully!';
         } else {
