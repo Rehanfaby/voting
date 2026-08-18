@@ -150,10 +150,10 @@
     border-radius: 12px;
     min-height: 0;
 }
-#mg-contestant-grid .mg-awaiting-card__photo { width: 44px; height: 44px; border-width: 2px; }
-#mg-contestant-grid .mg-awaiting-card__initial { font-size: 1.1rem; }
+#mg-contestant-grid .mg-awaiting-card__photo { width: 72px; height: 72px; border-width: 3px; }
+#mg-contestant-grid .mg-awaiting-card__initial { font-size: 1.4rem; }
 #mg-contestant-grid .mg-awaiting-card__body { min-width: 0; }
-#mg-contestant-grid .mg-awaiting-card__name { font-size: 14px; line-height: 1.25; }
+#mg-contestant-grid .mg-awaiting-card__name { font-size: 15px; line-height: 1.25; }
 #mg-contestant-grid .mg-contestant-meta { display: flex; flex-wrap: wrap; gap: 0 12px; }
 #mg-contestant-grid .mg-contestant-meta .mg-awaiting-card__hint { margin: 2px 0 0; }
 #mg-contestant-grid .mg-list-card__actions {
