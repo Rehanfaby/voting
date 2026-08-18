@@ -15,7 +15,12 @@
             background: linear-gradient(135deg, #047857 0%, #059669 45%, #10b981 100%);
             box-shadow: 0 10px 28px rgba(4, 120, 87, 0.25);
         }
+        .mg-list-hero { position: relative; }
         .mg-list-hero h3 { margin: 0 0 6px; font-weight: 800; letter-spacing: .02em; }
+        .mg-list-hero .mg-hero-action { position: absolute; right: 20px; top: 22px; }
+        @media (max-width: 767px) {
+            .mg-list-hero .mg-hero-action { position: static; margin-top: 12px; display: inline-block; }
+        }
         .mg-list-hero p { margin: 0; opacity: .95; }
         .mg-list-hero .mg-chip {
             display: inline-block; margin-top: 10px; margin-right: 8px;
@@ -27,6 +32,8 @@
         }
         #employee-table tbody tr { background: #ecfdf5 !important; }
         #employee-table tbody tr:nth-child(even) { background: #f0fdf4 !important; }
+        #employee-table tbody td { padding: 6px 8px !important; vertical-align: middle; }
+        #employee-table tbody td img { height: 40px; width: 40px; object-fit: cover; border-radius: 6px; }
         #employee-table tbody td.mg-total { color: #047857; font-weight: 800; font-size: 1.05em; }
         #employee-table tbody td.mg-pos .badge { background: #059669; }
         .mg-status-pill {
@@ -37,6 +44,9 @@
 
     <div class="container-fluid">
         <div class="mg-list-hero">
+            <div class="mg-hero-action">
+                <button type="button" id="mg-generate-qual-pdf" class="btn btn-light btn-sm font-weight-bold">Generate Qualification List</button>
+            </div>
             <h3><i class="fa fa-trophy"></i> {{ trans('file.Qualified Contestants') }}</h3>
             <p>Top contestants above the elimination cut-off · Number of Elimination = {{ $elimN }}</p>
             <span class="mg-chip">{{ $count }} Qualified</span>
@@ -64,7 +74,7 @@
                 <tr>
                     <td>{{$key}}</td>
                     @if($contestant && $contestant->image)
-                        <td><img src="{{url('public/images/employee',$contestant->image)}}" height="80" width="80"></td>
+                        <td><img src="{{url('public/images/employee',$contestant->image)}}" height="40" width="40" alt=""></td>
                     @else
                         <td>No Image</td>
                     @endif
@@ -103,6 +113,10 @@
         if (exportText) return exportText;
         return $('<div>').html(data == null ? '' : data).text().replace(/\s+/g, ' ').trim();
     }
+
+    $('#mg-generate-qual-pdf').on('click', function () {
+        $('#employee-table').DataTable().button('.buttons-pdf').trigger();
+    });
 
     $('#employee-table').DataTable({
         order: [],
@@ -144,8 +158,7 @@
                 orientation: 'landscape',
                 pageSize: 'A4',
                 exportOptions: {
-                    // Always include identity + scores + status (ignore column visibility)
-                    columns: [2, 3, 4, 5, 6, 7, 8],
+                    columns: ':visible:not(.not-exported)',
                     rows: ':visible',
                     stripHtml: true,
                     format: { body: mgExportBody }

@@ -143,15 +143,38 @@
 <style>
 .mg-contestant-check { flex-shrink: 0; display:flex; align-items:center; margin:0 4px 0 0; }
 .mg-contestant-check input { width:18px; height:18px; }
-.mg-list-card__actions { flex-wrap: wrap; max-width: 120px; justify-content: flex-end; }
-body.mg-contestants-names-only .mg-contestant-meta { display: none !important; }
+#mg-contestant-grid { gap: 8px; }
+#mg-contestant-grid .mg-list-card {
+    align-items: center;
+    padding: 8px 10px;
+    border-radius: 12px;
+    min-height: 0;
+}
+#mg-contestant-grid .mg-awaiting-card__photo { width: 44px; height: 44px; border-width: 2px; }
+#mg-contestant-grid .mg-awaiting-card__initial { font-size: 1.1rem; }
+#mg-contestant-grid .mg-awaiting-card__body { min-width: 0; }
+#mg-contestant-grid .mg-awaiting-card__name { font-size: 14px; line-height: 1.25; }
+#mg-contestant-grid .mg-contestant-meta { display: flex; flex-wrap: wrap; gap: 0 12px; }
+#mg-contestant-grid .mg-contestant-meta .mg-awaiting-card__hint { margin: 2px 0 0; }
+#mg-contestant-grid .mg-list-card__actions {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    max-width: none;
+    gap: 4px;
+}
+#mg-contestant-grid .mg-list-card__btn { width: 30px; height: 30px; border-radius: 8px; }
+body.mg-contestants-names-only .mg-contestant-meta,
+body.mg-contestants-names-only #mg-contestant-grid .mg-awaiting-card__photo { display: none !important; }
 #mg-names-only-toggle.is-active {
     background: #0a2350 !important;
     color: #fff !important;
     border-color: #0a2350 !important;
 }
+@media (min-width: 900px) {
+    #mg-contestant-grid { grid-template-columns: 1fr 1fr; }
+}
 @media (max-width: 575.98px) {
-    .mg-list-card__actions { max-width: none; flex-direction: row; }
+    #mg-contestant-grid .mg-list-card__actions { flex-wrap: wrap; }
 }
 </style>
 

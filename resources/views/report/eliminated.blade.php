@@ -43,6 +43,8 @@
         }
         #employee-table tbody tr { background: #fef2f2 !important; }
         #employee-table tbody tr:nth-child(even) { background: #fff1f2 !important; }
+        #employee-table tbody td { padding: 6px 8px !important; vertical-align: middle; }
+        #employee-table tbody td img { height: 40px; width: 40px; object-fit: cover; border-radius: 6px; }
         #employee-table tbody td.mg-total { color: #b91c1c; font-weight: 800; font-size: 1.05em; }
         #employee-table tbody td.mg-pos .badge { background: #dc2626; }
         .mg-status-pill {
@@ -62,7 +64,7 @@
                     <i class="dripicons-trash"></i> Delete Selected
                 </button>
                 @endif
-                <a class="btn btn-light btn-sm font-weight-bold" href="{{ route('eliminate.contestants') }}">{{ trans('file.Generate Elimination List') }}</a>
+                <button type="button" id="mg-generate-elim-pdf" class="btn btn-light btn-sm font-weight-bold">{{ trans('file.Generate Elimination List') }}</button>
             </div>
             <h3><i class="fa fa-times-circle"></i> {{ trans('file.Eliminated Contestants') }}</h3>
             <p>Bottom {{ $elimN }} by current ranking · Elimination zone</p>
@@ -92,7 +94,7 @@
                 <tr data-id="{{ $employee->id }}">
                     <td>{{ $employee->id }}</td>
                     @if($contestant && $contestant->image)
-                        <td><img src="{{url('public/images/employee',$contestant->image)}}" height="80" width="80"></td>
+                        <td><img src="{{url('public/images/employee',$contestant->image)}}" height="40" width="40" alt=""></td>
                     @else
                         <td>No Image</td>
                     @endif
@@ -183,6 +185,9 @@
     }
 
     $('#mg-elim-delete-selected').on('click', deleteSelectedEliminated);
+    $('#mg-generate-elim-pdf').on('click', function () {
+        $('#employee-table').DataTable().button('.buttons-pdf').trigger();
+    });
 
     $('#employee-table').DataTable({
         order: [],
@@ -224,8 +229,7 @@
                 orientation: 'landscape',
                 pageSize: 'A4',
                 exportOptions: {
-                    // Always include identity + scores + status (ignore column visibility)
-                    columns: [2, 3, 4, 5, 6, 7, 8],
+                    columns: ':visible:not(.not-exported)',
                     rows: ':visible',
                     stripHtml: true,
                     format: { body: mgExportBody }
