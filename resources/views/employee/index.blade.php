@@ -163,8 +163,7 @@
     gap: 4px;
 }
 #mg-contestant-grid .mg-list-card__btn { width: 30px; height: 30px; border-radius: 8px; }
-body.mg-contestants-names-only .mg-contestant-meta,
-body.mg-contestants-names-only #mg-contestant-grid .mg-awaiting-card__photo { display: none !important; }
+body.mg-contestants-names-only .mg-contestant-meta { display: none !important; }
 #mg-names-only-toggle.is-active {
     background: #0a2350 !important;
     color: #fff !important;
